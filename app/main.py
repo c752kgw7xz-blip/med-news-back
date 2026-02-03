@@ -1,26 +1,13 @@
 import os
 import hashlib
+import binascii
 import psycopg
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, EmailStr
-from passlib.context import CryptContext
 
 app = FastAPI()
 
-# =========================
-# Config
-# =========================
-
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
-
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-)
-
-# =========================
-# SQL init (idempotent)
-# =========================
 
 INIT_SQL = """
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -44,9 +31,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE INDEX IF NOT EXISTS idx_users_specialty_id ON users (specialty_id);
 """
 
-# =========================
+# ---------------------
 # Helpers
-# =========================
+# ---------------------
 
 def get_conn():
     database_url = os.environ.get("DATABASE_URL")
@@ -60,23 +47,31 @@ def normalize_email(email: str) -> str:
 
 
 def email_lookup_hash(email_norm: str) -> bytes:
-    # MVP: hash déterministe simple
     return hashlib.sha256(email_norm.encode("utf-8")).digest()
 
 
-# =========================
+def hash_password(password: str) -> str:
+    pw_bytes = password.encode("utf-8")
+
+    if len(pw_bytes) < 8:
+        raise HTTPException(status_code=400, detail="password too short")
+
+    salt = os.urandom(16)
+    dk = hashlib.pbkdf2_hmac("sha256", pw_bytes, salt, 100_000)
+    return binascii.hexlify(salt + dk).decode("ascii")
+
+# ---------------------
 # Models
-# =========================
+# ---------------------
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
     specialty_slug: str | None = None
 
-
-# =========================
+# ---------------------
 # Routes
-# =========================
+# ---------------------
 
 @app.get("/health/db")
 def health_db():
@@ -95,14 +90,12 @@ async def init_db(request: Request):
     if not DB_INIT_SECRET or secret != DB_INIT_SECRET:
         raise HTTPException(status_code=401, detail="unauthorized")
 
-    try:
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute(INIT_SQL)
-            conn.commit()
-        return {"ok": True}
-    except Exception:
-        raise HTTPException(status_code=500, detail="db init failed")
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(INIT_SQL)
+        conn.commit()
+
+    return {"ok": True}
 
 
 @app.get("/specialties")
@@ -118,21 +111,9 @@ def list_specialties():
 def create_user(payload: UserCreate):
     email_norm = normalize_email(payload.email)
 
-    # --- password validation (CRUCIAL) ---
-    pw_bytes = payload.password.encode("utf-8")
-
-    if len(pw_bytes) < 8:
-        raise HTTPException(status_code=400, detail="password too short")
-
-    if len(pw_bytes) > 72:
-        raise HTTPException(
-            status_code=400,
-            detail="password too long (bcrypt limit: 72 bytes)",
-        )
-
     email_lookup = email_lookup_hash(email_norm)
-    email_ciphertext = email_norm.encode("utf-8")  # TEMPORAIRE (clair)
-    password_hash = pwd_context.hash(payload.password)
+    email_ciphertext = email_norm.encode("utf-8")
+    password_hash = hash_password(payload.password)
 
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -145,10 +126,7 @@ def create_user(payload: UserCreate):
                 )
                 row = cur.fetchone()
                 if not row:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="unknown specialty_slug",
-                    )
+                    raise HTTPException(status_code=400, detail="unknown specialty_slug")
                 specialty_id = row[0]
 
             try:
@@ -162,21 +140,13 @@ def create_user(payload: UserCreate):
                 )
                 user_id, created_at = cur.fetchone()
             except psycopg.errors.UniqueViolation:
-                raise HTTPException(
-                    status_code=409,
-                    detail="email already exists",
-                )
+                raise HTTPException(status_code=409, detail="email already exists")
 
         conn.commit()
 
-    return {
-        "id": str(user_id),
-        "created_at": created_at.isoformat(),
-    }
+    return {"id": str(user_id), "created_at": created_at.isoformat()}
 
 
 @app.get("/_version")
 def version():
-    return {
-        "commit": os.environ.get("RENDER_GIT_COMMIT", "unknown"),
-    }
+    return {"commit": os.environ.get("RENDER_GIT_COMMIT", "unknown")}
