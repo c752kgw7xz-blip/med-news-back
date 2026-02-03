@@ -2,8 +2,17 @@ import os
 import psycopg
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from app.database import init_db
 
 app = FastAPI(title="Med Newsletter API", version="0.1.0")
+
+# Créer les tables au démarrage
+@app.on_event("startup")
+def startup():
+    try:
+        init_db()
+    except Exception as e:
+        print(f"Warning: Could not initialize database: {e}")
 
 # CORS: autorise les sites Netlify
 app.add_middleware(
