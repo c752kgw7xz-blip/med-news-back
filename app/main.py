@@ -1,42 +1,60 @@
 import os
 import psycopg
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException, Request
 
-app = FastAPI(title="Med Newsletter API", version="0.1.0")
+app = FastAPI()
 
-# CORS: autorise les sites Netlify
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # En prod, remplacez par votre URL Netlify exacte
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+DATABASE_URL = os.environ.get("DATABASE_URL")
+DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
 
-@app.get("/")
-def root():
-    return {"message": "Med Newsletter API", "version": app.version}
+INIT_SQL = """
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+CREATE TABLE IF NOT EXISTS specialties (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL
+);
 
-@app.get("/version")
-def version():
-    return {"version": app.version}
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email_lookup BYTEA NOT NULL UNIQUE,
+  email_ciphertext BYTEA NOT NULL,
+  password_hash TEXT NOT NULL,
+  specialty_id UUID REFERENCES specialties(id),
+  email_verified_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-@app.get("/db-check")
-def db_check():
-    db_url = os.getenv("DATABASE_URL")
-    if not db_url:
-        raise HTTPException(status_code=500, detail="DATABASE_URL not set")
+CREATE INDEX IF NOT EXISTS idx_users_specialty_id ON users (specialty_id);
+"""
 
-    try:
-        with psycopg.connect(db_url, connect_timeout=5) as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1;")
-                cur.fetchone()
-        return {"db": "ok"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def get_conn():
+  if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set")
+  return psycopg.connect(DATABASE_URL)
+
+@app.get("/health/db")
+def health_db():
+  try:
+    with get_conn() as conn:
+      with conn.cursor() as cur:
+        cur.execute("select 1;")
+        return {"ok": True}
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/admin/init-db")
+async def init_db(request: Request):
+  secret = request.headers.get("x-init-secret")
+  if not DB_INIT_SECRET or secret != DB_INIT_SECRET:
+    raise HTTPException(status_code=401, detail="unauthorized")
+
+  try:
+    with get_conn() as conn:
+      with conn.cursor() as cur:
+        cur.execute(INIT_SQL)
+      conn.commit()
+    return {"ok": True}
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
