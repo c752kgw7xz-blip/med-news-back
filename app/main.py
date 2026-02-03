@@ -7,7 +7,6 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr
 
 app = FastAPI()
-print("### APP MAIN LOADED ###")
 
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
@@ -135,3 +134,7 @@ def create_user(payload: UserCreate):
         conn.commit()
 
     return {"id": str(user_id), "created_at": created_at.isoformat()}
+
+@app.get("/_version")
+def version():
+    return {"commit": os.environ.get("RENDER_GIT_COMMIT", "unknown")}
