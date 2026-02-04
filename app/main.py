@@ -1,4 +1,5 @@
 from app.auth_routes import router as auth_router
+
 import os
 import hashlib
 import binascii
@@ -12,48 +13,55 @@ from app.db import get_conn
 app = FastAPI()
 app.include_router(auth_router)
 
-
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
 
 INIT_SQL = """
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- specialties
 CREATE TABLE IF NOT EXISTS specialties (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   slug TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL
 );
 
+-- users
 CREATE TABLE IF NOT EXISTS users (
-  ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;
-  ALTER TABLE refresh_tokens ADD COLUMN IF NOT EXISTS replaced_by UUID;
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email_lookup BYTEA NOT NULL UNIQUE,
   email_ciphertext BYTEA NOT NULL,
   password_hash TEXT NOT NULL,
-  is_admin BOOLEAN NOT NULL DEFAULT FALSE,
   specialty_id UUID REFERENCES specialties(id),
   email_verified_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- migration: add admin role (safe even if table already exists)
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;
+
+CREATE INDEX IF NOT EXISTS idx_users_specialty_id ON users (specialty_id);
+
+-- refresh tokens
 CREATE TABLE IF NOT EXISTS refresh_tokens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   token_hash TEXT NOT NULL UNIQUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   expires_at TIMESTAMPTZ NOT NULL,
-  revoked_at TIMESTAMPTZ,
-  replaced_by UUID REFERENCES refresh_tokens(id)
+  revoked_at TIMESTAMPTZ
 );
+
+-- migration: rotation link
+ALTER TABLE refresh_tokens
+  ADD COLUMN IF NOT EXISTS replaced_by UUID;
+
+ALTER TABLE refresh_tokens
+  ADD CONSTRAINT IF NOT EXISTS fk_refresh_tokens_replaced_by
+  FOREIGN KEY (replaced_by) REFERENCES refresh_tokens(id);
 
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at);
-
-CREATE INDEX IF NOT EXISTS idx_users_specialty_id ON users (specialty_id);
-
-UPDATE users SET is_admin = TRUE WHERE email_lookup = decode('<sha256 hex>', 'hex');
-
 """
 
 
@@ -116,8 +124,9 @@ async def init_db(request: Request):
             with conn.cursor() as cur:
                 cur.execute(INIT_SQL)
         return {"ok": True}
-    except Exception:
-        raise HTTPException(status_code=500, detail="db init failed")
+    except Exception as e:
+        # TEMPORAIRE: utile pour diagnostiquer les erreurs SQL sur Render
+        raise HTTPException(status_code=500, detail=f"db init failed: {type(e).__name__}: {e}")
 
 
 @app.get("/specialties")
