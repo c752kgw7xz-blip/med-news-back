@@ -57,8 +57,7 @@ ALTER TABLE refresh_tokens
   ADD COLUMN IF NOT EXISTS replaced_by UUID;
 
 ALTER TABLE refresh_tokens
-  ADD CONSTRAINT IF NOT EXISTS fk_refresh_tokens_replaced_by
-  FOREIGN KEY (replaced_by) REFERENCES refresh_tokens(id);
+  ADD COLUMN IF NOT EXISTS replaced_by UUID;
 
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at);
