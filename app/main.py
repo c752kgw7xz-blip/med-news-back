@@ -5,10 +5,11 @@ import hashlib
 import binascii
 
 import psycopg
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from pydantic import BaseModel, EmailStr
 
 from app.db import get_conn
+from app.security import bearer_scheme, decode_access_token
 
 app = FastAPI()
 app.include_router(auth_router)
@@ -36,7 +37,7 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- migration: add admin role (safe even if table already exists)
+-- migration: add admin role
 ALTER TABLE users
   ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;
 
@@ -52,10 +53,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   revoked_at TIMESTAMPTZ
 );
 
--- migration: rotation link
-ALTER TABLE refresh_tokens
-  ADD COLUMN IF NOT EXISTS replaced_by UUID;
-
+-- migration: rotation link (no FK to keep init idempotent)
 ALTER TABLE refresh_tokens
   ADD COLUMN IF NOT EXISTS replaced_by UUID;
 
@@ -85,6 +83,15 @@ def hash_password(password: str) -> str:
     salt = os.urandom(16)
     dk = hashlib.pbkdf2_hmac("sha256", pw_bytes, salt, 100_000)
     return binascii.hexlify(salt + dk).decode("ascii")
+
+
+# ======================
+# Auth dependency
+# ======================
+
+def get_current_user_id(creds=Depends(bearer_scheme)) -> str:
+    payload = decode_access_token(creds.credentials)
+    return payload["sub"]
 
 
 # ======================
@@ -123,9 +130,8 @@ async def init_db(request: Request):
             with conn.cursor() as cur:
                 cur.execute(INIT_SQL)
         return {"ok": True}
-    except Exception as e:
-        # TEMPORAIRE: utile pour diagnostiquer les erreurs SQL sur Render
-        raise HTTPException(status_code=500, detail=f"db init failed: {type(e).__name__}: {e}")
+    except Exception:
+        raise HTTPException(status_code=500, detail="db init failed")
 
 
 @app.get("/specialties")
@@ -173,6 +179,12 @@ def create_user(payload: UserCreate):
                 raise HTTPException(status_code=409, detail="email already exists")
 
     return {"id": str(user_id), "created_at": created_at.isoformat()}
+
+
+# Protected route (Bearer test)
+@app.get("/me")
+def me(user_id: str = Depends(get_current_user_id)):
+    return {"user_id": user_id}
 
 
 @app.get("/_version")
