@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS specialties (
 );
 
 CREATE TABLE IF NOT EXISTS users (
+  ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;
+  ALTER TABLE refresh_tokens ADD COLUMN IF NOT EXISTS replaced_by UUID;
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email_lookup BYTEA NOT NULL UNIQUE,
   email_ciphertext BYTEA NOT NULL,
