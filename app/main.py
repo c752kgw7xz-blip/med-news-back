@@ -16,6 +16,9 @@ app.include_router(auth_router)
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
 
+# In prod: set ALLOW_SIGNUP=false on Render
+ALLOW_SIGNUP = os.environ.get("ALLOW_SIGNUP", "false").strip().lower() == "true"
+
 INIT_SQL = """
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -145,6 +148,9 @@ def list_specialties():
 
 @app.post("/users", status_code=201)
 def create_user(payload: UserCreate):
+    if not ALLOW_SIGNUP:
+        raise HTTPException(status_code=403, detail="signup disabled")
+
     email_norm = normalize_email(payload.email)
 
     email_lookup = email_lookup_hash(email_norm)
