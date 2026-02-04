@@ -2,3 +2,4 @@ fastapi
 uvicorn[standard]
 psycopg[binary]
 email-validator
+PyJWT==2.9.0
