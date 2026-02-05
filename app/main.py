@@ -6,6 +6,7 @@ import hashlib
 import binascii
 from datetime import date
 from typing import Optional, Any
+from app.piste_routes import router as piste_router
 
 import psycopg
 from fastapi import FastAPI, HTTPException, Request, Depends
@@ -32,6 +33,8 @@ except Exception:
 
 app = FastAPI()
 app.include_router(auth_router)
+app.include_router(piste_router)
+
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
 MIGRATE_SECRET = os.environ.get("MIGRATE_SECRET")
