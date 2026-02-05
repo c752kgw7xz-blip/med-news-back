@@ -208,7 +208,7 @@ def _official_url(jorftext_id: str) -> str:
 
 
 def _json_canonical_bytes(obj: Any) -> bytes:
-    # stable hashing independent of key order / whitespace
+    # stable hashing (order/whitespace independent)
     return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
@@ -256,7 +256,8 @@ def jorf_last_7_days(
 ):
     """
     READ-ONLY.
-    Strategy: lastNJo -> each JORFCONT -> list JORFTEXT -> detail (/consult/jorf) -> filter on date in last 7 days.
+    Strategy: lastNJo -> each JORFCONT -> list JORFTEXT -> detail (/consult/jorf)
+    -> filter on date in last 7 days.
     NOTE: In SANDBOX, lastNJo may return no containers -> count=0 (expected).
     """
     _require_admin(request)
@@ -277,13 +278,9 @@ def jorf_last_7_days(
 
         cont = _piste_call(
             "/consult/jorfCont",
-            {
-                "highlightActivated": False,
-                "id": cont_id,
-                "pageNumber": 1,
-                "pageSize": page_size,
-            },
+            {"highlightActivated": False, "id": cont_id, "pageNumber": 1, "pageSize": page_size},
         )
+
         text_ids = _pick_text_ids(cont)
 
         for tid in text_ids:
@@ -516,6 +513,9 @@ def jorf_search_to_candidates(
     - filters official_date in [today-days, today]
     - inserts with ON CONFLICT (dedupe_key) DO NOTHING
     Never sets SELECTED/PUBLISHED here.
+
+    NOTE: We DO NOT stop if one page yields 0 in-window items because /search
+    is not guaranteed to be sorted by date.
     """
     _require_admin(request)
 
@@ -540,6 +540,13 @@ def jorf_search_to_candidates(
     stop_reason: str | None = None
 
     dropped_reasons: Counter[str] = Counter()
+
+    # Date telemetry to debug PISTE behaviour
+    too_old = 0
+    too_new = 0
+    min_seen_date: date | None = None
+    max_seen_date: date | None = None
+    sample_seen_dates: list[str] = []
 
     insert_sql = """
     INSERT INTO candidates (
@@ -598,8 +605,6 @@ def jorf_search_to_candidates(
                     stop_reason = "empty_page"
                     break
 
-                any_in_window = False
-
                 for it in items:
                     if not isinstance(it, dict):
                         continue
@@ -628,10 +633,23 @@ def jorf_search_to_candidates(
                         continue
 
                     pub_d = date.fromisoformat(pub_s)
-                    if pub_d < start or pub_d > today:
+
+                    # telemetry
+                    if min_seen_date is None or pub_d < min_seen_date:
+                        min_seen_date = pub_d
+                    if max_seen_date is None or pub_d > max_seen_date:
+                        max_seen_date = pub_d
+                    if len(sample_seen_dates) < 10:
+                        sample_seen_dates.append(pub_d.isoformat())
+
+                    # window filter
+                    if pub_d < start:
+                        too_old += 1
+                        continue
+                    if pub_d > today:
+                        too_new += 1
                         continue
 
-                    any_in_window = True
                     kept_in_window += 1
 
                     if not (isinstance(jorftext_id, str) and jorftext_id.startswith("JORFTEXT")):
@@ -647,14 +665,13 @@ def jorf_search_to_candidates(
                     raw_bytes = _json_canonical_bytes(it)
                     raw_sha256 = _sha256_hex(raw_bytes)
 
-                    # content_raw: keep empty for now (detail fetch via /consult/jorf can fill later)
                     params = {
                         "source": source,
                         "official_url": official_url,
                         "official_date": pub_d,
                         "title_raw": (title or "").strip() or "(no title)",
                         "pdf_url": None,
-                        "content_raw": None,
+                        "content_raw": None,  # fill later via /consult/jorf if needed
                         "raw_sha256": raw_sha256,
                         "dedupe_key": dedupe_key,
                         "jorftext_id": jorftext_id,
@@ -666,11 +683,6 @@ def jorf_search_to_candidates(
                         inserted += 1
                     else:
                         deduped += 1
-
-                # stop heuristic: if a full page yields zero in-window items, you're likely past date range
-                if not any_in_window:
-                    stop_reason = "no_items_in_window"
-                    break
 
             conn.commit()
 
@@ -691,4 +703,9 @@ def jorf_search_to_candidates(
         "deduped": deduped,
         "stop_reason": stop_reason,
         "dropped_reasons": dict(dropped_reasons.most_common(10)),
+        "too_old": too_old,
+        "too_new": too_new,
+        "min_seen_date": (min_seen_date.isoformat() if min_seen_date else None),
+        "max_seen_date": (max_seen_date.isoformat() if max_seen_date else None),
+        "sample_seen_dates": sample_seen_dates,
     }
