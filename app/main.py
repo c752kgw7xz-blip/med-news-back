@@ -1,9 +1,11 @@
 from app.auth_routes import router as auth_router
 
 import os
+import json
 import hashlib
 import binascii
-from typing import Optional
+from datetime import date
+from typing import Optional, Any
 
 import psycopg
 from fastapi import FastAPI, HTTPException, Request, Depends
@@ -18,8 +20,14 @@ try:
 except Exception:
     run_migrations = None  # type: ignore
 
-# PISTE OAuth client (you must create app/piste_client.py)
+# PISTE OAuth client
 from app.piste_client import get_piste_token
+
+# OPTIONAL: piste_post if you have it (recommended)
+try:
+    from app.piste_client import piste_post  # type: ignore
+except Exception:
+    piste_post = None  # type: ignore
 
 
 app = FastAPI()
@@ -116,6 +124,28 @@ def _require_secret(request: Request, header_name: str, expected: Optional[str])
         raise HTTPException(status_code=401, detail="unauthorized")
 
 
+def _sha256_hex(s: str) -> str:
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()
+
+
+def _json_sha256(obj: Any) -> str:
+    raw = json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return _sha256_hex(raw)
+
+
+def _legifrance_jorf_url(jorftext_id: str) -> str:
+    return f"https://www.legifrance.gouv.fr/jorf/id/{jorftext_id}"
+
+
+def _parse_iso_date10(v: Any) -> Optional[date]:
+    if isinstance(v, str) and len(v) >= 10:
+        try:
+            return date.fromisoformat(v[:10])
+        except Exception:
+            return None
+    return None
+
+
 # ======================
 # Auth dependency
 # ======================
@@ -189,6 +219,138 @@ def piste_token_test(request: Request):
         return {"ok": True, "token_preview": tok[:12] + "..."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"piste oauth failed: {type(e).__name__}")
+
+
+@app.post("/admin/legifrance/scan")
+def admin_legifrance_scan(
+    request: Request,
+    nb_jo: int = 30,
+    page_size: int = 100,
+):
+    """
+    Scan Légifrance (JO / JORF) via PISTE and insert into candidates table
+    (schema defined in 010_pipeline_candidates_items.sql).
+    Protected by ADMIN_SECRET.
+    """
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+
+    if piste_post is None:
+        # You likely have get_piste_token only; add piste_post in app/piste_client.py
+        raise HTTPException(status_code=501, detail="piste_post not installed in this build")
+
+    source = "legifrance_jorf"
+
+    # 1) derniers conteneurs JO
+    last = piste_post("/consult/lastNJo", {"nbElement": nb_jo})
+
+    cont_ids: list[str] = []
+    items: list[Any] = []
+
+    if isinstance(last, dict):
+        items = last.get("results") or last.get("list") or last.get("jorfConts") or []
+    elif isinstance(last, list):
+        items = last
+
+    if isinstance(items, list):
+        for x in items:
+            if isinstance(x, str) and x.startswith("JORFCONT"):
+                cont_ids.append(x)
+            elif isinstance(x, dict):
+                cid = x.get("id") or x.get("jorfContId")
+                if isinstance(cid, str) and cid.startswith("JORFCONT"):
+                    cont_ids.append(cid)
+
+    inserted = 0
+    duplicates = 0
+    skipped_no_date = 0
+    errors = 0
+
+    for cont_id in cont_ids:
+        cont = piste_post(
+            "/consult/jorfCont",
+            {
+                "highlightActivated": False,
+                "id": cont_id,
+                "pageNumber": 1,
+                "pageSize": page_size,
+            },
+        )
+
+        cont_items: list[Any] = []
+        if isinstance(cont, dict):
+            cont_items = cont.get("results") or cont.get("list") or cont.get("texts") or []
+        elif isinstance(cont, list):
+            cont_items = cont
+
+        text_ids: list[str] = []
+        if isinstance(cont_items, list):
+            for it in cont_items:
+                if isinstance(it, str) and it.startswith("JORFTEXT"):
+                    text_ids.append(it)
+                elif isinstance(it, dict):
+                    tid = it.get("id") or it.get("jorfTextId") or it.get("jorfText") or it.get("textId")
+                    if isinstance(tid, str) and tid.startswith("JORFTEXT"):
+                        text_ids.append(tid)
+
+        for tid in text_ids:
+            try:
+                detail = piste_post("/consult/jorf", {"highlightActivated": False, "id": tid})
+            except Exception:
+                errors += 1
+                continue
+
+            title_raw = None
+            pdf_url = None
+            official_date = None
+            content_raw = None
+
+            if isinstance(detail, dict):
+                title_raw = detail.get("title") or detail.get("titre") or detail.get("norTitre")
+                pdf_url = detail.get("pdfUrl") or detail.get("pdf") or detail.get("pdf_url")
+
+                # publication date (JO)
+                official_date = (
+                    _parse_iso_date10(detail.get("datePublication"))
+                    or _parse_iso_date10(detail.get("datePubli"))
+                    or _parse_iso_date10(detail.get("publicationDate"))
+                )
+
+                # optional raw content if present
+                content_raw = detail.get("text") or detail.get("texte") or detail.get("content")
+
+            if official_date is None:
+                skipped_no_date += 1
+                continue
+
+            official_url = _legifrance_jorf_url(tid)
+            dedupe_key = _sha256_hex(f"{source}|{tid}")
+            raw_sha256 = _json_sha256(detail)
+
+            with get_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        INSERT INTO candidates
+                          (source, official_url, official_date, title_raw, pdf_url, content_raw, raw_sha256, dedupe_key)
+                        VALUES
+                          (%s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (dedupe_key) DO NOTHING;
+                        """,
+                        (source, official_url, official_date, title_raw, pdf_url, content_raw, raw_sha256, dedupe_key),
+                    )
+                    if cur.rowcount == 1:
+                        inserted += 1
+                    else:
+                        duplicates += 1
+
+    return {
+        "ok": True,
+        "containers": len(cont_ids),
+        "inserted": inserted,
+        "duplicates": duplicates,
+        "skipped_no_date": skipped_no_date,
+        "errors": errors,
+    }
 
 
 @app.get("/specialties")
