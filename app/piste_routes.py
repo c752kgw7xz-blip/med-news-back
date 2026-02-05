@@ -7,7 +7,6 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
 
-# Must exist in app/piste_client.py for this to work
 from app.piste_client import piste_post  # type: ignore
 
 router = APIRouter(prefix="/admin/piste", tags=["piste"])
@@ -24,6 +23,23 @@ def _require_admin(request: Request) -> None:
 
 
 # ----------------------
+# Safe PISTE call wrapper (surface real errors)
+# ----------------------
+def _piste_call(path: str, payload: dict[str, Any]) -> Any:
+    if piste_post is None:
+        raise HTTPException(status_code=501, detail="piste_post not installed")
+
+    try:
+        return piste_post(path, payload)
+    except Exception as e:
+        # IMPORTANT: stop returning opaque 500; show the real error
+        raise HTTPException(
+            status_code=502,
+            detail=f"PISTE call failed on {path}: {type(e).__name__}: {e}",
+        )
+
+
+# ----------------------
 # Helpers
 # ----------------------
 def _is_id(v: Any, prefix: str) -> bool:
@@ -31,9 +47,6 @@ def _is_id(v: Any, prefix: str) -> bool:
 
 
 def _extract_list(payload: Any) -> list[Any]:
-    """
-    /search (and other endpoints) may return {results|list|hits|data: [...]}
-    """
     if isinstance(payload, dict):
         return (
             payload.get("results")
@@ -83,9 +96,10 @@ def _pick_container_ids(last_payload: Any) -> list[str]:
                 cid = x.get("id") or x.get("jorfContId") or x.get("jorfCont") or x.get("containerId")
                 if _is_id(cid, "JORFCONT"):
                     out.append(cid)
+
     # dedupe preserving order
     seen = set()
-    uniq = []
+    uniq: list[str] = []
     for c in out:
         if c not in seen:
             uniq.append(c)
@@ -127,7 +141,7 @@ def _pick_text_ids(cont_payload: Any) -> list[str]:
 
     # dedupe preserving order
     seen = set()
-    uniq = []
+    uniq: list[str] = []
     for t in out:
         if t not in seen:
             uniq.append(t)
@@ -156,7 +170,6 @@ def _parse_pub_date(detail: dict[str, Any]) -> date | None:
             except Exception:
                 pass
 
-    # fallback: scan any *date* field
     for k, v in detail.items():
         if "date" in k.lower() and isinstance(v, str) and len(v) >= 10:
             try:
@@ -192,9 +205,9 @@ def _official_url(jorftext_id: str) -> str:
 @router.post("/jorf/last-7-days")
 def jorf_last_7_days(
     request: Request,
-    nb_jo: int = 50,        # how many JO containers to inspect (not DB)
-    page_size: int = 200,   # texts per container page
-    limit: int = 200,       # cap response size to avoid huge payloads
+    nb_jo: int = 50,
+    page_size: int = 200,
+    limit: int = 200,
 ):
     """
     READ-ONLY.
@@ -203,13 +216,10 @@ def jorf_last_7_days(
     """
     _require_admin(request)
 
-    if piste_post is None:
-        raise HTTPException(status_code=501, detail="piste_post not installed")
-
     today = date.today()
     start = today - timedelta(days=7)
 
-    last = piste_post("/consult/lastNJo", {"nbElement": nb_jo})
+    last = _piste_call("/consult/lastNJo", {"nbElement": nb_jo})
     cont_ids = _pick_container_ids(last)
 
     out: list[dict[str, Any]] = []
@@ -220,7 +230,7 @@ def jorf_last_7_days(
         if len(out) >= limit:
             break
 
-        cont = piste_post(
+        cont = _piste_call(
             "/consult/jorfCont",
             {
                 "highlightActivated": False,
@@ -237,8 +247,8 @@ def jorf_last_7_days(
                 break
 
             try:
-                detail = piste_post("/consult/jorf", {"highlightActivated": False, "id": tid})
-            except Exception:
+                detail = _piste_call("/consult/jorf", {"highlightActivated": False, "id": tid})
+            except HTTPException:
                 errors += 1
                 continue
 
@@ -284,16 +294,13 @@ def jorf_debug_sample(request: Request):
     """
     _require_admin(request)
 
-    if piste_post is None:
-        raise HTTPException(status_code=501, detail="piste_post not installed")
-
-    last = piste_post("/consult/lastNJo", {"nbElement": 5})
+    last = _piste_call("/consult/lastNJo", {"nbElement": 5})
     cont_ids = _pick_container_ids(last)
 
     if not cont_ids:
         return {"ok": True, "note": "no containers extracted", "last_type": str(type(last))}
 
-    cont = piste_post(
+    cont = _piste_call(
         "/consult/jorfCont",
         {"highlightActivated": False, "id": cont_ids[0], "pageNumber": 1, "pageSize": 5},
     )
@@ -303,7 +310,7 @@ def jorf_debug_sample(request: Request):
         return {"ok": True, "containers": cont_ids, "note": "no text ids extracted from first container"}
 
     tid = text_ids[0]
-    detail = piste_post("/consult/jorf", {"highlightActivated": False, "id": tid})
+    detail = _piste_call("/consult/jorf", {"highlightActivated": False, "id": tid})
 
     if not isinstance(detail, dict):
         return {"ok": True, "sample_text_id": tid, "detail_type": str(type(detail))}
@@ -332,12 +339,9 @@ def jorf_search_sample(
 ):
     """
     READ-ONLY. Sandbox-friendly.
-    Use /search on fond=JORF to retrieve sample results (even if sandbox has no recent JO containers).
+    Use /search on fond=JORF to retrieve sample results.
     """
     _require_admin(request)
-
-    if piste_post is None:
-        raise HTTPException(status_code=501, detail="piste_post not installed")
 
     payload = {
         "fond": "JORF",
@@ -346,13 +350,10 @@ def jorf_search_sample(
         "highlightActivated": False,
     }
 
-    data = piste_post("/search", payload)
+    data = _piste_call("/search", payload)
 
     if not isinstance(data, dict):
-        raise HTTPException(
-            status_code=502,
-            detail={"msg": "unexpected response type", "type": str(type(data))},
-        )
+        raise HTTPException(status_code=502, detail={"msg": "unexpected response type", "type": str(type(data))})
 
     items = _extract_list(data)
 
@@ -380,7 +381,7 @@ def jorf_search_sample(
         "pageSize": page_size,
         "count": len(results),
         "results": results,
-        "raw_keys": sorted(list(data.keys())),
+        "raw_keys": sorted(list(data.keys())) if isinstance(data, dict) else None,
     }
 
 
@@ -392,17 +393,9 @@ def jorf_search_debug(request: Request):
     """
     _require_admin(request)
 
-    if piste_post is None:
-        raise HTTPException(status_code=501, detail="piste_post not installed")
-
-    data = piste_post(
+    data = _piste_call(
         "/search",
-        {
-            "fond": "JORF",
-            "pageNumber": 1,
-            "pageSize": 3,
-            "highlightActivated": False,
-        },
+        {"fond": "JORF", "pageNumber": 1, "pageSize": 3, "highlightActivated": False},
     )
 
     if not isinstance(data, dict):
