@@ -10,11 +10,14 @@ from pydantic import BaseModel, EmailStr
 
 from app.db import get_conn
 from app.security import bearer_scheme, decode_access_token
+from app.migrations import run_migrations
+
 
 app = FastAPI()
 app.include_router(auth_router)
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
+MIGRATE_SECRET = os.environ.get("MIGRATE_SECRET")
 
 # In prod: set ALLOW_SIGNUP=false on Render
 ALLOW_SIGNUP = os.environ.get("ALLOW_SIGNUP", "false").strip().lower() == "true"
@@ -79,13 +82,22 @@ def email_lookup_hash(email_norm: str) -> bytes:
 
 def hash_password(password: str) -> str:
     pw_bytes = password.encode("utf-8")
-
     if len(pw_bytes) < 8:
         raise HTTPException(status_code=400, detail="password too short")
 
     salt = os.urandom(16)
     dk = hashlib.pbkdf2_hmac("sha256", pw_bytes, salt, 100_000)
     return binascii.hexlify(salt + dk).decode("ascii")
+
+
+def _exec_sql_block(cur, sql_block: str) -> None:
+    """
+    Execute a SQL block containing multiple statements.
+    OK for our simple init SQL (no $$ blocks).
+    """
+    statements = [s.strip() for s in sql_block.split(";") if s.strip()]
+    for stmt in statements:
+        cur.execute(stmt + ";")
 
 
 # ======================
@@ -131,10 +143,23 @@ async def init_db(request: Request):
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute(INIT_SQL)
+                _exec_sql_block(cur, INIT_SQL)
         return {"ok": True}
     except Exception:
         raise HTTPException(status_code=500, detail="db init failed")
+
+
+@app.post("/admin/migrate")
+async def admin_migrate(request: Request):
+    secret = request.headers.get("x-migrate-secret")
+    if not MIGRATE_SECRET or secret != MIGRATE_SECRET:
+        raise HTTPException(status_code=401, detail="unauthorized")
+
+    try:
+        n, files = run_migrations()
+        return {"ok": True, "applied": n, "files": files}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"migration failed: {type(e).__name__}")
 
 
 @app.get("/specialties")
@@ -187,7 +212,6 @@ def create_user(payload: UserCreate):
     return {"id": str(user_id), "created_at": created_at.isoformat()}
 
 
-# Protected route (Bearer test)
 @app.get("/me")
 def me(user_id: str = Depends(get_current_user_id)):
     return {"user_id": user_id}
