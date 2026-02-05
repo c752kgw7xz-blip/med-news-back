@@ -30,6 +30,33 @@ def _is_id(v: Any, prefix: str) -> bool:
     return isinstance(v, str) and v.startswith(prefix)
 
 
+def _extract_list(payload: Any) -> list[Any]:
+    """
+    /search (and other endpoints) may return {results|list|hits|data: [...]}
+    """
+    if isinstance(payload, dict):
+        return (
+            payload.get("results")
+            or payload.get("list")
+            or payload.get("hits")
+            or payload.get("data")
+            or []
+        )
+    if isinstance(payload, list):
+        return payload
+    return []
+
+
+def _parse_date10(v: Any) -> str | None:
+    if isinstance(v, str) and len(v) >= 10:
+        try:
+            date.fromisoformat(v[:10])
+            return v[:10]
+        except Exception:
+            return None
+    return None
+
+
 def _pick_container_ids(last_payload: Any) -> list[str]:
     """
     lastNJo returns different shapes depending on versions.
@@ -172,7 +199,7 @@ def jorf_last_7_days(
     """
     READ-ONLY.
     Strategy: lastNJo -> each JORFCONT -> list JORFTEXT -> detail (/consult/jorf) -> filter on date in last 7 days.
-    Returns normalized minimal fields.
+    NOTE: In SANDBOX, lastNJo may return no containers -> count=0 (expected).
     """
     _require_admin(request)
 
@@ -252,11 +279,8 @@ def jorf_last_7_days(
 @router.post("/jorf/debug-sample")
 def jorf_debug_sample(request: Request):
     """
-    READ-ONLY debug endpoint:
-    - shows what lastNJo returns
-    - extracts first container + first text
-    - returns the date-related fields seen in /consult/jorf detail
-    Useful when last-7-days returns 0.
+    READ-ONLY debug endpoint for lastNJo path.
+    Useful to confirm sandbox has no containers.
     """
     _require_admin(request)
 
@@ -294,4 +318,103 @@ def jorf_debug_sample(request: Request):
         "parsed_pub_date": (_parse_pub_date(detail).isoformat() if _parse_pub_date(detail) else None),
         "date_fields": date_fields,
         "detail_keys_sample": sorted(list(detail.keys()))[:120],
+    }
+
+
+# ----------------------
+# Routes (READ-ONLY, SANDBOX-FRIENDLY)
+# ----------------------
+@router.post("/jorf/search-sample")
+def jorf_search_sample(
+    request: Request,
+    page_number: int = 1,
+    page_size: int = 10,
+):
+    """
+    READ-ONLY. Sandbox-friendly.
+    Use /search on fond=JORF to retrieve sample results (even if sandbox has no recent JO containers).
+    """
+    _require_admin(request)
+
+    if piste_post is None:
+        raise HTTPException(status_code=501, detail="piste_post not installed")
+
+    payload = {
+        "fond": "JORF",
+        "pageNumber": page_number,
+        "pageSize": page_size,
+        "highlightActivated": False,
+    }
+
+    data = piste_post("/search", payload)
+
+    if not isinstance(data, dict):
+        raise HTTPException(
+            status_code=502,
+            detail={"msg": "unexpected response type", "type": str(type(data))},
+        )
+
+    items = _extract_list(data)
+
+    results: list[dict[str, Any]] = []
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        results.append(
+            {
+                "id": it.get("id"),
+                "titre": it.get("title") or it.get("titre"),
+                "date": (
+                    _parse_date10(it.get("date"))
+                    or _parse_date10(it.get("datePublication"))
+                    or _parse_date10(it.get("datePubli"))
+                ),
+                "nature": it.get("nature") or it.get("type"),
+                "url": it.get("url") or it.get("link"),
+            }
+        )
+
+    return {
+        "ok": True,
+        "pageNumber": page_number,
+        "pageSize": page_size,
+        "count": len(results),
+        "results": results,
+        "raw_keys": sorted(list(data.keys())),
+    }
+
+
+@router.post("/jorf/search-debug")
+def jorf_search_debug(request: Request):
+    """
+    READ-ONLY debug endpoint for /search.
+    Returns the first item raw to adapt parsing if needed.
+    """
+    _require_admin(request)
+
+    if piste_post is None:
+        raise HTTPException(status_code=501, detail="piste_post not installed")
+
+    data = piste_post(
+        "/search",
+        {
+            "fond": "JORF",
+            "pageNumber": 1,
+            "pageSize": 3,
+            "highlightActivated": False,
+        },
+    )
+
+    if not isinstance(data, dict):
+        return {"ok": False, "type": str(type(data))}
+
+    items = _extract_list(data)
+    sample = items[0] if items else None
+
+    return {
+        "ok": True,
+        "data_keys": sorted(list(data.keys())),
+        "items_count": len(items),
+        "sample_item": sample,
+        "sample_item_keys": sorted(list(sample.keys())) if isinstance(sample, dict) else None,
     }
