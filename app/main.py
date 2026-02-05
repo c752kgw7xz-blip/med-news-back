@@ -3,6 +3,7 @@ from app.auth_routes import router as auth_router
 import os
 import hashlib
 import binascii
+from typing import Optional
 
 import psycopg
 from fastapi import FastAPI, HTTPException, Request, Depends
@@ -10,7 +11,15 @@ from pydantic import BaseModel, EmailStr
 
 from app.db import get_conn
 from app.security import bearer_scheme, decode_access_token
-from app.migrations import run_migrations
+
+# OPTIONAL migrations import (avoid crashing if file missing)
+try:
+    from app.migrations import run_migrations  # type: ignore
+except Exception:
+    run_migrations = None  # type: ignore
+
+# PISTE OAuth client (you must create app/piste_client.py)
+from app.piste_client import get_piste_token
 
 
 app = FastAPI()
@@ -18,6 +27,7 @@ app.include_router(auth_router)
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
 MIGRATE_SECRET = os.environ.get("MIGRATE_SECRET")
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET")  # <-- add this in Render + .env
 
 # In prod: set ALLOW_SIGNUP=false on Render
 ALLOW_SIGNUP = os.environ.get("ALLOW_SIGNUP", "false").strip().lower() == "true"
@@ -100,6 +110,12 @@ def _exec_sql_block(cur, sql_block: str) -> None:
         cur.execute(stmt + ";")
 
 
+def _require_secret(request: Request, header_name: str, expected: Optional[str]) -> None:
+    secret = request.headers.get(header_name)
+    if not expected or secret != expected:
+        raise HTTPException(status_code=401, detail="unauthorized")
+
+
 # ======================
 # Auth dependency
 # ======================
@@ -136,10 +152,7 @@ def health_db():
 
 @app.post("/admin/init-db")
 async def init_db(request: Request):
-    secret = request.headers.get("x-init-secret")
-    if not DB_INIT_SECRET or secret != DB_INIT_SECRET:
-        raise HTTPException(status_code=401, detail="unauthorized")
-
+    _require_secret(request, "x-init-secret", DB_INIT_SECRET)
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
@@ -151,15 +164,31 @@ async def init_db(request: Request):
 
 @app.post("/admin/migrate")
 async def admin_migrate(request: Request):
-    secret = request.headers.get("x-migrate-secret")
-    if not MIGRATE_SECRET or secret != MIGRATE_SECRET:
-        raise HTTPException(status_code=401, detail="unauthorized")
+    _require_secret(request, "x-migrate-secret", MIGRATE_SECRET)
+
+    if run_migrations is None:
+        raise HTTPException(status_code=501, detail="migrations not installed in this build")
 
     try:
         n, files = run_migrations()
         return {"ok": True, "applied": n, "files": files}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"migration failed: {type(e).__name__}")
+
+
+@app.post("/admin/piste/token-test")
+def piste_token_test(request: Request):
+    """
+    Simple sanity check: can the backend obtain an OAuth token from PISTE?
+    Protected by ADMIN_SECRET.
+    """
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+
+    try:
+        tok = get_piste_token()
+        return {"ok": True, "token_preview": tok[:12] + "..."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"piste oauth failed: {type(e).__name__}")
 
 
 @app.get("/specialties")
@@ -177,7 +206,6 @@ def create_user(payload: UserCreate):
         raise HTTPException(status_code=403, detail="signup disabled")
 
     email_norm = normalize_email(payload.email)
-
     email_lookup = email_lookup_hash(email_norm)
     email_ciphertext = email_norm.encode("utf-8")  # MVP: clair pour l'instant
     password_hash = hash_password(payload.password)
@@ -187,10 +215,7 @@ def create_user(payload: UserCreate):
             specialty_id = None
 
             if payload.specialty_slug:
-                cur.execute(
-                    "SELECT id FROM specialties WHERE slug = %s;",
-                    (payload.specialty_slug,),
-                )
+                cur.execute("SELECT id FROM specialties WHERE slug = %s;", (payload.specialty_slug,))
                 row = cur.fetchone()
                 if not row:
                     raise HTTPException(status_code=400, detail="unknown specialty_slug")
