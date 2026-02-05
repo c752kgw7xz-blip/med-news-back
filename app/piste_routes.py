@@ -339,15 +339,18 @@ def jorf_search_sample(
 ):
     """
     READ-ONLY. Sandbox-friendly.
-    Use /search on fond=JORF to retrieve sample results.
+    IMPORTANT: /search requires a nested "recherche" object (per official DILA examples).
     """
     _require_admin(request)
 
     payload = {
         "fond": "JORF",
-        "pageNumber": page_number,
-        "pageSize": page_size,
-        "highlightActivated": False,
+        "recherche": {
+            "pageNumber": page_number,
+            "pageSize": page_size,
+            "operateur": "ET",
+            "typePagination": "DEFAUT",
+        },
     }
 
     data = _piste_call("/search", payload)
@@ -389,13 +392,21 @@ def jorf_search_sample(
 def jorf_search_debug(request: Request):
     """
     READ-ONLY debug endpoint for /search.
-    Returns the first item raw to adapt parsing if needed.
+    Uses the minimal valid /search payload (with nested "recherche").
     """
     _require_admin(request)
 
     data = _piste_call(
         "/search",
-        {"fond": "JORF", "pageNumber": 1, "pageSize": 3, "highlightActivated": False},
+        {
+            "fond": "JORF",
+            "recherche": {
+                "pageNumber": 1,
+                "pageSize": 3,
+                "operateur": "ET",
+                "typePagination": "DEFAUT",
+            },
+        },
     )
 
     if not isinstance(data, dict):
