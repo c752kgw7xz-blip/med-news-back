@@ -3,5 +3,7 @@ __pycache__/
 *.pyc
 .DS_Store
 .env
-
 cookies*.txt
+crawler/
+scripts/
+*.zip

@@ -1,10 +1,15 @@
 # app/piste_routes.py
 from __future__ import annotations
 
+import hashlib
+import json
 import os
+from collections import Counter
 from datetime import date, timedelta
 from typing import Any
 
+import psycopg
+from psycopg.types.json import Json
 from fastapi import APIRouter, HTTPException, Request
 
 from app.piste_client import piste_post  # type: ignore
@@ -23,6 +28,16 @@ def _require_admin(request: Request) -> None:
 
 
 # ----------------------
+# DB
+# ----------------------
+def _get_conn() -> psycopg.Connection:
+    dsn = os.environ.get("DATABASE_URL")
+    if not dsn:
+        raise HTTPException(status_code=501, detail="DATABASE_URL not set")
+    return psycopg.connect(dsn)
+
+
+# ----------------------
 # Safe PISTE call wrapper (surface real errors)
 # ----------------------
 def _piste_call(path: str, payload: dict[str, Any]) -> Any:
@@ -31,6 +46,8 @@ def _piste_call(path: str, payload: dict[str, Any]) -> Any:
 
     try:
         return piste_post(path, payload)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=502,
@@ -67,6 +84,16 @@ def _parse_date10(v: Any) -> str | None:
         except Exception:
             return None
     return None
+
+
+def _parse_date(v: Any) -> date | None:
+    s = _parse_date10(v)
+    if not s:
+        return None
+    try:
+        return date.fromisoformat(s)
+    except Exception:
+        return None
 
 
 def _pick_container_ids(last_payload: Any) -> list[str]:
@@ -148,21 +175,16 @@ def _parse_pub_date(detail: dict[str, Any]) -> date | None:
         detail.get("dateSignature"),
         detail.get("dateTexte"),
     ]
-
     for v in candidates:
-        if isinstance(v, str) and len(v) >= 10:
-            try:
-                return date.fromisoformat(v[:10])
-            except Exception:
-                pass
+        d = _parse_date(v)
+        if d:
+            return d
 
     for k, v in detail.items():
-        if "date" in k.lower() and isinstance(v, str) and len(v) >= 10:
-            try:
-                return date.fromisoformat(v[:10])
-            except Exception:
-                continue
-
+        if "date" in k.lower():
+            d = _parse_date(v)
+            if d:
+                return d
     return None
 
 
@@ -185,6 +207,15 @@ def _official_url(jorftext_id: str) -> str:
     return f"https://www.legifrance.gouv.fr/jorf/id/{jorftext_id}"
 
 
+def _json_canonical_bytes(obj: Any) -> bytes:
+    # stable hashing independent of key order / whitespace
+    return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def _sha256_hex(b: bytes) -> str:
+    return hashlib.sha256(b).hexdigest()
+
+
 # ----------------------
 # Filtering rules (anti-bruit métier)
 # ----------------------
@@ -199,18 +230,18 @@ DROP_TITLE_CONTAINS = [
 ]
 
 
-def _keep_item(nature: Any, title: Any) -> bool:
+def _keep_item_with_reason(nature: Any, title: Any) -> tuple[bool, str | None]:
     n = (nature or "").strip()
     t = (title or "").strip().lower()
 
     if n in DROP_NATURE:
-        return False
+        return False, "drop_nature"
     if KEEP_NATURE and n not in KEEP_NATURE:
-        return False
+        return False, "not_in_keep_nature"
     for bad in DROP_TITLE_CONTAINS:
         if bad in t:
-            return False
-    return True
+            return False, "drop_title_contains"
+    return True, None
 
 
 # ----------------------
@@ -253,7 +284,6 @@ def jorf_last_7_days(
                 "pageSize": page_size,
             },
         )
-
         text_ids = _pick_text_ids(cont)
 
         for tid in text_ids:
@@ -329,6 +359,7 @@ def jorf_debug_sample(request: Request):
     if not isinstance(detail, dict):
         return {"ok": True, "sample_text_id": tid, "detail_type": str(type(detail))}
 
+    parsed = _parse_pub_date(detail)
     date_fields = {k: v for k, v in detail.items() if "date" in k.lower()}
 
     return {
@@ -336,7 +367,7 @@ def jorf_debug_sample(request: Request):
         "sample_container_id": cont_ids[0],
         "sample_text_id": tid,
         "title": _title(detail),
-        "parsed_pub_date": (_parse_pub_date(detail).isoformat() if _parse_pub_date(detail) else None),
+        "parsed_pub_date": (parsed.isoformat() if parsed else None),
         "date_fields": date_fields,
         "detail_keys_sample": sorted(list(detail.keys()))[:120],
     }
@@ -350,12 +381,13 @@ def jorf_search_sample(
     request: Request,
     page_number: int = 1,
     page_size: int = 10,
+    strict: bool = False,
 ):
     """
     READ-ONLY. Sandbox-friendly.
-    IMPORTANT: /search requires a nested "recherche" object (per official DILA examples).
-    Normalisation adapted to actual /search response: IDs/titles are often under titles[0].
-    Includes an anti-noise filter for JORF items.
+    IMPORTANT: /search requires nested "recherche".
+    strict=false (default): no anti-noise filter (debug-friendly).
+    strict=true: applies anti-noise filter + stats.
     """
     _require_admin(request)
 
@@ -370,13 +402,15 @@ def jorf_search_sample(
     }
 
     data = _piste_call("/search", payload)
-
     if not isinstance(data, dict):
         raise HTTPException(status_code=502, detail={"msg": "unexpected response type", "type": str(type(data))})
 
     items = _extract_list(data)
 
     results: list[dict[str, Any]] = []
+    dropped = 0
+    drop_reasons: Counter[str] = Counter()
+
     for it in items:
         if not isinstance(it, dict):
             continue
@@ -384,16 +418,19 @@ def jorf_search_sample(
         titles = it.get("titles") if isinstance(it.get("titles"), list) else []
         t0 = titles[0] if titles and isinstance(titles[0], dict) else {}
 
-        jorftext_id = t0.get("cid")  # typically "JORFTEXT..."
+        jorftext_id = t0.get("cid")
         title = t0.get("title")
-
         nature = it.get("nature") or it.get("type")
 
-        if not _keep_item(nature, title):
-            continue
+        if strict:
+            ok, reason = _keep_item_with_reason(nature, title)
+            if not ok:
+                dropped += 1
+                if reason:
+                    drop_reasons[reason] += 1
+                continue
 
         date_pub = _parse_date10(it.get("datePublication")) or _parse_date10(it.get("date"))
-
         official_url = (
             _official_url(jorftext_id)
             if isinstance(jorftext_id, str) and jorftext_id.startswith("JORFTEXT")
@@ -413,9 +450,13 @@ def jorf_search_sample(
 
     return {
         "ok": True,
+        "strict": strict,
         "pageNumber": page_number,
         "pageSize": page_size,
-        "count": len(results),
+        "items_count": len(items),
+        "kept_count": len(results),
+        "dropped_count": dropped,
+        "dropped_reasons": dict(drop_reasons.most_common(10)),
         "results": results,
         "raw_keys": sorted(list(data.keys())),
     }
@@ -425,8 +466,7 @@ def jorf_search_sample(
 def jorf_search_debug(request: Request):
     """
     READ-ONLY debug endpoint for /search.
-    Uses the minimal valid /search payload (with nested "recherche").
-    Returns the first item raw to adapt parsing if needed.
+    Returns first raw item to adapt parsing if needed.
     """
     _require_admin(request)
 
@@ -455,4 +495,200 @@ def jorf_search_debug(request: Request):
         "items_count": len(items),
         "sample_item": sample,
         "sample_item_keys": sorted(list(sample.keys())) if isinstance(sample, dict) else None,
+    }
+
+
+# ----------------------
+# Routes (WRITE) — /search -> candidates (dedupe-safe)
+# ----------------------
+@router.post("/jorf/search-to-candidates")
+def jorf_search_to_candidates(
+    request: Request,
+    days: int = 90,
+    strict: bool = True,
+    page_size: int = 50,
+    max_pages: int = 40,
+):
+    """
+    WRITE into candidates.
+    - pages through /search
+    - optional strict anti-noise filter
+    - filters official_date in [today-days, today]
+    - inserts with ON CONFLICT (dedupe_key) DO NOTHING
+    Never sets SELECTED/PUBLISHED here.
+    """
+    _require_admin(request)
+
+    if days <= 0 or days > 3650:
+        raise HTTPException(status_code=400, detail="invalid days")
+    if page_size <= 0 or page_size > 200:
+        raise HTTPException(status_code=400, detail="invalid page_size")
+    if max_pages <= 0 or max_pages > 200:
+        raise HTTPException(status_code=400, detail="invalid max_pages")
+
+    today = date.today()
+    start = today - timedelta(days=days)
+
+    source = "legifrance_jorf"
+
+    seen = 0
+    kept_after_strict = 0
+    kept_in_window = 0
+    inserted = 0
+    deduped = 0
+    pages_fetched = 0
+    stop_reason: str | None = None
+
+    dropped_reasons: Counter[str] = Counter()
+
+    insert_sql = """
+    INSERT INTO candidates (
+      source,
+      official_url,
+      official_date,
+      title_raw,
+      pdf_url,
+      content_raw,
+      raw_sha256,
+      dedupe_key,
+      status,
+      jorftext_id,
+      raw_json
+    )
+    VALUES (
+      %(source)s,
+      %(official_url)s,
+      %(official_date)s,
+      %(title_raw)s,
+      %(pdf_url)s,
+      %(content_raw)s,
+      %(raw_sha256)s,
+      %(dedupe_key)s,
+      'NEW',
+      %(jorftext_id)s,
+      %(raw_json)s
+    )
+    ON CONFLICT (dedupe_key) DO NOTHING;
+    """
+
+    with _get_conn() as conn:
+        with conn.cursor() as cur:
+            for page_number in range(1, max_pages + 1):
+                pages_fetched += 1
+
+                payload = {
+                    "fond": "JORF",
+                    "recherche": {
+                        "pageNumber": page_number,
+                        "pageSize": page_size,
+                        "operateur": "ET",
+                        "typePagination": "DEFAUT",
+                    },
+                }
+
+                data = _piste_call("/search", payload)
+                if not isinstance(data, dict):
+                    raise HTTPException(
+                        status_code=502,
+                        detail={"msg": "unexpected /search response type", "type": str(type(data))},
+                    )
+
+                items = _extract_list(data)
+                if not items:
+                    stop_reason = "empty_page"
+                    break
+
+                any_in_window = False
+
+                for it in items:
+                    if not isinstance(it, dict):
+                        continue
+
+                    seen += 1
+
+                    titles = it.get("titles") if isinstance(it.get("titles"), list) else []
+                    t0 = titles[0] if titles and isinstance(titles[0], dict) else {}
+
+                    jorftext_id = t0.get("cid")
+                    title = t0.get("title")
+                    nature = it.get("nature") or it.get("type")
+
+                    if strict:
+                        ok, reason = _keep_item_with_reason(nature, title)
+                        if not ok:
+                            if reason:
+                                dropped_reasons[reason] += 1
+                            continue
+
+                    kept_after_strict += 1
+
+                    pub_s = _parse_date10(it.get("datePublication")) or _parse_date10(it.get("date"))
+                    if not pub_s:
+                        dropped_reasons["no_date"] += 1
+                        continue
+
+                    pub_d = date.fromisoformat(pub_s)
+                    if pub_d < start or pub_d > today:
+                        continue
+
+                    any_in_window = True
+                    kept_in_window += 1
+
+                    if not (isinstance(jorftext_id, str) and jorftext_id.startswith("JORFTEXT")):
+                        dropped_reasons["no_jorftext_id"] += 1
+                        continue
+
+                    official_url = _official_url(jorftext_id)
+
+                    # dedupe stable per source + id
+                    dedupe_key = _sha256_hex(f"{source}|{jorftext_id}".encode("utf-8"))
+
+                    # raw traceability
+                    raw_bytes = _json_canonical_bytes(it)
+                    raw_sha256 = _sha256_hex(raw_bytes)
+
+                    # content_raw: keep empty for now (detail fetch via /consult/jorf can fill later)
+                    params = {
+                        "source": source,
+                        "official_url": official_url,
+                        "official_date": pub_d,
+                        "title_raw": (title or "").strip() or "(no title)",
+                        "pdf_url": None,
+                        "content_raw": None,
+                        "raw_sha256": raw_sha256,
+                        "dedupe_key": dedupe_key,
+                        "jorftext_id": jorftext_id,
+                        "raw_json": Json(it),
+                    }
+
+                    cur.execute(insert_sql, params)
+                    if cur.rowcount == 1:
+                        inserted += 1
+                    else:
+                        deduped += 1
+
+                # stop heuristic: if a full page yields zero in-window items, you're likely past date range
+                if not any_in_window:
+                    stop_reason = "no_items_in_window"
+                    break
+
+            conn.commit()
+
+    return {
+        "ok": True,
+        "source": source,
+        "days": days,
+        "strict": strict,
+        "page_size": page_size,
+        "max_pages": max_pages,
+        "from": start.isoformat(),
+        "to": today.isoformat(),
+        "pages_fetched": pages_fetched,
+        "seen": seen,
+        "kept_after_strict": kept_after_strict,
+        "kept_in_window": kept_in_window,
+        "inserted": inserted,
+        "deduped": deduped,
+        "stop_reason": stop_reason,
+        "dropped_reasons": dict(dropped_reasons.most_common(10)),
     }
