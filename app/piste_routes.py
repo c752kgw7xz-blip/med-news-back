@@ -186,6 +186,34 @@ def _official_url(jorftext_id: str) -> str:
 
 
 # ----------------------
+# Filtering rules (anti-bruit métier)
+# ----------------------
+KEEP_NATURE = {"ARRETE", "DECRET", "LOI", "ORDONNANCE"}
+DROP_NATURE = {"INFORMATIONS_PARLEMENTAIRES"}
+
+DROP_TITLE_CONTAINS = [
+    "avis de vacance",
+    "documents déposés",
+    "résultats",
+    "cote & score",
+]
+
+
+def _keep_item(nature: Any, title: Any) -> bool:
+    n = (nature or "").strip()
+    t = (title or "").strip().lower()
+
+    if n in DROP_NATURE:
+        return False
+    if KEEP_NATURE and n not in KEEP_NATURE:
+        return False
+    for bad in DROP_TITLE_CONTAINS:
+        if bad in t:
+            return False
+    return True
+
+
+# ----------------------
 # Routes (READ-ONLY)
 # ----------------------
 @router.post("/jorf/last-7-days")
@@ -327,6 +355,7 @@ def jorf_search_sample(
     READ-ONLY. Sandbox-friendly.
     IMPORTANT: /search requires a nested "recherche" object (per official DILA examples).
     Normalisation adapted to actual /search response: IDs/titles are often under titles[0].
+    Includes an anti-noise filter for JORF items.
     """
     _require_admin(request)
 
@@ -358,6 +387,11 @@ def jorf_search_sample(
         jorftext_id = t0.get("cid")  # typically "JORFTEXT..."
         title = t0.get("title")
 
+        nature = it.get("nature") or it.get("type")
+
+        if not _keep_item(nature, title):
+            continue
+
         date_pub = _parse_date10(it.get("datePublication")) or _parse_date10(it.get("date"))
 
         official_url = (
@@ -371,7 +405,7 @@ def jorf_search_sample(
                 "jorftext_id": jorftext_id,
                 "titre": title,
                 "date_publication": date_pub,
-                "nature": it.get("nature") or it.get("type"),
+                "nature": nature,
                 "nor": it.get("nor"),
                 "official_url": official_url,
             }
