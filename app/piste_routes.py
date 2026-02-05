@@ -32,7 +32,6 @@ def _piste_call(path: str, payload: dict[str, Any]) -> Any:
     try:
         return piste_post(path, payload)
     except Exception as e:
-        # IMPORTANT: stop returning opaque 500; show the real error
         raise HTTPException(
             status_code=502,
             detail=f"PISTE call failed on {path}: {type(e).__name__}: {e}",
@@ -71,10 +70,6 @@ def _parse_date10(v: Any) -> str | None:
 
 
 def _pick_container_ids(last_payload: Any) -> list[str]:
-    """
-    lastNJo returns different shapes depending on versions.
-    We extract all JORFCONT... ids robustly.
-    """
     items: list[Any] = []
     if isinstance(last_payload, dict):
         items = (
@@ -97,7 +92,6 @@ def _pick_container_ids(last_payload: Any) -> list[str]:
                 if _is_id(cid, "JORFCONT"):
                     out.append(cid)
 
-    # dedupe preserving order
     seen = set()
     uniq: list[str] = []
     for c in out:
@@ -108,9 +102,6 @@ def _pick_container_ids(last_payload: Any) -> list[str]:
 
 
 def _pick_text_ids(cont_payload: Any) -> list[str]:
-    """
-    jorfCont returns list/dict; extract JORFTEXT... ids robustly.
-    """
     items: list[Any] = []
     if isinstance(cont_payload, dict):
         items = (
@@ -139,7 +130,6 @@ def _pick_text_ids(cont_payload: Any) -> list[str]:
                 if _is_id(tid, "JORFTEXT"):
                     out.append(tid)
 
-    # dedupe preserving order
     seen = set()
     uniq: list[str] = []
     for t in out:
@@ -150,10 +140,6 @@ def _pick_text_ids(cont_payload: Any) -> list[str]:
 
 
 def _parse_pub_date(detail: dict[str, Any]) -> date | None:
-    """
-    Légifrance payloads vary. We try a set of known fields, and as fallback,
-    we scan for keys containing 'date' that look like ISO dates.
-    """
     candidates = [
         detail.get("datePublication"),
         detail.get("datePubli"),
@@ -340,6 +326,7 @@ def jorf_search_sample(
     """
     READ-ONLY. Sandbox-friendly.
     IMPORTANT: /search requires a nested "recherche" object (per official DILA examples).
+    Normalisation adapted to actual /search response: IDs/titles are often under titles[0].
     """
     _require_admin(request)
 
@@ -364,17 +351,29 @@ def jorf_search_sample(
     for it in items:
         if not isinstance(it, dict):
             continue
+
+        titles = it.get("titles") if isinstance(it.get("titles"), list) else []
+        t0 = titles[0] if titles and isinstance(titles[0], dict) else {}
+
+        jorftext_id = t0.get("cid")  # typically "JORFTEXT..."
+        title = t0.get("title")
+
+        date_pub = _parse_date10(it.get("datePublication")) or _parse_date10(it.get("date"))
+
+        official_url = (
+            _official_url(jorftext_id)
+            if isinstance(jorftext_id, str) and jorftext_id.startswith("JORFTEXT")
+            else None
+        )
+
         results.append(
             {
-                "id": it.get("id"),
-                "titre": it.get("title") or it.get("titre"),
-                "date": (
-                    _parse_date10(it.get("date"))
-                    or _parse_date10(it.get("datePublication"))
-                    or _parse_date10(it.get("datePubli"))
-                ),
+                "jorftext_id": jorftext_id,
+                "titre": title,
+                "date_publication": date_pub,
                 "nature": it.get("nature") or it.get("type"),
-                "url": it.get("url") or it.get("link"),
+                "nor": it.get("nor"),
+                "official_url": official_url,
             }
         )
 
@@ -384,7 +383,7 @@ def jorf_search_sample(
         "pageSize": page_size,
         "count": len(results),
         "results": results,
-        "raw_keys": sorted(list(data.keys())) if isinstance(data, dict) else None,
+        "raw_keys": sorted(list(data.keys())),
     }
 
 
@@ -393,6 +392,7 @@ def jorf_search_debug(request: Request):
     """
     READ-ONLY debug endpoint for /search.
     Uses the minimal valid /search payload (with nested "recherche").
+    Returns the first item raw to adapt parsing if needed.
     """
     _require_admin(request)
 
