@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MedNews — Admin Review</title>
+<script src="/shared.js?v=2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  [data-theme="light"] {
+    --bg: #f6f5f2; --surface: #ffffff; --surface2: #f0ede8;
+    --border: #e4e0d8; --border-strong: #cac4bb;
+    --text: #1a1814; --text2: #4a4540; --text3: #7a7268;
+    --text4: #9a9288; --text5: #bcb6ac; --white: #1a1814;
+    --green-dark: #e5f5f0; --red-dark: #fde8e8;
+  }
+  [data-theme="dark"] {
+    --bg: #0f1117; --surface: #13151f; --surface2: #1a1c2a;
+    --border: #1e2030; --border-strong: #2a2d45;
+    --text: #f0f0f5; --text2: #c8c8d4; --text3: #8b8fa8;
+    --text4: #6b6f88; --text5: #4a4e68; --white: #f0f0f5;
+    --green-dark: #0d2a20; --red-dark: #2a0d0d;
+  }
+  :root {
+    --green: #1f9478; --red: #cc3232; --amber: #b56808;
+    --blue: #2060a8; --purple: #6040a8; --radius: 10px;
+  }
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg); color: var(--text); font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ─────────────────────────────── */
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    height: 52px; padding: 0 32px; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 100;
+  }
+  .header-left { display: flex; align-items: baseline; gap: 12px; }
+  .header-left h1 {
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.43rem; font-weight: 400;
+    color: var(--text); letter-spacing: -.3px;
+  }
+  .header-left h1 em { font-style: italic; }
+  .header-left h1 b { font-weight: 700; font-style: normal; }
+  .header-sep { color: var(--border-strong); margin: 0 2px; font-weight: 300; }
+  .header-badge {
+    font-size: 0.71rem; color: var(--amber); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; background: #fff8e8; padding: 3px 10px; border-radius: 4px;
+  }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .header-right .email { font-size: 0.86rem; color: var(--text2); }
+  .header-dot { width: 6px; height: 6px; background: var(--amber); border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .btn-logout {
+    padding: 5px 12px; background: transparent; border: 1px solid var(--border-strong);
+    color: var(--text2); border-radius: 6px; font-size: 0.79rem; font-weight: 500;
+    cursor: pointer; transition: all .2s; font-family: inherit;
+  }
+  .btn-logout:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+
+  /* ── Filter bar (status only) ───────────── */
+  .filter-bar {
+    background: var(--surface2); border-bottom: 1px solid var(--border); min-height: 44px;
+    display: flex; align-items: center; padding: 0 24px; gap: 8px;
+    position: sticky; top: 52px; z-index: 99; flex-wrap: wrap;
+  }
+  .filter-pill {
+    display: inline-flex; align-items: center; gap: 5px; padding: 5px 14px;
+    border-radius: 20px; font-size: 0.86rem; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border-strong); background: transparent; color: var(--text2);
+    transition: all .15s; white-space: nowrap; font-family: inherit;
+  }
+  .filter-pill:hover { border-color: var(--text3); color: var(--text); }
+  .filter-pill.active { background: var(--green); border-color: var(--green); color: #fff; }
+  .filter-pill .count {
+    background: rgba(0,0,0,.10); padding: 1px 6px; border-radius: 10px;
+    font-size: 0.71rem; font-weight: 600;
+  }
+  .filter-pill.active .count { background: rgba(255,255,255,.40); }
+  .filter-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .filter-bar-right { margin-left: auto; font-size: 0.79rem; color: var(--text3); white-space: nowrap; }
+
+  /* ── App layout ──────────────────────────── */
+  .app-wrapper { display: flex; align-items: flex-start; }
+
+  /* ── Sidebar ─────────────────────────────── */
+  .sidebar {
+    width: 240px; min-width: 240px; flex-shrink: 0;
+    background: var(--surface2); border-right: 1px solid var(--border);
+    position: sticky; top: 52px; height: calc(100vh - 52px);
+    overflow-y: auto; padding: 8px 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 3px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+  .sidebar-sep { height: 1px; background: var(--border); margin: 6px 10px; }
+  .sidebar-section {
+    padding: 10px 14px 3px; font-size: 0.71rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .8px; color: var(--text3);
+  }
+  .sidebar-nav-item {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; padding: 6px 14px; border: none; background: transparent;
+    color: var(--text2); font-size: 0.86rem; font-weight: 500; cursor: pointer;
+    font-family: inherit; transition: all .15s; text-align: left;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-nav-item:hover { background: rgba(0,0,0,.04); color: var(--text); }
+  .sidebar-nav-item.active { background: rgba(0,0,0,.06); color: var(--text); border-left-color: var(--green); }
+  .sidebar-nav-item[data-filter="TRANSVERSAL_LIBERAL"].active { border-left-color: var(--amber); color: var(--amber); }
+  .sidebar-nav-item[data-filter="PHARMACIENS"].active { border-left-color: var(--purple); color: var(--purple); }
+  .sidebar-item-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sidebar-item-count {
+    flex-shrink: 0; font-size: 0.71rem; font-weight: 600; padding: 1px 6px;
+    border-radius: 10px; background: rgba(0,0,0,.08); color: var(--text3); margin-left: 6px;
+  }
+  .sidebar-nav-item.active .sidebar-item-count { background: rgba(0,0,0,.12); color: var(--text2); }
+  .main-content { flex: 1; min-width: 0; }
+
+  /* ── Layout ─────────────────────────────── */
+  .layout { width: 100%; padding: 20px 24px; box-sizing: border-box; }
+  #articles-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  #articles-container .article-card { margin-bottom: 0; min-width: 0; }
+  #articles-container .article-card.expanded { grid-column: 1 / -1; }
+  #articles-container .cat-separator { grid-column: 1 / -1; }
+  @media (max-width: 900px) { #articles-container { grid-template-columns: 1fr; } }
+
+  /* ── Loading ────────────────────────────── */
+  .loading { text-align: center; padding: 80px 0; }
+  .loading-spinner {
+    width: 20px; height: 20px; border: 2px solid var(--border);
+    border-top-color: var(--green); border-radius: 50%;
+    animation: spin .7s linear infinite; margin: 0 auto 12px;
+  }
+  .loading p { color: #777; font-size: 0.93rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: var(--card-opacity, 1); transform: translateY(0); }
+  }
+
+  /* ── Article card ───────────────────────── */
+  .article-card {
+    --card-opacity: 1;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px 14px; margin-bottom: 0; transition: border-color .2s;
+    animation: fadeUp .2s ease forwards; opacity: 0;
+    border-left: 3px solid var(--border);
+    position: relative;
+  }
+  .article-card[data-status="APPROVED"] { --card-opacity: 0.75; }
+  .article-card[data-status="REJECTED"] { --card-opacity: 0.5; }
+  .article-card:hover { border-color: var(--border-strong); }
+  .article-card.prio-high { border-left-color: var(--red); }
+  .article-card.prio-mid { border-left-color: var(--amber); }
+  .article-card.prio-low { border-left-color: var(--green); }
+  /* ── Status icon (APPROVED / REJECTED) ──── */
+  .card-status-icon {
+    display: inline-flex; align-items: center; margin-left: 4px;
+  }
+
+  .card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .card-top-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .card-top-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .card-top-left .card-title { margin-bottom: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+  .btn-ext-icon { display: inline-flex; align-items: center; color: var(--green); transition: color .15s; text-decoration: none; }
+  .btn-ext-icon:hover { color: var(--text2); }
+  .nature-badge {
+    padding: 3px 8px; border-radius: 4px; font-size: 0.64rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .8px;
+  }
+  .status-badge {
+    padding: 3px 8px; border-radius: 4px; font-size: 0.64rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .status-badge.pending { background: #fff8e8; color: var(--amber); }
+  .status-badge.approved { background: var(--green-dark); color: var(--green); }
+  .status-badge.rejected { background: #fde8e8; color: var(--red); }
+  .card-date { font-size: 0.79rem; color: var(--text3); }
+
+  .spec-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+  .spec-badge {
+    font-size: 0.64rem; font-weight: 600; padding: 2px 7px; border-radius: 3px;
+    background: #e8f1fc; color: var(--blue); letter-spacing: .3px;
+  }
+
+  .card-title {
+    font-size: 1.21rem; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 4px;
+    cursor: pointer;
+  }
+  .card-title:hover { text-decoration: underline; text-decoration-color: var(--text3); }
+
+  .card-raw-title { font-size: 0.79rem; color: var(--text3); margin-bottom: 8px; display: none; }
+  .article-card.expanded .card-raw-title { display: block; }
+
+  .urgency-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.71rem; font-weight: 500; padding: 2px 8px;
+    border-radius: 10px; flex-shrink: 0;
+  }
+  .urgency-pill.high { background: #fde8e8; color: #cc3232; }
+  .urgency-pill.mid { background: #fdf3de; color: #b56808; }
+  .urgency-pill.low { background: #e0f5ef; color: #1f9478; }
+
+  .card-summary { font-size: 0.93rem; color: var(--text3); line-height: 1.55; margin-bottom: 8px; display: none; }
+  .article-card.expanded .card-summary { display: block; }
+  .card-impact {
+    font-size: 0.86rem; color: var(--text2); font-style: italic; line-height: 1.5;
+    padding-left: 10px; margin-bottom: 10px;
+  }
+  .card-impact.impact-high { border-left: 2px solid var(--red); }
+  .card-impact.impact-mid { border-left: 2px solid var(--amber); }
+  .card-impact.impact-low { border-left: 2px solid var(--green); }
+
+  /* ── Detail expand ──────────────────────── */
+  .card-detail { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .detail-box { background: var(--surface2); border-radius: 8px; padding: 14px 16px; }
+  .detail-box h4 {
+    font-size: 0.71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+    color: var(--text3); margin-bottom: 10px;
+  }
+  .detail-box ul { margin: 0; padding: 0; list-style: none; }
+  .detail-box li {
+    margin: 6px 0; font-size: 0.86rem; color: var(--text2); line-height: 1.5;
+    padding-left: 14px; position: relative;
+  }
+  .detail-box li::before { content: "\2192"; position: absolute; left: 0; color: var(--green); font-size: 0.79rem; }
+  .detail-box .texte-long { font-size: 0.86rem; color: var(--text2); line-height: 1.65; }
+
+  /* ── Action buttons ─────────────────────── */
+  .card-actions { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn-approve {
+    padding: 7px 16px; background: var(--green); color: #fff; border: none;
+    border-radius: 6px; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: opacity .2s;
+  }
+  .btn-approve:hover { opacity: .85; }
+  .btn-approve:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-reject {
+    padding: 7px 16px; background: transparent; color: var(--red); border: 1px solid #e8c0c0;
+    border-radius: 6px; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: all .2s;
+  }
+  .btn-reject:hover { background: #fde8e8; }
+  .btn-reject:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-official {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 7px 16px; background: transparent; color: var(--text2); border: 1px solid var(--border-strong);
+    border-radius: 6px; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+    text-decoration: none; font-family: inherit; transition: all .2s;
+  }
+  .btn-official:hover { background: var(--surface2); color: var(--text); }
+  .btn-detail {
+    padding: 6px 14px; background: transparent; border: 1px solid var(--border-strong);
+    color: var(--text3); border-radius: 6px; font-size: 0.79rem; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: all .2s; margin-left: auto;
+  }
+  .btn-detail:hover { background: var(--surface2); border-color: var(--text3); }
+
+  /* ── Newsletter section ─────────────────── */
+  .newsletter-section {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px 24px; margin-bottom: 20px;
+  }
+  .newsletter-section h2 {
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.29rem; font-weight: 400;
+    color: var(--text); margin-bottom: 14px;
+  }
+  .newsletter-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .newsletter-row select, .newsletter-row input {
+    padding: 7px 12px; border-radius: 6px; font-size: 0.93rem;
+    background: var(--surface2); border: 1px solid var(--border-strong); color: var(--text);
+    font-family: inherit; outline: none;
+  }
+  .newsletter-row select:focus, .newsletter-row input:focus { border-color: var(--green); }
+  .btn-newsletter {
+    padding: 7px 16px; border: 1px solid var(--border-strong); background: transparent;
+    color: var(--text2); border-radius: 6px; font-size: 0.86rem; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: all .2s;
+  }
+  .btn-newsletter:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+  .btn-newsletter.primary { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn-newsletter.primary:hover { opacity: .85; }
+  .newsletter-result {
+    margin-top: 12px; font-size: 0.86rem; color: var(--text2);
+    padding: 8px 12px; background: var(--surface2); border-radius: 6px; display: none;
+  }
+
+  /* ── Preview modal ──────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7);
+    z-index: 200; justify-content: center; align-items: center; padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-content {
+    background: #fff; border-radius: 12px; max-width: 700px; width: 100%;
+    max-height: 90vh; overflow: auto;
+  }
+  .modal-close {
+    position: sticky; top: 0; display: flex; justify-content: flex-end;
+    padding: 12px 16px; background: #fff; border-bottom: 1px solid #eee;
+  }
+  .modal-close button {
+    padding: 5px 14px; background: var(--text2); color: #fff; border: none;
+    border-radius: 6px; font-size: 0.86rem; cursor: pointer; font-family: inherit;
+  }
+  .modal-body { padding: 0; }
+  .modal-body iframe { width: 100%; height: 70vh; border: none; }
+
+  /* ── Category separators ────────────────── */
+  .cat-separator {
+    display: flex; align-items: center; gap: 10px;
+    margin: 22px 0 6px; padding: 0 2px;
+  }
+  .cat-separator:first-child { margin-top: 0; }
+  .cat-sep-line { flex: 1; height: 1px; background: var(--border); }
+  .cat-sep-label {
+    font-size: 0.79rem; font-weight: 600; white-space: nowrap;
+    letter-spacing: .3px; padding: 0 2px;
+  }
+
+  /* ── Empty ──────────────────────────────── */
+  .empty { text-align: center; padding: 80px 20px; color: #777; font-size: 1rem; line-height: 1.7; }
+
+  /* ── Toast ──────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; padding: 10px 20px;
+    border-radius: 8px; font-size: 0.93rem; font-weight: 500; z-index: 300;
+    animation: fadeUp .3s ease; color: #fff;
+  }
+  .toast.success { background: var(--green); }
+  .toast.error { background: var(--red); }
+
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .detail-grid { grid-template-columns: 1fr; }
+    header { padding: 0 16px; }
+    .filter-bar { padding: 0 12px; }
+    .layout { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <h1><em>Med</em><b>News</b></h1>
+      <span class="header-sep">|</span>
+      <span class="header-badge">Admin</span>
+    </div>
+    <div class="header-right">
+      <span class="email"><span class="header-dot"></span><span id="user-email"></span></span>
+      <button class="btn-logout" onclick="logout()">D&#233;connexion</button>
+    </div>
+  </header>
+
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-pill active" data-status="all" onclick="setStatusFilter('all', this)">
+      Tous <span class="count" id="count-all">0</span>
+    </button>
+    <button class="filter-pill" data-status="PENDING" onclick="setStatusFilter('PENDING', this)">
+      <span class="filter-dot" style="background:var(--amber);"></span>En attente <span class="count" id="count-pending">0</span>
+    </button>
+    <button class="filter-pill" data-status="APPROVED" onclick="setStatusFilter('APPROVED', this)">
+      <span class="filter-dot" style="background:var(--green);"></span>Valid&#233;s <span class="count" id="count-approved">0</span>
+    </button>
+    <button class="filter-pill" data-status="REJECTED" onclick="setStatusFilter('REJECTED', this)">
+      <span class="filter-dot" style="background:var(--red);"></span>Rejet&#233;s <span class="count" id="count-rejected">0</span>
+    </button>
+    <span class="filter-bar-right" id="filter-bar-info"></span>
+  </div>
+
+  <div class="app-wrapper">
+  <aside class="sidebar">
+    <button class="sidebar-nav-item active" data-filter="" onclick="setSidebarFilter('', this)">
+      <span class="sidebar-item-label"><i data-lucide="house" style="width:12px;height:12px;vertical-align:middle;margin-right:5px;"></i>Tous</span>
+    </button>
+    <div class="sidebar-sep"></div>
+    <button class="sidebar-nav-item" data-filter="TRANSVERSAL_LIBERAL" onclick="setSidebarFilter('TRANSVERSAL_LIBERAL', this)">
+      <span class="sidebar-item-label"><i data-lucide="globe" style="width:12px;height:12px;vertical-align:middle;margin-right:5px;"></i>Transversal</span>
+      <span class="sidebar-item-count" id="count-transversal">0</span>
+    </button>
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-section"><i data-lucide="compass" style="width:11px;height:11px;vertical-align:middle;margin-right:5px;"></i>Sp&#233;cialit&#233;s</div>
+    <button class="sidebar-nav-item" data-filter="PHARMACIENS" onclick="setSidebarFilter('PHARMACIENS', this)">
+      <span class="sidebar-item-label">Pharmaciens</span>
+      <span class="sidebar-item-count" id="count-pharmaciens">0</span>
+    </button>
+    <div id="sidebar-specs"></div>
+    <div class="sidebar-sep"></div>
+    <button class="sidebar-nav-item" onclick="window.location.href='/settings'">
+      <span class="sidebar-item-label"><i data-lucide="settings" style="width:12px;height:12px;vertical-align:middle;margin-right:5px;"></i>Param&egrave;tres</span>
+    </button>
+  </aside>
+  <div class="main-content">
+  <div class="layout">
+    <!-- Newsletter section -->
+    <div class="newsletter-section">
+      <h2>Newsletter</h2>
+      <div class="newsletter-row">
+        <select id="nl-specialty">
+          <option value="">Toutes sp&#233;cialit&#233;s</option>
+        </select>
+        <button class="btn-newsletter" onclick="previewNewsletter()">Aper&#231;u HTML</button>
+        <input type="email" id="nl-test-email" placeholder="Email test" style="width:200px;">
+        <button class="btn-newsletter primary" onclick="sendTestNewsletter()">Envoyer test</button>
+      </div>
+      <div class="newsletter-result" id="nl-result"></div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+      <div class="loading-spinner"></div>
+      <p>Chargement des articles&#8230;</p>
+    </div>
+
+    <!-- Content -->
+    <div id="content" style="display:none;">
+      <div id="articles-container"></div>
+    </div>
+  </div>
+  </div><!-- main-content -->
+  </div><!-- app-wrapper -->
+
+  <!-- Newsletter preview modal -->
+  <div class="modal-overlay" id="preview-modal">
+    <div class="modal-content">
+      <div class="modal-close"><button onclick="closePreview()">Fermer</button></div>
+      <div class="modal-body"><iframe id="preview-iframe"></iframe></div>
+    </div>
+  </div>
+
+<script>
+const API = window.location.origin;
+let allItems = [];
+let statusFilter = 'all';
+let sidebarFilter = '';   // '' | 'TRANSVERSAL_LIBERAL' | 'PHARMACIENS' | 'spec:slug'
+const specialtiesMap = {};  // slug → name
+
+// ── Auth ─────────────────────────────────────────────────────
+function getToken() { return sessionStorage.getItem('access_token'); }
+
+function getCsrfToken() {
+  const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+async function authFetch(url, opts = {}) {
+  const token = getToken();
+  if (!token) { window.location.href = '/login'; return; }
+  opts.headers = { ...opts.headers, 'Authorization': `Bearer ${token}` };
+  opts.credentials = 'include';
+  let res = await fetch(url, opts);
+  if (res.status === 401) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      opts.headers['Authorization'] = `Bearer ${getToken()}`;
+      res = await fetch(url, opts);
+    } else {
+      sessionStorage.removeItem('access_token');
+      window.location.href = '/login';
+      return;
+    }
+  }
+  return res;
+}
+
+async function tryRefresh() {
+  try {
+    const csrf = getCsrfToken();
+    const res = await fetch(`${API}/auth/refresh`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    sessionStorage.setItem('access_token', data.access_token);
+    return true;
+  } catch { return false; }
+}
+
+async function logout() {
+  try {
+    const csrf = getCsrfToken();
+    await fetch(`${API}/auth/logout`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'x-csrf-token': csrf },
+    });
+  } catch {}
+  sessionStorage.removeItem('access_token');
+  window.location.href = '/login';
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ── Rendering ─────────────────────────────────────────────────
+const CATEGORY_ORDER = ['medicament','dispositifs_medicaux','clinique','exercice','facturation','sante_publique','administratif'];
+const CATEGORY_META = {
+  medicament:           { icon: '<i data-lucide="pill" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'M\u00e9dicaments & prescriptions' },
+  dispositifs_medicaux: { icon: '<i data-lucide="scan" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Dispositifs m\u00e9dicaux' },
+  clinique:             { icon: '<i data-lucide="activity" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Pratique clinique' },
+  exercice:             { icon: '<i data-lucide="scale" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Exercice lib\u00e9ral' },
+  facturation:          { icon: '<i data-lucide="receipt" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Facturation & cotations' },
+  sante_publique:       { icon: '<i data-lucide="shield-plus" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Sant\u00e9 publique' },
+  administratif:        { icon: '<i data-lucide="clipboard-list" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Administratif' },
+};
+
+const CATEGORIE_STYLE = {
+  clinique:             { bg: '#e8f1fc', color: '#2060a8', border: '0.5px solid #b8d0f0', label: 'Clinique' },
+  medicament:           { bg: '#f0ebfc', color: '#6040a8', border: '0.5px solid #d0c0f0', label: 'M\u00e9dicaments' },
+  dispositifs_medicaux: { bg: '#eef2ff', color: '#6366f1', border: '0.5px solid #a5b4fc', label: 'Dispositifs m\u00e9d.' },
+  facturation:          { bg: '#e8f4fa', color: '#1878a0', border: '0.5px solid #b0d8ee', label: 'Facturation' },
+  administratif:        { bg: '#fde8f5', color: '#982090', border: '0.5px solid #e8b8de', label: 'Administratif' },
+  sante_publique:       { bg: '#e4f7f0', color: '#1a8a60', border: '0.5px solid #a8e0cc', label: 'Sant\u00e9 publique' },
+  exercice:             { bg: '#e4f6f6', color: '#1a8888', border: '0.5px solid #a8dede', label: 'Exercice lib\u00e9ral' },
+};
+
+function catSeparator(categorie) {
+  const m = CATEGORY_META[categorie] || { icon: '<span style="font-size:11px;">\u2022</span>', label: categorie || 'Non class\u00e9' };
+  const s = CATEGORIE_STYLE[categorie] || { color: '#777' };
+  return `<div class="cat-separator">
+    <span class="cat-sep-line"></span>
+    <span class="cat-sep-label" style="color:${s.color};">${m.icon}\u00a0${esc(m.label)}</span>
+    <span class="cat-sep-line"></span>
+  </div>`;
+}
+
+function prioClass(score) {
+  if (score >= 8) return 'high';
+  if (score >= 6) return 'mid';
+  return 'low';
+}
+function prioColor(score) {
+  if (score >= 8) return 'var(--red)';
+  if (score >= 6) return 'var(--amber)';
+  return 'var(--green)';
+}
+function getUrgency(score) {
+  if (score >= 8) return { label: '\u00C0 lire absolument', color: '#cc3232', bg: '#fde8e8' };
+  if (score >= 6) return { label: 'Important', color: '#b56808', bg: '#fdf3de' };
+  return { label: 'Informatif', color: '#1f9478', bg: '#e0f5ef' };
+}
+function urgencyPill(score) {
+  if (score >= 8) return '<span class="urgency-pill high">\u00C0 lire absolument</span>';
+  if (score >= 6) return '<span class="urgency-pill mid">Important</span>';
+  return '<span class="urgency-pill low">Informatif</span>';
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+function renderArticle(a, idx) {
+  const tri = a.tri_json || {};
+  const lecture = a.lecture_json || {};
+  const titre = tri.titre_court || (a.title_raw || '').substring(0, 80) || 'Sans titre';
+  const resume = tri.resume || '';
+  const impact = (tri.impact_pratique && tri.impact_pratique !== 'None' && tri.impact_pratique !== 'null') ? tri.impact_pratique : '';
+  const nature = tri.nature || '';
+  const datePub = tri.date_publication || a.official_date || '';
+  const score = a.score_density || 5;
+  const prio = prioClass(score);
+  const audience = a.audience || '';
+  const specSlug = a.specialty_slug || '';
+  const categorie = a.categorie || null;
+  const status = a.review_status || 'PENDING';
+
+  const points = (lecture.points_cles || []).filter(p => p && p.trim());
+  const texteLong = (lecture.texte_long && lecture.texte_long !== 'null' && lecture.texte_long !== 'None') ? lecture.texte_long : '';
+  const delay = Math.min(idx * 20, 400);
+
+  const statusClass = status.toLowerCase();
+  const statusLabel = status === 'PENDING' ? 'En attente' : status === 'APPROVED' ? 'Valid\u00e9' : 'Rejet\u00e9';
+
+  const catStyle = categorie ? (CATEGORIE_STYLE[categorie] || { bg: '#f0ede8', color: '#7a7268', label: categorie })
+                             : { bg: '#f0ede8', color: '#9a9288', label: '?' };
+  const catBadge = `<span class="nature-badge" style="background:${catStyle.bg};color:${catStyle.color};${catStyle.border ? `border:${catStyle.border};` : ''}">${esc(catStyle.label)}</span>`;
+  // Source metadata : "Nature · date"
+  const sourceMeta = [nature, datePub].filter(Boolean).join(' \u00b7 ');
+
+  const specDisplay = audience === 'TRANSVERSAL_LIBERAL'
+    ? '<span class="spec-badge" style="background:#fff8e8;color:var(--amber);">Transversal</span>'
+    : audience === 'PHARMACIENS'
+    ? '<span class="spec-badge" style="background:#e8f1fc;color:var(--purple);">Pharmaciens</span>'
+    : (specSlug ? `<span class="spec-badge">${esc(specSlug)}</span>` : '');
+
+  const pointsHtml = points.length
+    ? `<ul>${points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>`
+    : '<div class="texte-long" style="color:var(--text3);">\u2014</div>';
+  const analyseHtml = texteLong
+    ? `<div class="texte-long">${esc(texteLong)}</div>`
+    : '<div class="texte-long" style="color:var(--text3);">\u2014</div>';
+
+  const isPending = status === 'PENDING';
+  const approveBtn = `<button class="btn-approve" ${!isPending ? 'disabled' : ''} onclick="event.stopPropagation(); reviewItem('${a.item_id}', 'APPROVED', this);"><i data-lucide="check" style="width:12px;height:12px;vertical-align:middle;"></i> Valider</button>`;
+  const rejectBtn = `<button class="btn-reject" ${!isPending ? 'disabled' : ''} onclick="event.stopPropagation(); reviewItem('${a.item_id}', 'REJECTED', this);"><i data-lucide="x" style="width:12px;height:12px;vertical-align:middle;"></i> Rejeter</button>`;
+  const statusIconHtml = status !== 'PENDING'
+    ? `<span class="card-status-icon" id="status-icon-${a.item_id}" style="color:${status === 'APPROVED' ? '#5a5e7a' : '#3a3d55'};"><i data-lucide="${status === 'APPROVED' ? 'check' : 'x'}" style="width:14px;height:14px;"></i></span>`
+    : `<span class="card-status-icon" id="status-icon-${a.item_id}" style="display:none;"></span>`;
+
+  return `
+  <div class="article-card prio-${prio}" id="card-${a.item_id}" data-status="${status}" data-spec="${specSlug}" data-audience="${audience}"
+       style="animation-delay:${delay}ms;">
+    <div class="card-top">
+      <div class="card-top-left">
+        ${urgencyPill(score)}
+        <span class="card-title" onclick="event.stopPropagation(); toggleDetail(this.closest('.article-card'))">${esc(titre)}</span>
+      </div>
+      <div class="card-top-right">
+        ${catBadge}
+        ${sourceMeta ? `<span class="card-date" style="font-size:10px;color:var(--text3);">${esc(sourceMeta)}</span>` : ''}
+        <div class="spec-badges">${specDisplay}</div>
+        <span class="status-badge ${statusClass}">${statusLabel}</span>
+        ${statusIconHtml}
+        ${a.official_url ? `<a class="btn-ext-icon" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" title="Texte officiel"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>` : ''}
+      </div>
+    </div>
+    <div class="card-raw-title">${esc((a.title_raw || '').substring(0, 120))}</div>
+    <div class="card-summary">${esc(resume)}</div>
+    ${impact ? `<div class="card-impact impact-${prio}">${esc(impact)}</div>` : ''}
+    <div class="card-actions">
+      ${approveBtn}
+      ${rejectBtn}
+      ${a.official_url ? `<a class="btn-official" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();"><i data-lucide="external-link" style="width:12px;height:12px;vertical-align:middle;"></i> Texte officiel</a>` : ''}
+      <button class="btn-detail" onclick="event.stopPropagation(); toggleDetail(document.getElementById('card-${a.item_id}'));">D\u00e9tails</button>
+    </div>
+    <div class="card-detail">
+      <div class="detail-grid">
+        <div class="detail-box"><h4>Points cl\u00e9s</h4>${pointsHtml}</div>
+        <div class="detail-box"><h4>Analyse</h4>${analyseHtml}</div>
+      </div>
+      ${a.note_internal ? `<div style="margin-top:10px;font-size:11px;color:var(--text3);"><b>Note admin :</b> ${esc(a.note_internal)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function toggleDetail(card) {
+  const detail = card.querySelector('.card-detail');
+  const isOpen = detail.style.display === 'block';
+  detail.style.display = isOpen ? 'none' : 'block';
+}
+
+// ── Filters ───────────────────────────────────────────────────
+function setStatusFilter(status, btn) {
+  statusFilter = status;
+  document.querySelectorAll('.filter-pill[data-status]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  applyFilters();
+}
+
+function setSidebarFilter(filter, btn) {
+  sidebarFilter = filter;
+  document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  applyFilters();
+  updateCounters();
+}
+
+function applyFilters() {
+  document.querySelectorAll('.article-card').forEach(card => {
+    const matchStatus = statusFilter === 'all' || card.dataset.status === statusFilter;
+    let matchFilter;
+    if (!sidebarFilter) {
+      matchFilter = true;
+    } else if (sidebarFilter === 'TRANSVERSAL_LIBERAL') {
+      matchFilter = card.dataset.audience === 'TRANSVERSAL_LIBERAL';
+    } else if (sidebarFilter === 'PHARMACIENS') {
+      matchFilter = card.dataset.audience === 'PHARMACIENS';
+    } else if (sidebarFilter.startsWith('spec:')) {
+      const slug = sidebarFilter.slice(5);
+      matchFilter = card.dataset.audience === 'SPECIALITE' && card.dataset.spec === slug;
+    } else {
+      matchFilter = true;
+    }
+    card.style.display = (matchStatus && matchFilter) ? '' : 'none';
+  });
+
+  // Masquer les séparateurs de catégorie sans cards visibles
+  document.querySelectorAll('.cat-separator').forEach(sep => {
+    let next = sep.nextElementSibling;
+    let hasVisible = false;
+    while (next && !next.classList.contains('cat-separator')) {
+      if (next.classList.contains('article-card') && next.style.display !== 'none') hasVisible = true;
+      next = next.nextElementSibling;
+    }
+    sep.style.display = hasVisible ? '' : 'none';
+  });
+}
+
+function updateCounters() {
+  // Filter-bar pills : comptent les items correspondant au sidebarFilter actif
+  const filtered = allItems.filter(a => {
+    if (!sidebarFilter) return true;
+    if (sidebarFilter === 'TRANSVERSAL_LIBERAL') return a.audience === 'TRANSVERSAL_LIBERAL';
+    if (sidebarFilter === 'PHARMACIENS') return a.audience === 'PHARMACIENS';
+    if (sidebarFilter.startsWith('spec:')) {
+      const slug = sidebarFilter.slice(5);
+      return a.audience === 'SPECIALITE' && a.specialty_slug === slug;
+    }
+    return true;
+  });
+  const counts = { PENDING: 0, APPROVED: 0, REJECTED: 0 };
+  filtered.forEach(a => { counts[a.review_status] = (counts[a.review_status] || 0) + 1; });
+  const total = (counts.PENDING || 0) + (counts.APPROVED || 0) + (counts.REJECTED || 0);
+  document.getElementById('count-all').textContent = total;
+  document.getElementById('count-pending').textContent = counts.PENDING || 0;
+  document.getElementById('count-approved').textContent = counts.APPROVED || 0;
+  document.getElementById('count-rejected').textContent = counts.REJECTED || 0;
+  document.getElementById('filter-bar-info').textContent =
+    `${counts.PENDING || 0} en attente \u00b7 ${counts.APPROVED || 0} valid\u00e9s \u00b7 ${counts.REJECTED || 0} rejet\u00e9s`;
+
+  // Sidebar PENDING badges : recompte global (indicateur de volume par spé, pas filtré)
+  let transversalPending = 0, pharmaciensPending = 0;
+  const specPending = {};
+  allItems.forEach(a => {
+    if (a.review_status !== 'PENDING') return;
+    if (a.audience === 'TRANSVERSAL_LIBERAL') transversalPending++;
+    else if (a.audience === 'PHARMACIENS') pharmaciensPending++;
+    else if (a.audience === 'SPECIALITE' && a.specialty_slug)
+      specPending[a.specialty_slug] = (specPending[a.specialty_slug] || 0) + 1;
+  });
+  document.getElementById('count-transversal').textContent = transversalPending;
+  document.getElementById('count-pharmaciens').textContent = pharmaciensPending;
+  document.querySelectorAll('#sidebar-specs .sidebar-nav-item').forEach(btn => {
+    const f = btn.dataset.filter;
+    if (f && f.startsWith('spec:')) {
+      const countEl = btn.querySelector('.sidebar-item-count');
+      if (countEl) countEl.textContent = specPending[f.slice(5)] || 0;
+    }
+  });
+}
+
+// ── Review action ─────────────────────────────────────────────
+async function reviewItem(itemId, decision, btn) {
+  btn.disabled = true;
+  btn.textContent = '...';
+  try {
+    const res = await authFetch(`${API}/admin/llm/review/${itemId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ decision }),
+    });
+    if (!res) return;
+    const data = await res.json();
+    if (data.ok) {
+      const item = allItems.find(a => a.item_id === itemId);
+      if (item) item.review_status = decision;
+
+      const card = document.getElementById(`card-${itemId}`);
+      if (card) {
+        card.dataset.status = decision;
+        card.style.opacity = decision === 'APPROVED' ? '0.75' : '0.5';
+        const badge = card.querySelector('.status-badge');
+        badge.className = `status-badge ${decision.toLowerCase()}`;
+        badge.textContent = decision === 'APPROVED' ? 'Valid\u00e9' : 'Rejet\u00e9';
+        card.querySelectorAll('.btn-approve, .btn-reject').forEach(b => b.disabled = true);
+        const iconEl = document.getElementById(`status-icon-${itemId}`);
+        if (iconEl) {
+          iconEl.style.display = 'inline-flex';
+          iconEl.style.color = decision === 'APPROVED' ? '#5a5e7a' : '#3a3d55';
+          iconEl.innerHTML = `<i data-lucide="${decision === 'APPROVED' ? 'check' : 'x'}" style="width:14px;height:14px;"></i>`;
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+      updateCounters();
+      applyFilters();
+      toast(decision === 'APPROVED' ? 'Article valid\u00e9' : 'Article rejet\u00e9');
+    } else {
+      toast('Erreur: ' + (data.detail || 'unknown'), 'error');
+    }
+  } catch (e) {
+    toast('Erreur r\u00e9seau', 'error');
+  }
+}
+
+// ── Newsletter ────────────────────────────────────────────────
+async function previewNewsletter() {
+  const spec = document.getElementById('nl-specialty').value;
+  const url = `${API}/admin/llm/newsletter/preview${spec ? '?specialty=' + encodeURIComponent(spec) : ''}`;
+  const res = await authFetch(url, { method: 'POST' });
+  if (!res) return;
+  const data = await res.json();
+  if (data.ok) {
+    const iframe = document.getElementById('preview-iframe');
+    iframe.srcdoc = data.html;
+    document.getElementById('preview-modal').classList.add('active');
+    const result = document.getElementById('nl-result');
+    result.textContent = `Aper\u00e7u g\u00e9n\u00e9r\u00e9 : ${data.article_count} article(s) \u2014 "${data.subject}"`;
+    result.style.display = 'block';
+  } else {
+    toast('Erreur g\u00e9n\u00e9ration aper\u00e7u', 'error');
+  }
+}
+
+function closePreview() {
+  document.getElementById('preview-modal').classList.remove('active');
+  document.getElementById('preview-iframe').srcdoc = '';
+}
+
+async function sendTestNewsletter() {
+  const spec = document.getElementById('nl-specialty').value;
+  const email = document.getElementById('nl-test-email').value.trim();
+  if (!email) { toast('Entrez un email', 'error'); return; }
+  const params = new URLSearchParams({ email });
+  if (spec) params.set('specialty', spec);
+  const res = await authFetch(`${API}/admin/llm/newsletter/send-test?${params}`, { method: 'POST' });
+  if (!res) return;
+  const data = await res.json();
+  const result = document.getElementById('nl-result');
+  if (data.ok) {
+    result.textContent = `\u2713 Email test envoy\u00e9 \u00e0 ${email} (${data.article_count} articles)`;
+    result.style.display = 'block';
+    toast('Email test envoy\u00e9');
+  } else {
+    result.textContent = `\u2717 Erreur : ${data.error || 'unknown'}`;
+    result.style.display = 'block';
+    toast('Erreur envoi', 'error');
+  }
+}
+
+// ── Data loading ──────────────────────────────────────────────
+async function loadProfile() {
+  const res = await authFetch(`${API}/me`);
+  if (!res) return false;
+  const p = await res.json();
+  // Check admin from token
+  const token = getToken();
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (!payload.adm) {
+        toast('Acc\u00e8s admin requis', 'error');
+        setTimeout(() => { window.location.href = '/portal'; }, 1500);
+        return false;
+      }
+    } catch {}
+  }
+  document.getElementById('user-email').textContent = p.email || '';
+  return true;
+}
+
+async function loadSpecialties() {
+  try {
+    const res = await fetch(`${API}/specialties`);
+    const specs = await res.json();
+    const nlSel = document.getElementById('nl-specialty');
+    specs.forEach(s => {
+      specialtiesMap[s.slug] = s.name;
+      const opt = document.createElement('option');
+      opt.value = s.slug;
+      opt.textContent = s.name;
+      nlSel.appendChild(opt);
+    });
+  } catch {}
+}
+
+function populateSidebar() {
+  // Collecte les stats par spécialité (total items présents, PENDING count)
+  const specStats = {};
+  allItems.forEach(a => {
+    if (a.audience !== 'SPECIALITE' || !a.specialty_slug) return;
+    if (!specStats[a.specialty_slug]) specStats[a.specialty_slug] = 0;
+    if (a.review_status === 'PENDING') specStats[a.specialty_slug]++;
+  });
+
+  const container = document.getElementById('sidebar-specs');
+  container.innerHTML = '';
+
+  Object.entries(specStats)
+    .sort(([slugA], [slugB]) => {
+      const nameA = specialtiesMap[slugA] || slugA;
+      const nameB = specialtiesMap[slugB] || slugB;
+      return nameA.localeCompare(nameB, 'fr');
+    })
+    .forEach(([slug, pending]) => {
+      const name = specialtiesMap[slug] || slug;
+      const isActive = sidebarFilter === `spec:${slug}`;
+      const btn = document.createElement('button');
+      btn.className = 'sidebar-nav-item' + (isActive ? ' active' : '');
+      btn.dataset.filter = `spec:${slug}`;
+      btn.innerHTML = `<span class="sidebar-item-label">${esc(name)}</span><span class="sidebar-item-count">${pending}</span>`;
+      btn.onclick = () => setSidebarFilter(`spec:${slug}`, btn);
+      container.appendChild(btn);
+    });
+}
+
+async function loadItems() {
+  const res = await authFetch(`${API}/admin/llm/items?limit=500`);
+  if (!res) return;
+  const data = await res.json();
+  allItems = data.items || [];
+
+  const container = document.getElementById('articles-container');
+  if (allItems.length === 0) {
+    container.innerHTML = '<div class="empty">Aucun article dans le pipeline.<br>Lancez une collecte JORF + analyse LLM.</div>';
+  } else {
+    // Tri : 1) ordre catégorie, 2) score décroissant à catégorie égale
+    const catIdx = cat => { const i = CATEGORY_ORDER.indexOf(cat); return i >= 0 ? i : 99; };
+    const sorted = [...allItems].sort((a, b) => {
+      const diff = catIdx(a.categorie) - catIdx(b.categorie);
+      if (diff !== 0) return diff;
+      return (b.score_density || 5) - (a.score_density || 5);
+    });
+
+    // Grouper par catégorie et insérer séparateurs
+    const groups = new Map();
+    sorted.forEach(a => {
+      const cat = a.categorie || '__none__';
+      if (!groups.has(cat)) groups.set(cat, []);
+      groups.get(cat).push(a);
+    });
+
+    let html = '';
+    let idx = 0;
+    groups.forEach((items, cat) => {
+      html += catSeparator(cat === '__none__' ? null : cat);
+      items.forEach(a => { html += renderArticle(a, idx++); });
+    });
+    container.innerHTML = html;
+    if (window.lucide) lucide.createIcons();
+  }
+
+  populateSidebar();
+  updateCounters();
+  applyFilters();
+}
+
+// ── Init ──────────────────────────────────────────────────────
+(async () => {
+  if (!getToken()) { window.location.href = '/login'; return; }
+  const ok = await loadProfile();
+  if (!ok) return;
+  await loadSpecialties();
+  await loadItems();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  if (window.lucide) lucide.createIcons(); // static icons (sidebar)
+})();
+</script>
+</body>
+</html>

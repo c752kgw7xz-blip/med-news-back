@@ -1,0 +1,30 @@
+# med-news-back — dépendances Python
+# pip install -r requirements.txt
+
+# API Framework
+fastapi>=0.111
+uvicorn[standard]>=0.29
+
+# Base de données
+psycopg[binary]>=3.1
+psycopg-pool>=3.1
+
+# HTTP client (PISTE + Anthropic + SendGrid + RSS)
+httpx>=0.27
+
+# Parsing RSS (HAS, ANSM, Santé publique France)
+feedparser>=6.0
+
+# Sécurité / auth
+PyJWT>=2.8
+cryptography>=42.0
+python-multipart>=0.0.9
+
+# Validation données
+pydantic[email]>=2.7
+
+# Scheduler (automatisation mensuelle)
+apscheduler>=3.10
+
+# Variables d'environnement
+python-dotenv>=1.0

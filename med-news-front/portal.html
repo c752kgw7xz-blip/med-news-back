@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MedNews — Portail</title>
+<script src="/shared.js?v=2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  [data-theme="light"] {
+    --bg: #f6f5f2; --surface: #ffffff; --surface2: #f0ede8;
+    --border: #e4e0d8; --border-strong: #cac4bb;
+    --text: #1a1814; --text2: #4a4540; --text3: #7a7268;
+    --text4: #9a9288; --text5: #bcb6ac; --white: #1a1814;
+    --green-dark: #e5f5f0; --red-dark: #fde8e8;
+  }
+  [data-theme="dark"] {
+    --bg: #08090e; --surface: #0d0e16; --surface2: #11121c;
+    --border: #1c1e30; --border-strong: #252840;
+    --text: #e8e9f4; --text2: #c8c8d4; --text3: #8b8fa8;
+    --text4: #6b6f88; --text5: #4a4e68; --white: #e8e9f4;
+    --green-dark: #0d2a20; --red-dark: #2a0d0d;
+  }
+  :root {
+    --green: #1f9478; --red: #cc3232; --amber: #b56808; --radius: 10px;
+  }
+  body {
+    font-family: 'Outfit', sans-serif; font-weight: 300;
+    background: var(--bg); color: var(--text); font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
+  }
+
+  /* ── Header ─────────────────────────────── */
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    height: 52px; padding: 0 32px; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 100;
+  }
+  .header-left { display: flex; align-items: baseline; gap: 12px; }
+  .header-left h1 {
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 20px; font-weight: 400;
+    color: var(--text); letter-spacing: -.2px;
+  }
+  .header-left h1 em { font-style: italic; }
+  .header-left h1 b { font-weight: 700; font-style: normal; }
+  .header-sep {
+    width: 1px; height: 18px; background: var(--border-strong);
+    display: inline-block; vertical-align: middle; margin: 0 4px;
+  }
+  .header-spec { font-size: 0.86rem; color: var(--green); font-weight: 500; }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .header-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .header-right .email { font-size: 0.86rem; color: var(--text2); }
+  .btn-logout {
+    padding: 5px 12px; background: transparent; border: 0.5px solid #1c1e30;
+    color: var(--text3); border-radius: 3px; font-size: 11px; font-weight: 400;
+    cursor: pointer; transition: all .2s; font-family: 'DM Mono', monospace;
+  }
+  .btn-logout:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+
+  /* ── Verify banner ──────────────────────── */
+  .verify-banner {
+    background: #fff8e8; border-bottom: 1px solid #e8d498; padding: 8px 24px;
+    font-size: 0.86rem; color: var(--amber); display: none; align-items: center; gap: 10px; font-weight: 500;
+  }
+  .verify-banner button {
+    background: var(--amber); color: #000; border: none; border-radius: 4px;
+    padding: 3px 10px; font-size: 0.79rem; cursor: pointer; font-weight: 600; font-family: inherit;
+  }
+
+  /* ── Layout ─────────────────────────────── */
+  .layout {
+    display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 52px);
+  }
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    header { padding: 0 16px; }
+    #articles-container { grid-template-columns: 1fr; }
+  }
+
+  /* ── Sidebar ────────────────────────────── */
+  .sidebar {
+    background: var(--surface2); border-right: 0.5px solid var(--border);
+    padding: 20px 0; position: sticky; top: 52px; height: calc(100vh - 52px);
+    overflow-y: auto;
+  }
+  .sidebar-section { padding: 0 16px; margin-bottom: 6px; }
+  .sidebar-label {
+    font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400;
+    letter-spacing: 1.5px; color: #4a4e68; text-transform: uppercase;
+    padding: 6px 16px 4px; margin-bottom: 2px;
+  }
+  .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 10px 16px; }
+  .sidebar-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 16px 6px 20px; cursor: pointer; transition: all .12s;
+    color: var(--text3); font-size: 14px; font-weight: 300; font-family: 'Outfit', sans-serif;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-item:hover { color: var(--text2); background: rgba(0,0,0,.04); }
+  .sidebar-item.active {
+    color: var(--text); border-left-color: var(--green);
+    padding-left: 18px; background: rgba(0,0,0,.05); font-weight: 500;
+  }
+  .sidebar-item .count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text4); font-weight: 400; }
+  .sidebar-item.active .count { color: var(--text3); }
+  .sidebar-more {
+    padding: 5px 16px; font-size: 0.71rem; color: var(--text5); cursor: default;
+  }
+
+  /* ── Content area ──────────────────────── */
+  .content-area { padding: 28px 40px; }
+
+  /* ── Rubrique header ───────────────────── */
+  .rubrique-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
+  .rubrique-month {
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 28px;
+    font-weight: 400; color: var(--text); margin-bottom: 2px; font-style: italic; letter-spacing: -.3px;
+  }
+  .rubrique-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: #4a4e68; letter-spacing: .3px; margin-bottom: 14px; }
+  .rubrique-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-pill {
+    display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px;
+    border-radius: 3px; font-size: 12px; font-weight: 300; cursor: pointer;
+    border: 0.5px solid #1c1e30; background: transparent; color: #4a4e68;
+    transition: all .15s; white-space: nowrap; font-family: 'Outfit', sans-serif;
+  }
+  .filter-pill:hover { border-color: var(--text4); color: var(--text2); }
+  .filter-pill.active { background: #0d0e16; border-color: #252840; color: #e8e9f4; }
+
+
+  /* ── Filter pills — couleurs par catégorie ── */
+  .filter-pill[data-cat="medicament"]       { color: rgba(160,123,224,.75); border-color: rgba(160,123,224,.2); }
+  .filter-pill[data-cat="medicament"].active{ color: #a07be0; background: rgba(160,123,224,.1); border-color: rgba(160,123,224,.35); }
+  .filter-pill[data-cat="dispositifs_medicaux"]       { color: rgba(91,168,207,.75); border-color: rgba(91,168,207,.2); }
+  .filter-pill[data-cat="dispositifs_medicaux"].active{ color: #5ba8cf; background: rgba(91,168,207,.1); border-color: rgba(91,168,207,.35); }
+  .filter-pill[data-cat="clinique"]       { color: rgba(107,159,212,.85); border-color: rgba(107,159,212,.2); }
+  .filter-pill[data-cat="clinique"].active{ color: #6b9fd4; background: rgba(107,159,212,.1); border-color: rgba(107,159,212,.35); }
+  .filter-pill[data-cat="exercice"]       { color: rgba(74,158,187,.85); border-color: rgba(74,158,187,.2); }
+  .filter-pill[data-cat="exercice"].active{ color: #4a9ebb; background: rgba(74,158,187,.1); border-color: rgba(74,158,187,.35); }
+  .filter-pill[data-cat="facturation"]       { color: rgba(212,146,26,.85); border-color: rgba(212,146,26,.2); }
+  .filter-pill[data-cat="facturation"].active{ color: #d4921a; background: rgba(212,146,26,.1); border-color: rgba(212,146,26,.35); }
+  .filter-pill[data-cat="sante_publique"]       { color: rgba(42,157,122,.85); border-color: rgba(42,157,122,.2); }
+  .filter-pill[data-cat="sante_publique"].active{ color: #2a9d7a; background: rgba(42,157,122,.1); border-color: rgba(42,157,122,.35); }
+  .filter-pill[data-cat="administratif"]       { color: rgba(192,106,170,.85); border-color: rgba(192,106,170,.2); }
+  .filter-pill[data-cat="administratif"].active{ color: #c06aaa; background: rgba(192,106,170,.1); border-color: rgba(192,106,170,.35); }
+
+  /* ── Loading ────────────────────────────── */
+  .loading { text-align: center; padding: 80px 0; }
+  .loading-spinner {
+    width: 20px; height: 20px; border: 2px solid var(--border);
+    border-top-color: var(--green); border-radius: 50%;
+    animation: spin .7s linear infinite; margin: 0 auto 12px;
+  }
+  .loading p { color: var(--text5); font-size: 0.93rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Article grid (2 colonnes) ──────────── */
+  #articles-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+  /* Headers de groupe et message vide occupent les 2 colonnes */
+  #articles-container .group-header,
+  #articles-container .empty { grid-column: 1 / -1; }
+
+  /* ── Article card ───────────────────────── */
+  .article-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; cursor: pointer; min-width: 0; overflow: hidden;
+    transition: background .15s, border-color .15s;
+    animation: fadeUp .2s ease forwards; opacity: 0;
+    border-left: 3px solid var(--border);
+  }
+  .article-card:hover { background: var(--surface2); }
+  .article-card.prio-high { border-left-color: var(--red); }
+  .article-card.prio-mid { border-left-color: var(--amber); }
+  .article-card.prio-low { border-left-color: var(--green); }
+  /* Carte étendue : pleine largeur sur les 2 colonnes */
+  .article-card.expanded {
+    cursor: default; grid-column: 1 / -1;
+  }
+  .article-card.expanded.prio-high { border-color: var(--red); }
+  .article-card.expanded.prio-mid { border-color: var(--amber); }
+  .article-card.expanded.prio-low { border-color: var(--green); }
+
+  .card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: nowrap; margin-bottom: 6px; }
+  .card-top-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .card-top-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .card-top-left .card-title { margin-bottom: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .btn-ext-icon { display: inline-flex; align-items: center; color: var(--text4); transition: color .15s; text-decoration: none; }
+  .btn-ext-icon:hover { color: var(--text2); }
+  .nature-badge {
+    padding: 2px 7px; border-radius: 2px; font-size: 9px; font-weight: 400;
+    font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .card-date { font-family: 'DM Mono', monospace; font-size: 11px; color: #2e3050; font-weight: 400; }
+  .card-freshness { font-size: 0.71rem; font-weight: 600; }
+  .urgency-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400;
+    letter-spacing: .5px; text-transform: uppercase;
+    padding: 0; background: transparent; border: none; border-radius: 0; flex-shrink: 0;
+  }
+  .urgency-pill.high { color: #e05252; }
+  .urgency-pill.mid { color: #d4921a; }
+  .urgency-pill.low { color: #2a9d7a; }
+
+  .card-title {
+    font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 400; color: var(--text); line-height: 1.4; margin-bottom: 7px;
+  }
+
+
+  /* Résumé : 1 ligne en mode réduit, taille plus lisible */
+  .card-summary {
+    font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 300; color: #3a3d55; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  /* Impact pratique : masqué tant que la carte n'est pas ouverte */
+  .article-card:not(.expanded) .card-impact { display: none; }
+  .card-impact {
+    font-size: 0.93rem; color: var(--text2); font-style: italic; line-height: 1.5;
+    padding-left: 10px; margin-top: 10px;
+  }
+  .card-impact.impact-high { border-left: 2px solid var(--red); }
+  .card-impact.impact-mid { border-left: 2px solid var(--amber); }
+  .card-impact.impact-low { border-left: 2px solid var(--green); }
+
+  /* ── Expanded detail ────────────────────── */
+  .card-detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--border); }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .detail-grid { grid-template-columns: 1fr; } }
+  .detail-box {
+    background: rgba(0,0,0,.025); border-radius: 8px; padding: 14px 16px;
+  }
+  .detail-box h4 {
+    font-size: 0.71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+    color: var(--text4); margin-bottom: 10px;
+  }
+  .detail-box ul { margin: 0; padding: 0; list-style: none; }
+  .detail-box li {
+    margin: 7px 0; font-size: 0.93rem; color: var(--text2); line-height: 1.55;
+    padding-left: 14px; position: relative;
+  }
+  .detail-box li.bullet-high::before { content: "\2022"; position: absolute; left: 0; color: var(--red); font-size: 1rem; line-height: 1.3; }
+  .detail-box li.bullet-mid::before { content: "\2022"; position: absolute; left: 0; color: var(--amber); font-size: 1rem; line-height: 1.3; }
+  .detail-box li.bullet-low::before { content: "\2022"; position: absolute; left: 0; color: var(--green); font-size: 1rem; line-height: 1.3; }
+  .detail-box .texte-long { font-size: 0.93rem; color: var(--text3); line-height: 1.7; font-style: italic; }
+  .detail-refs { font-size: 0.79rem; color: var(--text4); margin-top: 10px; }
+
+  .detail-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+  .btn-official {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 7px 16px; background: transparent; color: var(--text2); border: 1px solid var(--border-strong);
+    border-radius: 6px; font-size: 0.86rem; font-weight: 500; cursor: pointer;
+    text-decoration: none; font-family: inherit; transition: all .2s;
+  }
+  .btn-official:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+  .btn-collapse {
+    padding: 6px 14px; background: transparent; border: none;
+    color: var(--text5); border-radius: 6px; font-size: 0.79rem; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: color .2s;
+  }
+  .btn-collapse:hover { color: var(--text3); }
+
+  /* ── Favoris sidebar item ───────────────── */
+  #sidebar-favorites { color: #c9961a; }
+  #sidebar-favorites:hover { color: #e0aa1e; }
+  #sidebar-favorites.active { color: #e0aa1e; }
+
+  /* ── Btn favorites ──────────────────────── */
+  .btn-fav {
+    background: transparent; border: none; cursor: pointer;
+    color: #3a3d55; padding: 2px 4px; border-radius: 4px;
+    transition: color .15s; display: inline-flex; align-items: center; line-height: 1;
+  }
+  .btn-fav:hover { color: var(--amber); }
+  .btn-fav.active { color: var(--amber); }
+  .btn-fav.active svg { fill: currentColor; }
+
+  /* ── Load more ──────────────────────────── */
+  .load-more {
+    display: block; width: 100%; padding: 14px; background: transparent;
+    border: 1px dashed var(--border-strong); border-radius: 8px; font-size: 0.93rem; color: var(--text4);
+    cursor: pointer; text-align: center; margin-top: 12px; font-family: inherit;
+    transition: all .2s;
+  }
+  .load-more:hover { background: var(--surface); color: var(--text3); }
+  .load-more:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Group headers ────────────────────────── */
+  .group-header {
+    display: flex; align-items: center; gap: 10px;
+    margin: 22px 0 8px; padding: 0 2px;
+  }
+  .group-header:first-child { margin-top: 0; }
+  .group-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: #252840 !important; }
+  .group-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: #4a4e68 !important; }
+  .group-count { font-size: 0.79rem; color: var(--text5); font-weight: 400; }
+  .group-line { flex: 1; height: 1px; background: var(--border); }
+
+  .group-header.high .group-dot { background: var(--red); }
+  .group-header.high .group-label { color: var(--red); }
+  .group-header.mid .group-dot { background: var(--amber); }
+  .group-header.mid .group-label { color: var(--amber); }
+  .group-header.low .group-dot { background: var(--green); }
+  .group-header.low .group-label { color: var(--green); }
+
+  /* ── Empty ──────────────────────────────── */
+  .empty { text-align: center; padding: 80px 20px; color: var(--text4); font-size: 1rem; line-height: 1.7; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <h1><em>Med</em><b>News</b></h1>
+      <span class="header-sep"></span>
+      <span class="header-spec" id="spec-label"></span>
+    </div>
+    <div class="header-right">
+      <span class="email"><span class="header-dot"></span><span id="user-email"></span></span>
+      <button class="btn-logout" onclick="logout()">D&#233;connexion</button>
+    </div>
+  </header>
+
+  <div class="verify-banner" id="verify-banner">
+    Votre email n'est pas encore v&#233;rifi&#233;.
+    <button onclick="resendVerification()">Renvoyer le lien</button>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-label"><i data-lucide="house" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i>Ma sp&#233;cialit&#233;</div>
+      <div id="sidebar-my-spec"></div>
+      <div class="sidebar-item" id="sidebar-favorites" onclick="showFavorites()">
+        <span><i data-lucide="star" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"></i>Favoris</span>
+        <span class="count" id="fav-count">0</span>
+      </div>
+      <hr class="sidebar-sep">
+      <div class="sidebar-label"><i data-lucide="globe" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i>Transversal</div>
+      <div id="sidebar-transversal"></div>
+      <hr class="sidebar-sep">
+      <div class="sidebar-label"><i data-lucide="compass" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;"></i>Explorer</div>
+      <div id="sidebar-explore"></div>
+      <hr class="sidebar-sep">
+      <div class="sidebar-label">Historique</div>
+      <div class="sidebar-item" onclick="window.location.href='/archives'">
+        <span><i data-lucide="clock" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"></i>Archives &amp; recherche</span>
+        <span style="color:var(--text5);">&rarr;</span>
+      </div>
+      <hr class="sidebar-sep">
+      <div class="sidebar-label">Compte</div>
+      <div class="sidebar-item" onclick="window.location.href='/settings'">
+        <span><i data-lucide="settings" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"></i>Param&egrave;tres</span>
+        <span style="color:var(--text5);">&rarr;</span>
+      </div>
+    </aside>
+
+    <div class="content-area">
+      <!-- Rubrique header -->
+      <div class="rubrique-header" id="rubrique-header">
+        <div class="rubrique-month" id="rubrique-month"></div>
+        <div class="rubrique-meta" id="rubrique-meta"></div>
+        <div class="rubrique-filters" id="rubrique-filters">
+          <button class="filter-pill active" onclick="filterArticles('all', this)">Tous</button>
+          <button class="filter-pill" data-cat="medicament" onclick="filterArticles('medicament', this)"><i data-lucide="pill" style="width:12px;height:12px;"></i> M&#233;dicaments</button>
+          <button class="filter-pill" data-cat="dispositifs_medicaux" onclick="filterArticles('dispositifs_medicaux', this)"><i data-lucide="scan" style="width:12px;height:12px;"></i> Dispositifs m&#233;d.</button>
+          <button class="filter-pill" data-cat="clinique" onclick="filterArticles('clinique', this)"><i data-lucide="activity" style="width:12px;height:12px;"></i> Clinique</button>
+          <button class="filter-pill" data-cat="exercice" onclick="filterArticles('exercice', this)"><i data-lucide="scale" style="width:12px;height:12px;"></i> Exercice</button>
+          <button class="filter-pill" data-cat="facturation" onclick="filterArticles('facturation', this)"><i data-lucide="receipt" style="width:12px;height:12px;"></i> Facturation</button>
+          <button class="filter-pill" data-cat="sante_publique" onclick="filterArticles('sante_publique', this)"><i data-lucide="shield-plus" style="width:12px;height:12px;"></i> Sant&#233; publique</button>
+          <button class="filter-pill" data-cat="administratif" onclick="filterArticles('administratif', this)"><i data-lucide="clipboard-list" style="width:12px;height:12px;"></i> Administratif</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>Chargement de vos articles&#8230;</p>
+      </div>
+      <div id="content" style="display:none;">
+        <div id="articles-container"></div>
+        <button class="load-more" id="load-more" style="display:none;" onclick="loadMore()">
+          Charger plus d'articles
+        </button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API = window.location.origin;
+let currentPage = 1;
+const perPage = 20;
+let totalArticles = 0;
+let loadedArticles = 0;
+let allLoadedArticles = [];
+let activeFilter = 'all';
+
+// Sidebar state
+let userSpecSlug = '';
+let userSpecName = '';
+let activeSpecSlug = '';  // currently selected specialty
+let activeAudience = 'SPEC_ONLY';  // 'SPEC_ONLY', 'TRANSVERSAL_LIBERAL', or '' (mixed)
+let allSpecialties = [];
+let specCounts = {};
+let transversalCount = 0;
+
+// Favorites state
+let favoritesSet = new Set();
+let favoritesMode = false;
+
+const MONTHS = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin',
+  'Juillet','Ao\u00fbt','Septembre','Octobre','Novembre','D\u00e9cembre'];
+
+// ── Fenêtre portail : mois courant + mois précédent ──────────
+function portalFromDate() {
+  // Premier jour du mois précédent
+  const now = new Date();
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
+function portalHeaderLabel() {
+  const now = new Date();
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const pLabel = MONTHS[prev.getMonth()];
+  const cLabel = MONTHS[now.getMonth()];
+  if (prev.getFullYear() === now.getFullYear()) {
+    return `${pLabel} \u2014 ${cLabel} ${now.getFullYear()}`;
+  }
+  return `${pLabel} ${prev.getFullYear()} \u2014 ${cLabel} ${now.getFullYear()}`;
+}
+
+// ── Auth helpers ──────────────────────────────────────────────
+function getToken() { return sessionStorage.getItem('access_token'); }
+
+function getCsrfToken() {
+  const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+async function authFetch(url, opts = {}) {
+  const token = getToken();
+  if (!token) { window.location.href = '/login'; return; }
+  opts.headers = { ...opts.headers, 'Authorization': `Bearer ${token}` };
+  opts.credentials = 'include';
+  let res = await fetch(url, opts);
+  if (res.status === 401) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      opts.headers['Authorization'] = `Bearer ${getToken()}`;
+      res = await fetch(url, opts);
+    } else {
+      sessionStorage.removeItem('access_token');
+      window.location.href = '/login';
+      return;
+    }
+  }
+  return res;
+}
+
+async function tryRefresh() {
+  try {
+    const csrf = getCsrfToken();
+    const res = await fetch(`${API}/auth/refresh`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    sessionStorage.setItem('access_token', data.access_token);
+    return true;
+  } catch { return false; }
+}
+
+async function logout() {
+  try {
+    const csrf = getCsrfToken();
+    await fetch(`${API}/auth/logout`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'x-csrf-token': csrf },
+    });
+  } catch {}
+  sessionStorage.removeItem('access_token');
+  window.location.href = '/login';
+}
+
+async function resendVerification() {
+  const res = await authFetch(`${API}/auth/resend-verification`, { method: 'POST' });
+  if (res && res.ok) {
+    document.getElementById('verify-banner').innerHTML =
+      'Email de v\u00e9rification envoy\u00e9 ! Consultez votre bo\u00eete mail.';
+  }
+}
+
+// ── Rendering ─────────────────────────────────────────────────
+const CATEGORY_ORDER = ['medicament','dispositifs_medicaux','clinique','exercice','facturation','sante_publique','administratif'];
+const CATEGORY_META = {
+  medicament:           { icon: '<i data-lucide="pill" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'M\u00e9dicaments & prescriptions' },
+  dispositifs_medicaux: { icon: '<i data-lucide="scan" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Dispositifs m\u00e9dicaux' },
+  clinique:             { icon: '<i data-lucide="activity" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Pratique clinique' },
+  exercice:             { icon: '<i data-lucide="scale" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Exercice lib\u00e9ral' },
+  facturation:          { icon: '<i data-lucide="receipt" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Facturation & cotations' },
+  sante_publique:       { icon: '<i data-lucide="shield-plus" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Sant\u00e9 publique' },
+  administratif:        { icon: '<i data-lucide="clipboard-list" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Administratif' },
+};
+
+const CATEGORIE_STYLE = {
+  clinique:             { bg: 'rgba(107,159,212,.08)', color: '#6b9fd4', border: '0.5px solid rgba(107,159,212,.25)', label: 'Clinique' },
+  medicament:           { bg: 'rgba(160,123,224,.08)', color: '#a07be0', border: '0.5px solid rgba(160,123,224,.25)', label: 'M\u00e9dicaments' },
+  dispositifs_medicaux: { bg: 'rgba(107,159,212,.08)', color: '#6b9fd4', border: '0.5px solid rgba(107,159,212,.25)', label: 'Dispositifs m\u00e9d.' },
+  facturation:          { bg: 'rgba(212,146,26,.08)',   color: '#d4921a', border: '0.5px solid rgba(212,146,26,.25)',   label: 'Facturation' },
+  administratif:        { bg: 'rgba(192,106,170,.08)',  color: '#c06aaa', border: '0.5px solid rgba(192,106,170,.25)',  label: 'Administratif' },
+  sante_publique:       { bg: 'rgba(42,157,122,.08)',   color: '#2a9d7a', border: '0.5px solid rgba(42,157,122,.25)',   label: 'Sant\u00e9 publique' },
+  exercice:             { bg: 'rgba(74,158,187,.08)',   color: '#4a9ebb', border: '0.5px solid rgba(74,158,187,.25)',   label: 'Exercice lib\u00e9ral' },
+};
+
+function categorieBadge(categorie) {
+  if (!categorie) return '<span class="nature-badge" style="background:#f0ede8;color:#9a9288;">Non class\u00e9</span>';
+  const s = CATEGORIE_STYLE[categorie] || { bg: '#f0ede8', color: '#7a7268', label: categorie };
+  return `<span class="nature-badge" style="background:${s.bg};color:${s.color};${s.border ? `border:${s.border};` : ''}">${esc(s.label)}</span>`;
+}
+
+function freshnessLabel(dateStr) {
+  if (!dateStr) return '';
+  const days = (Date.now() - new Date(dateStr).getTime()) / 86400000;
+  if (days <= 35) return '<span class="card-freshness" style="color:var(--green);">\u25CF Nouveau</span>';
+  return '<span class="card-freshness" style="color:var(--text5);">Archiv\u00e9</span>';
+}
+
+function prioClass(score) {
+  if (score >= 8) return 'high';
+  if (score >= 6) return 'mid';
+  return 'low';
+}
+
+function prioColor(score) {
+  if (score >= 8) return 'var(--red)';
+  if (score >= 6) return 'var(--amber)';
+  return 'var(--green)';
+}
+
+function getUrgency(score) {
+  if (score >= 8) return { label: '\u00C0 lire absolument', color: '#cc3232', bg: '#fde8e8' };
+  if (score >= 6) return { label: 'Important', color: '#b56808', bg: '#fdf3de' };
+  return { label: 'Informatif', color: '#1f9478', bg: '#e0f5ef' };
+}
+
+function urgencyPill(score) {
+  if (score >= 8) return '<span class="urgency-pill high">\u00C0 lire absolument</span>';
+  if (score >= 6) return '<span class="urgency-pill mid">Important</span>';
+  return '<span class="urgency-pill low">Informatif</span>';
+}
+
+function renderArticle(a, idx) {
+  const tri = a.tri_json || {};
+  const lecture = a.lecture_json || {};
+  const titre = tri.titre_court || (a.title_raw || '').substring(0, 80) || 'Sans titre';
+  const resume = tri.resume || '';
+  const impact = (tri.impact_pratique && tri.impact_pratique !== 'None' && tri.impact_pratique !== 'null') ? tri.impact_pratique : '';
+  const categorie = a.categorie || null;
+  const datePub = tri.date_publication || a.official_date || '';
+  const score = a.score_density || 5;
+  const prio = prioClass(score);
+  const points = (lecture.points_cles || []).filter(p => p && p.trim());
+  const texteLong = (lecture.texte_long && lecture.texte_long !== 'null' && lecture.texte_long !== 'None') ? lecture.texte_long : '';
+  const refs = (lecture.references || []).filter(r => r && r.trim() && r !== 'N NOR...');
+  const delay = Math.min(idx * 30, 600);
+
+  const pointsHtml = points.length
+    ? `<div class="detail-box"><h4>Points cl\u00e9s</h4><ul>${points.map(p => `<li class="bullet-${prio}">${esc(p)}</li>`).join('')}</ul></div>`
+    : `<div class="detail-box"><h4>Points cl\u00e9s</h4><div class="texte-long" style="color:var(--text5);">\u2014</div></div>`;
+  const analyseHtml = texteLong
+    ? `<div class="detail-box"><h4>Analyse</h4><div class="texte-long">${esc(texteLong)}</div></div>`
+    : `<div class="detail-box"><h4>Analyse</h4><div class="texte-long" style="color:var(--text5);">\u2014</div></div>`;
+  const refsHtml = refs.length
+    ? `<div class="detail-refs">R\u00e9f. : ${refs.map(r => esc(r)).join(' \u00b7 ')}</div>` : '';
+
+  const isFav = favoritesSet.has(a.id);
+  return `
+  <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${categorie || ''}" data-item-id="${a.id}"
+       style="animation-delay:${delay}ms;">
+    <div class="card-top">
+      <div class="card-top-left">
+        ${urgencyPill(score)}
+        <span class="card-title">${esc(titre)}</span>
+      </div>
+      <div class="card-top-right">
+        ${categorieBadge(categorie)}
+        <span class="card-date">${esc(datePub)}</span>
+        <button class="btn-fav${isFav ? ' active' : ''}" data-item-id="${a.id}"
+          title="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}"
+          onclick="toggleFavorite(event, '${a.id}')">
+          <i data-lucide="star" style="width:14px;height:14px;"></i>
+        </button>
+        ${a.official_url ? `<a class="btn-ext-icon" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" title="Texte officiel"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>` : ''}
+      </div>
+    </div>
+    <div class="card-summary">${esc(resume)}</div>
+    ${impact ? `<div class="card-impact impact-${prio}">${esc(impact)}</div>` : ''}
+    <div class="card-detail">
+      <div class="detail-grid">
+        ${pointsHtml}
+        ${analyseHtml}
+      </div>
+      ${refsHtml}
+      <div class="detail-footer">
+        ${a.official_url ? `<a class="btn-official" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();"><i data-lucide="external-link" style="width:12px;height:12px;"></i> Texte officiel</a>` : '<span></span>'}
+        <button class="btn-collapse" onclick="event.stopPropagation(); collapseCard(this);"><i data-lucide="chevron-up" style="width:12px;height:12px;vertical-align:middle;"></i> R\u00e9duire</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function categoryHeader(categorie, count) {
+  const m = CATEGORY_META[categorie] || { icon: '<span style="font-size:11px;">\u2022</span>', label: categorie || 'Non class\u00e9' };
+  const s = CATEGORIE_STYLE[categorie] || { color: 'var(--text3)' };
+  return `<div class="group-header" data-cat="${categorie || ''}">
+    <span class="group-dot" style="background:${s.color};"></span>
+    <span class="group-label" style="color:${s.color};">${m.icon}\u00a0${esc(m.label)}</span>
+    <span class="group-count">${count} article${count > 1 ? 's' : ''}</span>
+    <span class="group-line"></span>
+  </div>`;
+}
+
+function renderGroupedArticles() {
+  const container = document.getElementById('articles-container');
+
+  // Tri : 1) ordre catégorie, 2) score décroissant à catégorie égale
+  const catIdx = cat => { const i = CATEGORY_ORDER.indexOf(cat); return i >= 0 ? i : 99; };
+  const sorted = [...allLoadedArticles].sort((a, b) => {
+    const diff = catIdx(a.categorie) - catIdx(b.categorie);
+    if (diff !== 0) return diff;
+    return (b.score_density || 5) - (a.score_density || 5);
+  });
+
+  // Grouper par catégorie en gardant l'ordre de CATEGORY_ORDER
+  const groups = new Map();
+  sorted.forEach(a => {
+    const cat = a.categorie || '__none__';
+    if (!groups.has(cat)) groups.set(cat, []);
+    groups.get(cat).push(a);
+  });
+
+  let html = '';
+  let idx = 0;
+  groups.forEach((items, cat) => {
+    html += categoryHeader(cat === '__none__' ? null : cat, items.length);
+    items.forEach(a => { html += renderArticle(a, idx++); });
+  });
+  container.innerHTML = html;
+  if (window.lucide) lucide.createIcons();
+
+  // Re-apply active category filter
+  if (activeFilter !== 'all') filterArticles(activeFilter, null);
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+function toggleDetail(e, card) {
+  if (e.target.closest('.detail-footer')) return;
+  const detail = card.querySelector('.card-detail');
+  const isOpen = detail.style.display === 'block';
+
+  // Close any other open card first (single expand)
+  if (!isOpen) {
+    document.querySelectorAll('.article-card.expanded').forEach(c => {
+      if (c !== card) {
+        c.querySelector('.card-detail').style.display = 'none';
+        c.classList.remove('expanded');
+      }
+    });
+  }
+
+  detail.style.display = isOpen ? 'none' : 'block';
+  card.classList.toggle('expanded', !isOpen);
+}
+
+function collapseCard(btn) {
+  const card = btn.closest('.article-card');
+  card.querySelector('.card-detail').style.display = 'none';
+  card.classList.remove('expanded');
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Filters (catégorie métier) ────────────────────────────────
+function filterArticles(categorie, btnEl) {
+  activeFilter = categorie;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  document.querySelectorAll('.article-card').forEach(card => {
+    card.style.display = (categorie === 'all' || card.dataset.categorie === categorie) ? '' : 'none';
+  });
+  // Hide group headers that have no visible cards after them
+  document.querySelectorAll('.group-header').forEach(gh => {
+    let next = gh.nextElementSibling;
+    let hasVisible = false;
+    while (next && !next.classList.contains('group-header')) {
+      if (next.classList.contains('article-card') && next.style.display !== 'none') hasVisible = true;
+      next = next.nextElementSibling;
+    }
+    gh.style.display = hasVisible ? '' : 'none';
+  });
+  updateCounters();
+}
+
+// ── Rubrique header ──────────────────────────────────────────
+function updateRubrique() {
+  document.getElementById('rubrique-month').textContent = portalHeaderLabel();
+
+  let label = '';
+  if (activeAudience === 'TRANSVERSAL_LIBERAL') {
+    label = 'Tous domaines';
+  } else {
+    const spec = allSpecialties.find(s => s.slug === activeSpecSlug);
+    label = spec ? spec.name : userSpecName;
+  }
+  document.getElementById('rubrique-meta').textContent = `${totalArticles} article${totalArticles > 1 ? 's' : ''} \u00b7 ${label}`;
+  document.getElementById('spec-label').textContent = label;
+}
+
+// ── Compteur visible (après filtre catégorie) ─────────────────
+function updateCounters() {
+  const cards = document.querySelectorAll('.article-card');
+  let count = 0;
+  cards.forEach(c => { if (c.style.display !== 'none') count++; });
+
+  let label = '';
+  if (activeAudience === 'TRANSVERSAL_LIBERAL') {
+    label = 'Tous domaines';
+  } else {
+    const spec = allSpecialties.find(s => s.slug === activeSpecSlug);
+    label = spec ? spec.name : userSpecName;
+  }
+  document.getElementById('rubrique-meta').textContent =
+    `${count} article${count > 1 ? 's' : ''} \u00b7 ${label}`;
+}
+
+// ── Favorites ────────────────────────────────────────────────
+async function loadFavorites() {
+  try {
+    const res = await authFetch(`${API}/favorites`);
+    if (!res || !res.ok) return;
+    const data = await res.json();
+    favoritesSet = new Set(data.item_ids || []);
+    updateSidebarFavCount();
+  } catch {}
+}
+
+async function toggleFavorite(event, itemId) {
+  event.stopPropagation();
+  const btn = event.currentTarget;
+  if (favoritesSet.has(itemId)) {
+    await authFetch(`${API}/favorites/${itemId}`, { method: 'DELETE' });
+    favoritesSet.delete(itemId);
+    // Update all buttons for this item (card may be re-rendered)
+    document.querySelectorAll(`.btn-fav[data-item-id="${itemId}"]`).forEach(b => {
+      b.classList.remove('active');
+      b.title = 'Ajouter aux favoris';
+    });
+    // If in favorites mode, hide the card immediately
+    if (favoritesMode) {
+      const card = btn.closest('.article-card');
+      if (card) card.style.display = 'none';
+    }
+  } else {
+    await authFetch(`${API}/favorites/${itemId}`, { method: 'POST' });
+    favoritesSet.add(itemId);
+    document.querySelectorAll(`.btn-fav[data-item-id="${itemId}"]`).forEach(b => {
+      b.classList.add('active');
+      b.title = 'Retirer des favoris';
+      // Ensure SVG fill is applied after class change
+      const svg = b.querySelector('svg');
+      if (svg) svg.style.fill = 'currentColor';
+    });
+  }
+  updateSidebarFavCount();
+  if (favoritesMode) {
+    const visCount = document.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])').length;
+    document.getElementById('rubrique-meta').textContent =
+      `${visCount} article${visCount > 1 ? 's' : ''} \u00b7 Mes favoris`;
+  }
+}
+
+function showFavorites() {
+  favoritesMode = true;
+  setActiveSidebar(document.getElementById('sidebar-favorites'));
+  activeFilter = 'all';
+  document.querySelectorAll('.filter-pill').forEach((b, i) => b.classList.toggle('active', i === 0));
+
+  document.querySelectorAll('.article-card').forEach(card => {
+    card.style.display = favoritesSet.has(card.dataset.itemId) ? '' : 'none';
+  });
+  // Hide empty group headers
+  document.querySelectorAll('.group-header').forEach(gh => {
+    let next = gh.nextElementSibling;
+    let hasVisible = false;
+    while (next && !next.classList.contains('group-header')) {
+      if (next.classList.contains('article-card') && next.style.display !== 'none') hasVisible = true;
+      next = next.nextElementSibling;
+    }
+    gh.style.display = hasVisible ? '' : 'none';
+  });
+
+  const count = favoritesSet.size;
+  document.getElementById('rubrique-meta').textContent =
+    `${count} article${count > 1 ? 's' : ''} \u00b7 Mes favoris`;
+}
+
+function updateSidebarFavCount() {
+  const el = document.getElementById('fav-count');
+  if (el) el.textContent = favoritesSet.size;
+}
+
+// ── Sidebar ──────────────────────────────────────────────────
+function buildSidebar() {
+  // 1. My specialty — only spec-specific articles (no transversal)
+  const mySpecEl = document.getElementById('sidebar-my-spec');
+  const myCount = specCounts[userSpecSlug] || 0;
+  mySpecEl.innerHTML = `
+    <div class="sidebar-item active" id="sidebar-item-mine" onclick="selectMySpec(this)">
+      <span>${esc(userSpecName)}</span>
+      <span class="count">${myCount}</span>
+    </div>`;
+
+  // 2. Transversal — multi-spé / tous domaines
+  const transEl = document.getElementById('sidebar-transversal');
+  transEl.innerHTML = `
+    <div class="sidebar-item" onclick="selectSpec('', 'TRANSVERSAL_LIBERAL', this)">
+      <span>Tous domaines</span>
+      <span class="count">${transversalCount}</span>
+    </div>`;
+
+  // 3. Explore — other specialties (exclude user's own), only their own count
+  const exploreEl = document.getElementById('sidebar-explore');
+  const others = allSpecialties.filter(s => s.slug !== userSpecSlug);
+  const MAX_VISIBLE = 7;
+  let exploreExpanded = false;
+
+  function renderExploreList() {
+    const list = exploreExpanded ? others : others.slice(0, MAX_VISIBLE);
+    const hidden = others.length - MAX_VISIBLE;
+
+    exploreEl.innerHTML = list.map(s => {
+      const cnt = specCounts[s.slug] || 0;
+      return `<div class="sidebar-item" onclick="selectExploreSpec('${s.slug}', this)">
+        <span>${esc(s.name)}</span>
+        <span class="count">${cnt}</span>
+      </div>`;
+    }).join('');
+
+    if (!exploreExpanded && hidden > 0) {
+      exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:11px;" onclick="expandExplore()">
+        <span>+ ${hidden} sp\u00e9cialit\u00e9s\u2026</span>
+      </div>`;
+    } else if (exploreExpanded && others.length > MAX_VISIBLE) {
+      exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:11px;" onclick="collapseExplore()">
+        <span>R\u00e9duire</span>
+      </div>`;
+    }
+  }
+
+  window.expandExplore = function() { exploreExpanded = true; renderExploreList(); };
+  window.collapseExplore = function() { exploreExpanded = false; renderExploreList(); };
+  renderExploreList();
+}
+
+// "Ma spécialité" — spec-only, no transversal mixed in
+async function selectMySpec(el) {
+  setActiveSidebar(el);
+  activeSpecSlug = userSpecSlug;
+  activeAudience = 'SPEC_ONLY';  // special flag for spec-only fetch
+  await resetAndLoad();
+}
+
+async function selectSpec(slug, audience, el) {
+  setActiveSidebar(el);
+  activeSpecSlug = slug || userSpecSlug;
+  activeAudience = audience;
+  await resetAndLoad();
+}
+
+// Explorer items — spec-only articles for that specialty
+async function selectExploreSpec(slug, el) {
+  setActiveSidebar(el);
+  activeSpecSlug = slug;
+  activeAudience = 'SPEC_ONLY';
+  await resetAndLoad();
+}
+
+function setActiveSidebar(el) {
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+async function resetAndLoad() {
+  favoritesMode = false;
+  currentPage = 1;
+  loadedArticles = 0;
+  allLoadedArticles = [];
+  totalArticles = 0;
+  activeFilter = 'all';
+  document.querySelectorAll('.filter-pill').forEach((b, i) => b.classList.toggle('active', i === 0));
+
+  document.getElementById('articles-container').innerHTML = '';
+  document.getElementById('loading').style.display = '';
+  document.getElementById('content').style.display = 'none';
+
+  await loadArticles(1);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+}
+
+// ── Data loading ──────────────────────────────────────────────
+async function loadProfile() {
+  const res = await authFetch(`${API}/me`);
+  if (!res) return;
+  const p = await res.json();
+  document.getElementById('user-email').textContent = p.email || '';
+  userSpecSlug = p.specialty_slug || '';
+  userSpecName = p.specialty_name || '';
+  activeSpecSlug = userSpecSlug;
+  document.getElementById('spec-label').textContent = userSpecName;
+  if (!p.email_verified) {
+    document.getElementById('verify-banner').style.display = 'flex';
+  }
+}
+
+async function loadSpecialties() {
+  try {
+    const res = await fetch(`${API}/specialties`);
+    allSpecialties = await res.json();
+  } catch {}
+}
+
+async function loadCounts() {
+  try {
+    const from = portalFromDate();
+    const res = await authFetch(`${API}/articles/counts?from_date=${from}`);
+    if (!res) return;
+    const data = await res.json();
+    specCounts = data.per_specialty || {};
+    transversalCount = data.transversal || 0;
+  } catch {}
+}
+
+async function loadArticles(page) {
+  const from = portalFromDate();
+  let url = `${API}/articles?page=${page}&per_page=${perPage}&from_date=${from}`;
+  if (activeAudience === 'TRANSVERSAL_LIBERAL') {
+    url += `&audience=TRANSVERSAL_LIBERAL`;
+  } else if (activeAudience === 'SPEC_ONLY') {
+    url += `&specialty=${encodeURIComponent(activeSpecSlug)}&audience=SPEC_ONLY`;
+  } else if (activeSpecSlug) {
+    url += `&specialty=${encodeURIComponent(activeSpecSlug)}`;
+  }
+
+  const res = await authFetch(url);
+  if (!res) return;
+  const data = await res.json();
+  totalArticles = data.total;
+
+  const container = document.getElementById('articles-container');
+  if (page === 1 && data.articles.length === 0) {
+    container.innerHTML = '<div class="empty">Aucun article valid\u00e9 pour cette rubrique.<br>La prochaine collecte a lieu le 1er du mois.</div>';
+  } else {
+    data.articles.forEach(a => allLoadedArticles.push(a));
+    renderGroupedArticles();
+  }
+
+  loadedArticles += data.articles.length;
+  updateRubrique();
+  updateCounters(); // recalcule sur les cards visibles (écrase le total DB de updateRubrique)
+
+  const btn = document.getElementById('load-more');
+  if (loadedArticles < totalArticles) {
+    const remaining = totalArticles - loadedArticles;
+    btn.textContent = `Charger plus (${remaining} restant${remaining > 1 ? 's' : ''})`;
+    btn.style.display = 'block';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function loadMore() {
+  const btn = document.getElementById('load-more');
+  btn.disabled = true;
+  btn.textContent = 'Chargement\u2026';
+  currentPage++;
+  await loadArticles(currentPage);
+  btn.disabled = false;
+}
+
+// ── Init ──────────────────────────────────────────────────────
+(async () => {
+  if (!getToken()) { window.location.href = '/login'; return; }
+  await loadProfile();
+  await loadFavorites(); // populate favoritesSet before first render
+  await Promise.all([loadSpecialties(), loadCounts()]);
+  buildSidebar();
+
+  await loadArticles(1);
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  if (window.lucide) lucide.createIcons(); // process static icons (sidebar labels, filter pills)
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+.env
+.claude/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+.pytest_cache/
+.DS_Store
+export_*.md
+export_*.json

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MedNews — Param&egrave;tres</title>
+<script src="/shared.js?v=2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  [data-theme="light"] {
+    --bg: #f6f5f2; --surface: #ffffff; --surface2: #f0ede8;
+    --border: #e4e0d8; --border-strong: #cac4bb;
+    --text: #1a1814; --text2: #4a4540; --text3: #7a7268;
+    --text4: #9a9288; --text5: #bcb6ac; --white: #1a1814;
+    --green-dark: #e5f5f0; --red-dark: #fde8e8;
+  }
+  [data-theme="dark"] {
+    --bg: #0f1117; --surface: #13151f; --surface2: #1a1c2a;
+    --border: #1e2030; --border-strong: #2a2d45;
+    --text: #f0f0f5; --text2: #c8c8d4; --text3: #8b8fa8;
+    --text4: #6b6f88; --text5: #4a4e68; --white: #f0f0f5;
+    --green-dark: #0d2a20; --red-dark: #2a0d0d;
+  }
+  :root {
+    --green: #1f9478; --red: #cc3232; --amber: #b56808; --radius: 10px;
+  }
+
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg); color: var(--text);
+    font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
+  }
+
+  /* ── Header ─────────────────────────────── */
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    height: 52px; padding: 0 32px; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 100;
+  }
+  .header-left { display: flex; align-items: baseline; gap: 12px; }
+  .header-left h1 {
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.43rem; font-weight: 400;
+    color: var(--text); letter-spacing: -.3px;
+  }
+  .header-left h1 em { font-style: italic; }
+  .header-left h1 b { font-weight: 700; font-style: normal; }
+  .header-sep {
+    width: 1px; height: 18px; background: var(--border-strong);
+    display: inline-block; vertical-align: middle; margin: 0 4px;
+  }
+  .header-spec { font-size: 0.86rem; color: var(--green); font-weight: 500; }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .header-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .header-right .email { font-size: 0.86rem; color: var(--text2); }
+  .btn-logout {
+    padding: 5px 12px; background: transparent; border: 1px solid var(--border-strong);
+    color: var(--text3); border-radius: 6px; font-size: 0.79rem; font-weight: 500;
+    cursor: pointer; transition: all .2s; font-family: inherit;
+  }
+  .btn-logout:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+
+  /* ── Layout ─────────────────────────────── */
+  .layout {
+    display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 52px);
+  }
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    header { padding: 0 16px; }
+  }
+
+  /* ── Sidebar ────────────────────────────── */
+  .sidebar {
+    background: var(--surface2); border-right: 0.5px solid var(--border);
+    padding: 20px 0; position: sticky; top: 52px; height: calc(100vh - 52px);
+    overflow-y: auto;
+  }
+  .sidebar-label {
+    font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: #4a4e68; padding: 6px 20px 4px; margin-bottom: 2px;
+  }
+  .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 10px 16px; }
+  .sidebar-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 16px 7px 20px; cursor: pointer; transition: all .12s;
+    color: var(--text3); font-size: 14px; font-weight: 300; font-family: 'Outfit', sans-serif;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-item:hover { color: var(--text2); background: rgba(0,0,0,.04); }
+  .sidebar-item.active {
+    color: var(--text); border-left-color: var(--green);
+    padding-left: 18px; background: rgba(0,0,0,.05); font-weight: 500;
+  }
+
+  /* ── Content ────────────────────────────── */
+  .content-area { padding: 32px 48px; max-width: 720px; }
+
+  .page-title {
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.86rem;
+    font-weight: 400; font-style: italic; color: var(--text); margin-bottom: 4px;
+  }
+  .page-sub { font-size: 0.93rem; color: var(--text3); margin-bottom: 32px; }
+
+  /* ── Section ────────────────────────────── */
+  .settings-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 20px; overflow: hidden;
+  }
+  .section-title {
+    font-size: 0.86rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+    color: var(--text4); padding: 14px 20px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Setting row ────────────────────────── */
+  .setting-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; gap: 20px; border-bottom: 1px solid var(--border);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-info { flex: 1; min-width: 0; }
+  .setting-label { font-size: 1rem; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .setting-desc { font-size: 0.86rem; color: var(--text3); }
+  .setting-row-action { padding: 12px 20px; display: flex; justify-content: flex-end; }
+
+  /* ── Option buttons (thème / police) ────── */
+  .option-group { display: flex; gap: 6px; flex-shrink: 0; }
+  .option-btn {
+    padding: 6px 14px; border-radius: 20px; font-size: 0.86rem; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border-strong); background: transparent;
+    color: var(--text3); transition: all .15s; font-family: inherit; white-space: nowrap;
+  }
+  .option-btn:hover { border-color: var(--text4); color: var(--text2); }
+  .option-btn.active {
+    background: var(--green); border-color: var(--green); color: #fff;
+  }
+
+  /* ── Select ─────────────────────────────── */
+  .settings-select {
+    padding: 8px 32px 8px 12px; border: 1px solid var(--border-strong);
+    border-radius: 8px; background: var(--surface2); color: var(--text);
+    font-size: 0.93rem; font-family: inherit; outline: none; cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6f88' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; background-size: 12px;
+    transition: border-color .2s;
+  }
+  .settings-select:focus { border-color: var(--green); }
+
+  /* ── Bouton save ────────────────────────── */
+  .btn-save {
+    padding: 7px 18px; background: var(--green); color: #fff; border: none;
+    border-radius: 8px; font-size: 0.93rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: opacity .2s;
+  }
+  .btn-save:hover { opacity: .88; }
+  .btn-save:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Toggle switch ──────────────────────── */
+  .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track {
+    width: 40px; height: 22px; background: var(--border-strong); border-radius: 11px;
+    transition: background .2s; position: relative;
+  }
+  .toggle-track::after {
+    content: ''; position: absolute; left: 3px; top: 3px;
+    width: 16px; height: 16px; background: #fff; border-radius: 50%;
+    transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle input:checked + .toggle-track { background: var(--green); }
+  .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+  /* ── Toast ──────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+    background: var(--text); color: var(--bg);
+    padding: 10px 18px; border-radius: 8px; font-size: 0.93rem; font-weight: 500;
+    opacity: 0; transform: translateY(8px); pointer-events: none;
+    transition: opacity .25s, transform .25s;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Compte row ─────────────────────────── */
+  .btn-danger {
+    padding: 7px 16px; background: transparent; color: var(--red);
+    border: 1px solid #e8c0c0; border-radius: 8px; font-size: 0.93rem; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: all .2s;
+  }
+  .btn-danger:hover { background: var(--red-dark); }
+
+</style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <h1><em>Med</em><b>News</b></h1>
+      <span class="header-sep"></span>
+      <span class="header-spec">Param&egrave;tres</span>
+    </div>
+    <div class="header-right">
+      <span class="email"><span class="header-dot"></span><span id="user-email"></span></span>
+      <button class="btn-logout" onclick="logout()">D&eacute;connexion</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-label">Navigation</div>
+      <div class="sidebar-item" onclick="window.location.href='/portal'">
+        <span><i data-lucide="house" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"></i>Mon portail</span>
+        <span style="color:var(--text5);">&rarr;</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location.href='/archives'">
+        <span><i data-lucide="clock" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"></i>Archives</span>
+        <span style="color:var(--text5);">&rarr;</span>
+      </div>
+      <hr class="sidebar-sep">
+      <div class="sidebar-item active">
+        <span><i data-lucide="settings" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"></i>Param&egrave;tres</span>
+      </div>
+    </aside>
+
+    <!-- Contenu -->
+    <div class="content-area">
+      <div class="page-title">Param&egrave;tres</div>
+      <div class="page-sub">Personnalisez votre exp&eacute;rience MedNews</div>
+
+      <!-- ── Apparence ───────────────────────── -->
+      <div class="settings-section">
+        <div class="section-title">Apparence</div>
+
+        <!-- Th&egrave;me -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Th&egrave;me</div>
+            <div class="setting-desc">Clair, sombre ou selon les pr&eacute;f&eacute;rences syst&egrave;me</div>
+          </div>
+          <div class="option-group" id="theme-group">
+            <button class="option-btn" data-val="light" onclick="applyThemeChoice('light')">Clair</button>
+            <button class="option-btn" data-val="auto" onclick="applyThemeChoice('auto')">Auto</button>
+            <button class="option-btn" data-val="dark" onclick="applyThemeChoice('dark')">Sombre</button>
+          </div>
+        </div>
+
+        <!-- Taille de police -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Taille du texte</div>
+            <div class="setting-desc">Adapter la taille de lecture sur toutes les pages</div>
+          </div>
+          <div class="option-group" id="font-group">
+            <button class="option-btn" data-val="compact" onclick="applyFontChoice('compact')">Compact</button>
+            <button class="option-btn" data-val="normal" onclick="applyFontChoice('normal')">Normal</button>
+            <button class="option-btn" data-val="large" onclick="applyFontChoice('large')">Grand</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Sp&eacute;cialit&eacute; ─────────────────────── -->
+      <div class="settings-section">
+        <div class="section-title">Ma sp&eacute;cialit&eacute;</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Sp&eacute;cialit&eacute; principale</div>
+            <div class="setting-desc">Les articles seront filtr&eacute;s selon cette sp&eacute;cialit&eacute;</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+            <select class="settings-select" id="specialty-select">
+              <option value="">Chargement&hellip;</option>
+            </select>
+            <button class="btn-save" onclick="saveSpecialty()">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Newsletter & notifications ───────── -->
+      <div class="settings-section">
+        <div class="section-title">Newsletter &amp; notifications</div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Newsletter mensuelle</div>
+            <div class="setting-desc">Recevoir la s&eacute;lection mensuelle par email</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="notif-newsletter" onchange="markPrefsChanged()">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+
+
+        <div class="setting-row-action">
+          <button class="btn-save" id="save-prefs-btn" onclick="savePreferences()" disabled>Enregistrer</button>
+        </div>
+      </div>
+
+
+      <!-- ── Compte ────────────────────────────── -->
+      <div class="settings-section">
+        <div class="section-title">Compte</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label" id="account-email" style="font-weight:400;color:var(--text2);"></div>
+            <div class="setting-desc">Compte m&eacute;decin actif</div>
+          </div>
+          <button class="btn-danger" onclick="logout()">D&eacute;connexion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+<script>
+const API = window.location.origin;
+
+// ── Auth helpers ──────────────────────────────────────────────
+function getToken() { return sessionStorage.getItem('access_token'); }
+
+function getCsrfToken() {
+  const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+async function authFetch(url, opts = {}) {
+  const token = getToken();
+  if (!token) { window.location.href = '/login'; return; }
+  opts.headers = { ...opts.headers, 'Authorization': `Bearer ${token}` };
+  opts.credentials = 'include';
+  let res = await fetch(url, opts);
+  if (res.status === 401) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      opts.headers['Authorization'] = `Bearer ${getToken()}`;
+      res = await fetch(url, opts);
+    } else {
+      sessionStorage.removeItem('access_token');
+      window.location.href = '/login';
+      return;
+    }
+  }
+  return res;
+}
+
+async function tryRefresh() {
+  try {
+    const csrf = getCsrfToken();
+    const res = await fetch(`${API}/auth/refresh`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    sessionStorage.setItem('access_token', data.access_token);
+    return true;
+  } catch { return false; }
+}
+
+async function logout() {
+  try {
+    const csrf = getCsrfToken();
+    await fetch(`${API}/auth/logout`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'x-csrf-token': csrf },
+    });
+  } catch {}
+  sessionStorage.removeItem('access_token');
+  window.location.href = '/login';
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Th&egrave;me ─────────────────────────────────────────────────────
+function updateThemeUI() {
+  const current = localStorage.getItem('mednews-theme') || 'auto';
+  document.querySelectorAll('#theme-group .option-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.val === current);
+  });
+}
+
+function applyThemeChoice(mode) {
+  MedNews.setTheme(mode);
+  updateThemeUI();
+}
+
+// ── Police ────────────────────────────────────────────────────
+function updateFontUI() {
+  const current = localStorage.getItem('mednews-fontsize') || 'normal';
+  document.querySelectorAll('#font-group .option-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.val === current);
+  });
+}
+
+function applyFontChoice(mode) {
+  MedNews.setFontSize(mode);
+  updateFontUI();
+}
+
+
+// ── Sp&eacute;cialit&eacute; ─────────────────────────────────────────────────
+async function loadSpecialties(currentSlug) {
+  try {
+    const res = await fetch(`${API}/specialties`);
+    const specs = await res.json();
+    const sel = document.getElementById('specialty-select');
+    sel.innerHTML = specs.map(s =>
+      `<option value="${s.slug}"${s.slug === currentSlug ? ' selected' : ''}>${s.name}</option>`
+    ).join('');
+  } catch {
+    document.getElementById('specialty-select').innerHTML = '<option>Erreur de chargement</option>';
+  }
+}
+
+async function saveSpecialty() {
+  const slug = document.getElementById('specialty-select').value;
+  if (!slug) return;
+  const res = await authFetch(`${API}/me/specialty`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ specialty_slug: slug }),
+  });
+  if (res && res.ok) {
+    showToast('Sp\u00e9cialit\u00e9 mise \u00e0 jour');
+    setTimeout(() => window.location.reload(), 1200);
+  } else {
+    showToast('Erreur lors de la sauvegarde');
+  }
+}
+
+// ── Pr&eacute;f&eacute;rences newsletter ──────────────────────────────────────
+let prefsChanged = false;
+
+function markPrefsChanged() {
+  prefsChanged = true;
+  document.getElementById('save-prefs-btn').disabled = false;
+}
+
+async function loadPreferences() {
+  try {
+    const res = await authFetch(`${API}/me/preferences`);
+    if (!res || !res.ok) return;
+    const data = await res.json();
+    document.getElementById('notif-newsletter').checked = data.notif_newsletter;
+
+  } catch {}
+}
+
+async function savePreferences() {
+  const btn = document.getElementById('save-prefs-btn');
+  btn.disabled = true;
+  btn.textContent = 'Enregistrement\u2026';
+  const payload = {
+    notif_newsletter: document.getElementById('notif-newsletter').checked,
+
+  };
+  const res = await authFetch(`${API}/me/preferences`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  btn.textContent = 'Enregistrer';
+  if (res && res.ok) {
+    prefsChanged = false;
+    showToast('Pr\u00e9f\u00e9rences enregistr\u00e9es');
+  } else {
+    btn.disabled = false;
+    showToast('Erreur lors de la sauvegarde');
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────
+(async () => {
+  if (!getToken()) { window.location.href = '/login'; return; }
+
+  const res = await authFetch(`${API}/me`);
+  if (!res) return;
+  const profile = await res.json();
+
+  document.getElementById('user-email').textContent = profile.email || '';
+  document.getElementById('account-email').textContent = profile.email || '';
+
+  await loadSpecialties(profile.specialty_slug);
+  await loadPreferences();
+
+  updateThemeUI();
+  updateFontUI();
+
+  if (window.lucide) lucide.createIcons();
+})();
+</script>
+</body>
+</html>

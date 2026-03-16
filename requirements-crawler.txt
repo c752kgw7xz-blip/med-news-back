@@ -1,0 +1,6 @@
+# med-news-back — dépendances du crawler Scrapy
+# Installer avec : pip install -r requirements-crawler.txt
+
+scrapy>=2.11
+psycopg[binary]>=3.1
+python-dotenv>=1.0

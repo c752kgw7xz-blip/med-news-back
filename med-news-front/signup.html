@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MedNews — Inscription</title>
+<script src="/shared.js?v=2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  [data-theme="light"] {
+    --bg: #f6f5f2; --surface: #ffffff; --surface2: #f0ede8;
+    --border: #e4e0d8; --border-strong: #cac4bb;
+    --text: #1a1814; --text2: #4a4540; --text3: #7a7268;
+    --green-dark: #e5f5f0; --red-dark: #fde8e8;
+  }
+  [data-theme="dark"] {
+    --bg: #0f1117; --surface: #13151f; --surface2: #1a1c2a;
+    --border: #1e2030; --border-strong: #2a2d45;
+    --text: #f0f0f5; --text2: #c8c8d4; --text3: #8b8fa8;
+    --green-dark: #0d2a20; --red-dark: #2a0d0d;
+  }
+  :root {
+    --green: #1f9478; --red: #cc3232; --radius: 10px;
+  }
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg); color: var(--text); font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
+    display: flex; align-items: center; justify-content: center; min-height: 100vh;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 44px 40px; width: 100%; max-width: 420px; margin: 24px;
+  }
+  .logo {
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 28px; font-weight: 400;
+    color: var(--text); text-align: center; margin-bottom: 4px; letter-spacing: -.3px;
+  }
+  .logo em { font-style: italic; }
+  .logo b { font-weight: 700; font-style: normal; }
+  .subtitle { text-align: center; color: var(--text3); font-size: 13px; margin-bottom: 32px; }
+  label { display: block; font-weight: 500; font-size: 12px; margin-bottom: 6px; color: var(--text2); }
+  input, select {
+    width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 14px; margin-bottom: 18px; outline: none; transition: border-color .2s;
+    background: var(--surface2); color: var(--text); font-family: inherit;
+    -webkit-appearance: none; appearance: none;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23555552' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; background-size: 12px;
+    padding-right: 36px; cursor: pointer;
+  }
+  select option { background: var(--surface); color: var(--text); }
+  input::placeholder { color: var(--text3); }
+  input:focus, select:focus { border-color: var(--green); }
+  .btn {
+    width: 100%; padding: 12px; background: var(--green); color: #fff; border: none;
+    border-radius: var(--radius); font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: all .2s; font-family: inherit; margin-top: 4px;
+  }
+  .btn:hover { opacity: .9; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .error {
+    background: var(--red-dark); color: var(--red); padding: 10px 14px; border-radius: var(--radius);
+    font-size: 13px; margin-bottom: 16px; display: none; border: 1px solid #e8c0c0;
+  }
+  .success {
+    background: var(--green-dark); color: var(--green); padding: 18px; border-radius: var(--radius);
+    font-size: 14px; text-align: center; display: none; border: 1px solid #a8e0cc;
+  }
+  .success strong { display: block; margin-bottom: 4px; }
+  .link { text-align: center; margin-top: 24px; font-size: 13px; color: var(--text3); }
+  .link a { color: var(--green); text-decoration: none; font-weight: 500; }
+  .link a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo"><em>Med</em><b>News</b></div>
+    <div class="subtitle">Veille r&#233;glementaire pour m&#233;decins lib&#233;raux</div>
+    <div class="error" id="error"></div>
+    <div class="success" id="success">
+      <strong>Compte cr&#233;&#233; !</strong>
+      Redirection vers la connexion...
+    </div>
+    <form id="form">
+      <label for="email">Adresse email</label>
+      <input type="email" id="email" required autocomplete="email" placeholder="vous@exemple.fr">
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" required minlength="8" autocomplete="new-password">
+      <small style="color:#888;font-size:12px;margin-top:-8px;display:block;">8 caract&#232;res minimum, avec au moins 1 majuscule et 1 chiffre</small>
+      <label for="password2">Confirmer le mot de passe</label>
+      <input type="password" id="password2" required minlength="8" autocomplete="new-password">
+      <label for="specialty">Sp&#233;cialit&#233;</label>
+      <select id="specialty"><option value="">Chargement...</option></select>
+      <button class="btn" type="submit" id="submit-btn">Cr&#233;er mon compte</button>
+    </form>
+    <div class="link">D&#233;j&#224; inscrit ? <a href="/login">Connexion</a></div>
+  </div>
+
+<script>
+const API = window.location.origin;
+const form = document.getElementById('form');
+const errorEl = document.getElementById('error');
+const successEl = document.getElementById('success');
+const btn = document.getElementById('submit-btn');
+const specialtySelect = document.getElementById('specialty');
+
+function showError(msg) {
+  errorEl.textContent = msg;
+  errorEl.style.display = 'block';
+  successEl.style.display = 'none';
+}
+
+// Load specialties
+(async () => {
+  try {
+    const res = await fetch(`${API}/specialties`);
+    const specs = await res.json();
+    specialtySelect.innerHTML = '<option value="">\u2014 Choisir une sp\u00e9cialit\u00e9 \u2014</option>'
+      + specs.map(s => `<option value="${s.slug}">${s.name}</option>`).join('');
+  } catch {
+    specialtySelect.innerHTML = '<option value="">Erreur de chargement</option>';
+  }
+})();
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorEl.style.display = 'none';
+
+  const pw = document.getElementById('password').value;
+  const pw2 = document.getElementById('password2').value;
+  if (pw !== pw2) { showError('Les mots de passe ne correspondent pas'); return; }
+  if (pw.length < 8) { showError('Le mot de passe doit faire au moins 8 caract\u00e8res'); return; }
+  if (!/[A-Z]/.test(pw)) { showError('Le mot de passe doit contenir au moins une majuscule'); return; }
+  if (!/[0-9]/.test(pw)) { showError('Le mot de passe doit contenir au moins un chiffre'); return; }
+
+  const slug = specialtySelect.value;
+  if (!slug) { showError('Veuillez choisir une sp\u00e9cialit\u00e9'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Cr\u00e9ation...';
+
+  try {
+    const res = await fetch(`${API}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: document.getElementById('email').value.trim(),
+        password: pw,
+        specialty_slug: slug,
+      }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 409) showError('Cette adresse email est d\u00e9j\u00e0 utilis\u00e9e');
+      else if (res.status === 403) showError('Les inscriptions sont d\u00e9sactiv\u00e9es');
+      else showError(data.detail || 'Erreur lors de la cr\u00e9ation du compte');
+      return;
+    }
+
+    form.style.display = 'none';
+    successEl.innerHTML = '<strong>Compte cr\u00e9\u00e9 !</strong> Redirection vers la connexion...';
+    successEl.style.display = 'block';
+    setTimeout(() => { window.location.href = '/login'; }, 1500);
+  } catch (err) {
+    showError('Erreur de connexion au serveur');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Cr\u00e9er mon compte';
+  }
+});
+</script>
+</body>
+</html>

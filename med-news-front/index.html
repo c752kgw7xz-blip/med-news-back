@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MedNews — Veille réglementaire pour médecins libéraux</title>
+<meta name="description" content="Chaque mois, MedNews analyse le JORF, la HAS et l'ANSM pour vous livrer uniquement les textes qui impactent votre spécialité.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090e;
+  --bg2:#0d0e16;
+  --bg3:#11121c;
+  --border:#1c1e30;
+  --border2:#252840;
+  --text:#e8e9f4;
+  --text2:#8b8fa8;
+  --text3:#4a4e68;
+  --mono:'DM Mono',monospace;
+  --serif:'Instrument Serif',serif;
+  --sans:'Outfit',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:300;line-height:1.6;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:rgba(8,9,14,.85);backdrop-filter:blur(12px);border-bottom:0.5px solid var(--border);padding:0 48px;height:56px;display:flex;align-items:center;justify-content:space-between;animation:navSlide .6s ease both}
+@keyframes navSlide{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.nav-logo{font-family:var(--serif);font-size:21px;color:var(--text);letter-spacing:-.2px;text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-link{font-size:13px;color:var(--text3);text-decoration:none;transition:color .2s}
+.nav-link:hover{color:var(--text2)}
+.nav-cta{font-size:13px;font-weight:500;color:var(--bg);background:var(--text);padding:7px 18px;border-radius:4px;text-decoration:none;transition:opacity .2s, transform .2s}
+.nav-cta:hover{opacity:.85;transform:translateY(-1px)}
+
+/* ── HERO ── */
+.hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 48px;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:.3;mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 30%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 30%,transparent 100%);animation:gridPulse 8s ease-in-out infinite}
+@keyframes gridPulse{0%,100%{opacity:.3}50%{opacity:.18}}
+
+.hero-tag{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;display:flex;align-items:center;gap:8px;position:relative;z-index:1;animation:fadeUp .8s .2s ease both}
+.hero-tag::before{content:'';width:24px;height:1px;background:var(--text3)}
+.hero-tag::after{content:'';width:24px;height:1px;background:var(--text3)}
+
+h1{font-family:var(--serif);font-size:clamp(42px,6vw,76px);color:var(--text);line-height:1.1;letter-spacing:-.5px;max-width:820px;margin-bottom:24px;position:relative;z-index:1}
+h1 em{font-style:italic;color:var(--text2)}
+.h1-line1{display:block;animation:fadeUp .8s .4s ease both}
+.h1-line2{display:block;animation:fadeUp .8s .55s ease both}
+
+.hero-sub{font-size:16px;color:var(--text2);max-width:520px;line-height:1.7;margin-bottom:44px;font-weight:300;position:relative;z-index:1;animation:fadeUp .8s .7s ease both}
+.hero-actions{display:flex;align-items:center;gap:16px;position:relative;z-index:1;animation:fadeUp .8s .85s ease both}
+.btn-primary{font-size:14px;font-weight:500;color:var(--bg);background:var(--text);padding:12px 28px;border-radius:4px;text-decoration:none;transition:opacity .2s, transform .2s;font-family:var(--sans)}
+.btn-primary:hover{opacity:.85;transform:translateY(-2px)}
+.btn-secondary{font-size:14px;color:var(--text2);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+.btn-secondary:hover{color:var(--text)}
+.btn-secondary svg{transition:transform .2s}
+.btn-secondary:hover svg{transform:translateX(4px)}
+
+.hero-stats{margin-top:72px;display:flex;gap:48px;border-top:0.5px solid var(--border);padding-top:40px;position:relative;z-index:1;animation:fadeUp .8s 1s ease both}
+.stat-item{text-align:center}
+.stat-n{font-family:var(--serif);font-size:36px;color:var(--text);line-height:1}
+.stat-l{font-size:11px;color:var(--text3);margin-top:4px;letter-spacing:.5px;font-family:var(--mono)}
+
+/* ── SCROLL FADE ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .7s ease, transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+
+/* ── DIVIDER ── */
+.divider{max-width:1100px;margin:0 auto;padding:0 48px}
+.divider-line{height:0.5px;background:var(--border)}
+
+/* ── SECTIONS ── */
+.section{padding:96px 48px;max-width:1100px;margin:0 auto}
+.section-tag{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px}
+.section-title{font-family:var(--serif);font-size:clamp(28px,4vw,44px);color:var(--text);line-height:1.15;letter-spacing:-.3px;margin-bottom:16px}
+.section-sub{font-size:15px;color:var(--text2);max-width:480px;line-height:1.7;margin-bottom:56px}
+
+/* ── HOW ── */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:0.5px solid var(--border);border-radius:8px;overflow:hidden}
+.how-card{background:var(--bg2);padding:32px 28px;position:relative;transition:background .3s}
+.how-card:hover{background:var(--bg3)}
+.how-n{font-family:var(--serif);font-size:48px;color:var(--border2);line-height:1;margin-bottom:20px;font-style:italic}
+.how-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:8px}
+.how-desc{font-size:13px;color:var(--text2);line-height:1.6}
+.how-tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:16px;padding:3px 8px;border:0.5px solid var(--border2);border-radius:2px}
+
+/* ── VALUE ── */
+.value-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.value-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:28px;transition:border-color .3s, transform .3s, background .3s}
+.value-card:hover{border-color:var(--border2);transform:translateY(-3px);background:var(--bg3)}
+.value-icon{width:36px;height:36px;border-radius:6px;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;margin-bottom:16px;transition:border-color .3s}
+.value-card:hover .value-icon{border-color:var(--text3)}
+.value-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px}
+.value-desc{font-size:13px;color:var(--text2);line-height:1.6}
+
+/* ── SPEC ── */
+.spec-section{padding:96px 0;overflow:hidden;border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border);background:var(--bg2)}
+.spec-inner{max-width:1100px;margin:0 auto;padding:0 48px}
+.spec-scroll{display:flex;gap:8px;flex-wrap:wrap;margin-top:40px}
+.spec-pill{font-size:12px;padding:6px 14px;border-radius:20px;background:var(--bg3);border:0.5px solid var(--border2);color:var(--text2);white-space:nowrap;font-family:var(--sans);font-weight:400;transition:border-color .2s, color .2s, transform .2s}
+.spec-pill:hover{border-color:var(--text3);color:var(--text);transform:translateY(-2px)}
+.spec-pill.highlight{border-color:var(--text3);color:var(--text)}
+
+/* ── PRICING ── */
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pricing-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:32px;position:relative;transition:transform .3s, border-color .3s}
+.pricing-card:hover{transform:translateY(-4px)}
+.pricing-card.featured{border-color:var(--text3);background:var(--bg3)}
+.pricing-badge{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--bg);background:var(--text);padding:3px 8px;border-radius:2px;position:absolute;top:20px;right:20px}
+.pricing-name{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+.pricing-price{font-family:var(--serif);font-size:48px;color:var(--text);line-height:1;margin-bottom:4px}
+.pricing-price span{font-size:18px;color:var(--text2);font-family:var(--sans);font-weight:300}
+.pricing-period{font-size:12px;color:var(--text3);margin-bottom:28px;font-family:var(--mono)}
+.pricing-features{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.pf{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2)}
+.pf svg{flex-shrink:0;margin-top:2px}
+.pricing-btn{display:block;text-align:center;font-size:13px;font-weight:500;padding:10px;border-radius:4px;text-decoration:none;transition:opacity .2s, transform .2s;font-family:var(--sans)}
+.pricing-btn.dark{background:var(--text);color:var(--bg)}
+.pricing-btn.outline{border:0.5px solid var(--border2);color:var(--text2)}
+.pricing-btn:hover{opacity:.8;transform:translateY(-1px)}
+
+/* ── CTA ── */
+.cta-section{padding:120px 48px;text-align:center;position:relative;overflow:hidden}
+.cta-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(42,157,122,.06) 0%,transparent 70%);animation:ctaPulse 6s ease-in-out infinite}
+@keyframes ctaPulse{0%,100%{opacity:1}50%{opacity:.5}}
+.cta-title{font-family:var(--serif);font-size:clamp(32px,5vw,58px);color:var(--text);line-height:1.1;letter-spacing:-.3px;max-width:680px;margin:0 auto 20px;position:relative;z-index:1}
+.cta-title em{font-style:italic;color:var(--text2)}
+.cta-sub{font-size:15px;color:var(--text2);margin-bottom:40px;position:relative;z-index:1}
+.cta-note{font-size:12px;color:var(--text3);margin-top:16px;font-family:var(--mono);position:relative;z-index:1}
+
+footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align-items:center;justify-content:space-between}
+.footer-logo{font-family:var(--serif);font-size:17px;color:var(--text2)}
+.footer-text{font-size:12px;color:var(--text3);font-family:var(--mono)}
+
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .nav-links .nav-link{display:none}
+  .hero{padding:60px 24px;min-height:auto}
+  .hero-stats{gap:24px;flex-wrap:wrap;justify-content:center}
+  h1{font-size:36px}
+  .how-grid{grid-template-columns:1fr}
+  .value-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .section{padding:64px 24px}
+  .spec-inner{padding:0 24px}
+  .cta-section{padding:80px 24px}
+  footer{padding:24px;flex-direction:column;gap:12px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">MedNews</a>
+  <div class="nav-links">
+    <a href="#comment" class="nav-link">Comment ça marche</a>
+    <a href="#specialites" class="nav-link">Spécialités</a>
+    <a href="#tarifs" class="nav-link">Tarifs</a>
+    <a href="/login" class="nav-link">Connexion</a>
+    <a href="/signup" class="nav-cta">S'inscrire</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-tag">Veille réglementaire médicale</div>
+  <h1>
+    <span class="h1-line1">L'actualité réglementaire</span>
+    <em class="h1-line2">filtrée pour votre pratique</em>
+  </h1>
+  <p class="hero-sub">Chaque mois, MedNews analyse des centaines de textes officiels et vous livre uniquement ce qui impacte concrètement votre exercice libéral.</p>
+  <div class="hero-actions">
+    <a href="/signup" class="btn-primary">Commencer gratuitement</a>
+    <a href="#comment" class="btn-secondary">
+      Voir comment ça marche
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-n" data-count="4" data-suffix="">4</div>
+      <div class="stat-l">Sources officielles</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n" data-count="36" data-suffix="">36</div>
+      <div class="stat-l">Spécialités couvertes</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n" data-count="200" data-prefix="~">~200</div>
+      <div class="stat-l">Articles analysés / mois</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n">1<span style="font-size:20px;color:var(--text2);font-family:var(--sans)">er</span></div>
+      <div class="stat-l">Du mois, dans votre boîte</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<section class="section" id="comment">
+  <div class="section-tag reveal">Fonctionnement</div>
+  <div class="section-title reveal reveal-delay-1">Trois étapes,<br>zéro friction</div>
+  <p class="section-sub reveal reveal-delay-2">Du Journal Officiel à votre boîte mail, en passant par une analyse IA rigoureuse.</p>
+  <div class="how-grid">
+    <div class="how-card reveal reveal-delay-1">
+      <div class="how-n">01</div>
+      <div class="how-title">Collecte automatique</div>
+      <div class="how-desc">Chaque mois, MedNews scrute le JORF, la HAS, l'ANSM et le BO Social — des centaines de textes réglementaires en quelques minutes.</div>
+      <div class="how-tag">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        JORF · HAS · ANSM · BO Social
+      </div>
+    </div>
+    <div class="how-card reveal reveal-delay-2">
+      <div class="how-n">02</div>
+      <div class="how-title">Analyse & filtrage IA</div>
+      <div class="how-desc">Un modèle de langage de pointe évalue chaque texte : pertinence pour votre spécialité, niveau d'urgence, points clés actionnables.</div>
+      <div class="how-tag">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        Score · Spécialité · Catégorie
+      </div>
+    </div>
+    <div class="how-card reveal reveal-delay-3">
+      <div class="how-n">03</div>
+      <div class="how-title">Livraison personnalisée</div>
+      <div class="how-desc">Le 1er de chaque mois, vous recevez une newsletter et accédez à votre portail — uniquement les textes qui concernent votre exercice.</div>
+      <div class="how-tag">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Newsletter · Portail · Archives
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<section class="section">
+  <div class="section-tag reveal">Pourquoi MedNews</div>
+  <div class="section-title reveal reveal-delay-1">Ce que vous ne<br>trouvez nulle part ailleurs</div>
+  <p class="section-sub reveal reveal-delay-2">Conçu pour les médecins libéraux qui n'ont pas le temps de lire le Journal Officiel.</p>
+  <div class="value-grid">
+    <div class="value-card reveal reveal-delay-1">
+      <div class="value-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b8fa8" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div class="value-title">Filtré par spécialité</div>
+      <div class="value-desc">Un cardiologue ne voit pas les mêmes textes qu'un pédiatre. La pertinence est calculée spécialité par spécialité, pas en masse.</div>
+    </div>
+    <div class="value-card reveal reveal-delay-2">
+      <div class="value-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b8fa8" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="value-title">Niveau d'urgence clair</div>
+      <div class="value-desc">Chaque article est classé : À lire absolument, Important ou Informatif. Vous savez en un coup d'œil ce qui change votre pratique.</div>
+    </div>
+    <div class="value-card reveal reveal-delay-1">
+      <div class="value-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b8fa8" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <div class="value-title">Sources officielles uniquement</div>
+      <div class="value-desc">JORF, HAS, ANSM, BO Social — aucune interprétation non sourcée. Chaque article est lié au texte officiel original.</div>
+    </div>
+    <div class="value-card reveal reveal-delay-2">
+      <div class="value-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b8fa8" stroke-width="1.5"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 0 .5-4.5"/></svg>
+      </div>
+      <div class="value-title">Archives consultables</div>
+      <div class="value-desc">Retrouvez n'importe quel texte depuis janvier 2026. Recherche full-text, filtres par catégorie, classement par mois.</div>
+    </div>
+  </div>
+</section>
+
+<section class="spec-section" id="specialites">
+  <div class="spec-inner">
+    <div class="section-tag reveal">Couverture</div>
+    <div class="section-title reveal reveal-delay-1">36 spécialités médicales<br>et paramédicales</div>
+    <div class="spec-scroll reveal reveal-delay-2">
+      <div class="spec-pill highlight">Médecine générale</div>
+      <div class="spec-pill highlight">Cardiologie</div>
+      <div class="spec-pill highlight">Pédiatrie</div>
+      <div class="spec-pill highlight">Psychiatrie</div>
+      <div class="spec-pill">Dermatologie</div>
+      <div class="spec-pill">Gynécologie</div>
+      <div class="spec-pill">Neurologie</div>
+      <div class="spec-pill">Pneumologie</div>
+      <div class="spec-pill">Gastro-entérologie</div>
+      <div class="spec-pill">Endocrinologie</div>
+      <div class="spec-pill">Rhumatologie</div>
+      <div class="spec-pill">Ophtalmologie</div>
+      <div class="spec-pill">ORL</div>
+      <div class="spec-pill">Urologie</div>
+      <div class="spec-pill">Anesthésiologie</div>
+      <div class="spec-pill">Radiologie</div>
+      <div class="spec-pill">Médecine d'urgence</div>
+      <div class="spec-pill">Médecine interne</div>
+      <div class="spec-pill">Gériatrie</div>
+      <div class="spec-pill">Oncologie</div>
+      <div class="spec-pill">Hématologie</div>
+      <div class="spec-pill">Infectiologie</div>
+      <div class="spec-pill">Néphrologie</div>
+      <div class="spec-pill">Chir. orthopédique</div>
+      <div class="spec-pill">Chir. vasculaire</div>
+      <div class="spec-pill">Neurochirurgie</div>
+      <div class="spec-pill">Chir. cardiaque</div>
+      <div class="spec-pill">Pharmaciens</div>
+      <div class="spec-pill">Infirmiers</div>
+      <div class="spec-pill">Sages-femmes</div>
+      <div class="spec-pill">Kinésithérapie</div>
+      <div class="spec-pill">Biologie médicale</div>
+      <div class="spec-pill">Chir. thoracique</div>
+      <div class="spec-pill">Chir. plastique</div>
+      <div class="spec-pill">Chir. pédiatrique</div>
+      <div class="spec-pill">MPR</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="tarifs">
+  <div class="section-tag reveal">Accès</div>
+  <div class="section-title reveal reveal-delay-1">Simple et transparent</div>
+  <p class="section-sub reveal reveal-delay-2">Accès entièrement gratuit pendant le lancement — pour les 50 premiers inscrits.</p>
+  <div class="pricing-grid">
+    <div class="pricing-card reveal reveal-delay-1">
+      <div class="pricing-name">Découverte</div>
+      <div class="pricing-price">0<span>€</span></div>
+      <div class="pricing-period">/ toujours gratuit</div>
+      <div class="pricing-features">
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Accès au portail mensuel</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Filtre par spécialité</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Résumés et points clés</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a4e68" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span style="color:var(--text3)">Newsletter email</span></div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a4e68" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span style="color:var(--text3)">Archives complètes</span></div>
+      </div>
+      <a href="/signup" class="pricing-btn outline">Créer un compte</a>
+    </div>
+    <div class="pricing-card featured reveal reveal-delay-2">
+      <div class="pricing-badge">Offre de lancement</div>
+      <div class="pricing-name">Praticien</div>
+      <div class="pricing-price">0<span>€</span></div>
+      <div class="pricing-period">/ gratuit · 50 premiers inscrits</div>
+      <div class="pricing-features">
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Tout le plan Découverte</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Newsletter email mensuelle</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Archives depuis janvier 2026</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Alertes urgentes par email</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Favoris et recherche avancée</div>
+      </div>
+      <a href="/signup" class="pricing-btn dark">Rejoindre gratuitement</a>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="cta-title reveal"><span>Votre veille réglementaire,</span><br><em>enfin sans effort</em></div>
+  <p class="cta-sub reveal reveal-delay-1">Rejoignez les praticiens qui lisent MedNews chaque mois.</p>
+  <a href="/signup" class="btn-primary reveal reveal-delay-2" style="position:relative;z-index:1;display:inline-block">Créer mon compte gratuitement</a>
+  <div class="cta-note reveal reveal-delay-3">Aucune carte bancaire requise · Accès immédiat</div>
+</section>
+
+<footer>
+  <div class="footer-logo">MedNews</div>
+  <div class="footer-text">© 2026 MedNews · Mentions légales · Contact</div>
+</footer>
+
+<script>
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── COUNTER ANIMATION ──
+function animateCounter(el, target, prefix, suffix, duration) {
+  const start = performance.now();
+  const update = (time) => {
+    const elapsed = time - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(eased * target);
+    el.textContent = (prefix||'') + current + (suffix||'');
+    if(progress < 1) requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
+}
+
+// Trigger counters when hero stats become visible
+const statsObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      document.querySelectorAll('[data-count]').forEach(el => {
+        const target = parseInt(el.dataset.count);
+        const prefix = el.dataset.prefix || '';
+        const suffix = el.dataset.suffix || '';
+        animateCounter(el, target, prefix, suffix, 1200);
+      });
+      statsObserver.disconnect();
+    }
+  });
+}, {threshold: 0.5});
+const statsEl = document.querySelector('.hero-stats');
+if(statsEl) statsObserver.observe(statsEl);
+
+// ── SMOOTH SCROLL pour ancres nav ──
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+});
+</script>
+</body>
+</html>
