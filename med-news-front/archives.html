@@ -338,7 +338,7 @@
       <div id="sidebar-explore"></div>
       <hr class="sidebar-sep">
       <div class="sidebar-item" onclick="window.location.href='/settings'">
-        <span><i data-lucide="settings" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"></i>Param&egrave;tres</span>
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
         <span style="color:var(--text5);">&rarr;</span>
       </div>
     </aside>
@@ -592,7 +592,7 @@ function renderArticle(a, idx) {
       <div class="card-top-right">
         ${categorieBadge(categorie)}
         ${sourceMeta ? `<span class="card-date" style="font-size:0.59rem;color:var(--text3);">${esc(sourceMeta)}</span>` : ''}
-        ${a.official_url ? `<a class="btn-ext-icon" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" title="Texte officiel"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>` : ''}
+        ${a.official_url ? `<a class="btn-ext-icon" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" title="Texte officiel"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
       </div>
     </div>
     <div class="card-summary">${esc(resume)}</div>
@@ -604,8 +604,8 @@ function renderArticle(a, idx) {
       </div>
       ${refsHtml}
       <div class="detail-footer">
-        ${a.official_url ? `<a class="btn-official" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();"><i data-lucide="external-link" style="width:12px;height:12px;"></i> Texte officiel</a>` : '<span></span>'}
-        <button class="btn-collapse" onclick="event.stopPropagation(); collapseCard(this);"><i data-lucide="chevron-up" style="width:12px;height:12px;vertical-align:middle;"></i> R\u00e9duire</button>
+        ${a.official_url ? `<a class="btn-official" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Texte officiel</a>` : '<span></span>'}
+        <button class="btn-collapse" onclick="event.stopPropagation(); collapseCard(this);"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;"><path d="m18 15-6-6-6 6"/></svg> R\u00e9duire</button>
       </div>
     </div>
   </div>`;

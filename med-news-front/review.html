@@ -377,15 +377,15 @@
   <div class="app-wrapper">
   <aside class="sidebar">
     <button class="sidebar-nav-item active" data-filter="" onclick="setSidebarFilter('', this)">
-      <span class="sidebar-item-label"><i data-lucide="house" style="width:12px;height:12px;vertical-align:middle;margin-right:5px;"></i>Tous</span>
+      <span class="sidebar-item-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:5px;"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Tous</span>
     </button>
     <div class="sidebar-sep"></div>
     <button class="sidebar-nav-item" data-filter="TRANSVERSAL_LIBERAL" onclick="setSidebarFilter('TRANSVERSAL_LIBERAL', this)">
-      <span class="sidebar-item-label"><i data-lucide="globe" style="width:12px;height:12px;vertical-align:middle;margin-right:5px;"></i>Transversal</span>
+      <span class="sidebar-item-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:5px;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>Transversal</span>
       <span class="sidebar-item-count" id="count-transversal">0</span>
     </button>
     <div class="sidebar-sep"></div>
-    <div class="sidebar-section"><i data-lucide="compass" style="width:11px;height:11px;vertical-align:middle;margin-right:5px;"></i>Sp&#233;cialit&#233;s</div>
+    <div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:5px;"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>Sp&#233;cialit&#233;s</div>
     <button class="sidebar-nav-item" data-filter="PHARMACIENS" onclick="setSidebarFilter('PHARMACIENS', this)">
       <span class="sidebar-item-label">Pharmaciens</span>
       <span class="sidebar-item-count" id="count-pharmaciens">0</span>
@@ -393,7 +393,7 @@
     <div id="sidebar-specs"></div>
     <div class="sidebar-sep"></div>
     <button class="sidebar-nav-item" onclick="window.location.href='/settings'">
-      <span class="sidebar-item-label"><i data-lucide="settings" style="width:12px;height:12px;vertical-align:middle;margin-right:5px;"></i>Param&egrave;tres</span>
+      <span class="sidebar-item-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:5px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
     </button>
   </aside>
   <div class="main-content">
@@ -621,10 +621,10 @@ function renderArticle(a, idx) {
     : '<div class="texte-long" style="color:var(--text3);">\u2014</div>';
 
   const isPending = status === 'PENDING';
-  const approveBtn = `<button class="btn-approve" ${!isPending ? 'disabled' : ''} onclick="event.stopPropagation(); reviewItem('${a.item_id}', 'APPROVED', this);"><i data-lucide="check" style="width:12px;height:12px;vertical-align:middle;"></i> Valider</button>`;
-  const rejectBtn = `<button class="btn-reject" ${!isPending ? 'disabled' : ''} onclick="event.stopPropagation(); reviewItem('${a.item_id}', 'REJECTED', this);"><i data-lucide="x" style="width:12px;height:12px;vertical-align:middle;"></i> Rejeter</button>`;
+  const approveBtn = `<button class="btn-approve" ${!isPending ? 'disabled' : ''} onclick="event.stopPropagation(); reviewItem('${a.item_id}', 'APPROVED', this);"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;"><path d="M20 6 9 17l-5-5"/></svg> Valider</button>`;
+  const rejectBtn = `<button class="btn-reject" ${!isPending ? 'disabled' : ''} onclick="event.stopPropagation(); reviewItem('${a.item_id}', 'REJECTED', this);"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Rejeter</button>`;
   const statusIconHtml = status !== 'PENDING'
-    ? `<span class="card-status-icon" id="status-icon-${a.item_id}" style="color:${status === 'APPROVED' ? '#5a5e7a' : '#3a3d55'};"><i data-lucide="${status === 'APPROVED' ? 'check' : 'x'}" style="width:14px;height:14px;"></i></span>`
+    ? `<span class="card-status-icon" id="status-icon-${a.item_id}" style="color:${status === 'APPROVED' ? '#5a5e7a' : '#3a3d55'};"><!-- unknown icon: ${status === 'APPROVED' ? 'check' : 'x'} --></span>`
     : `<span class="card-status-icon" id="status-icon-${a.item_id}" style="display:none;"></span>`;
 
   return `
@@ -641,7 +641,7 @@ function renderArticle(a, idx) {
         <div class="spec-badges">${specDisplay}</div>
         <span class="status-badge ${statusClass}">${statusLabel}</span>
         ${statusIconHtml}
-        ${a.official_url ? `<a class="btn-ext-icon" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" title="Texte officiel"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>` : ''}
+        ${a.official_url ? `<a class="btn-ext-icon" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" title="Texte officiel"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
       </div>
     </div>
     <div class="card-raw-title">${esc((a.title_raw || '').substring(0, 120))}</div>
@@ -650,7 +650,7 @@ function renderArticle(a, idx) {
     <div class="card-actions">
       ${approveBtn}
       ${rejectBtn}
-      ${a.official_url ? `<a class="btn-official" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();"><i data-lucide="external-link" style="width:12px;height:12px;vertical-align:middle;"></i> Texte officiel</a>` : ''}
+      ${a.official_url ? `<a class="btn-official" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Texte officiel</a>` : ''}
       <button class="btn-detail" onclick="event.stopPropagation(); toggleDetail(document.getElementById('card-${a.item_id}'));">D\u00e9tails</button>
     </div>
     <div class="card-detail">
@@ -787,7 +787,7 @@ async function reviewItem(itemId, decision, btn) {
         if (iconEl) {
           iconEl.style.display = 'inline-flex';
           iconEl.style.color = decision === 'APPROVED' ? '#5a5e7a' : '#3a3d55';
-          iconEl.innerHTML = `<i data-lucide="${decision === 'APPROVED' ? 'check' : 'x'}" style="width:14px;height:14px;"></i>`;
+          iconEl.innerHTML = `<!-- unknown icon: ${decision === 'APPROVED' ? 'check' : 'x'} -->`;
           if (window.lucide) lucide.createIcons();
         }
       }
