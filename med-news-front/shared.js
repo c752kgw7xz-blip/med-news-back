@@ -24,9 +24,9 @@
 
   function applyFontSize() {
     var fs = localStorage.getItem('mednews-fontsize') || 'normal';
-    // compact=13px, normal=15px, large=17px — base 14px (calc(14px * --font-scale))
-    var sizes = { compact: 13, normal: 15, large: 17 };
-    var px = sizes[fs] || 15;
+    // compact=15px, normal=17px, large=20px — base 14px (calc(14px * --font-scale))
+    var sizes = { compact: 15, normal: 17, large: 20 };
+    var px = sizes[fs] || 17;
     document.documentElement.style.setProperty('--font-scale', String(px / 14));
     // Définir html font-size → 1rem = px (utilisé par les CSS rem)
     document.documentElement.style.fontSize = px + 'px';

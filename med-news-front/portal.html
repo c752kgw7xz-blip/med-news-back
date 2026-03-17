@@ -91,7 +91,7 @@
   .sidebar-section { padding: 0 16px; margin-bottom: 6px; }
   .sidebar-label {
     font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400;
-    letter-spacing: 1.5px; color: #4a4e68; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #2e3154; text-transform: uppercase;
     padding: 6px 16px 4px; margin-bottom: 2px;
   }
   .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 10px 16px; }
@@ -121,12 +121,12 @@
     font-family: 'Instrument Serif', Georgia, serif; font-size: 28px;
     font-weight: 400; color: var(--text); margin-bottom: 2px; font-style: italic; letter-spacing: -.3px;
   }
-  .rubrique-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: #4a4e68; letter-spacing: .3px; margin-bottom: 14px; }
+  .rubrique-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: #2e3154; letter-spacing: .3px; margin-bottom: 14px; }
   .rubrique-filters { display: flex; gap: 6px; flex-wrap: wrap; }
   .filter-pill {
     display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px;
     border-radius: 3px; font-size: 12px; font-weight: 300; cursor: pointer;
-    border: 0.5px solid #1c1e30; background: transparent; color: #4a4e68;
+    border: 0.5px solid #1c1e30; background: transparent; color: #2e3154;
     transition: all .15s; white-space: nowrap; font-family: 'Outfit', sans-serif;
   }
   .filter-pill:hover { border-color: var(--text4); color: var(--text2); }
@@ -134,19 +134,19 @@
 
 
   /* ── Filter pills — couleurs par catégorie ── */
-  .filter-pill[data-cat="medicament"]       { color: rgba(160,123,224,.75); border-color: rgba(160,123,224,.2); }
+  .filter-pill[data-cat="medicament"]       { color: #a07be0; border-color: rgba(160,123,224,.2); }
   .filter-pill[data-cat="medicament"].active{ color: #a07be0; background: rgba(160,123,224,.1); border-color: rgba(160,123,224,.35); }
-  .filter-pill[data-cat="dispositifs_medicaux"]       { color: rgba(91,168,207,.75); border-color: rgba(91,168,207,.2); }
+  .filter-pill[data-cat="dispositifs_medicaux"]       { color: #5ba8cf; border-color: rgba(91,168,207,.2); }
   .filter-pill[data-cat="dispositifs_medicaux"].active{ color: #5ba8cf; background: rgba(91,168,207,.1); border-color: rgba(91,168,207,.35); }
-  .filter-pill[data-cat="clinique"]       { color: rgba(107,159,212,.85); border-color: rgba(107,159,212,.2); }
+  .filter-pill[data-cat="clinique"]       { color: #6b9fd4; border-color: rgba(107,159,212,.2); }
   .filter-pill[data-cat="clinique"].active{ color: #6b9fd4; background: rgba(107,159,212,.1); border-color: rgba(107,159,212,.35); }
-  .filter-pill[data-cat="exercice"]       { color: rgba(74,158,187,.85); border-color: rgba(74,158,187,.2); }
+  .filter-pill[data-cat="exercice"]       { color: #4a9ebb; border-color: rgba(74,158,187,.2); }
   .filter-pill[data-cat="exercice"].active{ color: #4a9ebb; background: rgba(74,158,187,.1); border-color: rgba(74,158,187,.35); }
-  .filter-pill[data-cat="facturation"]       { color: rgba(212,146,26,.85); border-color: rgba(212,146,26,.2); }
+  .filter-pill[data-cat="facturation"]       { color: #d4921a; border-color: rgba(212,146,26,.2); }
   .filter-pill[data-cat="facturation"].active{ color: #d4921a; background: rgba(212,146,26,.1); border-color: rgba(212,146,26,.35); }
-  .filter-pill[data-cat="sante_publique"]       { color: rgba(42,157,122,.85); border-color: rgba(42,157,122,.2); }
+  .filter-pill[data-cat="sante_publique"]       { color: #2a9d7a; border-color: rgba(42,157,122,.2); }
   .filter-pill[data-cat="sante_publique"].active{ color: #2a9d7a; background: rgba(42,157,122,.1); border-color: rgba(42,157,122,.35); }
-  .filter-pill[data-cat="administratif"]       { color: rgba(192,106,170,.85); border-color: rgba(192,106,170,.2); }
+  .filter-pill[data-cat="administratif"]       { color: #c06aaa; border-color: rgba(192,106,170,.2); }
   .filter-pill[data-cat="administratif"].active{ color: #c06aaa; background: rgba(192,106,170,.1); border-color: rgba(192,106,170,.35); }
 
   /* ── Loading ────────────────────────────── */
@@ -204,7 +204,7 @@
     padding: 2px 7px; border-radius: 2px; font-size: 9px; font-weight: 400;
     font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .5px;
   }
-  .card-date { font-family: 'DM Mono', monospace; font-size: 11px; color: #2e3050; font-weight: 400; }
+  .card-date { font-family: 'DM Mono', monospace; font-size: 11px; color: #1a1d3a; font-weight: 400; }
   .card-freshness { font-size: 0.71rem; font-weight: 600; }
   .urgency-pill {
     display: inline-flex; align-items: center; gap: 4px;
@@ -305,7 +305,7 @@
   }
   .group-header:first-child { margin-top: 0; }
   .group-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: #252840 !important; }
-  .group-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: #4a4e68 !important; }
+  .group-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: #2e3154 !important; }
   .group-count { font-size: 0.79rem; color: var(--text5); font-weight: 400; }
   .group-line { flex: 1; height: 1px; background: var(--border); }
 
