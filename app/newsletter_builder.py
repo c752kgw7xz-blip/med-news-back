@@ -154,9 +154,19 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
 .bg  { background: var(--bg); padding: 32px 16px; }
 .wrap { max-width: 600px; margin: 0 auto; }
 
+/* Masthead */
+.masthead { text-align: center; padding: 36px 0 28px;
+            border-bottom: 1px solid var(--border); }
+.masthead-name { font-family: 'Instrument Serif', Georgia, serif;
+                  font-size: 24px; font-style: italic; color: var(--text); }
+.masthead-name em { color: var(--green); font-style: italic; }
+.masthead-sub { font-family: 'DM Mono', monospace; font-size: 9px;
+                letter-spacing: 3px; text-transform: uppercase;
+                color: var(--text5); margin-top: 6px; }
+
 /* Header */
 .hd { background: transparent; border: none;
-      border-radius: 0; padding: 36px 40px 30px; }
+      border-radius: 0; padding: 32px 40px 28px; }
 .hd-eye { font-family: 'DM Mono', monospace; font-size: 10px;
            color: var(--text5); letter-spacing: 2px;
            text-transform: uppercase; margin-bottom: 14px; }
@@ -167,13 +177,10 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
              font-size: 28px; font-weight: 400; color: var(--text);
              line-height: 1.2; margin-bottom: 4px; }
 .hd-title em { font-style: italic; color: var(--green); }
-.hd-meta { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
-.hd-pill  { font-family: 'DM Mono', monospace; font-size: 0.75rem;
-             border-radius: 20px; padding: 3px 10px;
-             display: inline-block; margin-right: 4px; }
-.pill-teal  { background: rgba(42,157,143,.12); color: #1a7a6e; }
-.pill-amber { background: rgba(212,146,26,.12);  color: #a07010; }
-.pill-red   { background: rgba(224,82,82,.12);   color: #c03030; }
+.hd-stats { font-family: 'DM Mono', monospace; font-size: 10px;
+             color: var(--text4); letter-spacing: 0.3px; margin-top: 16px; }
+.hd-stats .n   { color: var(--text2); }
+.hd-stats .sep { color: var(--border2); margin: 0 8px; }
 
 /* Édito */
 .edito { background: transparent; border: none;
@@ -486,19 +493,27 @@ def build_newsletter(
 <div class="bg">
 <div class="wrap">
 
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="masthead-name">Med<em>News</em></div>
+    <div class="masthead-sub">Veille réglementaire · Médecine libérale</div>
+  </div>
+
   <!-- HEADER -->
   <div class="hd">
     <div class="hd-eye">
-      <span class="hd-dot"></span>Veille réglementaire · MedNews
+      <span class="hd-dot"></span>Veille réglementaire
     </div>
     <div class="hd-title">
       {_he(specialty_name)}<br><em>{_he(mois_annee)}</em>
     </div>
-    <div class="hd-meta">
-      <span class="hd-pill pill-teal">{n_total} texte{'s' if n_total != 1 else ''}</span>
-      <span class="hd-pill pill-amber">{n_alertes} alerte{'s' if n_alertes != 1 else ''}</span>
-      <span class="hd-pill pill-red">{n_autres} arrêté{'s' if n_autres != 1 else ''}/reco</span>
-      <span class="hd-pill pill-teal">JORF · ANSM · HAS</span>
+    <div class="hd-stats">
+      <span class="n">{n_total}</span> texte{'s' if n_total != 1 else ''}
+      <span class="sep">·</span>
+      <span class="n">{n_alertes}</span> alerte{'s' if n_alertes != 1 else ''}
+      <span class="sep">·</span>
+      <span class="n">{n_autres}</span> arrêté{'s' if n_autres != 1 else ''}/reco
+      <span class="sep">·</span>JORF · ANSM · HAS
     </div>
   </div>
 
