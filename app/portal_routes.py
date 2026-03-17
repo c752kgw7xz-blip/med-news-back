@@ -444,9 +444,13 @@ def send_verification_email(email: str, raw_token: str) -> None:
     plain = f"Vérifiez votre email MedNews : {verify_url}"
 
     try:
-        send_email(email, subject, html, plain)
+        result = send_email(email, subject, html, plain)
+        if not result.success:
+            logger.error("Échec envoi email vérification à %s : %s", email[:3] + "***", result.error)
+        else:
+            logger.info("Email de vérification envoyé à %s", email[:3] + "***")
     except Exception as e:
-        logger.warning("Échec envoi email vérification: %s", e)
+        logger.error("Exception envoi email vérification: %s", e)
 
 
 @router.post("/auth/verify-email")

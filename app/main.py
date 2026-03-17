@@ -304,6 +304,48 @@ def admin_run_send(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/admin/test-email")
+def admin_test_email(request: Request):
+    """Teste l'envoi email et retourne le résultat + config active."""
+    import os as _os
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    from app.mailer import send_email
+
+    # Déterminer le transport actif
+    transport = "none"
+    if _os.environ.get("SENDGRID_API_KEY"):
+        transport = "sendgrid"
+    elif _os.environ.get("SMTP_HOST"):
+        transport = f"smtp:{_os.environ.get('SMTP_HOST')}:{_os.environ.get('SMTP_PORT','587')}"
+
+    mail_from = _os.environ.get("MAIL_FROM", "")
+    to_email = mail_from  # s'envoie à lui-même
+
+    if not to_email:
+        raise HTTPException(status_code=500, detail="MAIL_FROM non défini")
+
+    try:
+        result = send_email(
+            to_email,
+            "MedNews — Test email transport",
+            "<p>Test OK depuis Render.</p>",
+            "Test OK depuis Render.",
+        )
+        return {
+            "transport": transport,
+            "mail_from": mail_from,
+            "success": result.success,
+            "error": result.error,
+        }
+    except Exception as e:
+        return {
+            "transport": transport,
+            "mail_from": mail_from,
+            "success": False,
+            "error": str(e),
+        }
+
+
 # ======================
 # Routes utilisateurs
 # ======================
