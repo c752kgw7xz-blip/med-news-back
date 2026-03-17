@@ -507,14 +507,17 @@ function toast(msg, type = 'success') {
 // ── Rendering ─────────────────────────────────────────────────
 const CATEGORY_ORDER = ['medicament','dispositifs_medicaux','clinique','exercice','facturation','sante_publique','administratif'];
 const CATEGORY_META = {
-  medicament:           { icon: '<i data-lucide="pill" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'M\u00e9dicaments & prescriptions' },
-  dispositifs_medicaux: { icon: '<i data-lucide="scan" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Dispositifs m\u00e9dicaux' },
-  clinique:             { icon: '<i data-lucide="activity" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Pratique clinique' },
-  exercice:             { icon: '<i data-lucide="scale" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Exercice lib\u00e9ral' },
-  facturation:          { icon: '<i data-lucide="receipt" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Facturation & cotations' },
-  sante_publique:       { icon: '<i data-lucide="shield-plus" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Sant\u00e9 publique' },
-  administratif:        { icon: '<i data-lucide="clipboard-list" style="width:11px;height:11px;vertical-align:middle;"></i>', label: 'Administratif' },
+  medicament:           { icon: 'pill',           label: 'M\u00e9dicaments & prescriptions' },
+  dispositifs_medicaux: { icon: 'scan',           label: 'Dispositifs m\u00e9dicaux' },
+  clinique:             { icon: 'activity',       label: 'Pratique clinique' },
+  exercice:             { icon: 'scale',          label: 'Exercice lib\u00e9ral' },
+  facturation:          { icon: 'receipt',        label: 'Facturation & cotations' },
+  sante_publique:       { icon: 'shield-plus',    label: 'Sant\u00e9 publique' },
+  administratif:        { icon: 'clipboard-list', label: 'Administratif' },
 };
+function catIconHtml(iconName, color) {
+  return `<i data-lucide="${iconName}" style="width:11px;height:11px;vertical-align:middle;color:${color};stroke:${color};"></i>`;
+}
 
 const CATEGORIE_STYLE = {
   clinique:             { bg: '#e8f1fc', color: '#2060a8', border: '0.5px solid #b8d0f0', label: 'Clinique' },
@@ -527,11 +530,12 @@ const CATEGORIE_STYLE = {
 };
 
 function catSeparator(categorie) {
-  const m = CATEGORY_META[categorie] || { icon: '<span style="font-size:11px;">\u2022</span>', label: categorie || 'Non class\u00e9' };
+  const m = CATEGORY_META[categorie] || { icon: null, label: categorie || 'Non class\u00e9' };
   const s = CATEGORIE_STYLE[categorie] || { color: '#777' };
+  const icon = m.icon ? catIconHtml(m.icon, s.color) : '<span style="font-size:11px;">\u2022</span>';
   return `<div class="cat-separator">
     <span class="cat-sep-line"></span>
-    <span class="cat-sep-label" style="color:${s.color};">${m.icon}\u00a0${esc(m.label)}</span>
+    <span class="cat-sep-label" style="color:${s.color};">${icon}\u00a0${esc(m.label)}</span>
     <span class="cat-sep-line"></span>
   </div>`;
 }
