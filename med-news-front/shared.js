@@ -71,7 +71,7 @@
     try {
       var parts = raw.substring(0, 10).split('-');
       if (parts.length !== 3) return raw;
-      return parts[2] + ' - ' + parts[1] + ' - ' + parts[0];
+      return parts[2] + '/' + parts[1] + '/' + parts[0];
     } catch (e) { return raw; }
   }
 
