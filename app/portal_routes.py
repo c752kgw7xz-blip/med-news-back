@@ -119,9 +119,8 @@ def list_articles(
     to_date: Optional[str] = Query(default=None),
     user_id: str = Depends(_get_current_user_id),
 ):
-    # Toujours utiliser la spécialité de l'utilisateur — ignorer ?specialty=
-    # pour éviter qu'un médecin consulte les articles d'une autre spécialité
-    slug = _get_user_specialty_slug(user_id)
+    # Utiliser la spécialité demandée si fournie, sinon celle de l'utilisateur
+    slug = specialty if specialty else _get_user_specialty_slug(user_id)
     aud_clause, aud_params = _build_audience_clause(audience, slug)
 
     # Build extra WHERE fragments
