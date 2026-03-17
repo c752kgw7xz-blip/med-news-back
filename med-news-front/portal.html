@@ -41,7 +41,7 @@
   }
   .header-left { display: flex; align-items: baseline; gap: 12px; }
   .header-left h1 {
-    font-family: 'Instrument Serif', Georgia, serif; font-size: 20px; font-weight: 400;
+    font-family: 'Instrument Serif', Georgia, serif; font-size:1.18rem; font-weight: 400;
     color: var(--text); letter-spacing: -.2px;
   }
   .header-left h1 em { font-style: italic; }
@@ -56,7 +56,7 @@
   .header-right .email { font-size: 0.86rem; color: var(--text2); }
   .btn-logout {
     padding: 5px 12px; background: transparent; border: 0.5px solid #1c1e30;
-    color: var(--text3); border-radius: 3px; font-size: 11px; font-weight: 400;
+    color: var(--text3); border-radius: 3px; font-size:0.65rem; font-weight: 400;
     cursor: pointer; transition: all .2s; font-family: 'DM Mono', monospace;
   }
   .btn-logout:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
@@ -90,7 +90,7 @@
   }
   .sidebar-section { padding: 0 16px; margin-bottom: 6px; }
   .sidebar-label {
-    font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400;
+    font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400;
     letter-spacing: 1.5px; color: #2e3154; text-transform: uppercase;
     padding: 6px 16px 4px; margin-bottom: 2px;
   }
@@ -98,7 +98,7 @@
   .sidebar-item {
     display: flex; align-items: center; justify-content: space-between;
     padding: 6px 16px 6px 20px; cursor: pointer; transition: all .12s;
-    color: var(--text3); font-size: 14px; font-weight: 300; font-family: 'Outfit', sans-serif;
+    color: var(--text3); font-size:0.82rem; font-weight: 300; font-family: 'Outfit', sans-serif;
     border-left: 2px solid transparent;
   }
   .sidebar-item:hover { color: var(--text2); background: rgba(0,0,0,.04); }
@@ -106,7 +106,7 @@
     color: var(--text); border-left-color: var(--green);
     padding-left: 18px; background: rgba(0,0,0,.05); font-weight: 500;
   }
-  .sidebar-item .count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text4); font-weight: 400; }
+  .sidebar-item .count { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text4); font-weight: 400; }
   .sidebar-item.active .count { color: var(--text3); }
   .sidebar-more {
     padding: 5px 16px; font-size: 0.71rem; color: var(--text5); cursor: default;
@@ -118,14 +118,14 @@
   /* ── Rubrique header ───────────────────── */
   .rubrique-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
   .rubrique-month {
-    font-family: 'Instrument Serif', Georgia, serif; font-size: 28px;
+    font-family: 'Instrument Serif', Georgia, serif; font-size:1.65rem;
     font-weight: 400; color: var(--text); margin-bottom: 2px; font-style: italic; letter-spacing: -.3px;
   }
-  .rubrique-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: #2e3154; letter-spacing: .3px; margin-bottom: 14px; }
+  .rubrique-meta { font-family: 'DM Mono', monospace; font-size:0.65rem; color: #2e3154; letter-spacing: .3px; margin-bottom: 14px; }
   .rubrique-filters { display: flex; gap: 6px; flex-wrap: wrap; }
   .filter-pill {
     display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px;
-    border-radius: 3px; font-size: 12px; font-weight: 300; cursor: pointer;
+    border-radius: 3px; font-size:0.71rem; font-weight: 300; cursor: pointer;
     border: 0.5px solid #1c1e30; background: transparent; color: #2e3154;
     transition: all .15s; white-space: nowrap; font-family: 'Outfit', sans-serif;
   }
@@ -134,20 +134,20 @@
 
 
   /* ── Filter pills — couleurs par catégorie ── */
-  .filter-pill[data-cat="medicament"]       { color: #a07be0; border-color: rgba(160,123,224,.2); }
-  .filter-pill[data-cat="medicament"].active{ color: #a07be0; background: rgba(160,123,224,.1); border-color: rgba(160,123,224,.35); }
-  .filter-pill[data-cat="dispositifs_medicaux"]       { color: #5ba8cf; border-color: rgba(91,168,207,.2); }
-  .filter-pill[data-cat="dispositifs_medicaux"].active{ color: #5ba8cf; background: rgba(91,168,207,.1); border-color: rgba(91,168,207,.35); }
-  .filter-pill[data-cat="clinique"]       { color: #6b9fd4; border-color: rgba(107,159,212,.2); }
-  .filter-pill[data-cat="clinique"].active{ color: #6b9fd4; background: rgba(107,159,212,.1); border-color: rgba(107,159,212,.35); }
-  .filter-pill[data-cat="exercice"]       { color: #4a9ebb; border-color: rgba(74,158,187,.2); }
-  .filter-pill[data-cat="exercice"].active{ color: #4a9ebb; background: rgba(74,158,187,.1); border-color: rgba(74,158,187,.35); }
-  .filter-pill[data-cat="facturation"]       { color: #d4921a; border-color: rgba(212,146,26,.2); }
-  .filter-pill[data-cat="facturation"].active{ color: #d4921a; background: rgba(212,146,26,.1); border-color: rgba(212,146,26,.35); }
-  .filter-pill[data-cat="sante_publique"]       { color: #2a9d7a; border-color: rgba(42,157,122,.2); }
-  .filter-pill[data-cat="sante_publique"].active{ color: #2a9d7a; background: rgba(42,157,122,.1); border-color: rgba(42,157,122,.35); }
-  .filter-pill[data-cat="administratif"]       { color: #c06aaa; border-color: rgba(192,106,170,.2); }
-  .filter-pill[data-cat="administratif"].active{ color: #c06aaa; background: rgba(192,106,170,.1); border-color: rgba(192,106,170,.35); }
+  .filter-pill[data-cat="medicament"]       { color: #9333ea; border-color: rgba(147,51,234,.2); }
+  .filter-pill[data-cat="medicament"].active{ color: #9333ea; background: rgba(147,51,234,.1); border-color: rgba(147,51,234,.35); }
+  .filter-pill[data-cat="dispositifs_medicaux"]       { color: #0ea5e9; border-color: rgba(14,165,233,.2); }
+  .filter-pill[data-cat="dispositifs_medicaux"].active{ color: #0ea5e9; background: rgba(14,165,233,.1); border-color: rgba(14,165,233,.35); }
+  .filter-pill[data-cat="clinique"]       { color: #3b82f6; border-color: rgba(59,130,246,.2); }
+  .filter-pill[data-cat="clinique"].active{ color: #3b82f6; background: rgba(59,130,246,.1); border-color: rgba(59,130,246,.35); }
+  .filter-pill[data-cat="exercice"]       { color: #0891b2; border-color: rgba(8,145,178,.2); }
+  .filter-pill[data-cat="exercice"].active{ color: #0891b2; background: rgba(8,145,178,.1); border-color: rgba(8,145,178,.35); }
+  .filter-pill[data-cat="facturation"]       { color: #d97706; border-color: rgba(217,119,6,.2); }
+  .filter-pill[data-cat="facturation"].active{ color: #d97706; background: rgba(217,119,6,.1); border-color: rgba(217,119,6,.35); }
+  .filter-pill[data-cat="sante_publique"]       { color: #059669; border-color: rgba(5,150,105,.2); }
+  .filter-pill[data-cat="sante_publique"].active{ color: #059669; background: rgba(5,150,105,.1); border-color: rgba(5,150,105,.35); }
+  .filter-pill[data-cat="administratif"]       { color: #db2777; border-color: rgba(219,39,119,.2); }
+  .filter-pill[data-cat="administratif"].active{ color: #db2777; background: rgba(219,39,119,.1); border-color: rgba(219,39,119,.35); }
 
   /* ── Loading ────────────────────────────── */
   .loading { text-align: center; padding: 80px 0; }
@@ -201,29 +201,29 @@
   .btn-ext-icon { display: inline-flex; align-items: center; color: var(--text4); transition: color .15s; text-decoration: none; }
   .btn-ext-icon:hover { color: var(--text2); }
   .nature-badge {
-    padding: 2px 7px; border-radius: 2px; font-size: 9px; font-weight: 400;
+    padding: 2px 7px; border-radius: 2px; font-size:0.53rem; font-weight: 400;
     font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .5px;
   }
-  .card-date { font-family: 'DM Mono', monospace; font-size: 11px; color: #1a1d3a; font-weight: 400; }
+  .card-date { font-family: 'DM Mono', monospace; font-size:0.65rem; color: #1a1d3a; font-weight: 400; }
   .card-freshness { font-size: 0.71rem; font-weight: 600; }
   .urgency-pill {
     display: inline-flex; align-items: center; gap: 4px;
-    font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400;
+    font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400;
     letter-spacing: .5px; text-transform: uppercase;
     padding: 0; background: transparent; border: none; border-radius: 0; flex-shrink: 0;
   }
   .urgency-pill.high { color: #e05252; }
-  .urgency-pill.mid { color: #d4921a; }
-  .urgency-pill.low { color: #2a9d7a; }
+  .urgency-pill.mid { color: #d97706; }
+  .urgency-pill.low { color: #059669; }
 
   .card-title {
-    font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 400; color: var(--text); line-height: 1.4; margin-bottom: 7px;
+    font-family: 'Outfit', sans-serif; font-size:1.0rem; font-weight: 400; color: var(--text); line-height: 1.4; margin-bottom: 7px;
   }
 
 
   /* Résumé : 1 ligne en mode réduit, taille plus lisible */
   .card-summary {
-    font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 300; color: #3a3d55; line-height: 1.5;
+    font-family: 'Outfit', sans-serif; font-size:0.76rem; font-weight: 300; color: #3a3d55; line-height: 1.5;
     display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
   }
   /* Impact pratique : masqué tant que la carte n'est pas ouverte */
@@ -305,7 +305,7 @@
   }
   .group-header:first-child { margin-top: 0; }
   .group-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: #252840 !important; }
-  .group-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: #2e3154 !important; }
+  .group-label { font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: #2e3154 !important; }
   .group-count { font-size: 0.79rem; color: var(--text5); font-weight: 400; }
   .group-line { flex: 1; height: 1px; background: var(--border); }
 
@@ -530,13 +530,13 @@ function catIconHtml(iconName, color) {
 }
 
 const CATEGORIE_STYLE = {
-  clinique:             { bg: 'rgba(107,159,212,.08)', color: '#6b9fd4', border: '0.5px solid rgba(107,159,212,.25)', label: 'Clinique' },
-  medicament:           { bg: 'rgba(160,123,224,.08)', color: '#a07be0', border: '0.5px solid rgba(160,123,224,.25)', label: 'M\u00e9dicaments' },
-  dispositifs_medicaux: { bg: 'rgba(107,159,212,.08)', color: '#6b9fd4', border: '0.5px solid rgba(107,159,212,.25)', label: 'Dispositifs m\u00e9d.' },
-  facturation:          { bg: 'rgba(212,146,26,.08)',   color: '#d4921a', border: '0.5px solid rgba(212,146,26,.25)',   label: 'Facturation' },
-  administratif:        { bg: 'rgba(192,106,170,.08)',  color: '#c06aaa', border: '0.5px solid rgba(192,106,170,.25)',  label: 'Administratif' },
-  sante_publique:       { bg: 'rgba(42,157,122,.08)',   color: '#2a9d7a', border: '0.5px solid rgba(42,157,122,.25)',   label: 'Sant\u00e9 publique' },
-  exercice:             { bg: 'rgba(74,158,187,.08)',   color: '#4a9ebb', border: '0.5px solid rgba(74,158,187,.25)',   label: 'Exercice lib\u00e9ral' },
+  clinique:             { bg: 'rgba(59,130,246,.08)', color: '#3b82f6', border: '0.5px solid rgba(59,130,246,.25)', label: 'Clinique' },
+  medicament:           { bg: 'rgba(147,51,234,.08)', color: '#9333ea', border: '0.5px solid rgba(147,51,234,.25)', label: 'M\u00e9dicaments' },
+  dispositifs_medicaux: { bg: 'rgba(59,130,246,.08)', color: '#3b82f6', border: '0.5px solid rgba(59,130,246,.25)', label: 'Dispositifs m\u00e9d.' },
+  facturation:          { bg: 'rgba(217,119,6,.08)',   color: '#d97706', border: '0.5px solid rgba(217,119,6,.25)',   label: 'Facturation' },
+  administratif:        { bg: 'rgba(219,39,119,.08)',  color: '#db2777', border: '0.5px solid rgba(219,39,119,.25)',  label: 'Administratif' },
+  sante_publique:       { bg: 'rgba(5,150,105,.08)',   color: '#059669', border: '0.5px solid rgba(5,150,105,.25)',   label: 'Sant\u00e9 publique' },
+  exercice:             { bg: 'rgba(8,145,178,.08)',   color: '#0891b2', border: '0.5px solid rgba(8,145,178,.25)',   label: 'Exercice lib\u00e9ral' },
 };
 
 function categorieBadge(categorie) {
@@ -641,7 +641,7 @@ function renderArticle(a, idx) {
 function categoryHeader(categorie, count) {
   const m = CATEGORY_META[categorie] || { icon: null, label: categorie || 'Non class\u00e9' };
   const s = CATEGORIE_STYLE[categorie] || { color: 'var(--text3)' };
-  const icon = m.icon ? catIconHtml(m.icon, s.color) : '<span style="font-size:11px;">\u2022</span>';
+  const icon = m.icon ? catIconHtml(m.icon, s.color) : '<span style="font-size:0.65rem;">\u2022</span>';
   return `<div class="group-header" data-cat="${categorie || ''}">
     <span class="group-dot" style="background:${s.color};"></span>
     <span class="group-label" style="color:${s.color};">${icon}\u00a0${esc(m.label)}</span>
@@ -882,11 +882,11 @@ function buildSidebar() {
     }).join('');
 
     if (!exploreExpanded && hidden > 0) {
-      exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:11px;" onclick="expandExplore()">
+      exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:0.65rem;" onclick="expandExplore()">
         <span>+ ${hidden} sp\u00e9cialit\u00e9s\u2026</span>
       </div>`;
     } else if (exploreExpanded && others.length > MAX_VISIBLE) {
-      exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:11px;" onclick="collapseExplore()">
+      exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:0.65rem;" onclick="collapseExplore()">
         <span>R\u00e9duire</span>
       </div>`;
     }

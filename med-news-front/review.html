@@ -531,19 +531,19 @@ function catIconHtml(iconName, color) {
 }
 
 const CATEGORIE_STYLE = {
-  clinique:             { bg: '#e8f1fc', color: '#2060a8', border: '0.5px solid #b8d0f0', label: 'Clinique' },
-  medicament:           { bg: '#f0ebfc', color: '#6040a8', border: '0.5px solid #d0c0f0', label: 'M\u00e9dicaments' },
-  dispositifs_medicaux: { bg: '#eef2ff', color: '#6366f1', border: '0.5px solid #a5b4fc', label: 'Dispositifs m\u00e9d.' },
-  facturation:          { bg: '#e8f4fa', color: '#1878a0', border: '0.5px solid #b0d8ee', label: 'Facturation' },
-  administratif:        { bg: '#fde8f5', color: '#982090', border: '0.5px solid #e8b8de', label: 'Administratif' },
-  sante_publique:       { bg: '#e4f7f0', color: '#1a8a60', border: '0.5px solid #a8e0cc', label: 'Sant\u00e9 publique' },
-  exercice:             { bg: '#e4f6f6', color: '#1a8888', border: '0.5px solid #a8dede', label: 'Exercice lib\u00e9ral' },
+  clinique:             { bg: 'rgba(59,130,246,.08)',  color: '#3b82f6', border: '0.5px solid rgba(59,130,246,.25)',  label: 'Clinique' },
+  medicament:           { bg: 'rgba(147,51,234,.08)',  color: '#9333ea', border: '0.5px solid rgba(147,51,234,.25)',  label: 'M\u00e9dicaments' },
+  dispositifs_medicaux: { bg: 'rgba(14,165,233,.08)',  color: '#0ea5e9', border: '0.5px solid rgba(14,165,233,.25)',  label: 'Dispositifs m\u00e9d.' },
+  facturation:          { bg: 'rgba(217,119,6,.08)',   color: '#d97706', border: '0.5px solid rgba(217,119,6,.25)',   label: 'Facturation' },
+  administratif:        { bg: 'rgba(219,39,119,.08)',  color: '#db2777', border: '0.5px solid rgba(219,39,119,.25)',  label: 'Administratif' },
+  sante_publique:       { bg: 'rgba(5,150,105,.08)',   color: '#059669', border: '0.5px solid rgba(5,150,105,.25)',   label: 'Sant\u00e9 publique' },
+  exercice:             { bg: 'rgba(8,145,178,.08)',   color: '#0891b2', border: '0.5px solid rgba(8,145,178,.25)',   label: 'Exercice lib\u00e9ral' },
 };
 
 function catSeparator(categorie) {
   const m = CATEGORY_META[categorie] || { icon: null, label: categorie || 'Non class\u00e9' };
   const s = CATEGORIE_STYLE[categorie] || { color: '#777' };
-  const icon = m.icon ? catIconHtml(m.icon, s.color) : '<span style="font-size:11px;">\u2022</span>';
+  const icon = m.icon ? catIconHtml(m.icon, s.color) : '<span style="font-size:0.65rem;">\u2022</span>';
   return `<div class="cat-separator">
     <span class="cat-sep-line"></span>
     <span class="cat-sep-label" style="color:${s.color};">${icon}\u00a0${esc(m.label)}</span>
@@ -637,7 +637,7 @@ function renderArticle(a, idx) {
       </div>
       <div class="card-top-right">
         ${catBadge}
-        ${sourceMeta ? `<span class="card-date" style="font-size:10px;color:var(--text3);">${esc(sourceMeta)}</span>` : ''}
+        ${sourceMeta ? `<span class="card-date" style="font-size:0.59rem;color:var(--text3);">${esc(sourceMeta)}</span>` : ''}
         <div class="spec-badges">${specDisplay}</div>
         <span class="status-badge ${statusClass}">${statusLabel}</span>
         ${statusIconHtml}
@@ -658,7 +658,7 @@ function renderArticle(a, idx) {
         <div class="detail-box"><h4>Points cl\u00e9s</h4>${pointsHtml}</div>
         <div class="detail-box"><h4>Analyse</h4>${analyseHtml}</div>
       </div>
-      ${a.note_internal ? `<div style="margin-top:10px;font-size:11px;color:var(--text3);"><b>Note admin :</b> ${esc(a.note_internal)}</div>` : ''}
+      ${a.note_internal ? `<div style="margin-top:10px;font-size:0.65rem;color:var(--text3);"><b>Note admin :</b> ${esc(a.note_internal)}</div>` : ''}
     </div>
   </div>`;
 }
