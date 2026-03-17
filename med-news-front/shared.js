@@ -46,10 +46,32 @@
   // Réagir aux changements OS en mode Auto
   mq.addEventListener('change', applyTheme);
 
+  // Détecte si l'utilisateur connecté est admin (depuis le JWT)
+  function isAdmin() {
+    try {
+      var token = sessionStorage.getItem('access_token');
+      if (!token) return false;
+      var payload = JSON.parse(atob(token.split('.')[1]));
+      return !!payload.adm;
+    } catch (e) { return false; }
+  }
+
+  // Retourne l'URL "home" selon le rôle : /review pour admin, /portal pour user
+  function homeUrl() {
+    return isAdmin() ? '/review' : '/portal';
+  }
+
+  function goHome() {
+    window.location.href = homeUrl();
+  }
+
   // Export global
   window.MedNews = {
     setTheme: setTheme,
     setFontSize: setFontSize,
     applyTheme: applyTheme,
+    isAdmin: isAdmin,
+    homeUrl: homeUrl,
+    goHome: goHome,
   };
 })();
