@@ -87,6 +87,22 @@
     .content-area { padding: 16px; }
     .rubrique-month { font-size: 1.24rem; }
   }
+  @media (max-width: 480px) {
+    header { padding: 0 12px; height: 48px; }
+    .content-area { padding: 12px; }
+    .article-card { padding: 12px 14px; }
+    .detail-box { padding: 10px 12px; }
+    .detail-box li { padding-left: 10px; font-size: 0.82rem; }
+    .filter-pill { padding: 4px 9px; font-size: 0.65rem; }
+    .rubrique-month { font-size: 1.06rem; }
+    .rubrique-meta { font-size: 0.59rem; }
+    /* Empêche le chevauchement urgency-pill / card-top-right */
+    .card-top { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .card-top-left { width: 100%; }
+    .card-top-right { gap: 6px; }
+    .card-date { display: none; }
+    .btn-official { padding: 6px 12px; font-size: 0.76rem; }
+  }
 
   /* ── Sidebar ────────────────────────────── */
   .sidebar {

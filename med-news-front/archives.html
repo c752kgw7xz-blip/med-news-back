@@ -76,6 +76,17 @@
     .content-area { padding: 16px; }
     .month-name { font-size: 1.24rem; }
   }
+  @media (max-width: 480px) {
+    header { padding: 0 12px; height: 48px; }
+    .content-area { padding: 12px; }
+    .month-name { font-size: 1.06rem; }
+    .article-card { padding: 12px 14px; }
+    .card-top { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .card-top-left { width: 100%; }
+    .card-date { display: none; }
+    .filter-pill { padding: 4px 9px; font-size: 0.65rem; }
+    .search-input { padding: 10px 14px 10px 36px; }
+  }
 
   /* ── Sidebar ────────────────────────────── */
   .sidebar {

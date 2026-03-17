@@ -96,41 +96,43 @@ from fastapi.responses import FileResponse
 
 _FRONT_DIR = os.path.join(os.path.dirname(__file__), "..", "med-news-front")
 
+_NO_CACHE = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache"}
+
 @app.get("/")
 def serve_landing():
-    return FileResponse(os.path.join(_FRONT_DIR, "index.html"), media_type="text/html")
+    return FileResponse(os.path.join(_FRONT_DIR, "index.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/review")
 def serve_review():
-    return FileResponse(os.path.join(_FRONT_DIR, "review.html"), media_type="text/html")
+    return FileResponse(os.path.join(_FRONT_DIR, "review.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/login")
 def serve_login():
-    return FileResponse(os.path.join(_FRONT_DIR, "login.html"), media_type="text/html")
+    return FileResponse(os.path.join(_FRONT_DIR, "login.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/signup")
 def serve_signup():
-    return FileResponse(os.path.join(_FRONT_DIR, "signup.html"), media_type="text/html")
+    return FileResponse(os.path.join(_FRONT_DIR, "signup.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/portal")
 def serve_portal():
-    return FileResponse(os.path.join(_FRONT_DIR, "portal.html"), media_type="text/html")
+    return FileResponse(os.path.join(_FRONT_DIR, "portal.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/verify-email")
 def serve_verify_email():
-    return FileResponse(os.path.join(_FRONT_DIR, "verify-email.html"), media_type="text/html")
+    return FileResponse(os.path.join(_FRONT_DIR, "verify-email.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/archives")
 def serve_archives():
-    return FileResponse(os.path.join(_FRONT_DIR, "archives.html"), media_type="text/html")
+    return FileResponse(os.path.join(_FRONT_DIR, "archives.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/settings")
 def serve_settings():
-    return FileResponse(os.path.join(_FRONT_DIR, "settings.html"), media_type="text/html")
+    return FileResponse(os.path.join(_FRONT_DIR, "settings.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/shared.js")
 def serve_shared_js():
-    return FileResponse(os.path.join(_FRONT_DIR, "shared.js"), media_type="application/javascript")
+    return FileResponse(os.path.join(_FRONT_DIR, "shared.js"), media_type="application/javascript", headers=_NO_CACHE)
 
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
