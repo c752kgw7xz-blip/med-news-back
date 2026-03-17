@@ -24,12 +24,14 @@
 
   function applyFontSize() {
     var fs = localStorage.getItem('mednews-fontsize') || 'normal';
-    // compact=15px, normal=17px, large=20px — base 14px (calc(14px * --font-scale))
+    // compact=15px, normal=17px, large=20px
     var sizes = { compact: 15, normal: 17, large: 20 };
     var px = sizes[fs] || 17;
-    document.documentElement.style.setProperty('--font-scale', String(px / 14));
-    // Définir html font-size → 1rem = px (utilisé par les CSS rem)
-    document.documentElement.style.fontSize = px + 'px';
+    var scale = px / 14;
+    // Injecter un <style> garanti — plus fiable que les CSS custom props inline
+    var el = document.getElementById('_mednews_fs');
+    if (!el) { el = document.createElement('style'); el.id = '_mednews_fs'; document.head.appendChild(el); }
+    el.textContent = 'html{font-size:' + px + 'px!important}body{font-size:' + px + 'px!important;--font-scale:' + scale + '}';
   }
 
   function setFontSize(mode) {
