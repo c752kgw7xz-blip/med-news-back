@@ -6,14 +6,15 @@ Entrée  : liste d'items APPROVED pour cette spécialité (depuis DB)
 Sortie  : (sujet_email: str, html: str, texte_plain: str)
 
 Design :
-  - Email responsive, lisible sur mobile
-  - Chaque article = carte avec titre court, résumé, score visuel, lien officiel
+  - Reprend le système de design du portal (thème adaptatif OS clair/sombre)
+  - Chaque article = carte avec priorité, catégorie, titre, résumé, impact, lien
   - Ordre : score_density DESC (les plus importants en premier)
-  - Séparation visuelle TRANSVERSAL / SPECIALITE si les deux présents
+  - Séparation visuelle SPECIALITE / TRANSVERSAL si les deux présents
 """
 
 from __future__ import annotations
 
+import os
 from datetime import date
 from html import escape as _he
 from typing import Any
@@ -65,134 +66,334 @@ SPECIALTY_LABELS: dict[str, str] = {
     "biologiste": "Biologie médicale",
 }
 
-MONTH_FR = [
-    "", "janvier", "février", "mars", "avril", "mai", "juin",
-    "juillet", "août", "septembre", "octobre", "novembre", "décembre",
-]
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+MOIS_FR = {
+    1: "jan.", 2: "fév.", 3: "mars", 4: "avr.", 5: "mai", 6: "juin",
+    7: "juil.", 8: "août", 9: "sept.", 10: "oct.", 11: "nov.", 12: "déc.",
+}
+
+MOIS_FR_LONG = {
+    1: "janvier", 2: "février", 3: "mars", 4: "avril", 5: "mai", 6: "juin",
+    7: "juillet", 8: "août", 9: "septembre", 10: "octobre", 11: "novembre", 12: "décembre",
+}
 
 
-def _month_label(d: date) -> str:
-    return f"{MONTH_FR[d.month]} {d.year}"
+def _format_date(date_raw: str) -> str:
+    """'2026-02-23' → '23 fév. 2026'"""
+    try:
+        d = date.fromisoformat(date_raw[:10])
+        return f"{d.day} {MOIS_FR[d.month]} {d.year}"
+    except Exception:
+        return date_raw or ""
 
 
-def _score_dots(score: int) -> str:
-    """Retourne des pastilles visuelles selon le score (1-10)."""
-    filled = min(score, 10)
-    empty = 10 - filled
-    return (
-        '<span style="color:#1D9E75;font-size:11px;letter-spacing:2px;">'
-        + "●" * filled
-        + '</span>'
-        + '<span style="color:#D3D1C7;font-size:11px;letter-spacing:2px;">'
-        + "●" * empty
-        + "</span>"
-    )
-
-
-def _score_label(score: int) -> tuple[str, str]:
-    """Retourne (label texte, couleur hex) selon le score."""
+def _priority_label(score: int) -> tuple[str, str]:
+    """Retourne (label, css_class) selon le score."""
     if score >= 8:
-        return "À lire impérativement", "#A32D2D"
-    if score >= 5:
-        return "Important", "#854F0B"
-    return "Informatif", "#3B6D11"
+        return ("▲ À lire impérativement", "h")
+    elif score >= 6:
+        return ("↑ Important", "m")
+    else:
+        return ("À consulter", "l")
 
 
-def _nature_badge(nature: str) -> str:
-    colors = {
-        "LOI": ("#042C53", "#E6F1FB"),
-        "DECRET": ("#26215C", "#EEEDFE"),
-        "ARRETE": ("#085041", "#E1F5EE"),
-        "ORDONNANCE": ("#4A1B0C", "#FAECE7"),
-    }
-    bg, fg = colors.get(nature.upper(), ("#444441", "#F1EFE8"))
-    return (
-        f'<span style="background:{fg};color:{bg};padding:2px 8px;'
-        f'border-radius:4px;font-size:11px;font-weight:500;'
-        f'text-transform:uppercase;letter-spacing:.5px;">{nature}</span>'
-    )
+CAT_STYLES: dict[str, tuple[str, str]] = {
+    "medicament":           ("Médicaments",      "cat-medicament"),
+    "clinique":             ("Clinique",          "cat-clinique"),
+    "dispositifs_medicaux": ("Dispositifs méd.",  "cat-dispositifs"),
+    "facturation":          ("Facturation",       "cat-facturation"),
+    "administratif":        ("Administratif",     "cat-administratif"),
+    "sante_publique":       ("Santé publique",    "cat-sante_publique"),
+    "exercice":             ("Exercice libéral",  "cat-exercice"),
+}
 
+# ---------------------------------------------------------------------------
+# CSS complet (thème adaptatif OS)
+# ---------------------------------------------------------------------------
+
+_CSS = """
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:       #08090e;
+    --surface:  #0d0e16;
+    --surface2: #11121c;
+    --border:   #1c1e30;
+    --border2:  #252840;
+    --text:     #e8e9f4;
+    --text2:    #c8c8d4;
+    --text3:    #8b8fa8;
+    --text4:    #6b6f88;
+    --text5:    #4a4e68;
+    --green:    #1f9478;
+    --strip:    #11121c;
+    --impact:   #11121c;
+  }
+}
+:root {
+  --bg:       #f6f5f2;
+  --surface:  #ffffff;
+  --surface2: #f0ede8;
+  --border:   #e4e0d8;
+  --border2:  #cac4bb;
+  --text:     #1a1814;
+  --text2:    #4a4540;
+  --text3:    #7a7268;
+  --text4:    #9a9288;
+  --text5:    #bcb6ac;
+  --green:    #1f9478;
+  --strip:    #f0ede8;
+  --impact:   #f6f5f2;
+}
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); font-family: 'Outfit', sans-serif;
+       font-weight: 300; margin: 0; padding: 0; color: var(--text); }
+.bg  { background: var(--bg); padding: 32px 16px; }
+.wrap { max-width: 600px; margin: 0 auto; }
+
+/* Header */
+.hd { background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px 10px 0 0; padding: 36px 40px 30px; }
+.hd-eye { font-family: 'DM Mono', monospace; font-size: 10px;
+           color: var(--text5); letter-spacing: 2px;
+           text-transform: uppercase; margin-bottom: 14px; }
+.hd-dot { width: 6px; height: 6px; background: var(--green);
+           border-radius: 50%; display: inline-block;
+           margin-right: 6px; vertical-align: middle; }
+.hd-title { font-family: 'Instrument Serif', Georgia, serif;
+             font-size: 28px; font-weight: 400; color: var(--text);
+             line-height: 1.2; margin-bottom: 4px; }
+.hd-title em { font-style: italic; color: var(--green); }
+.hd-meta { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+.hd-chip { font-family: 'DM Mono', monospace; font-size: 10px;
+            color: var(--text5); letter-spacing: .5px; }
+.hd-sep  { width: 1px; height: 10px; background: var(--border); }
+
+/* Édito */
+.edito { background: var(--surface); border: 1px solid var(--border);
+          border-top: none; padding: 24px 40px 26px; }
+.edito p { font-size: 13px; color: var(--text3); line-height: 1.85; }
+.edito-sign { font-family: 'DM Mono', monospace; font-size: 10px;
+               color: var(--text5); margin-top: 12px;
+               letter-spacing: 1px; text-transform: uppercase; }
+
+/* CTA portal */
+.portal-strip { background: var(--strip); border: 1px solid var(--border);
+                border-top: none; padding: 18px 40px;
+                display: flex; align-items: center;
+                justify-content: space-between; gap: 16px; }
+.portal-strip p { font-size: 12px; color: var(--text4);
+                  font-family: 'DM Mono', monospace;
+                  letter-spacing: .3px; line-height: 1.6; }
+.portal-btn { font-family: 'Outfit', sans-serif; font-size: 12px;
+              font-weight: 500; color: var(--text);
+              text-decoration: none; background: var(--surface);
+              border: 1px solid var(--border2);
+              padding: 8px 18px; border-radius: 6px;
+              white-space: nowrap; flex-shrink: 0; }
+
+/* Séparateurs de section */
+.grp { padding: 26px 0 8px; display: flex;
+        align-items: center; gap: 10px; }
+.grp-dot { width: 5px; height: 5px; border-radius: 50%;
+            background: var(--border2); flex-shrink: 0; }
+.grp-label { font-family: 'DM Mono', monospace; font-size: 10px;
+              letter-spacing: 1.5px; text-transform: uppercase;
+              color: var(--text5); }
+.grp-line { flex: 1; height: 1px; background: var(--border); }
+
+/* Cards articles */
+.card { background: var(--surface); border: 1px solid var(--border);
+         border-radius: 10px; padding: 24px 28px 22px;
+         margin-bottom: 10px; }
+.card-top { display: flex; align-items: center; gap: 7px;
+             margin-bottom: 12px; flex-wrap: wrap; }
+.prio { font-family: 'DM Mono', monospace; font-size: 10px;
+         font-weight: 400; letter-spacing: .3px; }
+.prio.h { color: #e05252; }
+.prio.m { color: #d4921a; }
+.prio.l { color: #2a9d7a; }
+.card-date { font-family: 'DM Mono', monospace; font-size: 10px;
+              color: var(--text5); }
+
+/* Catégories */
+.cat { font-family: 'DM Mono', monospace; font-size: 9px;
+        letter-spacing: .5px; text-transform: uppercase;
+        padding: 2px 7px; border-radius: 2px; }
+.cat-medicament       { background: rgba(160,123,224,.08); color: #a07be0;
+                         border: 0.5px solid rgba(160,123,224,.25); }
+.cat-clinique         { background: rgba(107,159,212,.08); color: #6b9fd4;
+                         border: 0.5px solid rgba(107,159,212,.25); }
+.cat-dispositifs      { background: rgba(91,168,207,.08);  color: #5ba8cf;
+                         border: 0.5px solid rgba(91,168,207,.25); }
+.cat-facturation      { background: rgba(212,146,26,.08);  color: #d4921a;
+                         border: 0.5px solid rgba(212,146,26,.25); }
+.cat-administratif    { background: rgba(192,106,170,.08); color: #c06aaa;
+                         border: 0.5px solid rgba(192,106,170,.25); }
+.cat-sante_publique   { background: rgba(42,157,122,.08);  color: #2a9d7a;
+                         border: 0.5px solid rgba(42,157,122,.25); }
+.cat-exercice         { background: rgba(74,158,187,.08);  color: #4a9ebb;
+                         border: 0.5px solid rgba(74,158,187,.25); }
+
+.card-title { font-family: 'Instrument Serif', Georgia, serif;
+               font-size: 19px; font-weight: 400; color: var(--text);
+               line-height: 1.35; margin-bottom: 10px; }
+.card-resume { font-size: 13px; font-weight: 300; color: var(--text3);
+                line-height: 1.7; margin-bottom: 12px; }
+.card-impact { font-size: 12px; color: var(--text3); line-height: 1.65;
+                padding: 10px 14px; margin-bottom: 14px;
+                background: var(--impact); border-radius: 4px;
+                font-weight: 300; border: 1px solid var(--border); }
+.card-link { font-family: 'Outfit', sans-serif; font-size: 12px;
+              font-weight: 500; color: var(--text2);
+              text-decoration: none; border: 1px solid var(--border2);
+              padding: 6px 16px; border-radius: 6px;
+              display: inline-block; }
+
+/* Footer */
+.footer { padding: 24px 0 8px; text-align: center; }
+.footer p { font-family: 'DM Mono', monospace; font-size: 10px;
+             color: var(--text5); letter-spacing: .4px; line-height: 2; }
+.footer a { color: var(--text5); }
+"""
 
 # ---------------------------------------------------------------------------
 # Rendu d'un article
 # ---------------------------------------------------------------------------
 
-def _render_article(item: dict[str, Any], idx: int) -> str:
+def _render_article(item: dict[str, Any]) -> str:
     tri = item.get("tri_json") or {}
-    lecture = item.get("lecture_json") or {}
+    score = item.get("score_density") or 5
+    prio_label, prio_class = _priority_label(score)
 
-    titre_court = _he(tri.get("titre_court") or item.get("title_raw", "Sans titre")[:80])
-    resume = _he(tri.get("resume", ""))
-    impact = _he(tri.get("impact_pratique", ""))
-    nature = _he(tri.get("nature", ""))
-    date_pub = tri.get("date_publication", item.get("official_date", ""))
-    official_url = item.get("official_url", "#")
-    score = item.get("score_density", 5)
-    points = lecture.get("points_cles", [])
+    date_str = _format_date(item.get("official_date") or "")
 
-    score_txt, score_color = _score_label(score)
+    cat = item.get("categorie") or ""
+    cat_label, cat_class = CAT_STYLES.get(cat, ("", ""))
 
-    # Points clés (max 4)
-    points_html = ""
-    if points:
-        items_html = "".join(
-            f'<li style="margin:4px 0;color:#3d3d3a;">{_he(p)}</li>'
-            for p in points[:4]
-        )
-        points_html = f'<ul style="margin:10px 0 0 0;padding-left:18px;">{items_html}</ul>'
+    titre = tri.get("titre_court") or item.get("title_raw") or ""
+    resume = tri.get("resume") or ""
+    impact = tri.get("impact_pratique") or ""
+    url = item.get("official_url") or "#"
 
-    nature_badge = _nature_badge(nature) if nature else ""
-    dots = _score_dots(score)
+    cat_html = (
+        f'<span class="cat {cat_class}">{_he(cat_label)}</span>'
+        if cat_label else ""
+    )
 
-    # Séparateur entre articles
-    separator = '<hr style="border:none;border-top:1px solid #e8e6df;margin:24px 0;">' if idx > 0 else ""
+    impact_html = (
+        f'<div class="card-impact">{_he(impact)}</div>'
+        if impact else ""
+    )
 
     return f"""
-{separator}
-<div style="margin-bottom:8px;">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-    {nature_badge}
-    <span style="font-size:11px;color:#888780;">{date_pub}</span>
-    <span style="font-size:11px;font-weight:500;color:{score_color};">
-      {score_txt}
-    </span>
+<div class="card">
+  <div class="card-top">
+    <span class="prio {prio_class}">{_he(prio_label)}</span>
+    <span class="card-date">{_he(date_str)}</span>
+    {cat_html}
   </div>
-  <h3 style="margin:0 0 8px 0;font-size:17px;font-weight:600;
-             color:#2C2C2A;line-height:1.35;">
-    {titre_court}
-  </h3>
-  <div style="margin-bottom:4px;">{dots}</div>
-  <p style="margin:10px 0 0 0;font-size:14px;color:#3d3d3a;line-height:1.6;">
-    {resume}
-  </p>
-  {f'<p style="margin:8px 0 0 0;font-size:13px;color:#5F5E5A;font-style:italic;line-height:1.5;border-left:3px solid #1D9E75;padding-left:10px;">{impact}</p>' if impact else ""}
-  {points_html}
-  <div style="margin-top:12px;">
-    <a href="{official_url}"
-       style="font-size:13px;color:#185FA5;text-decoration:none;font-weight:500;">
-      Lire le texte officiel →
-    </a>
-  </div>
+  <div class="card-title">{_he(titre)}</div>
+  <p class="card-resume">{_he(resume)}</p>
+  {impact_html}
+  <a class="card-link" href="{url}">Lire le texte officiel →</a>
 </div>
 """
 
 
 # ---------------------------------------------------------------------------
-# Assemblage de l'email complet
+# Génération de l'édito
+# ---------------------------------------------------------------------------
+
+def _generate_edito(
+    items_spec: list,
+    items_transv: list,
+    specialty_name: str,
+    emission_date: date,
+) -> str:
+    n_total = len(items_spec) + len(items_transv)
+    all_items = items_spec + items_transv
+
+    n_alertes = sum(
+        1 for i in all_items
+        if (i.get("tri_json") or {}).get("nature", "") in ("ALERTE", "RECOMMANDATION")
+    )
+    n_autres = n_total - n_alertes
+
+    mois = MOIS_FR_LONG[emission_date.month]
+
+    if n_alertes > 0 and n_autres > 0:
+        contenu = (
+            f"{n_autres} arrêté{'s' if n_autres > 1 else ''}"
+            f"/recommandation{'s' if n_autres > 1 else ''} "
+            f"et {n_alertes} alerte{'s' if n_alertes > 1 else ''} de sécurité"
+        )
+    elif n_alertes > 0:
+        contenu = f"{n_alertes} alerte{'s' if n_alertes > 1 else ''} de sécurité"
+    else:
+        contenu = (
+            f"{n_autres} texte{'s' if n_autres > 1 else ''} "
+            f"réglementaire{'s' if n_autres > 1 else ''}"
+        )
+
+    return (
+        f"Ce mois de {mois}, {n_total} texte{'s' if n_total > 1 else ''} "
+        f"à impact direct sur votre pratique de {specialty_name}\u00a0: "
+        f"{contenu}. "
+        f"Aucun article ne devrait vous prendre plus de deux minutes."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Texte plain
+# ---------------------------------------------------------------------------
+
+def _build_plain(
+    specialty_name: str,
+    items_spec: list,
+    items_transv: list,
+    portal_url: str,
+) -> str:
+    lines = [
+        f"MedNews — Veille réglementaire {specialty_name}",
+        "=" * 50,
+        "",
+    ]
+    for item in items_spec + items_transv:
+        tri = item.get("tri_json") or {}
+        titre = tri.get("titre_court") or item.get("title_raw") or ""
+        impact = tri.get("impact_pratique") or ""
+        url = item.get("official_url") or ""
+        lines += [f"• {titre}", f"  {impact}", f"  {url}", ""]
+    lines += ["---", f"Accéder à mon espace : {portal_url}"]
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Point d'entrée principal
 # ---------------------------------------------------------------------------
 
 def build_newsletter(
-    specialty_slug: str | None,
+    specialty_slug: str,
     items: list[dict[str, Any]],
     emission_date: date | None = None,
+    portal_url: str = "",
+    unsubscribe_url: str = "{{unsubscribe_url}}",
+    archive_url: str = "{{archive_url}}",
 ) -> tuple[str, str, str]:
     """
     Construit la newsletter.
 
     Args:
-        specialty_slug : slug de la spécialité (None = transversal seulement)
-        items          : liste d'items APPROVED triés par score DESC
-        emission_date  : date d'émission (défaut: aujourd'hui)
+        specialty_slug  : slug de la spécialité
+        items           : liste mixte (spécialité + transversaux)
+        emission_date   : date d'émission (défaut: aujourd'hui)
+        portal_url      : URL du portal (construit depuis BASE_URL si vide)
+        unsubscribe_url : URL de désabonnement
+        archive_url     : URL d'archive
 
     Returns:
         (sujet: str, html: str, texte_plain: str)
@@ -200,147 +401,132 @@ def build_newsletter(
     if emission_date is None:
         emission_date = date.today()
 
-    period = _month_label(emission_date)
-    specialty_label = (
-        SPECIALTY_LABELS.get(specialty_slug, specialty_slug)
-        if specialty_slug
-        else "Médecine libérale"
+    if not portal_url:
+        base = os.environ.get("BASE_URL", "").rstrip("/")
+        portal_url = f"{base}/portal" if base else "#"
+
+    specialty_name = SPECIALTY_LABELS.get(specialty_slug, specialty_slug) or "Médecine libérale"
+    mois_annee = f"{MOIS_FR_LONG[emission_date.month].capitalize()} {emission_date.year}"
+
+    # Séparer articles spécialité / transversaux
+    items_spec = [
+        i for i in items
+        if i.get("specialty_slug") == specialty_slug or i.get("audience") == "SPECIALITE"
+    ]
+    items_transv = [
+        i for i in items
+        if i.get("audience") in ("TRANSVERSAL_LIBERAL", "PHARMACIENS")
+        and (i.get("score_density") or 0) >= 8
+        and i not in items_spec
+    ]
+    # Max 2 transversaux
+    items_transv = sorted(items_transv, key=lambda x: x.get("score_density") or 0, reverse=True)[:2]
+
+    n_total = len(items_spec) + len(items_transv)
+    n_alertes = sum(
+        1 for i in items_spec + items_transv
+        if (i.get("tri_json") or {}).get("nature", "") in ("ALERTE", "RECOMMANDATION")
     )
+    n_autres = n_total - n_alertes
 
-    # Séparer transversal / spécialité
-    transversal = [i for i in items if i.get("audience") == "TRANSVERSAL_LIBERAL"]
-    specialite = [i for i in items if i.get("audience") == "SPECIALITE"]
-
-    total = len(items)
     sujet = (
-        f"[MedNews] {specialty_label} — Veille réglementaire {period} "
-        f"({total} texte{'s' if total > 1 else ''})"
+        f"[MedNews] {specialty_name} — Veille réglementaire "
+        f"{MOIS_FR_LONG[emission_date.month]} {emission_date.year} "
+        f"({n_total} texte{'s' if n_total > 1 else ''})"
     )
 
-    # ---- Sections HTML ----
-    def section(titre: str, color: str, article_list: list) -> str:
-        if not article_list:
-            return ""
-        articles_html = "".join(
-            _render_article(item, i) for i, item in enumerate(article_list)
-        )
-        return f"""
-<div style="margin-top:32px;">
-  <div style="border-left:4px solid {color};padding-left:12px;margin-bottom:20px;">
-    <h2 style="margin:0;font-size:15px;font-weight:600;
-               color:#2C2C2A;text-transform:uppercase;
-               letter-spacing:.8px;">{titre}</h2>
-  </div>
-  {articles_html}
+    edito_text = _generate_edito(items_spec, items_transv, specialty_name, emission_date)
+
+    # Articles spécialité
+    articles_specialite_html = (
+        "".join(_render_article(i) for i in items_spec)
+        if items_spec
+        else '<p style="color:var(--text5);font-style:italic;padding:20px 0;">Aucun article ce mois-ci.</p>'
+    )
+
+    # Section transversal (conditionnelle)
+    if items_transv:
+        articles_transv_html = "".join(_render_article(i) for i in items_transv)
+        section_transversal_html = f"""
+<div class="grp">
+  <div class="grp-dot"></div>
+  <div class="grp-label">Tous les médecins libéraux</div>
+  <div class="grp-line"></div>
 </div>
-"""
-
-    section_transversal = section(
-        "Tous les médecins libéraux", "#185FA5", transversal
-    )
-    section_specialite = section(
-        specialty_label, "#1D9E75", specialite
-    )
-
-    if not transversal and not specialite:
-        body_content = """
-<p style="color:#888780;font-style:italic;text-align:center;padding:40px 0;">
-  Aucun texte réglementaire notable ce mois-ci.
-</p>
+{articles_transv_html}
 """
     else:
-        body_content = section_transversal + section_specialite
+        section_transversal_html = ""
 
     html = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{sujet}</title>
+<meta name="color-scheme" content="light dark">
+<title>{_he(sujet)}</title>
+<style>{_CSS}</style>
 </head>
-<body style="margin:0;padding:0;background:#f5f4ef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+<body>
+<div class="bg">
+<div class="wrap">
 
-  <!-- Wrapper -->
-  <table width="100%" cellpadding="0" cellspacing="0"
-         style="background:#f5f4ef;padding:32px 16px;">
-  <tr><td>
-  <table width="600" cellpadding="0" cellspacing="0" align="center"
-         style="max-width:600px;width:100%;">
+  <!-- HEADER -->
+  <div class="hd">
+    <div class="hd-eye">
+      <span class="hd-dot"></span>Veille réglementaire · MedNews
+    </div>
+    <div class="hd-title">
+      {_he(specialty_name)}<br><em>{_he(mois_annee)}</em>
+    </div>
+    <div class="hd-meta">
+      <span class="hd-chip">{n_total} textes</span>
+      <div class="hd-sep"></div>
+      <span class="hd-chip">{n_alertes} alerte{'s' if n_alertes != 1 else ''} · {n_autres} arrêté{'s' if n_autres != 1 else ''}/reco</span>
+      <div class="hd-sep"></div>
+      <span class="hd-chip">JORF · ANSM · HAS</span>
+    </div>
+  </div>
 
-    <!-- En-tête -->
-    <tr>
-      <td style="background:#2C2C2A;border-radius:10px 10px 0 0;
-                 padding:28px 36px 24px;">
-        <p style="margin:0;font-size:11px;font-weight:600;
-                  color:#9FE1CB;letter-spacing:1.5px;
-                  text-transform:uppercase;">Veille réglementaire</p>
-        <h1 style="margin:6px 0 0;font-size:22px;font-weight:700;
-                   color:#ffffff;line-height:1.3;">
-          {specialty_label}
-        </h1>
-        <p style="margin:8px 0 0;font-size:13px;color:#B4B2A9;">
-          {period} · {total} texte{'s' if total > 1 else ''} sélectionné{'s' if total > 1 else ''}
-        </p>
-      </td>
-    </tr>
+  <!-- ÉDITO -->
+  <div class="edito">
+    <p>{_he(edito_text)}</p>
+    <div class="edito-sign">— L'équipe MedNews</div>
+  </div>
 
-    <!-- Corps -->
-    <tr>
-      <td style="background:#ffffff;padding:32px 36px;
-                 border-left:1px solid #e8e6df;border-right:1px solid #e8e6df;">
-        {body_content}
-      </td>
-    </tr>
+  <!-- CTA PORTAL -->
+  <div class="portal-strip">
+    <p>Retrouvez tous vos articles,<br>archives et favoris sur votre espace</p>
+    <a class="portal-btn" href="{portal_url}">Accéder à mon espace →</a>
+  </div>
 
-    <!-- Pied de page -->
-    <tr>
-      <td style="background:#f1efe8;border:1px solid #e8e6df;
-                 border-top:none;border-radius:0 0 10px 10px;
-                 padding:20px 36px;text-align:center;">
-        <p style="margin:0;font-size:12px;color:#888780;line-height:1.7;">
-          Vous recevez cet email car vous êtes abonné à MedNews ({specialty_label}).<br>
-          <a href="{{{{unsubscribe_url}}}}"
-             style="color:#888780;text-decoration:underline;">Se désabonner</a>
-          &nbsp;·&nbsp;
-          <a href="{{{{archive_url}}}}"
-             style="color:#888780;text-decoration:underline;">Voir en ligne</a>
-        </p>
-        <p style="margin:8px 0 0;font-size:11px;color:#B4B2A9;">
-          MedNews — Veille réglementaire pour médecins libéraux
-        </p>
-      </td>
-    </tr>
+  <!-- ARTICLES SPÉCIALITÉ -->
+  <div class="grp">
+    <div class="grp-dot"></div>
+    <div class="grp-label">{_he(specialty_name)}</div>
+    <div class="grp-line"></div>
+  </div>
 
-  </table>
-  </td></tr>
-  </table>
+  {articles_specialite_html}
 
+  <!-- ARTICLES TRANSVERSAUX (si présents) -->
+  {section_transversal_html}
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>
+      Abonné à MedNews ·
+      <a href="{unsubscribe_url}">Se désabonner</a> ·
+      <a href="{archive_url}">Voir en ligne</a><br>
+      MedNews — Veille réglementaire pour médecins libéraux
+    </p>
+  </div>
+
+</div>
+</div>
 </body>
 </html>"""
 
-    # ---- Texte plain ----
-    plain_parts = [
-        f"MEDNEWS — {specialty_label.upper()} — {period.upper()}",
-        "=" * 60,
-        "",
-    ]
-    for item in items:
-        tri = item.get("tri_json") or {}
-        titre = tri.get("titre_court") or item.get("title_raw", "")[:80]
-        resume = tri.get("resume", "")
-        url = item.get("official_url", "")
-        score = item.get("score_density", 5)
-        label, _ = _score_label(score)
-        plain_parts += [
-            f"[{label}] {titre}",
-            resume,
-            f"Lien : {url}",
-            "",
-        ]
-    plain_parts += [
-        "-" * 60,
-        "MedNews — Veille réglementaire pour médecins libéraux",
-    ]
-    plain = "\n".join(plain_parts)
+    plain = _build_plain(specialty_name, items_spec, items_transv, portal_url)
 
     return sujet, html, plain
