@@ -820,7 +820,12 @@ async function loadSpecialties() {
 
 async function loadCounts() {
   try {
-    const res = await authFetch(`${API}/articles/counts`);
+    // Exclure les mois affichés dans le portal (courant + précédent)
+    const pm = portalWindowMonths();
+    const keys = [...pm].sort();
+    const toDate = keys.length ? keys[0] + '-01' : '';
+    const qs = toDate ? `?to_date=${toDate}` : '';
+    const res = await authFetch(`${API}/articles/counts${qs}`);
     if (!res) return;
     const data = await res.json();
     specCounts = data.per_specialty || {};
