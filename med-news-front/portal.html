@@ -31,6 +31,7 @@
   body {
     font-family: 'Outfit', sans-serif; font-weight: 300;
     background: var(--bg); color: var(--text); font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
+    overflow-x: hidden;
   }
 
   /* ── Header ─────────────────────────────── */
@@ -39,7 +40,7 @@
     height: 52px; padding: 0 32px; display: flex; align-items: center;
     justify-content: space-between; position: sticky; top: 0; z-index: 100;
   }
-  .header-left { display: flex; align-items: baseline; gap: 12px; }
+  .header-left { display: flex; align-items: baseline; gap: 12px; min-width: 0; overflow: hidden; }
   .header-left h1 {
     font-family: 'Instrument Serif', Georgia, serif; font-size:1.18rem; font-weight: 400;
     color: var(--text); letter-spacing: -.2px;
@@ -78,8 +79,13 @@
   @media (max-width: 768px) {
     .layout { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    header { padding: 0 16px; }
+    header { padding: 0 16px; overflow: hidden; }
+    .header-right .email { display: none; }
+    .header-spec { display: none; }
+    .header-sep { display: none; }
     #articles-container { grid-template-columns: 1fr; }
+    .content-area { padding: 16px; }
+    .rubrique-month { font-size: 1.24rem; }
   }
 
   /* ── Sidebar ────────────────────────────── */
@@ -281,8 +287,8 @@
   /* ── Btn favorites ──────────────────────── */
   .btn-fav {
     background: transparent; border: none; cursor: pointer;
-    color: #3a3d55; padding: 2px 4px; border-radius: 4px;
-    transition: color .15s; display: inline-flex; align-items: center; line-height: 1;
+    color: #3a3d55; padding: 6px 8px; border-radius: 4px; min-width: 36px; min-height: 36px;
+    transition: color .15s; display: inline-flex; align-items: center; justify-content: center; line-height: 1;
   }
   .btn-fav:hover { color: var(--amber); }
   .btn-fav.active { color: var(--amber); }

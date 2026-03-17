@@ -340,8 +340,13 @@
     .sidebar { display: none; }
     .detail-grid { grid-template-columns: 1fr; }
     header { padding: 0 16px; }
+    .header-right .email { display: none; }
     .filter-bar { padding: 0 12px; }
     .layout { padding: 12px; }
+    .newsletter-row { flex-direction: column; align-items: stretch; }
+    .newsletter-row select,
+    .newsletter-row input { width: 100%; }
+    .newsletter-row .btn-newsletter { width: 100%; text-align: center; }
   }
 </style>
 </head>
@@ -406,7 +411,7 @@
           <option value="">Toutes sp&#233;cialit&#233;s</option>
         </select>
         <button class="btn-newsletter" onclick="previewNewsletter()">Aper&#231;u HTML</button>
-        <input type="email" id="nl-test-email" placeholder="Email test" style="width:200px;">
+        <input type="email" id="nl-test-email" placeholder="Email test">
         <button class="btn-newsletter primary" onclick="sendTestNewsletter()">Envoyer test</button>
       </div>
       <div class="newsletter-result" id="nl-result"></div>

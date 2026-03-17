@@ -31,6 +31,7 @@
   body {
     font-family: 'Outfit', sans-serif; font-weight: 300;
     background: var(--bg); color: var(--text); font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
+    overflow-x: hidden;
   }
 
   /* ── Header ─────────────────────────────── */
@@ -68,7 +69,12 @@
   @media (max-width: 768px) {
     .layout { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    header { padding: 0 16px; }
+    header { padding: 0 16px; overflow: hidden; }
+    .header-right .email { display: none; }
+    .header-spec { display: none; }
+    .header-sep { display: none; }
+    .content-area { padding: 16px; }
+    .month-name { font-size: 1.24rem; }
   }
 
   /* ── Sidebar ────────────────────────────── */
