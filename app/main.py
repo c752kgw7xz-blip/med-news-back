@@ -93,44 +93,52 @@ app.include_router(sources_router)
 app.include_router(portal_router)
 
 from fastapi.responses import FileResponse
+from starlette.responses import Response
 
 _FRONT_DIR = os.path.join(os.path.dirname(__file__), "..", "med-news-front")
 
+def _serve_html(filename: str) -> Response:
+    resp = FileResponse(os.path.join(_FRONT_DIR, filename), media_type="text/html")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return resp
+
 @app.get("/")
 def serve_landing():
-    return FileResponse(os.path.join(_FRONT_DIR, "index.html"), media_type="text/html")
+    return _serve_html("index.html")
 
 @app.get("/review")
 def serve_review():
-    return FileResponse(os.path.join(_FRONT_DIR, "review.html"), media_type="text/html")
+    return _serve_html("review.html")
 
 @app.get("/login")
 def serve_login():
-    return FileResponse(os.path.join(_FRONT_DIR, "login.html"), media_type="text/html")
+    return _serve_html("login.html")
 
 @app.get("/signup")
 def serve_signup():
-    return FileResponse(os.path.join(_FRONT_DIR, "signup.html"), media_type="text/html")
+    return _serve_html("signup.html")
 
 @app.get("/portal")
 def serve_portal():
-    return FileResponse(os.path.join(_FRONT_DIR, "portal.html"), media_type="text/html")
+    return _serve_html("portal.html")
 
 @app.get("/verify-email")
 def serve_verify_email():
-    return FileResponse(os.path.join(_FRONT_DIR, "verify-email.html"), media_type="text/html")
+    return _serve_html("verify-email.html")
 
 @app.get("/archives")
 def serve_archives():
-    return FileResponse(os.path.join(_FRONT_DIR, "archives.html"), media_type="text/html")
+    return _serve_html("archives.html")
 
 @app.get("/settings")
 def serve_settings():
-    return FileResponse(os.path.join(_FRONT_DIR, "settings.html"), media_type="text/html")
+    return _serve_html("settings.html")
 
 @app.get("/shared.js")
 def serve_shared_js():
-    return FileResponse(os.path.join(_FRONT_DIR, "shared.js"), media_type="application/javascript")
+    resp = FileResponse(os.path.join(_FRONT_DIR, "shared.js"), media_type="application/javascript")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return resp
 
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")

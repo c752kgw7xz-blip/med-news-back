@@ -31,7 +31,7 @@
     // Injecter un <style> garanti — plus fiable que les CSS custom props inline
     var el = document.getElementById('_mednews_fs');
     if (!el) { el = document.createElement('style'); el.id = '_mednews_fs'; document.head.appendChild(el); }
-    el.textContent = 'html{font-size:' + px + 'px!important}body{font-size:' + px + 'px!important;--font-scale:' + scale + '}';
+    el.textContent = 'html{font-size:' + px + 'px}body{font-size:' + px + 'px;--font-scale:' + scale + '}';
   }
 
   function setFontSize(mode) {

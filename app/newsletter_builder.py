@@ -155,8 +155,8 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
 .wrap { max-width: 600px; margin: 0 auto; }
 
 /* Header */
-.hd { background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px 10px 0 0; padding: 36px 40px 30px; }
+.hd { background: transparent; border: none;
+      border-radius: 0; padding: 36px 40px 30px; }
 .hd-eye { font-family: 'DM Mono', monospace; font-size: 10px;
            color: var(--text5); letter-spacing: 2px;
            text-transform: uppercase; margin-bottom: 14px; }
@@ -168,21 +168,24 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
              line-height: 1.2; margin-bottom: 4px; }
 .hd-title em { font-style: italic; color: var(--green); }
 .hd-meta { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
-.hd-chip { font-family: 'DM Mono', monospace; font-size: 10px;
-            color: var(--text5); letter-spacing: .5px; }
-.hd-sep  { width: 1px; height: 10px; background: var(--border); }
+.hd-pill  { font-family: 'DM Mono', monospace; font-size: 0.75rem;
+             border-radius: 20px; padding: 3px 10px;
+             display: inline-block; margin-right: 4px; }
+.pill-teal  { background: rgba(42,157,143,.12); color: #1a7a6e; }
+.pill-amber { background: rgba(212,146,26,.12);  color: #a07010; }
+.pill-red   { background: rgba(224,82,82,.12);   color: #c03030; }
 
 /* Édito */
-.edito { background: var(--surface); border: 1px solid var(--border);
-          border-top: none; padding: 24px 40px 26px; }
+.edito { background: transparent; border: none;
+          padding: 24px 40px 26px; }
 .edito p { font-size: 13px; color: var(--text3); line-height: 1.85; }
 .edito-sign { font-family: 'DM Mono', monospace; font-size: 10px;
                color: var(--text5); margin-top: 12px;
                letter-spacing: 1px; text-transform: uppercase; }
 
 /* CTA portal */
-.portal-strip { background: var(--strip); border: 1px solid var(--border);
-                border-top: none; padding: 18px 40px;
+.portal-strip { background: transparent; border: none;
+                padding: 18px 40px;
                 display: flex; align-items: center;
                 justify-content: space-between; gap: 16px; }
 .portal-strip p { font-size: 12px; color: var(--text4);
@@ -196,14 +199,11 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
               white-space: nowrap; flex-shrink: 0; }
 
 /* Séparateurs de section */
-.grp { padding: 26px 0 8px; display: flex;
-        align-items: center; gap: 10px; }
-.grp-dot { width: 5px; height: 5px; border-radius: 50%;
-            background: var(--border2); flex-shrink: 0; }
-.grp-label { font-family: 'DM Mono', monospace; font-size: 10px;
+.grp { padding: 26px 0 16px; }
+.grp-label { font-family: 'DM Mono', monospace; font-size: 0.7rem;
               letter-spacing: 1.5px; text-transform: uppercase;
-              color: var(--text5); }
-.grp-line { flex: 1; height: 1px; background: var(--border); }
+              color: #2a9d8f;
+              border-left: 3px solid #2a9d8f; padding-left: 10px; }
 
 /* Cards articles */
 .card { background: var(--surface); border: 1px solid var(--border);
@@ -449,9 +449,7 @@ def build_newsletter(
         articles_transv_html = "".join(_render_article(i) for i in items_transv)
         section_transversal_html = f"""
 <div class="grp">
-  <div class="grp-dot"></div>
   <div class="grp-label">Tous les médecins libéraux</div>
-  <div class="grp-line"></div>
 </div>
 {articles_transv_html}
 """
@@ -480,11 +478,10 @@ def build_newsletter(
       {_he(specialty_name)}<br><em>{_he(mois_annee)}</em>
     </div>
     <div class="hd-meta">
-      <span class="hd-chip">{n_total} textes</span>
-      <div class="hd-sep"></div>
-      <span class="hd-chip">{n_alertes} alerte{'s' if n_alertes != 1 else ''} · {n_autres} arrêté{'s' if n_autres != 1 else ''}/reco</span>
-      <div class="hd-sep"></div>
-      <span class="hd-chip">JORF · ANSM · HAS</span>
+      <span class="hd-pill pill-teal">{n_total} texte{'s' if n_total != 1 else ''}</span>
+      <span class="hd-pill pill-amber">{n_alertes} alerte{'s' if n_alertes != 1 else ''}</span>
+      <span class="hd-pill pill-red">{n_autres} arrêté{'s' if n_autres != 1 else ''}/reco</span>
+      <span class="hd-pill pill-teal">JORF · ANSM · HAS</span>
     </div>
   </div>
 
@@ -502,9 +499,7 @@ def build_newsletter(
 
   <!-- ARTICLES SPÉCIALITÉ -->
   <div class="grp">
-    <div class="grp-dot"></div>
     <div class="grp-label">{_he(specialty_name)}</div>
-    <div class="grp-line"></div>
   </div>
 
   {articles_specialite_html}
