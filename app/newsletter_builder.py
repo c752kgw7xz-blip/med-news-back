@@ -408,6 +408,23 @@ def build_newsletter(
     specialty_name = SPECIALTY_LABELS.get(specialty_slug, specialty_slug) or "Médecine libérale"
     mois_annee = f"{MOIS_FR_LONG[emission_date.month].capitalize()} {emission_date.year}"
 
+    # Fenêtre : mois en cours + mois précédent
+    if emission_date.month == 1:
+        prev_year, prev_month = emission_date.year - 1, 12
+    else:
+        prev_year, prev_month = emission_date.year, emission_date.month - 1
+
+    def _in_window(item: dict) -> bool:
+        raw = item.get("official_date") or ""
+        try:
+            d = date.fromisoformat(raw[:10])
+            return (d.year == emission_date.year and d.month == emission_date.month) or \
+                   (d.year == prev_year and d.month == prev_month)
+        except Exception:
+            return True  # date manquante → on garde
+
+    items = [i for i in items if _in_window(i)]
+
     # Séparer articles spécialité / transversaux
     items_spec = [
         i for i in items
