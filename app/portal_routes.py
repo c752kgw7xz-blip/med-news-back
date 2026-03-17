@@ -414,6 +414,125 @@ def generate_verification_token(user_id: str) -> str:
     return raw_token
 
 
+def _build_verification_html(verify_url: str) -> str:
+    """Construit le HTML de l'email de vérification — compatible tous clients mail."""
+    return f"""\
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>Validez votre compte MedNews</title>
+<!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#f6f5f2;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+
+<!-- Fond global -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:#f6f5f2;" bgcolor="#f6f5f2">
+<tr><td align="center" style="padding:40px 16px;">
+
+<!-- Container 600px -->
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+       style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e4e0d8;"
+       bgcolor="#ffffff">
+
+<!-- Header avec logo texte -->
+<tr>
+<td align="center" style="padding:36px 40px 24px;border-bottom:1px solid #e4e0d8;background-color:#ffffff;" bgcolor="#ffffff">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td style="width:8px;height:8px;background-color:#1f9478;border-radius:50;" bgcolor="#1f9478">&nbsp;</td>
+    <td style="padding-left:10px;">
+      <span style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:#1a1814;letter-spacing:-0.3px;">
+        <em style="font-style:italic;">Med</em>News
+      </span>
+    </td>
+  </tr>
+  </table>
+  <p style="margin:8px 0 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;color:#bcb6ac;letter-spacing:1.5px;text-transform:uppercase;">
+    Veille r&eacute;glementaire m&eacute;dicale
+  </p>
+</td>
+</tr>
+
+<!-- Corps principal -->
+<tr>
+<td style="padding:40px 44px;background-color:#ffffff;" bgcolor="#ffffff">
+
+  <!-- Titre -->
+  <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:400;color:#1a1814;line-height:1.3;">
+    Bienvenue sur <em style="color:#1f9478;font-style:italic;">MedNews</em>
+  </h1>
+
+  <!-- Texte -->
+  <p style="margin:0 0 8px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;font-weight:300;color:#4a4540;line-height:1.7;">
+    Votre compte a bien &eacute;t&eacute; cr&eacute;&eacute;. Pour acc&eacute;der &agrave; votre espace de veille
+    r&eacute;glementaire, validez votre adresse email en cliquant sur le bouton ci-dessous.
+  </p>
+  <p style="margin:0 0 32px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;font-weight:300;color:#9a9288;line-height:1.6;">
+    Ce lien expire dans 24&nbsp;heures.
+  </p>
+
+  <!-- Bouton CTA -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 24px;">
+  <tr>
+    <td align="center" style="background-color:#1f9478;border-radius:8px;" bgcolor="#1f9478">
+      <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{verify_url}" style="height:48px;width:260px;v-text-anchor:middle;" arcsize="17%" fillcolor="#1f9478" stroke="f"><v:textbox inset="0,0,0,0"><center><![endif]-->
+      <a href="{verify_url}"
+         target="_blank"
+         style="display:inline-block;padding:14px 36px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;background-color:#1f9478;mso-padding-alt:14px 36px;">
+        Valider mon compte &rarr;
+      </a>
+      <!--[if mso]></center></v:textbox></v:roundrect><![endif]-->
+    </td>
+  </tr>
+  </table>
+
+  <!-- Lien de secours -->
+  <p style="margin:0 0 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;color:#9a9288;line-height:1.6;text-align:center;">
+    Le bouton ne fonctionne pas&nbsp;? Copiez ce lien dans votre navigateur&nbsp;:<br>
+    <a href="{verify_url}" style="color:#1f9478;text-decoration:underline;word-break:break-all;font-size:11px;">
+      {verify_url}
+    </a>
+  </p>
+
+</td>
+</tr>
+
+<!-- Séparateur -->
+<tr>
+<td style="padding:0 44px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr><td style="border-top:1px solid #e4e0d8;font-size:1px;line-height:1px;" height="1">&nbsp;</td></tr>
+  </table>
+</td>
+</tr>
+
+<!-- Footer -->
+<tr>
+<td style="padding:24px 44px 32px;background-color:#ffffff;" bgcolor="#ffffff">
+  <p style="margin:0;font-family:'Courier New',Courier,monospace;font-size:10px;color:#bcb6ac;line-height:2;text-align:center;letter-spacing:0.3px;">
+    MedNews &mdash; Veille r&eacute;glementaire pour m&eacute;decins lib&eacute;raux<br>
+    &copy; 2026 MedNews. Tous droits r&eacute;serv&eacute;s.<br>
+    <span style="color:#9a9288;">Cet email a &eacute;t&eacute; envoy&eacute; automatiquement, merci de ne pas y r&eacute;pondre.</span>
+  </p>
+</td>
+</tr>
+
+</table>
+<!-- /Container -->
+
+</td></tr>
+</table>
+<!-- /Fond global -->
+
+</body>
+</html>"""
+
+
 def send_verification_email(email: str, raw_token: str) -> None:
     """Envoie l'email de vérification."""
     from app.mailer import send_email
@@ -428,19 +547,16 @@ def send_verification_email(email: str, raw_token: str) -> None:
     verify_url = f"{base_url}/verify-email?token={raw_token}"
 
     subject = "MedNews — Vérifiez votre adresse email"
-    html = f"""
-    <div style="font-family: -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px;">
-        <h2 style="color: #2C2C2A;">Bienvenue sur MedNews</h2>
-        <p>Cliquez sur le bouton ci-dessous pour vérifier votre adresse email :</p>
-        <a href="{verify_url}"
-           style="display: inline-block; padding: 12px 24px; background: #1D9E75; color: #fff;
-                  border-radius: 8px; text-decoration: none; font-weight: 500; margin: 16px 0;">
-            Vérifier mon email
-        </a>
-        <p style="color: #888; font-size: 12px;">Ce lien expire dans 24 heures.</p>
-    </div>
-    """
-    plain = f"Vérifiez votre email MedNews : {verify_url}"
+    html = _build_verification_html(verify_url)
+    plain = (
+        "Bienvenue sur MedNews !\n\n"
+        "Validez votre compte en cliquant sur le lien ci-dessous :\n"
+        f"{verify_url}\n\n"
+        "Ce lien expire dans 24 heures.\n\n"
+        "---\n"
+        "MedNews — Veille réglementaire pour médecins libéraux\n"
+        "Cet email a été envoyé automatiquement, merci de ne pas y répondre."
+    )
 
     try:
         result = send_email(email, subject, html, plain)
