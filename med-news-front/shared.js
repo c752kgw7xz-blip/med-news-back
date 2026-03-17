@@ -65,6 +65,16 @@
     window.location.href = homeUrl();
   }
 
+  // Formate une date ISO (YYYY-MM-DD) en jj - mm - yyyy
+  function formatDate(raw) {
+    if (!raw) return '';
+    try {
+      var parts = raw.substring(0, 10).split('-');
+      if (parts.length !== 3) return raw;
+      return parts[2] + ' - ' + parts[1] + ' - ' + parts[0];
+    } catch (e) { return raw; }
+  }
+
   // Export global
   window.MedNews = {
     setTheme: setTheme,
@@ -73,5 +83,6 @@
     isAdmin: isAdmin,
     homeUrl: homeUrl,
     goHome: goHome,
+    formatDate: formatDate,
   };
 })();

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MedNews — Archives</title>
-<script src="/shared.js?v=6"></script>
+<script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -570,7 +570,7 @@ function renderArticle(a, idx) {
   const refs = (lecture.references || []).filter(r => r && r.trim() && r !== 'N NOR...');
   const delay = Math.min(idx * 30, 600);
   const categorie = a.categorie || '';
-  const sourceMeta = [nature, datePub].filter(Boolean).join(' \u00b7 ');
+  const sourceMeta = [nature, MedNews.formatDate(datePub)].filter(Boolean).join(' \u00b7 ');
 
   const pointsHtml = points.length
     ? `<div class="detail-box"><h4>Points cl\u00e9s</h4><ul>${points.map(p => `<li class="bullet-${prio}">${esc(p)}</li>`).join('')}</ul></div>`

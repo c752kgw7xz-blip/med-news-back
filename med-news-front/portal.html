@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MedNews — Portail</title>
-<script src="/shared.js?v=6"></script>
+<script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -613,7 +613,7 @@ function renderArticle(a, idx) {
       </div>
       <div class="card-top-right">
         ${categorieBadge(categorie)}
-        <span class="card-date">${esc(datePub)}</span>
+        <span class="card-date">${esc(MedNews.formatDate(datePub))}</span>
         <button class="btn-fav${isFav ? ' active' : ''}" data-item-id="${a.id}"
           title="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}"
           onclick="toggleFavorite(event, '${a.id}')">

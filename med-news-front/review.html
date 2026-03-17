@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MedNews — Admin Review</title>
-<script src="/shared.js?v=6"></script>
+<script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
@@ -605,7 +605,7 @@ function renderArticle(a, idx) {
                              : { bg: '#f0ede8', color: '#9a9288', label: '?' };
   const catBadge = `<span class="nature-badge" style="background:${catStyle.bg};color:${catStyle.color};${catStyle.border ? `border:${catStyle.border};` : ''}">${esc(catStyle.label)}</span>`;
   // Source metadata : "Nature · date"
-  const sourceMeta = [nature, datePub].filter(Boolean).join(' \u00b7 ');
+  const sourceMeta = [nature, MedNews.formatDate(datePub)].filter(Boolean).join(' \u00b7 ');
 
   const specDisplay = audience === 'TRANSVERSAL_LIBERAL'
     ? '<span class="spec-badge" style="background:#fff8e8;color:var(--amber);">Transversal</span>'
