@@ -64,7 +64,7 @@ def _send_sendgrid(
     html: str,
     plain: str,
 ) -> MailResult:
-    api_key = os.environ["SENDGRID_API_KEY"]
+    api_key = os.environ["SENDGRID_API_KEY"].strip()
     from_addr, from_name = _from_address()
 
     payload = {
