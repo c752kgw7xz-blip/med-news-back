@@ -446,6 +446,35 @@
   }
   .mobile-drawer-content .sidebar-item { display: flex; }
   .mobile-drawer-content .sidebar-label { display: block; }
+
+  /* ── Full-page overlay (Instagram-style) ─────────────────── */
+  .fp-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    z-index: 500; display: flex; flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none;
+  }
+  .fp-overlay.compte-mode { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  .fp-overlay.open { transform: translateY(0); pointer-events: auto; }
+  .fp-overlay-header {
+    height: 52px; display: flex; align-items: center; gap: 8px;
+    padding: 0 16px; border-bottom: 1px solid var(--border);
+    background: var(--surface); flex-shrink: 0;
+  }
+  .fp-overlay-back {
+    background: none; border: none; color: var(--text); cursor: pointer;
+    display: flex; align-items: center; gap: 3px; padding: 0;
+    font-family: 'Outfit', sans-serif; font-size: 0.95rem; min-width: 60px;
+  }
+  .fp-overlay-title {
+    flex: 1; text-align: center; font-size: 1rem; font-weight: 500;
+    color: var(--text); padding-right: 60px;
+  }
+  .fp-overlay-content {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 0 16px;
+  }
+  @media (min-width: 769px) { .fp-overlay { display: none !important; } }
 </style>
 </head>
 <body>
@@ -553,7 +582,7 @@
     </button>
   </nav>
 
-  <!-- Drawer mobile -->
+  <!-- Drawer mobile (conservé pour compat) -->
   <div class="mobile-drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
   <div class="mobile-drawer" id="mobile-drawer">
     <div class="mobile-drawer-header">
@@ -561,6 +590,51 @@
       <button class="mobile-drawer-close" onclick="closeDrawer()">✕</button>
     </div>
     <div class="mobile-drawer-content" id="drawer-content"></div>
+  </div>
+
+  <!-- Full-page overlay — Explorer -->
+  <div class="fp-overlay" id="fp-explorer">
+    <div class="fp-overlay-header">
+      <button class="fp-overlay-back" onclick="closeFullPage('explorer')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Retour
+      </button>
+      <span class="fp-overlay-title">Explorer</span>
+    </div>
+    <div class="fp-overlay-content">
+      <div style="padding:12px 16px 8px;">
+        <input type="search" id="fp-search-spec" placeholder="Rechercher une spécialité…"
+          oninput="filterFpSpecs(this.value)"
+          style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;
+                 background:var(--surface2);color:var(--text);font-family:'Outfit',sans-serif;
+                 font-size:0.93rem;outline:none;box-sizing:border-box;"/>
+      </div>
+      <div id="fp-spec-list"></div>
+    </div>
+  </div>
+
+  <!-- Full-page overlay — Compte (nav visible en bas) -->
+  <div class="fp-overlay compte-mode" id="fp-compte">
+    <div class="fp-overlay-header">
+      <button class="fp-overlay-back" onclick="closeFullPage('compte')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Retour
+      </button>
+      <span class="fp-overlay-title">Compte</span>
+    </div>
+    <div class="fp-overlay-content">
+      <div class="sidebar-item" onclick="closeFullPage('compte');showFavorites();" style="display:flex;padding:14px 20px;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris</span>
+        <span style="color:var(--text5);">&#8250;</span>
+      </div>
+      <div class="sidebar-item" onclick="closeFullPage('compte');window.location.href='/settings';" style="display:flex;padding:14px 20px;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
+        <span style="color:var(--text5);">&#8250;</span>
+      </div>
+      <div class="sidebar-item" onclick="logout();" style="display:flex;padding:14px 20px;color:var(--text3);">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>D&eacute;connexion</span>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -603,12 +677,12 @@ function mobileNavClick(section) {
     const el = document.querySelector('#sidebar-transversal .sidebar-item');
     if (el) el.click();
   } else if (section === 'explorer') {
-    if (window.expandExplore) window.expandExplore(); // toujours la liste complète
-    openDrawer('Explorer', buildDrawerContent('explorer'));
+    if (window.expandExplore) window.expandExplore();
+    openFullPage('explorer');
   } else if (section === 'archives') {
     window.location.href = '/archives';
   } else if (section === 'compte') {
-    openDrawer('Compte', buildDrawerContent('compte'));
+    openFullPage('compte');
   }
 }
 
@@ -663,6 +737,41 @@ function closeDrawer() {
 function filterDrawerSpecs(query) {
   const q = query.toLowerCase().trim();
   document.querySelectorAll('#drawer-spec-list .sidebar-item').forEach(item => {
+    item.style.display = (!q || item.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
+// ── Full-page overlay (Instagram-style) ──────────────────────
+function openFullPage(section) {
+  if (section === 'explorer') {
+    const listHtml = document.getElementById('sidebar-explore')?.innerHTML || '';
+    document.getElementById('fp-spec-list').innerHTML = listHtml;
+    const inp = document.getElementById('fp-search-spec');
+    if (inp) inp.value = '';
+    document.getElementById('fp-explorer').classList.add('open');
+    document.getElementById('fp-spec-list').onclick = (e) => {
+      if (e.target.closest('.sidebar-item')) setTimeout(() => closeFullPage('explorer'), 100);
+    };
+  } else if (section === 'compte') {
+    document.getElementById('fp-compte').classList.add('open');
+  }
+}
+
+function closeFullPage(section) {
+  document.getElementById('fp-' + section)?.classList.remove('open');
+  // Restore correct active nav state after closing compte
+  if (section === 'compte') {
+    document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('mnav-compte')?.classList.remove('active');
+    // Reactivate last content tab
+    const activeSection = document.querySelector('.sidebar-item.active');
+    if (!activeSection) document.getElementById('mnav-specialite')?.classList.add('active');
+  }
+}
+
+function filterFpSpecs(query) {
+  const q = query.toLowerCase().trim();
+  document.querySelectorAll('#fp-spec-list .sidebar-item').forEach(item => {
     item.style.display = (!q || item.textContent.toLowerCase().includes(q)) ? '' : 'none';
   });
 }

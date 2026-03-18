@@ -81,6 +81,11 @@
       position: absolute; left: 50%; transform: translateX(-50%);
       white-space: nowrap; pointer-events: none;
     }
+    /* Header : cacher tout sauf le logo + badge Archives centré */
+    .header-spec { display: none !important; }
+    .header-sep { display: none !important; }
+    #spec-label { display: none !important; }
+    .header-left { overflow: hidden; }
     /* Contraindre le grid item au viewport */
     .content-area { padding: 16px 16px 80px; min-width: 0; overflow-x: hidden; }
     .month-name { font-size: 1.24rem; }
@@ -372,6 +377,7 @@
   #mnav-specialite.active { color: var(--green); }
   #mnav-transversal.active { color: #3b82f6; }
   #mnav-explorer.active { color: #9333ea; }
+  #mnav-archives.active { color: #d97706; }
   #mnav-compte.active { color: #059669; }
   .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }
   .mobile-nav-icon svg { width: 22px; height: 22px; }
@@ -407,6 +413,59 @@
   .mobile-drawer-close { background: none; border: none; color: var(--text3); font-size: 1rem; cursor: pointer; padding: 4px 8px; }
   .mobile-drawer-content { overflow-y: auto; padding: 8px 0 16px; -webkit-overflow-scrolling: touch; }
   .mobile-drawer-content .sidebar-item { display: flex; }
+
+  /* ── Full-page overlay (Instagram-style) ─────────────────── */
+  .fp-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    z-index: 500; display: flex; flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none;
+  }
+  .fp-overlay.compte-mode { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  .fp-overlay.open { transform: translateY(0); pointer-events: auto; }
+  .fp-overlay-header {
+    height: 52px; display: flex; align-items: center; gap: 8px;
+    padding: 0 16px; border-bottom: 1px solid var(--border);
+    background: var(--surface); flex-shrink: 0;
+  }
+  .fp-overlay-back {
+    background: none; border: none; color: var(--text); cursor: pointer;
+    display: flex; align-items: center; gap: 3px; padding: 0;
+    font-family: 'Outfit', sans-serif; font-size: 0.95rem; min-width: 60px;
+  }
+  .fp-overlay-title {
+    flex: 1; text-align: center; font-size: 1rem; font-weight: 500;
+    color: var(--text); padding-right: 60px;
+  }
+  .fp-overlay-content {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 0 16px;
+  }
+  @media (min-width: 769px) { .fp-overlay { display: none !important; } }
+
+  /* ── Bouton retour portail (mobile only) ─────────────────── */
+  .arch-back-portal { display: none; }
+  @media (max-width: 768px) { .arch-back-portal { display: block; } }
+
+  /* ── Segment navigation archives (mobile) ─────────────────── */
+  .arch-segment {
+    display: none;
+  }
+  @media (max-width: 768px) {
+    .arch-segment {
+      display: flex; gap: 2px; margin-bottom: 16px;
+      background: var(--surface2); border-radius: 8px; padding: 3px;
+    }
+  }
+  .arch-seg-btn {
+    flex: 1; padding: 7px 0; border: none; background: none;
+    color: var(--text3); font-family: 'Outfit', sans-serif; font-size: 0.82rem;
+    font-weight: 400; border-radius: 6px; cursor: pointer; transition: all .15s;
+  }
+  .arch-seg-btn.active {
+    background: var(--surface); color: var(--text); font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
 </style>
 </head>
 <body>
@@ -448,6 +507,19 @@
     </aside>
 
     <div class="content-area">
+      <!-- Retour portail (mobile uniquement) -->
+      <div class="arch-back-portal">
+        <button onclick="window.location.href='/portal'" style="background:none;border:none;color:var(--green);font-family:'Outfit',sans-serif;font-size:0.82rem;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0 0 12px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          Ce mois-ci
+        </button>
+      </div>
+      <!-- Segment navigation (mobile) -->
+      <div class="arch-segment" id="arch-segment">
+        <button class="arch-seg-btn active" id="arch-seg-spec" onclick="archSegClick('specialite', this)">Ma sp&#233;</button>
+        <button class="arch-seg-btn" id="arch-seg-trans" onclick="archSegClick('transversal', this)">Transversal</button>
+        <button class="arch-seg-btn" id="arch-seg-explore" onclick="archSegClick('explorer', this)">Explorer</button>
+      </div>
       <!-- Search bar -->
       <div class="search-wrap">
         <span class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
@@ -489,15 +561,11 @@
     </div>
   </div>
 
-  <!-- Bottom nav mobile -->
+  <!-- Bottom nav mobile — même structure que portail -->
   <nav class="mobile-bottom-nav" id="mobile-nav">
-    <button class="mobile-nav-item" onclick="window.location.href='/portal'" id="mnav-retour" title="Retour au mois actuel">
-      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-      <span class="mobile-nav-label">Ce mois-ci</span>
-    </button>
-    <button class="mobile-nav-item active" onclick="archNavClick('specialite')" id="mnav-specialite">
+    <button class="mobile-nav-item" onclick="archNavClick('specialite')" id="mnav-specialite">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
-      <span class="mobile-nav-label">Ma spé</span>
+      <span class="mobile-nav-label">Ma sp&#233;</span>
     </button>
     <button class="mobile-nav-item" onclick="archNavClick('transversal')" id="mnav-transversal">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
@@ -506,6 +574,10 @@
     <button class="mobile-nav-item" onclick="archNavClick('explorer')" id="mnav-explorer">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
       <span class="mobile-nav-label">Explorer</span>
+    </button>
+    <button class="mobile-nav-item active" id="mnav-archives">
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
+      <span class="mobile-nav-label">Archives</span>
     </button>
     <button class="mobile-nav-item" onclick="archNavClick('compte')" id="mnav-compte">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
@@ -520,6 +592,51 @@
       <button class="mobile-drawer-close" onclick="closeDrawer()">✕</button>
     </div>
     <div class="mobile-drawer-content" id="drawer-content"></div>
+  </div>
+
+  <!-- Full-page overlay — Explorer archives -->
+  <div class="fp-overlay" id="fp-explorer">
+    <div class="fp-overlay-header">
+      <button class="fp-overlay-back" onclick="closeFullPage('explorer')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Retour
+      </button>
+      <span class="fp-overlay-title">Explorer</span>
+    </div>
+    <div class="fp-overlay-content">
+      <div style="padding:12px 16px 8px;">
+        <input type="search" id="fp-search-spec" placeholder="Rechercher une spécialité…"
+          oninput="filterFpSpecs(this.value)"
+          style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;
+                 background:var(--surface2);color:var(--text);font-family:'Outfit',sans-serif;
+                 font-size:0.93rem;outline:none;box-sizing:border-box;"/>
+      </div>
+      <div id="fp-spec-list"></div>
+    </div>
+  </div>
+
+  <!-- Full-page overlay — Compte archives (nav visible) -->
+  <div class="fp-overlay compte-mode" id="fp-compte">
+    <div class="fp-overlay-header">
+      <button class="fp-overlay-back" onclick="closeFullPage('compte')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Retour
+      </button>
+      <span class="fp-overlay-title">Compte</span>
+    </div>
+    <div class="fp-overlay-content">
+      <div class="sidebar-item" onclick="closeFullPage('compte');showFavorites();" style="display:flex;padding:14px 20px;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris</span>
+        <span style="color:var(--text5);">&#8250;</span>
+      </div>
+      <div class="sidebar-item" onclick="closeFullPage('compte');window.location.href='/settings';" style="display:flex;padding:14px 20px;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
+        <span style="color:var(--text5);">&#8250;</span>
+      </div>
+      <div class="sidebar-item" onclick="logout();" style="display:flex;padding:14px 20px;color:var(--text3);">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>D&eacute;connexion</span>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -1145,6 +1262,7 @@ function exitSearchMode() {
 async function performSearch() {
   document.getElementById('months-view').style.display = 'none';
   document.getElementById('search-view').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const resultsEl = document.getElementById('search-results');
   const metaEl = document.getElementById('search-meta');
@@ -1213,44 +1331,69 @@ async function reloadArchives() {
   }
 }
 
-// ── Mobile navigation (archives) ──────────────────────────────
-function archNavClick(section) {
-  document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('mnav-' + section)?.classList.add('active');
+// ── Segment control (top tabs archives mobile) ────────────────
+function archSegClick(section, btnEl) {
+  document.querySelectorAll('.arch-seg-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
 
   if (section === 'specialite') {
-    closeDrawer();
     const el = document.getElementById('sidebar-item-mine');
     if (el) el.click();
   } else if (section === 'transversal') {
-    closeDrawer();
     const el = document.querySelector('#sidebar-transversal .sidebar-item');
     if (el) el.click();
   } else if (section === 'explorer') {
     if (window.archExpandExplore) window.archExpandExplore();
     const listHtml = document.getElementById('sidebar-explore')?.innerHTML || '';
-    openDrawer('Explorer', `<div style="padding:10px 14px 6px;">
-        <input type="search" id="drawer-search-spec" placeholder="Rechercher une spécialité…"
-          oninput="filterDrawerSpecs(this.value)"
-          style="width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:6px;
-                 background:var(--surface2);color:var(--text);font-family:'Outfit',sans-serif;
-                 font-size:0.86rem;outline:none;"/>
-      </div>
-      <div id="drawer-spec-list">${listHtml}</div>`);
-  } else if (section === 'compte') {
-    openDrawer('Compte', `
-      <div class="sidebar-item" onclick="closeDrawer();showFavorites();" style="display:flex;">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris</span>
-        <span style="color:var(--text5);">&rarr;</span>
-      </div>
-      <div class="sidebar-item" onclick="closeDrawer();window.location.href='/settings';" style="display:flex;">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Paramètres</span>
-        <span style="color:var(--text5);">&rarr;</span>
-      </div>
-      <div class="sidebar-item" onclick="logout();" style="display:flex;color:var(--text3);">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Déconnexion</span>
-      </div>`);
+    document.getElementById('fp-spec-list').innerHTML = listHtml;
+    const inp = document.getElementById('fp-search-spec');
+    if (inp) inp.value = '';
+    document.getElementById('fp-explorer').classList.add('open');
+    document.getElementById('fp-spec-list').onclick = (e) => {
+      if (e.target.closest('.sidebar-item')) setTimeout(() => closeFullPage('explorer'), 100);
+    };
   }
+}
+
+// ── Mobile navigation (archives) — bottom nav ─────────────────
+function archNavClick(section) {
+  if (section === 'specialite') {
+    document.getElementById('arch-seg-spec')?.click();
+  } else if (section === 'transversal') {
+    document.getElementById('arch-seg-trans')?.click();
+  } else if (section === 'explorer') {
+    document.getElementById('arch-seg-explore')?.click();
+  } else if (section === 'compte') {
+    openFullPage('compte');
+  }
+}
+
+// ── Full-page overlay ──────────────────────────────────────────
+function openFullPage(section) {
+  if (section === 'explorer') {
+    if (window.archExpandExplore) window.archExpandExplore();
+    const listHtml = document.getElementById('sidebar-explore')?.innerHTML || '';
+    document.getElementById('fp-spec-list').innerHTML = listHtml;
+    const inp = document.getElementById('fp-search-spec');
+    if (inp) inp.value = '';
+    document.getElementById('fp-explorer').classList.add('open');
+    document.getElementById('fp-spec-list').onclick = (e) => {
+      if (e.target.closest('.sidebar-item')) setTimeout(() => closeFullPage('explorer'), 100);
+    };
+  } else if (section === 'compte') {
+    document.getElementById('fp-compte').classList.add('open');
+  }
+}
+
+function closeFullPage(section) {
+  document.getElementById('fp-' + section)?.classList.remove('open');
+}
+
+function filterFpSpecs(query) {
+  const q = query.toLowerCase().trim();
+  document.querySelectorAll('#fp-spec-list .sidebar-item').forEach(item => {
+    item.style.display = (!q || item.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
 }
 
 function openDrawer(title, content) {
