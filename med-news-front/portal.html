@@ -480,7 +480,7 @@
 <body>
   <header>
     <div class="header-left">
-      <h1 onclick="window.location.href='/'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
+      <h1 onclick="window.location.href='/portal'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
       <span class="header-sep"></span>
       <span class="header-spec" id="spec-label"></span>
     </div>
@@ -1160,6 +1160,8 @@ async function toggleFavorite(event, itemId) {
     document.querySelectorAll(`.btn-fav[data-item-id="${itemId}"]`).forEach(b => {
       b.classList.remove('active');
       b.title = 'Ajouter aux favoris';
+      const svg = b.querySelector('svg');
+      if (svg) svg.style.fill = '';  // reset inline fill → revient à fill="none" du HTML
     });
     // If in favorites mode, hide the card immediately
     if (favoritesMode) {
@@ -1188,9 +1190,6 @@ async function toggleFavorite(event, itemId) {
 function showFavorites() {
   favoritesMode = true;
   setActiveSidebar(document.getElementById('sidebar-favorites'));
-  // Sync mobile nav
-  document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('mnav-compte')?.classList.add('active');
   activeFilter = 'all';
   document.querySelectorAll('.filter-pill').forEach((b, i) => b.classList.toggle('active', i === 0));
 

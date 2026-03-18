@@ -483,7 +483,7 @@
 <body>
   <header>
     <div class="header-left">
-      <h1 onclick="window.location.href='/'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
+      <h1 onclick="window.location.href='/portal'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
       <span class="header-sep"></span>
       <span class="header-spec">Archives &amp; recherche</span>
       <span class="header-sep"></span>
@@ -1380,6 +1380,11 @@ function openFullPage(section) {
   if (!el) return;
   el.style.display = 'flex';
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
+  // Mettre à jour l'icône active de la nav
+  if (section === 'compte') {
+    document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('mnav-compte')?.classList.add('active');
+  }
 
   if (section === 'explorer') {
     if (window.archExpandExplore) window.archExpandExplore();
@@ -1398,6 +1403,11 @@ function closeFullPage(section) {
   if (!el) return;
   el.classList.remove('open');
   el.addEventListener('transitionend', () => { el.style.display = 'none'; }, { once: true });
+  // Restaurer Archives comme onglet actif à la fermeture
+  if (section === 'compte') {
+    document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('mnav-archives')?.classList.add('active');
+  }
 }
 
 function filterFpSpecs(query) {

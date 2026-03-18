@@ -63,6 +63,11 @@
     cursor: pointer; transition: all .2s; font-family: inherit;
   }
   .btn-logout:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+  .header-back-btn {
+    display: none; background: none; border: none; cursor: pointer;
+    color: var(--text3); padding: 6px 4px 6px 0; align-items: center;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
 
   /* ── Layout ─────────────────────────────── */
   .layout {
@@ -71,7 +76,9 @@
   @media (max-width: 768px) {
     .layout { grid-template-columns: 1fr; min-height: auto; }
     .sidebar { display: none; }
-    header { padding: 0 16px; overflow: hidden; position: relative; z-index: auto; }
+    header { padding: 0 16px; overflow: hidden; position: relative; z-index: auto; gap: 8px; }
+    .header-back-btn { display: flex; }
+    .header-left { gap: 8px; }
     .header-right .email { display: none; }
     .header-spec { display: none; }
     .header-sep { display: none; }
@@ -231,8 +238,11 @@
 </head>
 <body>
   <header>
+    <button class="header-back-btn" onclick="history.back()" aria-label="Retour">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
     <div class="header-left">
-      <h1 onclick="window.location.href='/'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
+      <h1 onclick="window.location.href='/portal'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
       <span class="header-sep"></span>
       <span class="header-spec">Param&egrave;tres</span>
     </div>
