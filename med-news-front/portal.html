@@ -424,7 +424,7 @@
   .mobile-drawer-overlay.open { display: block; }
   .mobile-drawer {
     position: fixed; bottom: 60px; left: 0; right: 0;
-    max-height: 70vh; background: var(--surface);
+    min-height: 55vh; max-height: 70vh; background: var(--surface);
     border-radius: 16px 16px 0 0; border-top: 1px solid var(--border);
     z-index: 301; overflow: hidden;
     display: none; flex-direction: column;
@@ -482,6 +482,7 @@
       <div id="sidebar-transversal"></div>
       <hr class="sidebar-sep">
       <div class="sidebar-label"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>Explorer</div>
+      <div id="sidebar-explore-search" style="padding:0 10px 6px;"></div>
       <div id="sidebar-explore"></div>
       <hr class="sidebar-sep">
       <div class="sidebar-label">Historique</div>
@@ -502,6 +503,7 @@
       <div class="rubrique-header" id="rubrique-header">
         <div class="rubrique-month" id="rubrique-month"></div>
         <div class="rubrique-meta" id="rubrique-meta"></div>
+        <div id="transversal-desc" style="display:none;font-size:0.82rem;color:var(--text3);margin:4px 0 8px;font-weight:300;line-height:1.45;">Articles réglementaires concernant tous les médecins, indépendamment de votre spécialité.</div>
         <div class="pills-wrap">
         <div class="rubrique-filters" id="rubrique-filters">
           <button class="filter-pill active" onclick="filterArticles('all', this)">Tous</button>
@@ -1001,6 +1003,9 @@ function updateRubrique() {
   }
   document.getElementById('rubrique-meta').textContent = `${totalArticles} article${totalArticles > 1 ? 's' : ''} \u00b7 ${label}`;
   document.getElementById('spec-label').textContent = label;
+
+  const descEl = document.getElementById('transversal-desc');
+  if (descEl) descEl.style.display = activeAudience === 'TRANSVERSAL_LIBERAL' ? '' : 'none';
 }
 
 // ── Compteur visible (après filtre catégorie) ─────────────────
@@ -1089,13 +1094,12 @@ function showFavorites() {
     gh.style.display = hasVisible ? '' : 'none';
   });
 
-  const count = favoritesSet.size;
-  document.getElementById('rubrique-meta').textContent =
-    `${count} article${count > 1 ? 's' : ''} \u00b7 Mes favoris`;
-
   // Empty state
   const container = document.getElementById('articles-container');
   const visibleCards = container.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])');
+  const count = visibleCards.length;
+  document.getElementById('rubrique-meta').textContent =
+    `${count} article${count > 1 ? 's' : ''} \u00b7 Mes favoris`;
   if (visibleCards.length === 0) {
     container.innerHTML = '<div class="empty">Aucun article en favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
   }
@@ -1127,12 +1131,26 @@ function buildSidebar() {
 
   // 3. Explore — other specialties (exclude user's own), only their own count
   const exploreEl = document.getElementById('sidebar-explore');
+  const exploreSearchEl = document.getElementById('sidebar-explore-search');
   const others = allSpecialties.filter(s => s.slug !== userSpecSlug);
   const MAX_VISIBLE = 7;
   let exploreExpanded = false;
+  let exploreSearchQuery = '';
+
+  // Search input for desktop sidebar
+  exploreSearchEl.innerHTML = `<div style="position:relative;">
+    <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text5);display:flex;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+    <input id="sidebar-spec-search" type="search" placeholder="Rechercher une spécialité…"
+      oninput="filterSidebarSpecs(this.value)"
+      style="width:100%;padding:6px 8px 6px 28px;border:1px solid var(--border);border-radius:6px;
+             background:var(--surface);color:var(--text);font-family:'Outfit',sans-serif;
+             font-size:0.78rem;outline:none;"/>
+  </div>`;
 
   function renderExploreList() {
-    const list = exploreExpanded ? others : others.slice(0, MAX_VISIBLE);
+    const q = exploreSearchQuery.trim().toLowerCase();
+    const filtered = q ? others.filter(s => s.name.toLowerCase().includes(q)) : others;
+    const list = (!q && !exploreExpanded) ? filtered.slice(0, MAX_VISIBLE) : filtered;
     const hidden = others.length - MAX_VISIBLE;
 
     exploreEl.innerHTML = list.map(s => {
@@ -1143,17 +1161,18 @@ function buildSidebar() {
       </div>`;
     }).join('');
 
-    if (!exploreExpanded && hidden > 0) {
+    if (!q && !exploreExpanded && hidden > 0) {
       exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:0.65rem;" onclick="expandExplore()">
         <span>+ ${hidden} sp\u00e9cialit\u00e9s\u2026</span>
       </div>`;
-    } else if (exploreExpanded && others.length > MAX_VISIBLE) {
+    } else if (!q && exploreExpanded && others.length > MAX_VISIBLE) {
       exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:0.65rem;" onclick="collapseExplore()">
         <span>R\u00e9duire</span>
       </div>`;
     }
   }
 
+  window.filterSidebarSpecs = function(q) { exploreSearchQuery = q; renderExploreList(); };
   window.expandExplore = function() { exploreExpanded = true; renderExploreList(); };
   window.collapseExplore = function() { exploreExpanded = false; renderExploreList(); };
   renderExploreList();

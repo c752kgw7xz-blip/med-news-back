@@ -369,12 +369,25 @@
     padding: 6px 0; transition: color .15s; font-family: 'Outfit', sans-serif; min-height: 44px;
   }
   .mobile-nav-item.active { color: var(--green); }
+  #mnav-specialite.active { color: var(--green); }
+  #mnav-transversal.active { color: #3b82f6; }
+  #mnav-explorer.active { color: #9333ea; }
+  #mnav-compte.active { color: #059669; }
   .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }
   .mobile-nav-icon svg { width: 22px; height: 22px; }
   .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
-  /* Archives tag caché sur desktop, visible via @media 768 */
+  /* Archives tag caché sur desktop, visible et centré sur mobile */
   .header-archives-tag { display: none; }
-  @media (max-width: 768px) { .header-archives-tag { display: block; } }
+  @media (max-width: 768px) {
+    .header-archives-tag {
+      display: block;
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 1.05rem; font-weight: 700; font-style: italic;
+      color: var(--text); letter-spacing: -0.2px;
+      position: absolute; left: 50%; transform: translateX(-50%);
+      white-space: nowrap; pointer-events: none;
+    }
+  }
 
   /* ── Drawer ──────────────────────────────── */
   .mobile-drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300; }
@@ -400,12 +413,12 @@
   <header>
     <div class="header-left">
       <h1 onclick="window.location.href='/'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
-      <span class="header-archives-tag">Archives</span>
       <span class="header-sep"></span>
       <span class="header-spec">Archives &amp; recherche</span>
-      <span class="header-sep" style="display:inline-block;"></span>
+      <span class="header-sep"></span>
       <span id="spec-label" style="font-size:0.82rem;color:var(--text3);font-weight:400;"></span>
     </div>
+    <span class="header-archives-tag">Archives</span>
     <div class="header-right">
       <span class="email"><span class="header-dot"></span><span id="user-email"></span></span>
       <button class="btn-logout" onclick="logout()">D&#233;connexion</button>
