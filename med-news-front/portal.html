@@ -615,12 +615,8 @@
 
   <!-- Full-page overlay — Compte (nav visible en bas) -->
   <div class="fp-overlay compte-mode" id="fp-compte">
-    <div class="fp-overlay-header">
-      <button class="fp-overlay-back" onclick="closeFullPage('compte')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        Retour
-      </button>
-      <span class="fp-overlay-title">Compte</span>
+    <div class="fp-overlay-header" style="justify-content:center;">
+      <span class="fp-overlay-title" style="padding-right:0;">Compte</span>
     </div>
     <div class="fp-overlay-content">
       <div class="sidebar-item" onclick="closeFullPage('compte');showFavorites();" style="display:flex;padding:14px 20px;">
@@ -666,7 +662,11 @@ const MONTHS = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin',
 let _prevNavSection = 'specialite'; // mémorise le dernier onglet actif avant Compte
 
 function mobileNavClick(section) {
-  if (section !== 'compte') _prevNavSection = section;
+  // Ferme tout overlay ouvert avant de naviguer
+  if (section !== 'compte') {
+    ['explorer', 'compte'].forEach(s => closeFullPage(s));
+    _prevNavSection = section;
+  }
   document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('mnav-' + section)?.classList.add('active');
 
@@ -1432,6 +1432,11 @@ async function loadMore() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
   if (window.lucide) lucide.createIcons(); // process static icons (sidebar labels, filter pills)
+  // Retour depuis settings → rouvrir Compte
+  if (location.hash === '#compte') {
+    history.replaceState(null, '', location.pathname);
+    setTimeout(() => mobileNavClick('compte'), 200);
+  }
 })();
 
 </script>
