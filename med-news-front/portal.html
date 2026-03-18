@@ -83,15 +83,16 @@
     .header-right .email { display: none; }
     .header-spec { display: none; }
     .header-sep { display: none; }
-    #articles-container { grid-template-columns: 1fr !important; }
-    .article-card { width: 100% !important; }
-    .content-area { padding: 16px 16px 80px; }
+    /* Contraindre le grid item content-area à la largeur du viewport */
+    .content-area { padding: 16px 16px 80px; min-width: 0; overflow-x: hidden; }
+    #articles-container { grid-template-columns: 1fr !important; min-width: 0; }
+    .article-card { width: 100% !important; max-width: 100%; box-sizing: border-box; }
     .rubrique-month { font-size: 1.24rem; }
     /* Filter pills : scroll horizontal sur une seule ligne */
     .rubrique-filters {
       flex-wrap: nowrap !important; overflow-x: auto !important;
       -webkit-overflow-scrolling: touch; scrollbar-width: none;
-      padding-bottom: 2px; margin-right: -16px; padding-right: 16px;
+      padding-bottom: 2px; padding-right: 4px;
     }
     .rubrique-filters::-webkit-scrollbar { display: none; }
     /* Bottom nav visible */
@@ -101,8 +102,8 @@
     /* Card top : pas de chevauchement badge IMPORTANT + catégorie */
     .card-top { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
     .card-top-right { flex-wrap: wrap; }
-    /* Annuler le font-scale forcé par _mednews_fs */
-    html, body { font-size: 16px !important; }
+    /* Annuler le font-scale forcé par _mednews_fs + reset CSS var */
+    html, body { font-size: 16px !important; --font-scale: 1 !important; }
   }
   @media (max-width: 480px) {
     header { padding: 0 12px; height: 48px; }
@@ -301,7 +302,7 @@
   /* ── Expanded detail ────────────────────── */
   .card-detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--border); }
   .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 700px) { .detail-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) { .detail-grid { grid-template-columns: 1fr; min-width: 0; } }
   .detail-box {
     background: rgba(0,0,0,.025); border-radius: 8px; padding: 14px 16px; min-width: 0;
   }
