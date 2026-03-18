@@ -77,8 +77,18 @@
     .header-sep { display: none; }
     .content-area { padding: 20px 16px; min-width: 0; overflow-x: hidden; max-width: 100%; }
     .page-title { font-size: 1.43rem; }
-    .setting-row { flex-wrap: wrap; }
-    .option-group { flex-wrap: wrap; }
+    /* Chaque ligne de réglage passe en colonne sur mobile */
+    .setting-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .setting-info { width: 100%; }
+    .option-group { flex-wrap: wrap; width: 100%; }
+    .option-btn { flex: 1; text-align: center; }
+    /* Spécialité : select + bouton en ligne, full width */
+    .setting-row > div[style*="flex-shrink:0"],
+    .setting-row > div[style*="flex-shrink: 0"] {
+      width: 100%; display: flex; gap: 8px; align-items: center;
+    }
+    .settings-select { flex: 1; min-width: 0; max-width: 100%; }
+    .btn-save { white-space: nowrap; flex-shrink: 0; }
     .setting-card { width: 100%; box-sizing: border-box; }
     /* Annuler le font-scale forcé par _mednews_fs */
     html, body { font-size: 16px !important; --font-scale: 1 !important; }
