@@ -95,6 +95,13 @@
     .rubrique-filters::-webkit-scrollbar { display: none; }
     /* Bottom nav visible */
     .bottom-nav { display: flex; }
+    /* New 5-tab mobile nav */
+    .mobile-bottom-nav { display: flex !important; }
+    /* Card top : pas de chevauchement badge IMPORTANT + catégorie */
+    .card-top { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
+    .card-top-right { flex-wrap: wrap; }
+    /* Annuler le font-scale forcé par _mednews_fs */
+    html, body { font-size: 16px !important; }
   }
   @media (max-width: 480px) {
     header { padding: 0 12px; height: 48px; }
@@ -372,6 +379,55 @@
 
   /* ── Empty ──────────────────────────────── */
   .empty { text-align: center; padding: 80px 20px; color: var(--text4); font-size: 1rem; line-height: 1.7; }
+
+  /* ── Mobile bottom nav (5 tabs) ────────── */
+  .mobile-bottom-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 60px; background: var(--surface); border-top: 1px solid var(--border);
+    z-index: 200; padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mobile-nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px; background: none; border: none; cursor: pointer;
+    color: var(--text4); padding: 6px 0; transition: color .15s;
+    font-family: 'Outfit', sans-serif; min-height: 44px;
+  }
+  .mobile-nav-item.active { color: var(--green); }
+  .mobile-nav-icon { font-size: 18px; line-height: 1; }
+  .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
+
+  /* ── Drawer ─────────────────────────────── */
+  .mobile-drawer-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.4); z-index: 300;
+  }
+  .mobile-drawer-overlay.open { display: block; }
+  .mobile-drawer {
+    position: fixed; bottom: 60px; left: 0; right: 0;
+    max-height: 70vh; background: var(--surface);
+    border-radius: 16px 16px 0 0; border-top: 1px solid var(--border);
+    z-index: 301; transform: translateY(100%);
+    transition: transform .25s ease; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .mobile-drawer.open { transform: translateY(0); }
+  .mobile-drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 12px; border-bottom: 1px solid var(--border);
+  }
+  .mobile-drawer-title { font-size: 1rem; font-weight: 500; color: var(--text); }
+  .mobile-drawer-close {
+    background: none; border: none; color: var(--text3);
+    font-size: 1rem; cursor: pointer; padding: 4px 8px;
+  }
+  .mobile-drawer-content {
+    overflow-y: auto; padding: 8px 0 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mobile-drawer-content .sidebar-item { display: flex; }
+  .mobile-drawer-content .sidebar-label { display: block; }
 </style>
 </head>
 <body>
@@ -451,25 +507,39 @@
     </div>
   </div>
 
-  <!-- Bottom navigation (mobile uniquement) -->
-  <nav class="bottom-nav" id="bottom-nav">
-    <button class="bn-item active" id="bn-home" onclick="bnSelect('home')">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      Portail
+  <!-- Bottom navigation mobile (5 tabs) -->
+  <nav class="mobile-bottom-nav" id="mobile-nav">
+    <button class="mobile-nav-item active" onclick="mobileNavClick('specialite')" id="mnav-specialite">
+      <span class="mobile-nav-icon">🏠</span>
+      <span class="mobile-nav-label">Ma spécialité</span>
     </button>
-    <button class="bn-item" id="bn-fav" onclick="bnSelect('fav')">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      Favoris
+    <button class="mobile-nav-item" onclick="mobileNavClick('transversal')" id="mnav-transversal">
+      <span class="mobile-nav-icon">🌐</span>
+      <span class="mobile-nav-label">Transversal</span>
     </button>
-    <button class="bn-item" id="bn-archives" onclick="window.location.href='/archives'">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Archives
+    <button class="mobile-nav-item" onclick="mobileNavClick('explorer')" id="mnav-explorer">
+      <span class="mobile-nav-icon">🔍</span>
+      <span class="mobile-nav-label">Explorer</span>
     </button>
-    <button class="bn-item" id="bn-settings" onclick="window.location.href='/settings'">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-      Réglages
+    <button class="mobile-nav-item" onclick="mobileNavClick('favoris')" id="mnav-favoris">
+      <span class="mobile-nav-icon">⭐</span>
+      <span class="mobile-nav-label">Favoris</span>
+    </button>
+    <button class="mobile-nav-item" onclick="mobileNavClick('compte')" id="mnav-compte">
+      <span class="mobile-nav-icon">⚙️</span>
+      <span class="mobile-nav-label">Compte</span>
     </button>
   </nav>
+
+  <!-- Drawer mobile -->
+  <div class="mobile-drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="mobile-drawer" id="mobile-drawer">
+    <div class="mobile-drawer-header">
+      <span class="mobile-drawer-title" id="drawer-title">Explorer</span>
+      <button class="mobile-drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div class="mobile-drawer-content" id="drawer-content"></div>
+  </div>
 
 <script>
 const API = window.location.origin;
@@ -496,17 +566,67 @@ let favoritesMode = false;
 const MONTHS = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin',
   'Juillet','Ao\u00fbt','Septembre','Octobre','Novembre','D\u00e9cembre'];
 
-// ── Bottom nav (mobile) ───────────────────────────────────────
-function bnSelect(id) {
-  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
-  const el = document.getElementById('bn-' + id);
-  if (el) el.classList.add('active');
-  if (id === 'fav') showFavorites();
-  if (id === 'home') {
-    favoritesMode = false;
-    currentPage = 1; loadedArticles = 0; allLoadedArticles = [];
-    loadArticles();
+// ── Mobile navigation (5 tabs + drawer) ──────────────────────
+function mobileNavClick(section) {
+  document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('mnav-' + section)?.classList.add('active');
+
+  if (section === 'specialite') {
+    closeDrawer();
+    const el = document.getElementById('sidebar-item-mine');
+    if (el) el.click();
+  } else if (section === 'transversal') {
+    openDrawer('Transversal', buildDrawerContent('transversal'));
+  } else if (section === 'explorer') {
+    openDrawer('Explorer', buildDrawerContent('explorer'));
+  } else if (section === 'favoris') {
+    closeDrawer();
+    showFavorites();
+  } else if (section === 'compte') {
+    openDrawer('Compte', buildDrawerContent('compte'));
   }
+}
+
+function buildDrawerContent(section) {
+  if (section === 'transversal') {
+    const el = document.getElementById('sidebar-transversal');
+    return el ? el.innerHTML : '<p style="padding:16px;color:var(--text3)">Aucun contenu</p>';
+  }
+  if (section === 'explorer') {
+    const el = document.getElementById('sidebar-explore');
+    return el ? el.innerHTML : '<p style="padding:16px;color:var(--text3)">Aucun contenu</p>';
+  }
+  if (section === 'compte') {
+    return `<div class="sidebar-item" onclick="closeDrawer();window.location.href='/archives';">
+        <span>Archives &amp; recherche</span>
+        <span style="color:var(--text5);">&rarr;</span>
+      </div>
+      <div class="sidebar-item" onclick="closeDrawer();window.location.href='/settings';">
+        <span>Param&egrave;tres</span>
+        <span style="color:var(--text5);">&rarr;</span>
+      </div>`;
+  }
+  return '';
+}
+
+function openDrawer(title, content) {
+  document.getElementById('drawer-title').textContent = title;
+  document.getElementById('drawer-content').innerHTML = content;
+  // Close drawer after any sidebar-item click inside the drawer
+  document.getElementById('drawer-content').onclick = () => setTimeout(closeDrawer, 80);
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('mobile-drawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay')?.classList.remove('open');
+  document.getElementById('mobile-drawer')?.classList.remove('open');
+}
+
+// ── Bottom nav (mobile) — legacy compat ───────────────────────
+function bnSelect(id) {
+  if (id === 'fav') mobileNavClick('favoris');
+  else if (id === 'home') mobileNavClick('specialite');
 }
 
 // ── Fenêtre portail : mois courant + mois précédent ──────────
@@ -904,10 +1024,9 @@ async function toggleFavorite(event, itemId) {
 function showFavorites() {
   favoritesMode = true;
   setActiveSidebar(document.getElementById('sidebar-favorites'));
-  // Sync bottom nav
-  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
-  const bnFav = document.getElementById('bn-fav');
-  if (bnFav) bnFav.classList.add('active');
+  // Sync mobile nav
+  document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('mnav-favoris')?.classList.add('active');
   activeFilter = 'all';
   document.querySelectorAll('.filter-pill').forEach((b, i) => b.classList.toggle('active', i === 0));
 
