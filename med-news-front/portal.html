@@ -102,8 +102,6 @@
     /* Card top : pas de chevauchement badge IMPORTANT + catégorie */
     .card-top { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
     .card-top-right { flex-wrap: wrap; }
-    /* Annuler le font-scale forcé par _mednews_fs + reset CSS var */
-    html, body { font-size: 16px !important; --font-scale: 1 !important; }
   }
   @media (max-width: 480px) {
     header { padding: 0 12px; height: 48px; }
@@ -765,7 +763,7 @@ function openFullPage(section) {
 
 function closeFullPage(section) {
   const el = document.getElementById('fp-' + section);
-  if (!el) return;
+  if (!el || !el.classList.contains('open')) return;
   el.classList.remove('open');
   // Remet display:none après la fin de la transition slide-down
   el.addEventListener('transitionend', () => { el.style.display = 'none'; }, { once: true });
