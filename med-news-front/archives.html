@@ -344,6 +344,44 @@
 
   /* ── Empty ──────────────────────────────── */
   .empty { text-align: center; padding: 80px 20px; color: var(--text4); font-size: 1rem; line-height: 1.7; }
+
+  /* ── Mobile bottom nav ───────────────────── */
+  .mobile-bottom-nav { display: none; }
+  @media (max-width: 768px) {
+    .mobile-bottom-nav {
+      display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+      height: 60px; background: var(--surface); border-top: 1px solid var(--border);
+      z-index: 200; padding-bottom: env(safe-area-inset-bottom);
+    }
+    .content-area { padding-bottom: 72px !important; }
+  }
+  .mobile-nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; background: none; border: none; cursor: pointer; color: var(--text4);
+    padding: 6px 0; transition: color .15s; font-family: 'Outfit', sans-serif; min-height: 44px;
+  }
+  .mobile-nav-item.active { color: var(--green); }
+  .mobile-nav-icon { font-size: 18px; line-height: 1; }
+  .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
+
+  /* ── Drawer ──────────────────────────────── */
+  .mobile-drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300; }
+  .mobile-drawer-overlay.open { display: block; }
+  .mobile-drawer {
+    position: fixed; bottom: 60px; left: 0; right: 0; max-height: 70vh;
+    background: var(--surface); border-radius: 16px 16px 0 0; border-top: 1px solid var(--border);
+    z-index: 301; overflow: hidden; display: none; flex-direction: column;
+  }
+  .mobile-drawer.open { display: flex; animation: drawerUp .25s ease; }
+  @keyframes drawerUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .mobile-drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 12px; border-bottom: 1px solid var(--border);
+  }
+  .mobile-drawer-title { font-size: 1rem; font-weight: 500; color: var(--text); }
+  .mobile-drawer-close { background: none; border: none; color: var(--text3); font-size: 1rem; cursor: pointer; padding: 4px 8px; }
+  .mobile-drawer-content { overflow-y: auto; padding: 8px 0 16px; -webkit-overflow-scrolling: touch; }
+  .mobile-drawer-content .sidebar-item { display: flex; }
 </style>
 </head>
 <body>
@@ -418,6 +456,35 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Bottom nav mobile -->
+  <nav class="mobile-bottom-nav" id="mobile-nav">
+    <button class="mobile-nav-item active" onclick="archNavClick('specialite')" id="mnav-specialite">
+      <span class="mobile-nav-icon">🏠</span>
+      <span class="mobile-nav-label">Ma spécialité</span>
+    </button>
+    <button class="mobile-nav-item" onclick="archNavClick('transversal')" id="mnav-transversal">
+      <span class="mobile-nav-icon">🌐</span>
+      <span class="mobile-nav-label">Transversal</span>
+    </button>
+    <button class="mobile-nav-item" onclick="archNavClick('explorer')" id="mnav-explorer">
+      <span class="mobile-nav-icon">🔍</span>
+      <span class="mobile-nav-label">Explorer</span>
+    </button>
+    <button class="mobile-nav-item" onclick="archNavClick('compte')" id="mnav-compte">
+      <span class="mobile-nav-icon">⚙️</span>
+      <span class="mobile-nav-label">Compte</span>
+    </button>
+  </nav>
+
+  <div class="mobile-drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="mobile-drawer" id="mobile-drawer">
+    <div class="mobile-drawer-header">
+      <span class="mobile-drawer-title" id="drawer-title">Explorer</span>
+      <button class="mobile-drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div class="mobile-drawer-content" id="drawer-content"></div>
   </div>
 
 <script>
@@ -795,7 +862,8 @@ function buildSidebar() {
     }
   }
 
-  window.expandExplore = function() { exploreExpanded = true; renderExploreList(); };
+  window.archExpandExplore = function() { exploreExpanded = true; renderExploreList(); };
+  window.expandExplore = window.archExpandExplore;
   window.collapseExplore = function() { exploreExpanded = false; renderExploreList(); };
   renderExploreList();
 }
@@ -1069,6 +1137,55 @@ async function reloadArchives() {
   } else {
     renderMonthsView();
   }
+}
+
+// ── Mobile navigation (archives) ──────────────────────────────
+function archNavClick(section) {
+  document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('mnav-' + section)?.classList.add('active');
+
+  if (section === 'specialite') {
+    closeDrawer();
+    const el = document.getElementById('sidebar-item-mine');
+    if (el) el.click();
+  } else if (section === 'transversal') {
+    closeDrawer();
+    const el = document.querySelector('#sidebar-transversal .sidebar-item');
+    if (el) el.click();
+  } else if (section === 'explorer') {
+    if (window.archExpandExplore) window.archExpandExplore();
+    openDrawer('Explorer', document.getElementById('sidebar-explore')?.innerHTML || '');
+  } else if (section === 'compte') {
+    openDrawer('Compte', `
+      <div class="sidebar-item" onclick="closeDrawer();window.location.href='/portal';" style="display:flex;">
+        <span>← Ce mois-ci</span>
+      </div>
+      <div class="sidebar-item" onclick="closeDrawer();window.location.href='/settings';" style="display:flex;">
+        <span>Paramètres</span><span style="color:var(--text5);">→</span>
+      </div>`);
+  }
+}
+
+function openDrawer(title, content) {
+  document.getElementById('drawer-title').textContent = title;
+  document.getElementById('drawer-content').innerHTML = content;
+  document.querySelectorAll('#drawer-content .sidebar-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const slug = item.dataset.slug;
+      if (slug) {
+        const orig = document.querySelector(`#sidebar-explore [onclick*="${slug}"]`);
+        if (orig) orig.click();
+        closeDrawer();
+      }
+    });
+  });
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('mobile-drawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay')?.classList.remove('open');
+  document.getElementById('mobile-drawer')?.classList.remove('open');
 }
 
 // ── Init ──────────────────────────────────────────────────────
