@@ -83,12 +83,13 @@
     .header-right .email { display: none; }
     .header-spec { display: none; }
     .header-sep { display: none; }
-    #articles-container { grid-template-columns: 1fr; }
+    #articles-container { grid-template-columns: 1fr !important; }
+    .article-card { width: 100% !important; }
     .content-area { padding: 16px 16px 80px; }
     .rubrique-month { font-size: 1.24rem; }
     /* Filter pills : scroll horizontal sur une seule ligne */
     .rubrique-filters {
-      flex-wrap: nowrap; overflow-x: auto;
+      flex-wrap: nowrap !important; overflow-x: auto !important;
       -webkit-overflow-scrolling: touch; scrollbar-width: none;
       padding-bottom: 2px; margin-right: -16px; padding-right: 16px;
     }
@@ -408,11 +409,14 @@
     position: fixed; bottom: 60px; left: 0; right: 0;
     max-height: 70vh; background: var(--surface);
     border-radius: 16px 16px 0 0; border-top: 1px solid var(--border);
-    z-index: 301; transform: translateY(100%);
-    transition: transform .25s ease; overflow: hidden;
-    display: flex; flex-direction: column;
+    z-index: 301; overflow: hidden;
+    display: none; flex-direction: column;
   }
-  .mobile-drawer.open { transform: translateY(0); }
+  .mobile-drawer.open { display: flex; animation: drawerUp .25s ease; }
+  @keyframes drawerUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
   .mobile-drawer-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px 20px 12px; border-bottom: 1px solid var(--border);
