@@ -73,8 +73,14 @@
     .header-right .email { display: none; }
     .header-spec { display: none; }
     .header-sep { display: none; }
+    /* Badge Archives visible sur mobile */
+    .header-archives-tag {
+      font-family: 'DM Mono', monospace; font-size: 0.59rem; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--text3); padding: 2px 7px;
+      border: 0.5px solid var(--border-strong); border-radius: 3px; white-space: nowrap;
+    }
     /* Contraindre le grid item au viewport */
-    .content-area { padding: 16px 16px 24px; min-width: 0; overflow-x: hidden; }
+    .content-area { padding: 16px 16px 80px; min-width: 0; overflow-x: hidden; }
     .month-name { font-size: 1.24rem; }
     /* Cards pleine largeur */
     .article-card { width: 100% !important; max-width: 100%; box-sizing: border-box; }
@@ -93,7 +99,7 @@
   }
   @media (max-width: 480px) {
     header { padding: 0 12px; height: 48px; }
-    .content-area { padding: 12px 12px 24px; }
+    .content-area { padding: 12px 12px 80px; }
     .month-name { font-size: 1.06rem; }
     .article-card { padding: 12px 14px; }
     .group-line { display: none; }
@@ -361,8 +367,11 @@
     padding: 6px 0; transition: color .15s; font-family: 'Outfit', sans-serif; min-height: 44px;
   }
   .mobile-nav-item.active { color: var(--green); }
-  .mobile-nav-icon { font-size: 18px; line-height: 1; }
+  .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }
+  .mobile-nav-icon svg { width: 22px; height: 22px; }
   .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
+  /* Archives tag caché sur desktop, visible via @media 768 */
+  .header-archives-tag { display: none; }
 
   /* ── Drawer ──────────────────────────────── */
   .mobile-drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300; }
@@ -387,7 +396,8 @@
 <body>
   <header>
     <div class="header-left">
-      <h1><em>Med</em><b>News</b></h1>
+      <h1 onclick="window.location.href='/'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
+      <span class="header-archives-tag">Archives</span>
       <span class="header-sep"></span>
       <span class="header-spec">Archives &amp; recherche</span>
       <span class="header-sep" style="display:inline-block;"></span>
@@ -412,8 +422,11 @@
       <div class="sidebar-label">Explorer</div>
       <div id="sidebar-explore"></div>
       <hr class="sidebar-sep">
+      <div class="sidebar-item" id="sidebar-favorites" onclick="showFavorites()">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris</span>
+      </div>
       <div class="sidebar-item" onclick="window.location.href='/settings'">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
         <span style="color:var(--text5);">&rarr;</span>
       </div>
     </aside>
@@ -462,24 +475,24 @@
 
   <!-- Bottom nav mobile -->
   <nav class="mobile-bottom-nav" id="mobile-nav">
-    <button class="mobile-nav-item" onclick="window.location.href='/portal'" id="mnav-retour">
-      <span class="mobile-nav-icon">◀</span>
+    <button class="mobile-nav-item" onclick="window.location.href='/portal'" id="mnav-retour" title="Retour au mois actuel">
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
       <span class="mobile-nav-label">Ce mois-ci</span>
     </button>
     <button class="mobile-nav-item active" onclick="archNavClick('specialite')" id="mnav-specialite">
-      <span class="mobile-nav-icon">🏠</span>
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
       <span class="mobile-nav-label">Ma spé</span>
     </button>
     <button class="mobile-nav-item" onclick="archNavClick('transversal')" id="mnav-transversal">
-      <span class="mobile-nav-icon">🌐</span>
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
       <span class="mobile-nav-label">Transversal</span>
     </button>
     <button class="mobile-nav-item" onclick="archNavClick('explorer')" id="mnav-explorer">
-      <span class="mobile-nav-icon">🔍</span>
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
       <span class="mobile-nav-label">Explorer</span>
     </button>
     <button class="mobile-nav-item" onclick="archNavClick('compte')" id="mnav-compte">
-      <span class="mobile-nav-icon">⚙️</span>
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
       <span class="mobile-nav-label">Compte</span>
     </button>
   </nav>
@@ -515,6 +528,8 @@ let monthArticles = {};    // {'2026-03': [articles...], ...}
 let monthLoaded = {};      // {'2026-03': true, ...}
 
 // Search state
+let favoritesSet = new Set();
+let favoritesMode = false;
 let searchQuery = '';
 let searchPage = 1;
 let searchTotal = 0;
@@ -690,7 +705,7 @@ function renderArticle(a, idx) {
     ? `<div class="detail-refs">R\u00e9f. : ${refs.map(r => esc(r)).join(' \u00b7 ')}</div>` : '';
 
   return `
-  <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${esc(categorie)}"
+  <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${esc(categorie)}" data-item-id="${a.id}"
        style="animation-delay:${delay}ms;">
     <div class="card-top">
       <div class="card-top-left">
@@ -918,6 +933,38 @@ async function loadProfile() {
   userSpecName = p.specialty_name || '';
   activeSpecSlug = userSpecSlug;
   document.getElementById('spec-label').textContent = 'Archives';
+}
+
+async function loadFavorites() {
+  try {
+    const res = await authFetch(`${API}/favorites`);
+    if (!res || !res.ok) return;
+    const data = await res.json();
+    favoritesSet = new Set(data.item_ids || []);
+  } catch {}
+}
+
+function showFavorites() {
+  favoritesMode = true;
+  closeDrawer();
+  // Sync mobile nav to compte
+  document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('mnav-compte')?.classList.add('active');
+  // Show only favorited cards, hide month headers without matches
+  document.querySelectorAll('.article-card').forEach(card => {
+    card.style.display = favoritesSet.has(card.dataset.itemId) ? '' : 'none';
+  });
+  document.querySelectorAll('.group-header, .month-header').forEach(h => {
+    let sib = h.nextElementSibling;
+    let hasVisible = false;
+    while (sib && !sib.classList.contains('group-header') && !sib.classList.contains('month-header')) {
+      if ((sib.classList.contains('article-card') || sib.classList.contains('month-section')) && sib.style.display !== 'none') hasVisible = true;
+      sib = sib.nextElementSibling;
+    }
+    h.style.display = hasVisible ? '' : 'none';
+  });
+  const count = document.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])').length;
+  document.getElementById('spec-label').textContent = `${count} favori${count > 1 ? 's' : ''}`;
 }
 
 async function loadSpecialties() {
@@ -1160,14 +1207,27 @@ function archNavClick(section) {
     if (el) el.click();
   } else if (section === 'explorer') {
     if (window.archExpandExplore) window.archExpandExplore();
-    openDrawer('Explorer', document.getElementById('sidebar-explore')?.innerHTML || '');
+    const listHtml = document.getElementById('sidebar-explore')?.innerHTML || '';
+    openDrawer('Explorer', `<div style="padding:10px 14px 6px;">
+        <input type="search" id="drawer-search-spec" placeholder="Rechercher une spécialité…"
+          oninput="filterDrawerSpecs(this.value)"
+          style="width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:6px;
+                 background:var(--surface2);color:var(--text);font-family:'Outfit',sans-serif;
+                 font-size:0.86rem;outline:none;"/>
+      </div>
+      <div id="drawer-spec-list">${listHtml}</div>`);
   } else if (section === 'compte') {
     openDrawer('Compte', `
-      <div class="sidebar-item" onclick="closeDrawer();window.location.href='/portal';" style="display:flex;">
-        <span>← Ce mois-ci</span>
+      <div class="sidebar-item" onclick="closeDrawer();showFavorites();" style="display:flex;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris</span>
+        <span style="color:var(--text5);">&rarr;</span>
       </div>
       <div class="sidebar-item" onclick="closeDrawer();window.location.href='/settings';" style="display:flex;">
-        <span>Paramètres</span><span style="color:var(--text5);">→</span>
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Paramètres</span>
+        <span style="color:var(--text5);">&rarr;</span>
+      </div>
+      <div class="sidebar-item" onclick="logout();" style="display:flex;color:var(--text3);">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Déconnexion</span>
       </div>`);
   }
 }
@@ -1194,10 +1254,18 @@ function closeDrawer() {
   document.getElementById('mobile-drawer')?.classList.remove('open');
 }
 
+function filterDrawerSpecs(query) {
+  const q = query.toLowerCase().trim();
+  document.querySelectorAll('#drawer-spec-list .sidebar-item').forEach(item => {
+    item.style.display = (!q || item.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
 // ── Init ──────────────────────────────────────────────────────
 (async () => {
   if (!getToken()) { window.location.href = '/login'; return; }
   await loadProfile();
+  await loadFavorites();
   await Promise.all([loadSpecialties(), loadCounts()]);
   buildSidebar();
   await loadMonths();

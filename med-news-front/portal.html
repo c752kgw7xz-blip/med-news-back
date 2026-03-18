@@ -185,6 +185,14 @@
     font-weight: 400; color: var(--text); margin-bottom: 2px; font-style: italic; letter-spacing: -.3px;
   }
   .rubrique-meta { font-family: 'DM Mono', monospace; font-size:0.65rem; color: #2e3154; letter-spacing: .3px; margin-bottom: 14px; }
+  /* Pills wrapper avec indicateur de scroll */
+  .pills-wrap { position: relative; }
+  .pills-wrap::after {
+    content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 36px;
+    background: linear-gradient(to right, transparent, var(--bg)); pointer-events: none;
+    display: none;
+  }
+  @media (max-width: 768px) { .pills-wrap::after { display: block; } }
   .rubrique-filters { display: flex; gap: 6px; flex-wrap: wrap; }
   .filter-pill {
     display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px;
@@ -398,7 +406,8 @@
     font-family: 'Outfit', sans-serif; min-height: 44px;
   }
   .mobile-nav-item.active { color: var(--green); }
-  .mobile-nav-icon { font-size: 18px; line-height: 1; }
+  .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }
+  .mobile-nav-icon svg { width: 22px; height: 22px; }
   .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
 
   /* ── Drawer ─────────────────────────────── */
@@ -439,7 +448,7 @@
 <body>
   <header>
     <div class="header-left">
-      <h1><em>Med</em><b>News</b></h1>
+      <h1 onclick="window.location.href='/'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
       <span class="header-sep"></span>
       <span class="header-spec" id="spec-label"></span>
     </div>
@@ -487,6 +496,7 @@
       <div class="rubrique-header" id="rubrique-header">
         <div class="rubrique-month" id="rubrique-month"></div>
         <div class="rubrique-meta" id="rubrique-meta"></div>
+        <div class="pills-wrap">
         <div class="rubrique-filters" id="rubrique-filters">
           <button class="filter-pill active" onclick="filterArticles('all', this)">Tous</button>
           <button class="filter-pill" data-cat="medicament" onclick="filterArticles('medicament', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg> M&#233;dicaments</button>
@@ -497,6 +507,7 @@
           <button class="filter-pill" data-cat="sante_publique" onclick="filterArticles('sante_publique', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12h6"/><path d="M12 9v6"/></svg> Sant&#233; publique</button>
           <button class="filter-pill" data-cat="administratif" onclick="filterArticles('administratif', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg> Administratif</button>
         </div>
+        </div><!-- /pills-wrap -->
       </div>
 
       <!-- Loading -->
@@ -516,23 +527,23 @@
   <!-- Bottom navigation mobile (5 tabs) -->
   <nav class="mobile-bottom-nav" id="mobile-nav">
     <button class="mobile-nav-item active" onclick="mobileNavClick('specialite')" id="mnav-specialite">
-      <span class="mobile-nav-icon">🏠</span>
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
       <span class="mobile-nav-label">Ma spécialité</span>
     </button>
     <button class="mobile-nav-item" onclick="mobileNavClick('transversal')" id="mnav-transversal">
-      <span class="mobile-nav-icon">🌐</span>
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
       <span class="mobile-nav-label">Transversal</span>
     </button>
     <button class="mobile-nav-item" onclick="mobileNavClick('explorer')" id="mnav-explorer">
-      <span class="mobile-nav-icon">🔍</span>
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
       <span class="mobile-nav-label">Explorer</span>
     </button>
     <button class="mobile-nav-item" onclick="mobileNavClick('archives')" id="mnav-archives">
-      <span class="mobile-nav-icon">🗂️</span>
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
       <span class="mobile-nav-label">Archives</span>
     </button>
     <button class="mobile-nav-item" onclick="mobileNavClick('compte')" id="mnav-compte">
-      <span class="mobile-nav-icon">⚙️</span>
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
       <span class="mobile-nav-label">Compte</span>
     </button>
   </nav>
@@ -587,8 +598,7 @@ function mobileNavClick(section) {
     const el = document.querySelector('#sidebar-transversal .sidebar-item');
     if (el) el.click();
   } else if (section === 'explorer') {
-    // Liste complète des spécialités (pas de "+N spé")
-    if (window.expandExplore) window.expandExplore();
+    if (window.expandExplore) window.expandExplore(); // toujours la liste complète
     openDrawer('Explorer', buildDrawerContent('explorer'));
   } else if (section === 'archives') {
     window.location.href = '/archives';
@@ -603,17 +613,27 @@ function buildDrawerContent(section) {
     return el ? el.innerHTML : '<p style="padding:16px;color:var(--text3)">Aucun contenu</p>';
   }
   if (section === 'explorer') {
-    const el = document.getElementById('sidebar-explore');
-    return el ? el.innerHTML : '<p style="padding:16px;color:var(--text3)">Aucun contenu</p>';
+    const listHtml = document.getElementById('sidebar-explore')?.innerHTML || '';
+    return `<div style="padding:10px 14px 6px;">
+        <input type="search" id="drawer-search-spec" placeholder="Rechercher une spécialité…"
+          oninput="filterDrawerSpecs(this.value)"
+          style="width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:6px;
+                 background:var(--surface2);color:var(--text);font-family:'Outfit',sans-serif;
+                 font-size:0.86rem;outline:none;"/>
+      </div>
+      <div id="drawer-spec-list">${listHtml}</div>`;
   }
   if (section === 'compte') {
-    return `<div class="sidebar-item" onclick="closeDrawer();showFavorites();">
-        <span>⭐&nbsp; Favoris</span>
+    return `<div class="sidebar-item" onclick="closeDrawer();showFavorites();" style="display:flex;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris</span>
         <span style="color:var(--text5);">&rarr;</span>
       </div>
-      <div class="sidebar-item" onclick="closeDrawer();window.location.href='/settings';">
-        <span>Param&egrave;tres</span>
+      <div class="sidebar-item" onclick="closeDrawer();window.location.href='/settings';" style="display:flex;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Paramètres</span>
         <span style="color:var(--text5);">&rarr;</span>
+      </div>
+      <div class="sidebar-item" onclick="logout();" style="display:flex;color:var(--text3);">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Déconnexion</span>
       </div>`;
   }
   return '';
@@ -631,6 +651,13 @@ function openDrawer(title, content) {
 function closeDrawer() {
   document.getElementById('drawer-overlay')?.classList.remove('open');
   document.getElementById('mobile-drawer')?.classList.remove('open');
+}
+
+function filterDrawerSpecs(query) {
+  const q = query.toLowerCase().trim();
+  document.querySelectorAll('#drawer-spec-list .sidebar-item').forEach(item => {
+    item.style.display = (!q || item.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
 }
 
 // ── Bottom nav (mobile) — legacy compat ───────────────────────
