@@ -1080,9 +1080,7 @@ async function loadFavorites() {
 function showFavorites() {
   favoritesMode = true;
   closeDrawer();
-  // Sync mobile nav to compte
-  document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('mnav-compte')?.classList.add('active');
+  closeFullPage('compte');
   // Show only favorited cards, hide month headers without matches
   document.querySelectorAll('.article-card').forEach(card => {
     card.style.display = favoritesSet.has(card.dataset.itemId) ? '' : 'none';

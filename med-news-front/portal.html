@@ -663,7 +663,10 @@ const MONTHS = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin',
   'Juillet','Ao\u00fbt','Septembre','Octobre','Novembre','D\u00e9cembre'];
 
 // ── Mobile navigation (5 tabs + drawer) ──────────────────────
+let _prevNavSection = 'specialite'; // mémorise le dernier onglet actif avant Compte
+
 function mobileNavClick(section) {
+  if (section !== 'compte') _prevNavSection = section;
   document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('mnav-' + section)?.classList.add('active');
 
@@ -759,13 +762,10 @@ function openFullPage(section) {
 
 function closeFullPage(section) {
   document.getElementById('fp-' + section)?.classList.remove('open');
-  // Restore correct active nav state after closing compte
   if (section === 'compte') {
+    // Restaure l'onglet actif précédent
     document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
-    document.getElementById('mnav-compte')?.classList.remove('active');
-    // Reactivate last content tab
-    const activeSection = document.querySelector('.sidebar-item.active');
-    if (!activeSection) document.getElementById('mnav-specialite')?.classList.add('active');
+    document.getElementById('mnav-' + _prevNavSection)?.classList.add('active');
   }
 }
 
