@@ -84,12 +84,21 @@
     .header-spec { display: none; }
     .header-sep { display: none; }
     #articles-container { grid-template-columns: 1fr; }
-    .content-area { padding: 16px; }
+    .content-area { padding: 16px 16px 80px; }
     .rubrique-month { font-size: 1.24rem; }
+    /* Filter pills : scroll horizontal sur une seule ligne */
+    .rubrique-filters {
+      flex-wrap: nowrap; overflow-x: auto;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      padding-bottom: 2px; margin-right: -16px; padding-right: 16px;
+    }
+    .rubrique-filters::-webkit-scrollbar { display: none; }
+    /* Bottom nav visible */
+    .bottom-nav { display: flex; }
   }
   @media (max-width: 480px) {
     header { padding: 0 12px; height: 48px; }
-    .content-area { padding: 12px; }
+    .content-area { padding: 12px 12px 80px; }
     .article-card { padding: 12px 14px; }
     .detail-box { padding: 10px 12px; }
     .detail-box li { padding-left: 10px; font-size: 0.82rem; }
@@ -107,6 +116,25 @@
     .card-date { display: none; }
     .btn-official { padding: 6px 12px; font-size: 0.76rem; }
   }
+
+  /* ── Bottom navigation (mobile) ─────────── */
+  .bottom-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+    background: var(--surface); border-top: 1px solid var(--border);
+    height: 60px; padding: 0 4px env(safe-area-inset-bottom, 0);
+    align-items: center; justify-content: space-around;
+  }
+  .bn-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 6px 8px; cursor: pointer; color: var(--text4);
+    font-size: 0.59rem; font-family: 'Outfit', sans-serif; font-weight: 400;
+    border: none; background: transparent; flex: 1; max-width: 80px;
+    transition: color .15s; min-height: 44px; justify-content: center;
+    line-height: 1;
+  }
+  .bn-item.active { color: var(--green); }
+  .bn-item svg { width: 20px; height: 20px; flex-shrink: 0; }
 
   /* ── Sidebar ────────────────────────────── */
   .sidebar {
@@ -423,6 +451,26 @@
     </div>
   </div>
 
+  <!-- Bottom navigation (mobile uniquement) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bn-item active" id="bn-home" onclick="bnSelect('home')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Portail
+    </button>
+    <button class="bn-item" id="bn-fav" onclick="bnSelect('fav')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Favoris
+    </button>
+    <button class="bn-item" id="bn-archives" onclick="window.location.href='/archives'">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Archives
+    </button>
+    <button class="bn-item" id="bn-settings" onclick="window.location.href='/settings'">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      Réglages
+    </button>
+  </nav>
+
 <script>
 const API = window.location.origin;
 let currentPage = 1;
@@ -447,6 +495,19 @@ let favoritesMode = false;
 
 const MONTHS = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin',
   'Juillet','Ao\u00fbt','Septembre','Octobre','Novembre','D\u00e9cembre'];
+
+// ── Bottom nav (mobile) ───────────────────────────────────────
+function bnSelect(id) {
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('bn-' + id);
+  if (el) el.classList.add('active');
+  if (id === 'fav') showFavorites();
+  if (id === 'home') {
+    favoritesMode = false;
+    currentPage = 1; loadedArticles = 0; allLoadedArticles = [];
+    loadArticles();
+  }
+}
 
 // ── Fenêtre portail : mois courant + mois précédent ──────────
 function portalFromDate() {
@@ -843,6 +904,10 @@ async function toggleFavorite(event, itemId) {
 function showFavorites() {
   favoritesMode = true;
   setActiveSidebar(document.getElementById('sidebar-favorites'));
+  // Sync bottom nav
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  const bnFav = document.getElementById('bn-fav');
+  if (bnFav) bnFav.classList.add('active');
   activeFilter = 'all';
   document.querySelectorAll('.filter-pill').forEach((b, i) => b.classList.toggle('active', i === 0));
 
