@@ -128,7 +128,7 @@
   .sidebar-section { padding: 0 16px; margin-bottom: 6px; }
   .sidebar-label {
     font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400;
-    letter-spacing: 1.5px; color: #2e3154; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase;
     padding: 0 16px; margin-bottom: 6px;
   }
   .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 12px 16px; }
@@ -181,7 +181,7 @@
   .filter-pill {
     display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px;
     border-radius: 3px; font-size:0.71rem; font-weight: 300; cursor: pointer;
-    border: 0.5px solid #1c1e30; background: transparent; color: #2e3154;
+    border: 0.5px solid #1c1e30; background: transparent; color: var(--text3);
     transition: all .15s; white-space: nowrap; font-family: 'Outfit', sans-serif;
   }
   .filter-pill:hover { border-color: var(--text4); color: var(--text2); }
@@ -203,7 +203,7 @@
     font-family: 'Instrument Serif', Georgia, serif; font-size:1.65rem;
     font-weight: 400; font-style: italic; letter-spacing: -.3px; color: var(--text);
   }
-  .month-count { font-family: 'DM Mono', monospace; font-size:0.65rem; color: #2e3154; font-weight: 400; }
+  .month-count { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text3); font-weight: 400; }
   .month-line { flex: 1; height: 1px; background: var(--border); }
   .month-articles { display: none; padding: 0 0 12px; }
   .month-articles.open { display: block; }
@@ -267,7 +267,7 @@
     padding: 2px 7px; border-radius: 2px; font-size:0.53rem; font-weight: 400;
     font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .5px;
   }
-  .card-date { font-family: 'DM Mono', monospace; font-size:0.65rem; color: #1a1d3a; }
+  .card-date { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text4); }
   .card-freshness { font-size: 0.64rem; font-weight: 600; }
   .urgency-pill {
     display: inline-flex; align-items: center; gap: 4px;
@@ -284,7 +284,7 @@
   }
 
 
-  .card-summary { font-family: 'Outfit', sans-serif; font-size:0.76rem; font-weight: 300; color: #3a3d55; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-summary { font-family: 'Outfit', sans-serif; font-size:0.76rem; font-weight: 300; color: var(--text3); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
   .card-impact {
     font-size: 0.86rem; color: var(--text2); font-style: italic; line-height: 1.5;
     padding-left: 10px; margin-top: 8px;
@@ -784,8 +784,8 @@ const CATEGORIE_STYLE = {
 };
 
 function categorieBadge(categorie) {
-  if (!categorie) return '<span class="nature-badge" style="background:#f0ede8;color:#9a9288;">Non class\u00e9</span>';
-  const s = CATEGORIE_STYLE[categorie] || { bg: '#f0ede8', color: '#7a7268', label: categorie };
+  if (!categorie) return '<span class="nature-badge" style="background:var(--surface2);color:var(--text4);">Non class\u00e9</span>';
+  const s = CATEGORIE_STYLE[categorie] || { bg: 'var(--surface2)', color: 'var(--text3)', label: categorie };
   const m = CATEGORY_META[categorie];
   const icon = m ? catIconHtml(m.icon, s.color) + '\u00a0' : '';
   return `<span class="nature-badge" style="background:${s.bg};color:${s.color};${s.border ? `border:${s.border};` : ''}">${icon}${esc(s.label)}</span>`;

@@ -154,7 +154,7 @@
   .sidebar-section { padding: 0 16px; margin-bottom: 6px; }
   .sidebar-label {
     font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400;
-    letter-spacing: 1.5px; color: #2e3154; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase;
     padding: 6px 16px 4px; margin-bottom: 2px;
   }
   .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 10px 16px; }
@@ -184,7 +184,7 @@
     font-family: 'Instrument Serif', Georgia, serif; font-size:1.65rem;
     font-weight: 400; color: var(--text); margin-bottom: 2px; font-style: italic; letter-spacing: -.3px;
   }
-  .rubrique-meta { font-family: 'DM Mono', monospace; font-size:0.65rem; color: #2e3154; letter-spacing: .3px; margin-bottom: 14px; }
+  .rubrique-meta { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text3); letter-spacing: .3px; margin-bottom: 14px; }
   /* Pills wrapper avec indicateur de scroll */
   .pills-wrap { position: relative; }
   .pills-wrap::after {
@@ -197,7 +197,7 @@
   .filter-pill {
     display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px;
     border-radius: 3px; font-size:0.71rem; font-weight: 300; cursor: pointer;
-    border: 0.5px solid #1c1e30; background: transparent; color: #2e3154;
+    border: 0.5px solid #1c1e30; background: transparent; color: var(--text3);
     transition: all .15s; white-space: nowrap; font-family: 'Outfit', sans-serif;
   }
   .filter-pill:hover { border-color: var(--text4); color: var(--text2); }
@@ -273,7 +273,7 @@
     padding: 2px 7px; border-radius: 2px; font-size:0.53rem; font-weight: 400;
     font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .5px;
   }
-  .card-date { font-family: 'DM Mono', monospace; font-size:0.65rem; color: #1a1d3a; font-weight: 400; }
+  .card-date { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text4); font-weight: 400; }
   .card-freshness { font-size: 0.71rem; font-weight: 600; }
   .urgency-pill {
     display: inline-flex; align-items: center; gap: 4px;
@@ -292,7 +292,7 @@
 
   /* Résumé : 1 ligne en mode réduit, taille plus lisible */
   .card-summary {
-    font-family: 'Outfit', sans-serif; font-size:0.76rem; font-weight: 300; color: #3a3d55; line-height: 1.5;
+    font-family: 'Outfit', sans-serif; font-size:0.76rem; font-weight: 300; color: var(--text3); line-height: 1.5;
     display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
   }
   /* Impact pratique : masqué tant que la carte n'est pas ouverte */
@@ -350,7 +350,7 @@
   /* ── Btn favorites ──────────────────────── */
   .btn-fav {
     background: transparent; border: none; cursor: pointer;
-    color: #3a3d55; padding: 6px 8px; border-radius: 4px; min-width: 36px; min-height: 36px;
+    color: var(--text4); padding: 6px 8px; border-radius: 4px; min-width: 36px; min-height: 36px;
     transition: color .15s; display: inline-flex; align-items: center; justify-content: center; line-height: 1;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
@@ -908,8 +908,8 @@ const CATEGORIE_STYLE = {
 };
 
 function categorieBadge(categorie) {
-  if (!categorie) return '<span class="nature-badge" style="background:#f0ede8;color:#9a9288;">Non class\u00e9</span>';
-  const s = CATEGORIE_STYLE[categorie] || { bg: '#f0ede8', color: '#7a7268', label: categorie };
+  if (!categorie) return '<span class="nature-badge" style="background:var(--surface2);color:var(--text4);">Non class\u00e9</span>';
+  const s = CATEGORIE_STYLE[categorie] || { bg: 'var(--surface2)', color: 'var(--text3)', label: categorie };
   const m = CATEGORY_META[categorie];
   const icon = m ? catIconHtml(m.icon, s.color) + '\u00a0' : '';
   return `<span class="nature-badge" style="background:${s.bg};color:${s.color};${s.border ? `border:${s.border};` : ''}">${icon}${esc(s.label)}</span>`;
