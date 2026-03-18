@@ -443,24 +443,36 @@
   }
   @media (min-width: 769px) { .fp-overlay { display: none !important; } }
 
-  /* ── Bouton retour portail (mobile only) ─────────────────── */
+  /* ── Bouton retour portail (mobile only) — caché, intégré dans arch-nav-row ── */
   .arch-back-portal { display: none; }
-  @media (max-width: 768px) { .arch-back-portal { display: block; } }
 
-  /* ── Segment navigation archives (mobile) ─────────────────── */
-  .arch-segment {
+  /* ── Barre de navigation archives mobile (retour + segment) ─ */
+  .arch-nav-row {
     display: none;
   }
   @media (max-width: 768px) {
+    .arch-nav-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    }
+    .arch-nav-back {
+      flex-shrink: 0; display: flex; align-items: center; gap: 3px;
+      background: none; border: none; color: var(--green); cursor: pointer;
+      font-family: 'Outfit', sans-serif; font-size: 0.8rem; padding: 6px 6px 6px 0;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
+    }
     .arch-segment {
-      display: flex; gap: 2px; margin-bottom: 16px;
+      flex: 1; display: flex; gap: 2px; margin-bottom: 0;
       background: var(--surface2); border-radius: 8px; padding: 3px;
     }
   }
+  /* Segment aussi visible sur desktop (caché) */
+  .arch-segment { display: none; }
   .arch-seg-btn {
     flex: 1; padding: 7px 0; border: none; background: none;
     color: var(--text3); font-family: 'Outfit', sans-serif; font-size: 0.82rem;
     font-weight: 400; border-radius: 6px; cursor: pointer; transition: all .15s;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .arch-seg-btn.active {
     background: var(--surface); color: var(--text); font-weight: 500;
@@ -507,18 +519,17 @@
     </aside>
 
     <div class="content-area">
-      <!-- Retour portail (mobile uniquement) -->
-      <div class="arch-back-portal">
-        <button onclick="window.location.href='/portal'" style="background:none;border:none;color:var(--green);font-family:'Outfit',sans-serif;font-size:0.82rem;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0 0 12px;">
+      <!-- Barre nav mobile : retour + segment (une seule ligne) -->
+      <div class="arch-nav-row">
+        <button class="arch-nav-back" onclick="window.location.href='/portal'">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          Ce mois-ci
+          Portail
         </button>
-      </div>
-      <!-- Segment navigation (mobile) -->
-      <div class="arch-segment" id="arch-segment">
-        <button class="arch-seg-btn active" id="arch-seg-spec" onclick="archSegClick('specialite', this)">Ma sp&#233;</button>
-        <button class="arch-seg-btn" id="arch-seg-trans" onclick="archSegClick('transversal', this)">Transversal</button>
-        <button class="arch-seg-btn" id="arch-seg-explore" onclick="archSegClick('explorer', this)">Explorer</button>
+        <div class="arch-segment" id="arch-segment">
+          <button class="arch-seg-btn active" id="arch-seg-spec" onclick="archSegClick('specialite', this)">Ma sp&#233;</button>
+          <button class="arch-seg-btn" id="arch-seg-trans" onclick="archSegClick('transversal', this)">Transversal</button>
+          <button class="arch-seg-btn" id="arch-seg-explore" onclick="archSegClick('explorer', this)">Explorer</button>
+        </div>
       </div>
       <!-- Search bar -->
       <div class="search-wrap">
