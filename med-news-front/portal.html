@@ -64,7 +64,7 @@
 
   /* ── Verify banner ──────────────────────── */
   .verify-banner {
-    background: #fff8e8; border-bottom: 1px solid #e8d498; padding: 8px 24px;
+    background: var(--surface2); border-bottom: 1px solid var(--border); padding: 8px 24px;
     font-size: 0.86rem; color: var(--amber); display: none; align-items: center; gap: 10px; font-weight: 500;
   }
   .verify-banner button {
@@ -102,6 +102,8 @@
     /* Card top : pas de chevauchement badge IMPORTANT + catégorie */
     .card-top { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
     .card-top-right { flex-wrap: wrap; }
+    /* Police fixe sur mobile — le réglage taille s'applique uniquement desktop */
+    html, body { font-size: 16px !important; --font-scale: 1 !important; }
   }
   @media (max-width: 480px) {
     header { padding: 0 12px; height: 48px; }
@@ -372,8 +374,8 @@
     margin: 22px 0 8px; padding: 0 2px;
   }
   .group-header:first-child { margin-top: 0; }
-  .group-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: #252840; }
-  .group-label { font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: #2e3154; }
+  .group-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: var(--text4); }
+  .group-label { font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text4); }
   .group-count { font-size: 0.79rem; color: var(--text5); font-weight: 400; }
   .group-line { flex: 1; height: 1px; background: var(--border); }
 
@@ -1430,10 +1432,10 @@ async function loadMore() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
   if (window.lucide) lucide.createIcons(); // process static icons (sidebar labels, filter pills)
-  // Retour depuis settings → rouvrir Compte
+  // Retour depuis settings → rouvrir Compte immédiatement (pas de flash Ma spé)
   if (location.hash === '#compte') {
     history.replaceState(null, '', location.pathname);
-    setTimeout(() => mobileNavClick('compte'), 200);
+    mobileNavClick('compte');
   }
 })();
 

@@ -99,6 +99,8 @@
     /* Badge IMPORTANT + catégorie : pas de chevauchement */
     .card-top { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
     .card-top-right { flex-wrap: wrap; }
+    /* Police fixe sur mobile */
+    html, body { font-size: 16px !important; --font-scale: 1 !important; }
   }
   @media (max-width: 480px) {
     header { padding: 0 12px; height: 48px; }
@@ -332,8 +334,8 @@
     margin: 24px 0 10px; padding: 0 2px;
   }
   .group-header:first-child { margin-top: 0; }
-  .group-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: #252840; }
-  .group-label { font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: #2e3154; }
+  .group-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: var(--text4); }
+  .group-label { font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text4); }
   .group-count { font-size: 0.79rem; color: var(--text5); font-weight: 400; }
   .group-line { flex: 1; height: 1px; background: var(--border); }
 
@@ -1399,7 +1401,7 @@ function openFullPage(section) {
 
 function closeFullPage(section) {
   const el = document.getElementById('fp-' + section);
-  if (!el) return;
+  if (!el || !el.classList.contains('open')) return;
   el.classList.remove('open');
   el.addEventListener('transitionend', () => { el.style.display = 'none'; }, { once: true });
   // Restaurer Archives comme onglet actif à la fermeture
