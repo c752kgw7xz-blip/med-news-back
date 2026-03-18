@@ -911,7 +911,10 @@ function renderGroupedArticles(articles, container) {
   });
   container.innerHTML = html;
   if (window.lucide) lucide.createIcons();
-  if (activeCatFilter !== 'all') applyCatFilter();
+  if (activeCatFilter !== 'all') {
+    applyCatFilter();
+    document.querySelector(`.filter-pill[data-cat="${activeCatFilter}"]`)?.classList.add('active');
+  }
 }
 
 function toggleDetail(e, card) {

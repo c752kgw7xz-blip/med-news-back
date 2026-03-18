@@ -1046,8 +1046,8 @@ function renderGroupedArticles() {
   container.innerHTML = html;
   if (window.lucide) lucide.createIcons();
 
-  // Re-apply active category filter
-  if (activeFilter !== 'all') filterArticles(activeFilter, null);
+  // Re-apply active category filter (pass the pill btn pour garder l'état visuel actif)
+  if (activeFilter !== 'all') filterArticles(activeFilter, document.querySelector(`.filter-pill[data-cat="${activeFilter}"]`));
 }
 
 function esc(s) {
