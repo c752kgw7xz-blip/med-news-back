@@ -417,13 +417,13 @@
   /* ── Full-page overlay (Instagram-style) ─────────────────── */
   .fp-overlay {
     position: fixed; inset: 0; background: var(--bg);
-    z-index: 500; display: flex; flex-direction: column;
+    z-index: 500; display: none; flex-direction: column;
     transform: translateY(100%);
     transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
     pointer-events: none;
   }
   .fp-overlay.compte-mode { bottom: calc(60px + env(safe-area-inset-bottom)); }
-  .fp-overlay.open { transform: translateY(0); pointer-events: auto; }
+  .fp-overlay.open { display: flex; transform: translateY(0); pointer-events: auto; }
   .fp-overlay-header {
     height: 52px; display: flex; align-items: center; gap: 8px;
     padding: 0 16px; border-bottom: 1px solid var(--border);
@@ -1379,23 +1379,28 @@ function archNavClick(section) {
 
 // ── Full-page overlay ──────────────────────────────────────────
 function openFullPage(section) {
+  const el = document.getElementById('fp-' + section);
+  if (!el) return;
+  el.style.display = 'flex';
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
+
   if (section === 'explorer') {
     if (window.archExpandExplore) window.archExpandExplore();
     const listHtml = document.getElementById('sidebar-explore')?.innerHTML || '';
     document.getElementById('fp-spec-list').innerHTML = listHtml;
     const inp = document.getElementById('fp-search-spec');
     if (inp) inp.value = '';
-    document.getElementById('fp-explorer').classList.add('open');
     document.getElementById('fp-spec-list').onclick = (e) => {
       if (e.target.closest('.sidebar-item')) setTimeout(() => closeFullPage('explorer'), 100);
     };
-  } else if (section === 'compte') {
-    document.getElementById('fp-compte').classList.add('open');
   }
 }
 
 function closeFullPage(section) {
-  document.getElementById('fp-' + section)?.classList.remove('open');
+  const el = document.getElementById('fp-' + section);
+  if (!el) return;
+  el.classList.remove('open');
+  el.addEventListener('transitionend', () => { el.style.display = 'none'; }, { once: true });
 }
 
 function filterFpSpecs(query) {
