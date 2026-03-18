@@ -446,13 +446,13 @@
   /* ── Bouton retour portail (mobile only) — caché, intégré dans arch-nav-row ── */
   .arch-back-portal { display: none; }
 
-  /* ── Barre de navigation archives mobile (retour + segment) ─ */
+  /* ── Barre de navigation archives mobile — masquée (filtrage auto) ─ */
   .arch-nav-row {
-    display: none;
+    display: none; /* pas de segmentation manuelle : filtrage auto sur la spé du médecin */
   }
   @media (max-width: 768px) {
     .arch-nav-row {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+      display: none; /* intentionnellement masqué : archNavClick navigue vers /portal */
     }
     .arch-nav-back {
       flex-shrink: 0; display: flex; align-items: center; gap: 3px;
@@ -1366,12 +1366,9 @@ function archSegClick(section, btnEl) {
 
 // ── Mobile navigation (archives) — bottom nav ─────────────────
 function archNavClick(section) {
-  if (section === 'specialite') {
-    document.getElementById('arch-seg-spec')?.click();
-  } else if (section === 'transversal') {
-    document.getElementById('arch-seg-trans')?.click();
-  } else if (section === 'explorer') {
-    document.getElementById('arch-seg-explore')?.click();
+  // Ma spé / Transversal / Explorer → retour au portail (contenu du mois actuel)
+  if (section === 'specialite' || section === 'transversal' || section === 'explorer') {
+    window.location.href = '/portal';
   } else if (section === 'compte') {
     openFullPage('compte');
   }
