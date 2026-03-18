@@ -51,7 +51,7 @@
   .header-sep { color: var(--border-strong); margin: 0 2px; font-weight: 300; }
   .header-badge {
     font-size: 0.71rem; color: var(--amber); font-weight: 600; text-transform: uppercase;
-    letter-spacing: 1px; background: #fff8e8; padding: 3px 10px; border-radius: 4px;
+    letter-spacing: 1px; background: var(--surface2); padding: 3px 10px; border-radius: 4px;
   }
   .header-right { display: flex; align-items: center; gap: 14px; }
   .header-right .email { font-size: 0.86rem; color: var(--text2); }
@@ -136,7 +136,7 @@
     border-top-color: var(--green); border-radius: 50%;
     animation: spin .7s linear infinite; margin: 0 auto 12px;
   }
-  .loading p { color: #777; font-size: 0.93rem; }
+  .loading p { color: var(--text3); font-size: 0.93rem; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(8px); }
@@ -177,15 +177,15 @@
     padding: 3px 8px; border-radius: 4px; font-size: 0.64rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: .5px;
   }
-  .status-badge.pending { background: #fff8e8; color: var(--amber); }
+  .status-badge.pending { background: var(--surface2); color: var(--amber); }
   .status-badge.approved { background: var(--green-dark); color: var(--green); }
-  .status-badge.rejected { background: #fde8e8; color: var(--red); }
+  .status-badge.rejected { background: var(--red-dark); color: var(--red); }
   .card-date { font-size: 0.79rem; color: var(--text3); }
 
   .spec-badges { display: flex; gap: 4px; flex-wrap: wrap; }
   .spec-badge {
     font-size: 0.64rem; font-weight: 600; padding: 2px 7px; border-radius: 3px;
-    background: #e8f1fc; color: var(--blue); letter-spacing: .3px;
+    background: var(--surface2); color: var(--blue); letter-spacing: .3px;
   }
 
   .card-title {
@@ -298,12 +298,12 @@
   }
   .modal-overlay.active { display: flex; }
   .modal-content {
-    background: #fff; border-radius: 12px; max-width: 700px; width: 100%;
+    background: var(--surface); border-radius: 12px; max-width: 700px; width: 100%;
     max-height: 90vh; overflow: auto;
   }
   .modal-close {
     position: sticky; top: 0; display: flex; justify-content: flex-end;
-    padding: 12px 16px; background: #fff; border-bottom: 1px solid #eee;
+    padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border);
   }
   .modal-close button {
     padding: 5px 14px; background: var(--text2); color: #fff; border: none;
@@ -325,7 +325,7 @@
   }
 
   /* ── Empty ──────────────────────────────── */
-  .empty { text-align: center; padding: 80px 20px; color: #777; font-size: 1rem; line-height: 1.7; }
+  .empty { text-align: center; padding: 80px 20px; color: var(--text3); font-size: 1rem; line-height: 1.7; }
 
   /* ── Toast ──────────────────────────────── */
   .toast {
@@ -623,16 +623,16 @@ function renderArticle(a, idx) {
   const statusClass = status.toLowerCase();
   const statusLabel = status === 'PENDING' ? 'En attente' : status === 'APPROVED' ? 'Valid\u00e9' : 'Rejet\u00e9';
 
-  const catStyle = categorie ? (CATEGORIE_STYLE[categorie] || { bg: '#f0ede8', color: '#7a7268', label: categorie })
-                             : { bg: '#f0ede8', color: '#9a9288', label: '?' };
+  const catStyle = categorie ? (CATEGORIE_STYLE[categorie] || { bg: 'var(--surface2)', color: 'var(--text3)', label: categorie })
+                             : { bg: 'var(--surface2)', color: 'var(--text4)', label: '?' };
   const catBadge = `<span class="nature-badge" style="background:${catStyle.bg};color:${catStyle.color};${catStyle.border ? `border:${catStyle.border};` : ''}">${esc(catStyle.label)}</span>`;
   // Source metadata : "Nature · date"
   const sourceMeta = [nature, MedNews.formatDate(datePub)].filter(Boolean).join(' \u00b7 ');
 
   const specDisplay = audience === 'TRANSVERSAL_LIBERAL'
-    ? '<span class="spec-badge" style="background:#fff8e8;color:var(--amber);">Transversal</span>'
+    ? '<span class="spec-badge" style="color:var(--amber);">Transversal</span>'
     : audience === 'PHARMACIENS'
-    ? '<span class="spec-badge" style="background:#e8f1fc;color:var(--purple);">Pharmaciens</span>'
+    ? '<span class="spec-badge" style="color:var(--purple);">Pharmaciens</span>'
     : (specSlug ? `<span class="spec-badge">${esc(specSlug)}</span>` : '');
 
   const pointsHtml = points.length
@@ -646,7 +646,7 @@ function renderArticle(a, idx) {
   const approveBtn = `<button class="btn-approve" ${!isPending ? 'disabled' : ''} onclick="event.stopPropagation(); reviewItem('${a.item_id}', 'APPROVED', this);"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;"><path d="M20 6 9 17l-5-5"/></svg> Valider</button>`;
   const rejectBtn = `<button class="btn-reject" ${!isPending ? 'disabled' : ''} onclick="event.stopPropagation(); reviewItem('${a.item_id}', 'REJECTED', this);"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Rejeter</button>`;
   const statusIconHtml = status !== 'PENDING'
-    ? `<span class="card-status-icon" id="status-icon-${a.item_id}" style="color:${status === 'APPROVED' ? '#5a5e7a' : '#3a3d55'};"><!-- unknown icon: ${status === 'APPROVED' ? 'check' : 'x'} --></span>`
+    ? `<span class="card-status-icon" id="status-icon-${a.item_id}" style="color:${status === 'APPROVED' ? 'var(--green)' : 'var(--red)'};"><!-- unknown icon: ${status === 'APPROVED' ? 'check' : 'x'} --></span>`
     : `<span class="card-status-icon" id="status-icon-${a.item_id}" style="display:none;"></span>`;
 
   return `
@@ -808,7 +808,7 @@ async function reviewItem(itemId, decision, btn) {
         const iconEl = document.getElementById(`status-icon-${itemId}`);
         if (iconEl) {
           iconEl.style.display = 'inline-flex';
-          iconEl.style.color = decision === 'APPROVED' ? '#5a5e7a' : '#3a3d55';
+          iconEl.style.color = decision === 'APPROVED' ? 'var(--green)' : 'var(--red)';
           iconEl.innerHTML = `<!-- unknown icon: ${decision === 'APPROVED' ? 'check' : 'x'} -->`;
           if (window.lucide) lucide.createIcons();
         }

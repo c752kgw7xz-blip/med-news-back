@@ -4,36 +4,50 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MedNews — Vérification email</title>
+<script src="/shared.js?v=7"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  [data-theme="light"] {
+    --bg: #f6f5f2; --surface: #ffffff; --border: #e4e0d8;
+    --text: #1a1814; --text2: #4a4540; --text3: #7a7268;
+    --green-dark: #e5f5f0; --red-dark: #fde8e8;
+  }
+  [data-theme="dark"] {
+    --bg: #0f1117; --surface: #13151f; --border: #1e2030;
+    --text: #f0f0f5; --text2: #c8c8d4; --text3: #8b8fa8;
+    --green-dark: #0d2a20; --red-dark: #2a0d0d;
+  }
   :root {
-    --bg: #f5f4ef; --surface: #ffffff; --border: #e0ded7;
-    --text: #2C2C2A; --text2: #5F5E5A; --text3: #888780;
-    --green: #1D9E75; --green-light: #E1F5EE;
-    --red: #A32D2D; --red-light: #FCEBEB;
-    --radius: 8px; --shadow: 0 1px 3px rgba(0,0,0,.08);
+    --green: #1f9478; --red: #cc3232; --radius: 8px;
   }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-    background: var(--bg); color: var(--text); font-size:0.82rem; line-height: 1.6;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg); color: var(--text); font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
     display: flex; align-items: center; justify-content: center; min-height: 100vh;
   }
   .card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    box-shadow: var(--shadow); padding: 40px; width: 100%; max-width: 420px; margin: 24px;
+    padding: 40px; width: 100%; max-width: 420px; margin: 24px;
     text-align: center;
   }
-  .logo { font-size:1.18rem; font-weight: 700; margin-bottom: 24px; }
-  .logo span { color: var(--green); }
-  .spinner { font-size:1.88rem; margin-bottom: 16px; animation: spin 1s linear infinite; display: inline-block; }
+  .logo {
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.43rem; font-weight: 400;
+    color: var(--text); margin-bottom: 24px; letter-spacing: -.3px;
+  }
+  .logo em { font-style: italic; }
+  .logo b { font-weight: 700; font-style: normal; }
+  .spinner { font-size: 1.88rem; margin-bottom: 16px; animation: spin 1s linear infinite; display: inline-block; color: var(--text3); }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .status { font-size:0.88rem; color: var(--text2); margin-bottom: 20px; }
-  .success { color: #085041; }
+  .status { font-size: 0.88rem; color: var(--text2); margin-bottom: 20px; }
+  .success { color: var(--green); }
   .error-text { color: var(--red); }
   .btn {
     display: inline-block; padding: 10px 24px; background: var(--green); color: #fff;
-    border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size:0.82rem;
-    transition: opacity .2s;
+    border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 0.82rem;
+    font-family: inherit; transition: opacity .2s;
   }
   .btn:hover { opacity: .9; }
   .hidden { display: none; }
@@ -41,7 +55,7 @@
 </head>
 <body>
   <div class="card">
-    <div class="logo">Med<span>News</span></div>
+    <div class="logo"><em>Med</em><b>News</b></div>
     <div id="loading">
       <div class="spinner">&#8635;</div>
       <div class="status">Vérification en cours...</div>
