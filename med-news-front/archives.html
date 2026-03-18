@@ -69,15 +69,17 @@
   @media (max-width: 768px) {
     .layout { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    header { padding: 0 16px; overflow: hidden; }
+    header { padding: 0 16px; overflow: hidden; position: relative; }
     .header-right .email { display: none; }
     .header-spec { display: none; }
     .header-sep { display: none; }
-    /* Badge Archives visible sur mobile */
+    /* Badge Archives visible sur mobile — centré, gros, gras */
     .header-archives-tag {
-      font-family: 'DM Mono', monospace; font-size: 0.59rem; letter-spacing: 1.5px;
-      text-transform: uppercase; color: var(--text3); padding: 2px 7px;
-      border: 0.5px solid var(--border-strong); border-radius: 3px; white-space: nowrap;
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 1.05rem; font-weight: 700; font-style: italic;
+      color: var(--text); letter-spacing: -0.2px;
+      position: absolute; left: 50%; transform: translateX(-50%);
+      white-space: nowrap; pointer-events: none;
     }
     /* Contraindre le grid item au viewport */
     .content-area { padding: 16px 16px 80px; min-width: 0; overflow-x: hidden; }
@@ -160,7 +162,7 @@
   .search-input:focus { border-color: var(--green); }
   .search-icon {
     position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-    color: var(--text5); font-size: 1rem; pointer-events: none;
+    color: var(--text5); pointer-events: none; display: flex; align-items: center;
   }
   .search-clear {
     position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
@@ -372,6 +374,7 @@
   .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
   /* Archives tag caché sur desktop, visible via @media 768 */
   .header-archives-tag { display: none; }
+  @media (max-width: 768px) { .header-archives-tag { display: block; } }
 
   /* ── Drawer ──────────────────────────────── */
   .mobile-drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300; }
@@ -416,7 +419,7 @@
       <div class="sidebar-label">Ma sp&#233;cialit&#233;</div>
       <div id="sidebar-my-spec"></div>
       <hr class="sidebar-sep">
-      <div class="sidebar-label">Transversal</div>
+      <div class="sidebar-label">Transversal<div style="font-size:0.53rem;letter-spacing:0.2px;text-transform:none;color:var(--text4);margin-top:2px;font-weight:300;line-height:1.35;font-family:'Outfit',sans-serif;">Articles concernant tous les médecins,<br>indépendamment de votre spécialité</div></div>
       <div id="sidebar-transversal"></div>
       <hr class="sidebar-sep">
       <div class="sidebar-label">Explorer</div>
@@ -434,7 +437,7 @@
     <div class="content-area">
       <!-- Search bar -->
       <div class="search-wrap">
-        <span class="search-icon">&#128270;</span>
+        <span class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
         <input class="search-input" id="search-input" type="text" placeholder="Rechercher dans tous les articles&#8230;" autocomplete="off">
         <button class="search-clear" id="search-clear" onclick="clearSearch()">&times;</button>
       </div>
@@ -853,7 +856,7 @@ function buildSidebar() {
   const transEl = document.getElementById('sidebar-transversal');
   transEl.innerHTML = `
     <div class="sidebar-item" onclick="selectSpec('', 'TRANSVERSAL_LIBERAL', this)">
-      <span>Tous domaines</span>
+      <span>Tous les médecins</span>
       <span class="count">${transversalCount}</span>
     </div>`;
 
@@ -905,7 +908,7 @@ async function selectSpec(slug, audience, el) {
   setActiveSidebar(el);
   activeSpecSlug = slug || userSpecSlug;
   activeAudience = audience;
-  updateSpecLabel(audience === 'TRANSVERSAL_LIBERAL' ? 'Tous domaines' : (userSpecName || 'Archives'));
+  updateSpecLabel(audience === 'TRANSVERSAL_LIBERAL' ? 'Tous les médecins' : (userSpecName || 'Archives'));
   await reloadArchives();
 }
 
@@ -965,6 +968,11 @@ function showFavorites() {
   });
   const count = document.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])').length;
   document.getElementById('spec-label').textContent = `${count} favori${count > 1 ? 's' : ''}`;
+  // Empty state
+  if (count === 0) {
+    const container = document.getElementById('months-view');
+    if (container) container.innerHTML = '<div class="empty">Aucun article en favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
+  }
 }
 
 async function loadSpecialties() {
@@ -1028,7 +1036,7 @@ function renderMonthsView() {
     return `
       <div class="month-section" id="month-${m.month}">
         <div class="month-header" onclick="toggleMonth('${m.month}')">
-          <span class="month-chevron ${openByDefault ? 'open' : ''}" id="chevron-${m.month}">&#9654;</span>
+          <span class="month-chevron ${openByDefault ? 'open' : ''}" id="chevron-${m.month}"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
           <span class="month-name">${monthDisplayName(m.month)}</span>
           <span class="month-count">${m.count} article${m.count > 1 ? 's' : ''}</span>
           <span class="month-line"></span>
@@ -1235,16 +1243,10 @@ function archNavClick(section) {
 function openDrawer(title, content) {
   document.getElementById('drawer-title').textContent = title;
   document.getElementById('drawer-content').innerHTML = content;
-  document.querySelectorAll('#drawer-content .sidebar-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const slug = item.dataset.slug;
-      if (slug) {
-        const orig = document.querySelector(`#sidebar-explore [onclick*="${slug}"]`);
-        if (orig) orig.click();
-        closeDrawer();
-      }
-    });
-  });
+  // Close drawer only when clicking a sidebar-item (not search inputs)
+  document.getElementById('drawer-content').onclick = (e) => {
+    if (e.target.closest('.sidebar-item')) setTimeout(closeDrawer, 80);
+  };
   document.getElementById('drawer-overlay').classList.add('open');
   document.getElementById('mobile-drawer').classList.add('open');
 }

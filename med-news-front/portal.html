@@ -355,6 +355,7 @@
     background: transparent; border: none; cursor: pointer;
     color: #3a3d55; padding: 6px 8px; border-radius: 4px; min-width: 36px; min-height: 36px;
     transition: color .15s; display: inline-flex; align-items: center; justify-content: center; line-height: 1;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .btn-fav:hover { color: var(--amber); }
   .btn-fav.active { color: var(--amber); }
@@ -406,6 +407,11 @@
     font-family: 'Outfit', sans-serif; min-height: 44px;
   }
   .mobile-nav-item.active { color: var(--green); }
+  #mnav-specialite.active { color: var(--green); }
+  #mnav-transversal.active { color: #3b82f6; }
+  #mnav-explorer.active { color: #9333ea; }
+  #mnav-archives.active { color: #d97706; }
+  #mnav-compte.active { color: #059669; }
   .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }
   .mobile-nav-icon svg { width: 22px; height: 22px; }
   .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
@@ -472,7 +478,7 @@
         <span class="count" id="fav-count">0</span>
       </div>
       <hr class="sidebar-sep">
-      <div class="sidebar-label"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>Transversal</div>
+      <div class="sidebar-label"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>Transversal<div style="font-size:0.53rem;letter-spacing:0.2px;text-transform:none;color:var(--text4);margin-top:2px;font-weight:300;line-height:1.35;font-family:'Outfit',sans-serif;">Articles concernant tous les médecins,<br>indépendamment de votre spécialité</div></div>
       <div id="sidebar-transversal"></div>
       <hr class="sidebar-sep">
       <div class="sidebar-label"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>Explorer</div>
@@ -642,8 +648,10 @@ function buildDrawerContent(section) {
 function openDrawer(title, content) {
   document.getElementById('drawer-title').textContent = title;
   document.getElementById('drawer-content').innerHTML = content;
-  // Close drawer after any sidebar-item click inside the drawer
-  document.getElementById('drawer-content').onclick = () => setTimeout(closeDrawer, 80);
+  // Close drawer only when clicking a sidebar-item (not search inputs or other controls)
+  document.getElementById('drawer-content').onclick = (e) => {
+    if (e.target.closest('.sidebar-item')) setTimeout(closeDrawer, 80);
+  };
   document.getElementById('drawer-overlay').classList.add('open');
   document.getElementById('mobile-drawer').classList.add('open');
 }
@@ -986,7 +994,7 @@ function updateRubrique() {
 
   let label = '';
   if (activeAudience === 'TRANSVERSAL_LIBERAL') {
-    label = 'Tous domaines';
+    label = 'Tous les médecins';
   } else {
     const spec = allSpecialties.find(s => s.slug === activeSpecSlug);
     label = spec ? spec.name : userSpecName;
@@ -1003,7 +1011,7 @@ function updateCounters() {
 
   let label = '';
   if (activeAudience === 'TRANSVERSAL_LIBERAL') {
-    label = 'Tous domaines';
+    label = 'Tous les médecins';
   } else {
     const spec = allSpecialties.find(s => s.slug === activeSpecSlug);
     label = spec ? spec.name : userSpecName;
@@ -1084,6 +1092,13 @@ function showFavorites() {
   const count = favoritesSet.size;
   document.getElementById('rubrique-meta').textContent =
     `${count} article${count > 1 ? 's' : ''} \u00b7 Mes favoris`;
+
+  // Empty state
+  const container = document.getElementById('articles-container');
+  const visibleCards = container.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])');
+  if (visibleCards.length === 0) {
+    container.innerHTML = '<div class="empty">Aucun article en favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
+  }
 }
 
 function updateSidebarFavCount() {
@@ -1106,7 +1121,7 @@ function buildSidebar() {
   const transEl = document.getElementById('sidebar-transversal');
   transEl.innerHTML = `
     <div class="sidebar-item" onclick="selectSpec('', 'TRANSVERSAL_LIBERAL', this)">
-      <span>Tous domaines</span>
+      <span>Tous les médecins</span>
       <span class="count">${transversalCount}</span>
     </div>`;
 
