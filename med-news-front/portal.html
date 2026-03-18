@@ -526,9 +526,9 @@
       <span class="mobile-nav-icon">🔍</span>
       <span class="mobile-nav-label">Explorer</span>
     </button>
-    <button class="mobile-nav-item" onclick="mobileNavClick('favoris')" id="mnav-favoris">
-      <span class="mobile-nav-icon">⭐</span>
-      <span class="mobile-nav-label">Favoris</span>
+    <button class="mobile-nav-item" onclick="mobileNavClick('archives')" id="mnav-archives">
+      <span class="mobile-nav-icon">🗂️</span>
+      <span class="mobile-nav-label">Archives</span>
     </button>
     <button class="mobile-nav-item" onclick="mobileNavClick('compte')" id="mnav-compte">
       <span class="mobile-nav-icon">⚙️</span>
@@ -581,12 +581,16 @@ function mobileNavClick(section) {
     const el = document.getElementById('sidebar-item-mine');
     if (el) el.click();
   } else if (section === 'transversal') {
-    openDrawer('Transversal', buildDrawerContent('transversal'));
-  } else if (section === 'explorer') {
-    openDrawer('Explorer', buildDrawerContent('explorer'));
-  } else if (section === 'favoris') {
+    // Chargement direct des articles transversaux, sans drawer
     closeDrawer();
-    showFavorites();
+    const el = document.querySelector('#sidebar-transversal .sidebar-item');
+    if (el) el.click();
+  } else if (section === 'explorer') {
+    // Liste complète des spécialités (pas de "+N spé")
+    if (window.expandExplore) window.expandExplore();
+    openDrawer('Explorer', buildDrawerContent('explorer'));
+  } else if (section === 'archives') {
+    window.location.href = '/archives';
   } else if (section === 'compte') {
     openDrawer('Compte', buildDrawerContent('compte'));
   }
@@ -602,8 +606,8 @@ function buildDrawerContent(section) {
     return el ? el.innerHTML : '<p style="padding:16px;color:var(--text3)">Aucun contenu</p>';
   }
   if (section === 'compte') {
-    return `<div class="sidebar-item" onclick="closeDrawer();window.location.href='/archives';">
-        <span>Archives &amp; recherche</span>
+    return `<div class="sidebar-item" onclick="closeDrawer();showFavorites();">
+        <span>⭐&nbsp; Favoris</span>
         <span style="color:var(--text5);">&rarr;</span>
       </div>
       <div class="sidebar-item" onclick="closeDrawer();window.location.href='/settings';">
@@ -1031,7 +1035,7 @@ function showFavorites() {
   setActiveSidebar(document.getElementById('sidebar-favorites'));
   // Sync mobile nav
   document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('mnav-favoris')?.classList.add('active');
+  document.getElementById('mnav-compte')?.classList.add('active');
   activeFilter = 'all';
   document.querySelectorAll('.filter-pill').forEach((b, i) => b.classList.toggle('active', i === 0));
 
