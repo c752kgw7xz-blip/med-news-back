@@ -283,13 +283,13 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 .section-center{text-align:center}
 .section-center .section-sub{margin-left:auto;margin-right:auto}
 .section-center .section-tag{display:inline-block}
-.portal-preview-wrap{width:100%;max-width:860px;margin:0 auto}
+.portal-preview-wrap{width:100%;max-width:1200px;margin:0 auto}
 
 /* Newsletter full section */
-.newsletter-full{display:flex;align-items:flex-start;gap:72px;padding:96px 48px;max-width:1100px;margin:0 auto}
-.newsletter-full-text{flex:0 0 340px}
+.newsletter-full{display:flex;align-items:flex-start;gap:64px;padding:96px 48px;max-width:1200px;margin:0 auto}
+.newsletter-full-text{flex:0 0 320px}
 .newsletter-full-preview{flex:1;display:flex;justify-content:center;align-items:flex-start}
-.mail-frame{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 80px rgba(0,0,0,.6);width:100%;max-width:480px}
+.mail-frame{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 80px rgba(0,0,0,.6);width:100%}
 .mail-toolbar{background:#1e1f2b;padding:10px 16px;display:flex;align-items:center;gap:6px}
 .mail-from{font-size:11px;color:#8b8fa8;font-family:var(--mono);margin-left:10px}
 .mail-body img{width:100%;display:block}
@@ -367,10 +367,10 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 <div class="divider"><div class="divider-line"></div></div>
 
 <!-- ── PORTAL PREVIEW ── -->
-<section class="section section-center" style="padding-bottom:80px">
+<section class="section-center" style="padding:80px 32px">
   <div class="section-tag reveal">Le portail</div>
   <div class="section-title reveal reveal-delay-1">Votre veille en un coup d'œil</div>
-  <p class="section-sub reveal reveal-delay-2">Filtrage par spécialité, niveaux d'urgence, résumés IA — classé et prêt à lire le 1<sup>er</sup> du mois.</p>
+  <p class="section-sub reveal reveal-delay-2" style="margin-left:auto;margin-right:auto">Filtrage par spécialité, niveaux d'urgence, résumés IA — classé et prêt à lire le 1<sup>er</sup> du mois.</p>
   <div class="portal-preview-wrap reveal reveal-delay-3">
     <div class="browser-frame">
       <div class="browser-bar">
@@ -408,18 +408,6 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
         Score · Spécialité · Catégorie
       </div>
-      <div class="amock">
-        <div class="amock-head">
-          <div class="amock-badge">À LIRE</div>
-          <div class="amock-atitle">Nouvelles recommandations HAS sur la surveillance des patients sous anticoagulants</div>
-        </div>
-        <div class="amock-body">
-          <div class="amock-kw">Points clés</div>
-          <div class="amock-pt"><div class="amock-pt-dot"></div><div class="amock-pt-text">Surveillance INR renforcée pour les patients âgés sous AVK</div></div>
-          <div class="amock-pt"><div class="amock-pt-dot"></div><div class="amock-pt-text">Nouvelles contre-indications à vérifier avant toute prescription</div></div>
-          <div class="amock-pt"><div class="amock-pt-dot"></div><div class="amock-pt-text">Formulaire de suivi mis à jour disponible sur HAS</div></div>
-        </div>
-      </div>
     </div>
     <div class="how-card reveal reveal-delay-3">
       <div class="how-n">03</div>
@@ -428,23 +416,6 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
       <div class="how-tag">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         Newsletter · Portail · Archives
-      </div>
-      <div class="notif-mock">
-        <div class="notif-head">
-          <div class="notif-icon">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          </div>
-          <div class="notif-from">MedNews</div>
-          <div class="notif-time">1 avr.</div>
-        </div>
-        <div class="notif-body">
-          <div class="notif-subject">Votre veille Cardiologie — Avril 2026</div>
-          <div class="notif-row">
-            <div class="notif-spec">CARDIOLOGIE</div>
-            <div class="notif-pill crit">1 À LIRE</div>
-            <div class="notif-pill imp">2 IMPORT.</div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
