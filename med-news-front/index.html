@@ -40,7 +40,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,9,14,.85);backdrop-filte
 .hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 48px;position:relative;overflow:hidden}
 .hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:.3;mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 30%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 30%,transparent 100%);animation:gridPulse 8s ease-in-out infinite}
 @keyframes gridPulse{0%,100%{opacity:.3}50%{opacity:.18}}
-.hero-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:0.07;mask-image:linear-gradient(to bottom,transparent 0%,black 28%,black 68%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 28%,black 68%,transparent 100%);pointer-events:none;z-index:0}
+.hero-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:0.22;mask-image:linear-gradient(to bottom,transparent 0%,black 18%,black 75%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 18%,black 75%,transparent 100%);pointer-events:none;z-index:0}
 
 .hero-tag{font-family:var(--mono);font-size:0.65rem;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;display:flex;align-items:center;gap:8px;position:relative;z-index:1;animation:fadeUp .8s .2s ease both}
 .hero-tag::before{content:'';width:24px;height:1px;background:var(--text3)}
@@ -288,7 +288,8 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 
 /* Newsletter full section */
 .newsletter-full{position:relative;overflow:hidden}
-.newsletter-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:0.07;mask-image:linear-gradient(to bottom,transparent 0%,black 14%,black 86%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 14%,black 86%,transparent 100%);pointer-events:none}
+.newsletter-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center top;opacity:0.25;mask-image:linear-gradient(to bottom,transparent 0%,black 8%,black 92%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 8%,black 92%,transparent 100%);pointer-events:none}
+.newsletter-full{min-height:680px}
 .newsletter-full-inner{max-width:740px;margin:0 auto;padding:96px 48px;text-align:center;position:relative;z-index:1}
 .newsletter-perks{display:grid;grid-template-columns:1fr 1fr;gap:24px 48px;margin-top:40px;text-align:left}
 .newsletter-perk{display:flex;align-items:flex-start;gap:12px}
