@@ -11,9 +11,23 @@ source_type :
   'therapeutique'  → bon usage médicament, protocoles thérapeutiques
   'formation'      → DPC, accréditation, formations continues
 
-Note : les URLs RSS ont été vérifiées sur les sites officiels.
-Certains feeds (sociétés savantes) peuvent nécessiter une vérification
-périodique car les sites sont moins stables que les sources institutionnelles.
+État des sources (mars 2026) :
+  ✅ has_rbp          → flux actif (dans rss_collector.py)
+  ✅ has_fiches_memo  → flux actif, publications peu fréquentes (mensuel/trimestriel)
+  ✅ has_parcours     → flux actif, publications peu fréquentes
+  ✅ academie_medecine → flux actif, 6 articles/90j
+  ✅ cngof_recommandations → flux actif, publications > 90j (lancer avec days=365)
+  ❌ ansm_bon_usage   → URL RSS inexistante sur ansm.sante.fr
+  ❌ sfc_recommandations  → sfcardio.fr n'expose pas de flux RSS
+  ❌ sfmu_recommandations → sfmu.org n'expose pas de flux RSS propre
+  ❌ sfp_recommandations  → sfpediatrie.com n'expose pas de flux RSS
+  ❌ sofcot_recommandations → sofcot.fr n'expose pas de flux RSS
+
+Sources à investiguer pour une prochaine itération :
+  - cardio-online.fr (bras média SFC) — tester RSS
+  - revmed.ch (Revue Médicale Suisse, FR) — https://www.revmed.ch/rss
+  - DPC Connect / ANDPC → pas de RSS public
+  - EM-consulte agrégateur → accès payant
 """
 
 from __future__ import annotations
@@ -24,7 +38,8 @@ from __future__ import annotations
 
 HAS_FEEDS: list[dict] = [
     # Fiches mémo — synthèses ultra-condensées des recommandations, 1-2 pages,
-    # directement actionnables en consultation
+    # directement actionnables en consultation.
+    # Publications peu fréquentes (mensuel à trimestriel).
     {
         "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081544",
         "label": "HAS — Fiches mémo",
@@ -32,7 +47,8 @@ HAS_FEEDS: list[dict] = [
         "source_type": "recommandation",
         "audience": ["medecins"],
     },
-    # Parcours de soins — guides d'organisation de la prise en charge par pathologie
+    # Parcours de soins — guides d'organisation de la prise en charge par pathologie.
+    # Publications peu fréquentes.
     {
         "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081547",
         "label": "HAS — Parcours de soins",
@@ -43,21 +59,7 @@ HAS_FEEDS: list[dict] = [
 ]
 
 # ---------------------------------------------------------------------------
-# ANSM — Bon usage (positif, complémentaire aux alertes)
-# ---------------------------------------------------------------------------
-
-ANSM_BON_USAGE_FEEDS: list[dict] = [
-    {
-        "url": "https://ansm.sante.fr/rss/bon_usage",
-        "label": "ANSM — Bon usage du médicament",
-        "source": "ansm_bon_usage",
-        "source_type": "therapeutique",
-        "audience": ["medecins", "pharmaciens"],
-    },
-]
-
-# ---------------------------------------------------------------------------
-# Académie Nationale de Médecine
+# Académie Nationale de Médecine — actif ✅
 # ---------------------------------------------------------------------------
 
 ACADEMIE_FEEDS: list[dict] = [
@@ -71,48 +73,12 @@ ACADEMIE_FEEDS: list[dict] = [
 ]
 
 # ---------------------------------------------------------------------------
-# Sociétés savantes par spécialité
-# Flux RSS vérifiés — à re-vérifier si une source devient silencieuse
+# Sociétés savantes — seul CNGOF expose un flux RSS valide
 # ---------------------------------------------------------------------------
 
 SOCIETES_SAVANTES_FEEDS: list[dict] = [
-    # Cardiologie
-    {
-        "url": "https://www.sfcardio.fr/rss.xml",
-        "label": "Société Française de Cardiologie — Recommandations",
-        "source": "sfc_recommandations",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "cardiologie",
-    },
-    # Médecine d'urgence
-    {
-        "url": "https://www.sfmu.org/rss/recommandations.xml",
-        "label": "SFMU — Recommandations médecine d'urgence",
-        "source": "sfmu_recommandations",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "medecine-urgences",
-    },
-    # Pédiatrie
-    {
-        "url": "https://www.sfpediatrie.com/feed",
-        "label": "Société Française de Pédiatrie",
-        "source": "sfp_recommandations",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "pediatrie",
-    },
-    # Chirurgie orthopédique
-    {
-        "url": "https://www.sofcot.fr/rss/publications.xml",
-        "label": "SOFCOT — Chirurgie orthopédique et traumatologie",
-        "source": "sofcot_recommandations",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "chirurgie-orthopedique",
-    },
-    # Gynécologie-obstétrique
+    # Gynécologie-obstétrique — flux valide, publications peu fréquentes.
+    # Lancer collect_pratique avec days=365 pour capturer l'historique.
     {
         "url": "https://www.cngof.fr/feed",
         "label": "CNGOF — Gynécologie-obstétrique",
@@ -124,12 +90,11 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
 ]
 
 # ---------------------------------------------------------------------------
-# Export global — tous les feeds pratiques
+# Export global — tous les feeds pratiques actifs
 # ---------------------------------------------------------------------------
 
 ALL_PRATIQUE_FEEDS: list[dict] = (
     HAS_FEEDS
-    + ANSM_BON_USAGE_FEEDS
     + ACADEMIE_FEEDS
     + SOCIETES_SAVANTES_FEEDS
 )
