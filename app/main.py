@@ -93,8 +93,14 @@ app.include_router(sources_router)
 app.include_router(portal_router)
 
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 _FRONT_DIR = os.path.join(os.path.dirname(__file__), "..", "med-news-front")
+
+# Serve static assets (screenshots, images, etc.)
+_screenshots_dir = os.path.join(_FRONT_DIR, "screenshots")
+if os.path.isdir(_screenshots_dir):
+    app.mount("/screenshots", StaticFiles(directory=_screenshots_dir), name="screenshots")
 
 _NO_CACHE = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache"}
 
