@@ -172,6 +172,131 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
   .cta-title{font-size:1.43rem}
   footer{padding:20px 16px}
 }
+
+/* ── PRODUCT MOCKUPS ── */
+.browser-frame{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 80px rgba(0,0,0,.5)}
+.browser-bar{background:#1c1e2a;padding:10px 16px;display:flex;align-items:center;gap:6px}
+.browser-dot{width:12px;height:12px;border-radius:50%}
+.dot-red{background:#ff5f57}.dot-yellow{background:#ffbd2e}.dot-green{background:#28c840}
+.browser-url{margin-left:12px;font-size:11px;color:#4a4e68;font-family:var(--mono)}
+
+/* Portal desktop mockup */
+.pmock{display:flex;height:310px;background:#0d0f1a}
+.pmock-sidebar{width:178px;flex-shrink:0;background:#0b0c15;border-right:1px solid #1c1e30;overflow:hidden;display:flex;flex-direction:column}
+.pmock-logo{font-family:var(--serif);font-size:11px;color:#e8e9f4;padding:12px 16px;border-bottom:1px solid #1c1e30;letter-spacing:-.2px}
+.pmock-logo em{font-style:italic}.pmock-logo b{font-weight:700;font-style:normal}
+.pmock-nav{padding:7px 16px;font-size:9px;color:#4a4e68;display:flex;align-items:center;gap:7px;cursor:default;font-family:var(--sans)}
+.pmock-nav.active{background:rgba(255,255,255,.04);color:#e8e9f4}
+.pmock-nav-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.5}
+.pmock-nav.active .pmock-nav-dot{opacity:1;background:#2a9d7a}
+.pmock-main{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+.pmock-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.pmock-month{font-size:7.5px;color:#4a4e68;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase}
+.pmock-count{font-size:7.5px;color:#4a4e68;padding:2px 9px;border:0.5px solid #1c1e30;border-radius:10px;font-family:var(--mono)}
+.pmock-card{background:#11121c;border:0.5px solid #1c1e30;border-radius:5px;padding:9px 11px;display:flex;flex-direction:column;gap:4px}
+.pmock-card-row{display:flex;align-items:center;gap:6px}
+.pmock-badge{font-size:6.5px;padding:1.5px 5px;border-radius:2px;font-family:var(--mono);font-weight:600;letter-spacing:.3px;flex-shrink:0}
+.pmock-badge.crit{background:#2a0d0d;color:#ff8080}
+.pmock-badge.imp{background:#231a05;color:#d4a017}
+.pmock-badge.info{background:#0d1a14;color:#6bcb77}
+.pmock-cat{font-size:7px;color:#4a4e68;font-family:var(--mono)}
+.pmock-title{font-size:8.5px;color:#c8c8d4;line-height:1.4;font-family:var(--sans);font-weight:400}
+.pmock-src{font-size:6.5px;color:#3a3e58;font-family:var(--mono)}
+
+/* Article detail mockup (how-card 02) */
+.amock{background:#11121c;border:1px solid #1c1e30;border-radius:7px;overflow:hidden;margin-top:18px}
+.amock-head{padding:9px 12px;border-bottom:1px solid #1c1e30;display:flex;align-items:flex-start;gap:7px}
+.amock-badge{font-size:6.5px;padding:1.5px 5px;border-radius:2px;font-family:var(--mono);font-weight:600;background:#2a0d0d;color:#ff8080;flex-shrink:0;margin-top:1px}
+.amock-atitle{font-size:8.5px;color:#c8c8d4;line-height:1.35;font-family:var(--sans)}
+.amock-body{padding:9px 12px}
+.amock-kw{font-size:6.5px;color:#8b8fa8;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px}
+.amock-pt{display:flex;align-items:flex-start;gap:5px;margin-bottom:5px}
+.amock-pt-dot{width:4px;height:4px;border-radius:50%;background:#2a9d7a;flex-shrink:0;margin-top:3.5px}
+.amock-pt-text{font-size:8px;color:#8b8fa8;line-height:1.45}
+
+/* Email notification mockup (how-card 03) */
+.notif-mock{background:#11121c;border:1px solid #1c1e30;border-radius:7px;overflow:hidden;margin-top:18px}
+.notif-head{padding:8px 12px;border-bottom:1px solid #1c1e30;display:flex;align-items:center;gap:8px}
+.notif-icon{width:22px;height:22px;border-radius:4px;background:#1c1e30;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-from{font-size:8px;color:#e8e9f4;font-family:var(--sans);font-weight:500}
+.notif-time{font-size:7px;color:#4a4e68;font-family:var(--mono);margin-left:auto}
+.notif-body{padding:8px 12px;display:flex;flex-direction:column;gap:5px}
+.notif-subject{font-size:8px;color:#c8c8d4;font-family:var(--sans);font-weight:500}
+.notif-row{display:flex;align-items:center;gap:6px}
+.notif-spec{font-size:7px;color:#4a4e68;font-family:var(--mono);padding:1.5px 6px;border:0.5px solid #252840;border-radius:2px}
+.notif-pill{font-size:6.5px;font-family:var(--mono);font-weight:600;padding:1.5px 5px;border-radius:2px}
+.notif-pill.crit{background:#2a0d0d;color:#ff8080}
+.notif-pill.imp{background:#231a05;color:#d4a017}
+
+/* Value card mini mockups */
+.vmock{background:#0d0f1a;border:1px solid #1c1e30;border-radius:7px;overflow:hidden;margin-top:14px}
+.vmock-row{display:flex;align-items:center;gap:8px;padding:5.5px 10px;border-bottom:0.5px solid #1c1e30;font-size:8px;font-family:var(--sans)}
+.vmock-row:last-child{border-bottom:none}
+.vmock-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.vmock-label{color:#4a4e68;flex:1}
+.vmock-count{color:#3a3e58;font-family:var(--mono);font-size:7px}
+.vmock-row.hi .vmock-label{color:#e8e9f4}
+.vmock-row.hi .vmock-dot{background:#2a9d7a}
+.vmock-badge{font-size:6.5px;padding:1.5px 5px;border-radius:2px;font-family:var(--mono);font-weight:600}
+.vmock-badge.crit{background:#2a0d0d;color:#ff8080}
+.vmock-badge.imp{background:#231a05;color:#d4a017}
+.vmock-tag{font-size:7px;color:#4a4e68;padding:1.5px 6px;border:0.5px solid #252840;border-radius:2px;font-family:var(--mono)}
+.vmock-search{display:flex;align-items:center;gap:7px;padding:7px 10px;border-bottom:0.5px solid #1c1e30}
+.vmock-search-text{font-size:7.5px;color:#4a4e68;font-family:var(--sans);font-style:italic}
+.vmock-month-row{display:flex;align-items:center;gap:7px;padding:5.5px 10px;border-bottom:0.5px solid #1c1e30;font-family:var(--mono)}
+.vmock-month-label{font-size:7px;color:#4a4e68;flex:1}
+.vmock-month-n{font-size:7px;color:#3a3e58}
+
+/* Mobile phone frame */
+.phone-frame{width:200px;border-radius:26px;overflow:hidden;border:2px solid rgba(255,255,255,.1);box-shadow:0 40px 80px rgba(0,0,0,.7);background:#0b0c15;flex-shrink:0}
+.phone-notch{height:22px;background:#08090e;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+.phone-notch-pill{width:42px;height:5px;border-radius:3px;background:#1c1e30}
+.phone-topbar{padding:10px 12px 5px;display:flex;align-items:center;justify-content:space-between;background:#0d0f1a}
+.phone-logo{font-family:var(--serif);font-size:10px;color:#e8e9f4;letter-spacing:-.2px}
+.phone-logo em{font-style:italic}.phone-logo b{font-weight:700;font-style:normal}
+.phone-pills{padding:0 12px 7px;display:flex;gap:4px;overflow:hidden;background:#0d0f1a}
+.phone-pill{font-size:7px;padding:3px 7px;border-radius:10px;border:0.5px solid #1c1e30;color:#4a4e68;white-space:nowrap;font-family:var(--sans)}
+.phone-pill.active{background:#1c1e30;color:#e8e9f4;border-color:#252840}
+.phone-card{margin:0 12px 7px;background:#11121c;border:0.5px solid #1c1e30;border-radius:5px;padding:8px 10px}
+.phone-card-badge{font-size:6.5px;padding:1.5px 5px;border-radius:2px;font-family:var(--mono);font-weight:600;background:#2a0d0d;color:#ff8080;display:inline-block;margin-bottom:4px}
+.phone-card-badge.imp{background:#231a05;color:#d4a017}
+.phone-card-badge.info{background:#0d1a14;color:#6bcb77}
+.phone-card-title{font-size:8px;color:#c8c8d4;line-height:1.4;font-family:var(--sans)}
+.phone-card-meta{font-size:6.5px;color:#3a3e58;margin-top:3px;font-family:var(--mono)}
+.phone-bottomnav{height:50px;border-top:0.5px solid #1c1e30;display:flex;align-items:center;justify-content:space-around;background:#0b0c15;padding-bottom:2px}
+.phone-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.3}
+.phone-nav-item.active{opacity:1}
+.phone-nav-label{font-size:6px;color:#4a4e68;font-family:var(--sans)}
+.phone-nav-item.active .phone-nav-label{color:#e8e9f4}
+
+/* Mobile section layout */
+.mobile-section{display:flex;align-items:center;gap:72px;padding:96px 48px;max-width:1100px;margin:0 auto}
+.mobile-section-text{flex:1}
+.mobile-section-device{flex:0 0 auto;display:flex;justify-content:center}
+.mobile-bullets{display:flex;flex-direction:column;gap:18px;margin-top:32px}
+.mobile-bullet{display:flex;align-items:flex-start;gap:12px}
+.mobile-bullet-icon{width:28px;height:28px;border-radius:5px;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.mobile-bullet-title{font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:1px}
+.mobile-bullet-desc{font-size:0.76rem;color:var(--text2);line-height:1.6}
+
+/* Portal preview section */
+.section-center{text-align:center}
+.section-center .section-sub{margin-left:auto;margin-right:auto}
+.section-center .section-tag{display:inline-block}
+.portal-preview-wrap{width:100%;max-width:860px;margin:0 auto}
+
+@media(max-width:900px){.mobile-section{gap:40px}}
+@media(max-width:768px){
+  .mobile-section{flex-direction:column-reverse;gap:40px;padding:64px 24px;text-align:center}
+  .mobile-bullets{align-items:flex-start}
+  .amock,.notif-mock,.vmock{display:none}
+  .browser-frame{border-radius:8px}
+}
+@media(max-width:600px){
+  .browser-frame{display:none}
+  .mobile-section{padding:48px 16px}
+  .phone-frame{width:180px}
+}
 </style>
 </head>
 <body>
@@ -224,6 +349,28 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 
 <div class="divider"><div class="divider-line"></div></div>
 
+<!-- ── PORTAL PREVIEW ── -->
+<section class="section section-center" style="padding-bottom:80px">
+  <div class="section-tag reveal">Le portail</div>
+  <div class="section-title reveal reveal-delay-1">Votre veille en un coup d'œil</div>
+  <p class="section-sub reveal reveal-delay-2">Filtrage par spécialité, niveaux d'urgence, résumés IA — classé et prêt à lire le 1<sup>er</sup> du mois.</p>
+  <div class="portal-preview-wrap reveal reveal-delay-3">
+    <div class="browser-frame">
+      <div class="browser-bar">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+        <div class="browser-url">mednews.fr/portal</div>
+      </div>
+      <div class="browser-content">
+        <img src="screenshots/portal-desktop.png" alt="Portail MedNews — vue bureau" style="width:100%;display:block;max-height:500px;object-fit:cover;object-position:top">
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
 <section class="section" id="comment">
   <div class="section-tag reveal">Fonctionnement</div>
   <div class="section-title reveal reveal-delay-1">Trois étapes,<br>zéro friction</div>
@@ -246,6 +393,18 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
         Score · Spécialité · Catégorie
       </div>
+      <div class="amock">
+        <div class="amock-head">
+          <div class="amock-badge">À LIRE</div>
+          <div class="amock-atitle">Nouvelles recommandations HAS sur la surveillance des patients sous anticoagulants</div>
+        </div>
+        <div class="amock-body">
+          <div class="amock-kw">Points clés</div>
+          <div class="amock-pt"><div class="amock-pt-dot"></div><div class="amock-pt-text">Surveillance INR renforcée pour les patients âgés sous AVK</div></div>
+          <div class="amock-pt"><div class="amock-pt-dot"></div><div class="amock-pt-text">Nouvelles contre-indications à vérifier avant toute prescription</div></div>
+          <div class="amock-pt"><div class="amock-pt-dot"></div><div class="amock-pt-text">Formulaire de suivi mis à jour disponible sur HAS</div></div>
+        </div>
+      </div>
     </div>
     <div class="how-card reveal reveal-delay-3">
       <div class="how-n">03</div>
@@ -254,6 +413,9 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
       <div class="how-tag">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         Newsletter · Portail · Archives
+      </div>
+      <div class="notif-mock" style="overflow:hidden">
+        <img src="screenshots/newsletter.png" alt="Newsletter MedNews" style="width:100%;display:block;max-height:130px;object-fit:cover;object-position:top">
       </div>
     </div>
   </div>
@@ -272,6 +434,12 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
       </div>
       <div class="value-title">Filtré par spécialité</div>
       <div class="value-desc">Un cardiologue ne voit pas les mêmes textes qu'un pédiatre. La pertinence est calculée spécialité par spécialité, pas en masse.</div>
+      <div class="vmock">
+        <div class="vmock-row hi"><div class="vmock-dot"></div><div class="vmock-label">Cardiologie</div><div class="vmock-count">3 articles</div></div>
+        <div class="vmock-row"><div class="vmock-dot" style="background:#4a4e68"></div><div class="vmock-label">Médecine générale</div><div class="vmock-count">5 articles</div></div>
+        <div class="vmock-row"><div class="vmock-dot" style="background:#4a4e68"></div><div class="vmock-label">Pédiatrie</div><div class="vmock-count">2 articles</div></div>
+        <div class="vmock-row"><div class="vmock-dot" style="background:#4a4e68"></div><div class="vmock-label">Psychiatrie</div><div class="vmock-count">1 article</div></div>
+      </div>
     </div>
     <div class="value-card reveal reveal-delay-2">
       <div class="value-icon">
@@ -279,6 +447,11 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
       </div>
       <div class="value-title">Niveau d'urgence clair</div>
       <div class="value-desc">Chaque article est classé : À lire absolument, Important ou Informatif. Vous savez en un coup d'œil ce qui change votre pratique.</div>
+      <div class="vmock">
+        <div class="vmock-row"><div class="vmock-dot" style="background:#ff8080"></div><div class="vmock-label">Nouvelles recommandations AVK — HAS</div><div class="vmock-badge crit">À LIRE</div></div>
+        <div class="vmock-row"><div class="vmock-dot" style="background:#d4a017"></div><div class="vmock-label">Revalorisation actes cardiologie</div><div class="vmock-badge imp">IMPORT.</div></div>
+        <div class="vmock-row"><div class="vmock-dot" style="background:#6bcb77"></div><div class="vmock-label">Mise à jour RCP anticoagulants</div><div class="vmock-badge" style="background:#0d1a14;color:#6bcb77">INFO</div></div>
+      </div>
     </div>
     <div class="value-card reveal reveal-delay-1">
       <div class="value-icon">
@@ -286,6 +459,11 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
       </div>
       <div class="value-title">Sources officielles uniquement</div>
       <div class="value-desc">JORF, HAS, ANSM, BO Social — aucune interprétation non sourcée. Chaque article est lié au texte officiel original.</div>
+      <div class="vmock">
+        <div class="vmock-row"><div class="vmock-dot" style="background:#4a4e68"></div><div class="vmock-label">Arrêté du 8 mars 2026</div><div class="vmock-tag">JORF</div></div>
+        <div class="vmock-row"><div class="vmock-dot" style="background:#4a4e68"></div><div class="vmock-label">Recommandation HAS 2026-03</div><div class="vmock-tag">HAS</div></div>
+        <div class="vmock-row"><div class="vmock-dot" style="background:#4a4e68"></div><div class="vmock-label">Point de situation mars 2026</div><div class="vmock-tag">ANSM</div></div>
+      </div>
     </div>
     <div class="value-card reveal reveal-delay-2">
       <div class="value-icon">
@@ -293,9 +471,59 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
       </div>
       <div class="value-title">Archives consultables</div>
       <div class="value-desc">Retrouvez n'importe quel texte depuis janvier 2026. Recherche full-text, filtres par catégorie, classement par mois.</div>
+      <div class="vmock" style="overflow:hidden">
+        <img src="screenshots/archives-desktop.png" alt="Archives MedNews" style="width:100%;display:block;max-height:90px;object-fit:cover;object-position:top">
+      </div>
     </div>
   </div>
 </section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<!-- ── MOBILE SECTION ── -->
+<div class="mobile-section">
+  <div class="mobile-section-text reveal">
+    <div class="section-tag" style="margin-bottom:16px">Mobile</div>
+    <div class="section-title" style="margin-bottom:16px">Entre deux<br>consultations</div>
+    <p style="font-size:0.88rem;color:var(--text2);max-width:420px;line-height:1.7;margin-bottom:0">Votre portail est entièrement pensé pour mobile. D'un glissement, filtrez votre spécialité, consultez vos favoris, retrouvez un texte en archives.</p>
+    <div class="mobile-bullets reveal reveal-delay-1">
+      <div class="mobile-bullet">
+        <div class="mobile-bullet-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div>
+          <div class="mobile-bullet-title">Votre spécialité en avant</div>
+          <div class="mobile-bullet-desc">Filtre automatique dès l'ouverture — vous voyez ce qui vous concerne.</div>
+        </div>
+      </div>
+      <div class="mobile-bullet">
+        <div class="mobile-bullet-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div>
+          <div class="mobile-bullet-title">Favoris d'un tap</div>
+          <div class="mobile-bullet-desc">Sauvegardez les textes importants pour les relire plus tard.</div>
+        </div>
+      </div>
+      <div class="mobile-bullet">
+        <div class="mobile-bullet-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div>
+          <div class="mobile-bullet-title">Recherche dans les archives</div>
+          <div class="mobile-bullet-desc">Full-text, filtrable par catégorie et par mois depuis janvier 2026.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mobile-section-device reveal reveal-delay-2">
+    <div class="phone-frame">
+      <img src="screenshots/portal-mobile.png" alt="Portail MedNews — vue mobile" style="width:100%;display:block">
+    </div>
+  </div>
+</div>
+
+<div class="divider"><div class="divider-line"></div></div>
 
 <section class="spec-section" id="specialites">
   <div class="spec-inner">
