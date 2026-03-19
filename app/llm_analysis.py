@@ -232,37 +232,64 @@ télémédecine, statut libéral, logiciels métier (LAP, DMP, DxCare…)
 
 7. TYPE DE PRATICIEN (type_praticien) — Détermine le profil professionnel PRINCIPALEMENT \
 concerné par ce texte. Choisis parmi :
-   - "prescripteur"    : médecins qui prescrivent des médicaments en ambulatoire \
-     (MG, internistes, cardiologues, pneumologues, endocrinologues…). \
-     Exemples : alerte pharmacovigilance, nouvelle indication médicamenteuse, \
-     modification de remboursement d'un médicament de ville.
-   - "interventionnel" : praticiens qui réalisent des actes techniques invasifs \
-     (chirurgiens toutes sous-spécialités, anesthésiologistes, radiologues interventionnels). \
-     Exemples : alertes sur dispositifs implantables, prothèses, fils de suture, \
-     matériel de bloc opératoire, cotations CCAM d'actes chirurgicaux, \
-     recommandations HAS sur gestes techniques ou protocoles per-opératoires.
-   - "biologiste"      : biologistes médicaux (analyses biologiques, réactifs, automates de labo).
-   - "pharmacien"      : pharmaciens d'officine (substitution, ruptures de stock officine, \
-     règles de dispensation, convention pharmacien).
-   - "tous"            : tous les praticiens libéraux sans distinction \
-     (textes sur la convention médicale générale, tiers-payant, exercice libéral).
 
-   RÈGLE CHIRURGIENS — Un texte portant sur des MÉDICAMENTS oraux ou injectables \
-   prescrits en ville (alertes pharmacovigilance, nouvelles indications, remboursements) \
-   → type_praticien = "prescripteur". \
-   Le chirurgien N'EST PAS le destinataire principal même si la molécule est utilisée \
-   en lien avec une pathologie chirurgicale.
+   "prescripteur" — médecin généraliste, interniste, pédiatre, cardiologue, \
+pneumologue, endocrinologue, psychiatre et tout médecin prescrivant en ambulatoire.
+   CONCERNE : médicaments remboursés, déremboursements, génériques ; alertes \
+pharmacovigilance, retraits AMM, contre-indications ; protocoles thérapeutiques \
+et recommandations HAS de traitement ; cotations CCAM/NGAP des consultations, \
+téléconsultation ; certificats, ordonnances, responsabilité médicale.
+   NE CONCERNE PAS : dispositifs chirurgicaux, prothèses implantables, \
+instruments de bloc opératoire, matériovigilance sur DM invasifs.
 
-   Un texte portant sur du matériel chirurgical (implants, prothèses, fils de suture, \
-   instrumentation de bloc, robots chirurgicaux) \
-   → type_praticien = "interventionnel".
+   "interventionnel" — chirurgien (toutes sous-spécialités), anesthésiste, \
+gynécologue-obstétricien réalisant des actes, radiologue interventionnel.
+   CONCERNE : dispositifs implantables, prothèses, fils de suture, équipements \
+de bloc opératoire, robots chirurgicaux ; matériovigilance sur DM invasifs ; \
+cotations CCAM des actes chirurgicaux ; recommandations HAS sur gestes techniques \
+et protocoles per-opératoires ; accréditation chirurgicale.
+   NE CONCERNE PAS : alertes médicaments de ville, listes remboursables de \
+médicaments, protocoles médicamenteux ambulatoires.
+
+   "biologiste" — biologiste médical (laboratoire d'analyses médicales).
+   CONCERNE : nomenclature NABM, accréditation COFRAC ; automates, réactifs, \
+équipements de laboratoire (hémostase, bactériologie, gazométrie…) ; nouveaux \
+examens remboursés, DM-DIV.
+   NE CONCERNE PAS : médicaments (sauf interaction biologie), \
+dispositifs chirurgicaux invasifs.
+
+   "pharmacien" — pharmacien d'officine.
+   CONCERNE : alertes médicaments, retraits AMM, génériques, remboursements \
+spécialités pharmaceutiques ; nouvelles missions officine (vaccination, \
+substitution biosimilaires, dépistage) ; rémunération sur objectifs, \
+honoraires de dispensation ; stupéfiants, psychotropes, réglementation des \
+délivrances ; convention pharmaceutique.
+   NE CONCERNE PAS : cotations d'actes médicaux, dispositifs chirurgicaux, \
+matériovigilance sur DM non dispensés en officine.
+
+   "tous" — tous les professionnels de santé libéraux sans distinction.
+   CONCERNE : conditions d'exercice libéral, conventionnement médical ; \
+formation médicale continue (DPC, accréditation, certification périodique) ; \
+télémédecine, DMP, logiciels métier ; responsabilité professionnelle générale ; \
+réforme des retraites médicales, protection sociale des libéraux.
+
+   RÈGLE DE PRIORITÉ — En cas de doute, préfère la valeur la plus spécifique. \
+   Un texte sur les cotations CCAM d'une consultation → "prescripteur" (pas "tous"). \
+   Un texte sur une alerte DM chirurgical → "interventionnel" (pas "tous"). \
+   "tous" est réservé aux textes qui s'appliquent SANS EXCEPTION à toutes \
+   les professions libérales de santé.
 
    Exemples corrects :
-     Alerte ANSM paracétamol 1 g (surdosage)         → prescripteur
+     Alerte ANSM paracétamol 1 g (surdosage)            → prescripteur
+     Nouvelle indication immunothérapie oncologie        → prescripteur
      Alerte ANSM prothèse de hanche (débris métalliques) → interventionnel
-     Arrêté honoraires convention médicale            → tous
-     Rupture stock amoxicilline (consigne officine)   → pharmacien
-     Automate PCR laboratoire                         → biologiste
+     Vis ostéosynthèse Stryker — matériovigilance        → interventionnel
+     Automate gazométrie GEM Premier / réactifs Beckman  → biologiste
+     Nomenclature NABM nouveaux actes de biologie        → biologiste
+     Rupture stock amoxicilline (consigne officine)      → pharmacien
+     Rémunération honoraires dispensation officine       → pharmacien
+     Certification périodique ordres professionnels      → tous
+     Réforme conventionnement médical national           → tous
 
 IMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans markdown, \
 sans explication autour.
