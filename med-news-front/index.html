@@ -40,7 +40,6 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,9,14,.85);backdrop-filte
 .hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 48px;position:relative;overflow:hidden}
 .hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:.3;mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 30%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 30%,transparent 100%);animation:gridPulse 8s ease-in-out infinite}
 @keyframes gridPulse{0%,100%{opacity:.3}50%{opacity:.18}}
-.hero-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:0.22;mask-image:linear-gradient(to bottom,transparent 0%,black 18%,black 75%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 18%,black 75%,transparent 100%);pointer-events:none;z-index:0}
 
 .hero-tag{font-family:var(--mono);font-size:0.65rem;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;display:flex;align-items:center;gap:8px;position:relative;z-index:1;animation:fadeUp .8s .2s ease both}
 .hero-tag::before{content:'';width:24px;height:1px;background:var(--text3)}
@@ -287,20 +286,23 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 .portal-preview-wrap{width:100%;max-width:860px;margin:0 auto}
 
 /* Newsletter full section */
-.newsletter-full{position:relative;overflow:hidden}
-.newsletter-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center top;opacity:0.25;mask-image:linear-gradient(to bottom,transparent 0%,black 8%,black 92%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 8%,black 92%,transparent 100%);pointer-events:none}
-.newsletter-full{min-height:680px}
-.newsletter-full-inner{max-width:740px;margin:0 auto;padding:96px 48px;text-align:center;position:relative;z-index:1}
-.newsletter-perks{display:grid;grid-template-columns:1fr 1fr;gap:24px 48px;margin-top:40px;text-align:left}
+.newsletter-full{display:flex;align-items:flex-start;gap:72px;padding:96px 48px;max-width:1100px;margin:0 auto}
+.newsletter-full-text{flex:0 0 340px}
+.newsletter-full-preview{flex:1;display:flex;justify-content:center;align-items:flex-start}
+.mail-frame{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 80px rgba(0,0,0,.6);width:100%;max-width:480px}
+.mail-toolbar{background:#1e1f2b;padding:10px 16px;display:flex;align-items:center;gap:6px}
+.mail-from{font-size:11px;color:#8b8fa8;font-family:var(--mono);margin-left:10px}
+.mail-body img{width:100%;display:block}
+.newsletter-perks{display:flex;flex-direction:column;gap:18px;margin-top:32px}
 .newsletter-perk{display:flex;align-items:flex-start;gap:12px}
 .newsletter-perk-icon{width:28px;height:28px;border-radius:5px;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
 .newsletter-perk-title{font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:2px}
 .newsletter-perk-desc{font-size:0.76rem;color:var(--text2);line-height:1.6}
 
-@media(max-width:900px){.mobile-section{gap:40px}}
+@media(max-width:900px){.mobile-section{gap:40px}.newsletter-full{gap:40px}}
 @media(max-width:768px){
-  .newsletter-full-inner{padding:64px 24px}
-  .newsletter-perks{grid-template-columns:1fr}
+  .newsletter-full{flex-direction:column;gap:48px;padding:64px 24px}
+  .newsletter-full-text{flex:none;width:100%}
   .mobile-section{flex-direction:column-reverse;gap:40px;padding:64px 24px;text-align:center}
   .mobile-bullets{align-items:flex-start}
   .amock,.notif-mock,.vmock{display:none}
@@ -308,7 +310,7 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 }
 @media(max-width:600px){
   .browser-frame{display:none}
-  .newsletter-full-inner{padding:48px 16px}
+  .newsletter-full{padding:48px 16px}
   .mobile-section{padding:48px 16px}
   .phone-frame{width:180px}
 }
@@ -328,7 +330,6 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 </nav>
 
 <section class="hero">
-  <img src="screenshots/portal-desktop.png" class="hero-bg-img" alt="">
   <div class="hero-grid"></div>
   <div class="hero-tag">Veille réglementaire médicale</div>
   <h1>
@@ -359,6 +360,26 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
     <div class="stat-item">
       <div class="stat-n">1<span style="font-size:20px;color:var(--text2);font-family:var(--sans)">er</span></div>
       <div class="stat-l">Du mois, dans votre boîte</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<!-- ── PORTAL PREVIEW ── -->
+<section class="section section-center" style="padding-bottom:80px">
+  <div class="section-tag reveal">Le portail</div>
+  <div class="section-title reveal reveal-delay-1">Votre veille en un coup d'œil</div>
+  <p class="section-sub reveal reveal-delay-2">Filtrage par spécialité, niveaux d'urgence, résumés IA — classé et prêt à lire le 1<sup>er</sup> du mois.</p>
+  <div class="portal-preview-wrap reveal reveal-delay-3">
+    <div class="browser-frame">
+      <div class="browser-bar">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+        <div class="browser-url">mednews.fr/portal</div>
+      </div>
+      <img src="screenshots/portal-desktop.png" alt="Portail MedNews — vue bureau" style="width:100%;display:block">
     </div>
   </div>
 </section>
@@ -433,12 +454,11 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 
 <!-- ── NEWSLETTER FULL SECTION ── -->
 <div class="newsletter-full">
-  <img src="screenshots/newsletter.png" class="newsletter-bg-img" alt="">
-  <div class="newsletter-full-inner">
-    <div class="section-tag reveal" style="display:inline-block;margin-bottom:16px">La newsletter</div>
-    <div class="section-title reveal reveal-delay-1" style="margin-bottom:16px">Votre veille,<br><em>dans votre boîte</em></div>
-    <p class="reveal reveal-delay-2" style="font-size:0.88rem;color:var(--text2);line-height:1.7;max-width:480px;margin:0 auto 0">Le 1<sup>er</sup> de chaque mois, un email rédigé spécifiquement pour votre spécialité : vos articles classés par urgence, chaque texte résumé en 3 lignes actionnables.</p>
-    <div class="newsletter-perks reveal reveal-delay-3">
+  <div class="newsletter-full-text reveal">
+    <div class="section-tag" style="margin-bottom:16px">La newsletter</div>
+    <div class="section-title" style="margin-bottom:16px">Votre veille,<br><em>dans votre boîte</em></div>
+    <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;margin-bottom:0">Le 1<sup>er</sup> de chaque mois, un email rédigé spécifiquement pour votre spécialité : vos articles classés par urgence, chaque texte résumé en 3 lignes actionnables.</p>
+    <div class="newsletter-perks reveal reveal-delay-1">
       <div class="newsletter-perk">
         <div class="newsletter-perk-icon">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -474,6 +494,19 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
           <div class="newsletter-perk-title">Filtrée pour votre spécialité</div>
           <div class="newsletter-perk-desc">Pas de bruit. Uniquement les textes qui impactent votre exercice libéral.</div>
         </div>
+      </div>
+    </div>
+  </div>
+  <div class="newsletter-full-preview reveal reveal-delay-2">
+    <div class="mail-frame">
+      <div class="mail-toolbar">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+        <div class="mail-from">newsletter@mednews.fr</div>
+      </div>
+      <div class="mail-body">
+        <img src="screenshots/newsletter.png" alt="Newsletter MedNews">
       </div>
     </div>
   </div>
