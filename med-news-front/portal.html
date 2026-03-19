@@ -491,7 +491,7 @@
   </header>
 
   <div class="demo-banner" id="demo-banner" style="display:none;background:#1d1916;border-bottom:1px solid #3d3228;padding:7px 24px;font-size:0.78rem;color:#a89070;text-align:center;letter-spacing:.3px;">
-    MODE DÉMO · <a href="/signup" style="color:#1f9478;text-decoration:none;font-weight:500;">Créer mon compte gratuitement →</a>
+    MODE DÉMO · <a href="/signup" target="_top" style="color:#1f9478;text-decoration:none;font-weight:500;">Créer mon compte gratuitement →</a>
   </div>
 
   <div class="verify-banner" id="verify-banner">
@@ -688,6 +688,7 @@ function mobileNavClick(section) {
     if (window.expandExplore) window.expandExplore();
     openFullPage('explorer');
   } else if (section === 'archives') {
+    if (DEMO_MODE) { window.top.location.href = '/signup'; return; }
     window.location.href = '/archives';
   } else if (section === 'compte') {
     openFullPage('compte');
@@ -1600,6 +1601,20 @@ function loadDemoData() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
   if (window.lucide) lucide.createIcons();
+  // Redirect all internal navigation to parent frame, open external links in new tab
+  document.querySelectorAll('[onclick]').forEach(el => {
+    const oc = el.getAttribute('onclick');
+    if (oc && oc.includes('window.location.href')) {
+      el.setAttribute('onclick', oc.replace(/window\.location\.href\s*=/g, 'window.top.location.href ='));
+    }
+  });
+  document.querySelectorAll('a[href]').forEach(a => {
+    const href = a.getAttribute('href');
+    if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener');
+    }
+  });
 }
 
 // ── Init ──────────────────────────────────────────────────────
