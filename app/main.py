@@ -40,22 +40,36 @@ from starlette.requests import Request as StarletteRequest
 app = FastAPI(lifespan=lifespan)
 
 
+_IFRAME_ALLOWED_PATHS = {"/newsletter-demo", "/portal-demo"}
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: StarletteRequest, call_next):
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["X-XSS-Protection"] = "0"  # Désactivé : CSP est plus sûr
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline'; "
-            "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data: https:; "
-            "font-src 'self' data:; "
-            "connect-src 'self'; "
-            "frame-ancestors 'none';"
-        )
+        if request.url.path in _IFRAME_ALLOWED_PATHS:
+            # Allow these pages to be embedded in iframes from the same origin
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "img-src 'self' data: https:; "
+                "font-src 'self' data: https://fonts.gstatic.com; "
+                "connect-src 'self'; "
+                "frame-ancestors 'self';"
+            )
+        else:
+            response.headers["X-Frame-Options"] = "DENY"
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline'; "
+                "style-src 'self' 'unsafe-inline'; "
+                "img-src 'self' data: https:; "
+                "font-src 'self' data:; "
+                "connect-src 'self'; "
+                "frame-ancestors 'none';"
+            )
         return response
 
 
@@ -135,6 +149,14 @@ def serve_archives():
 @app.get("/settings")
 def serve_settings():
     return FileResponse(os.path.join(_FRONT_DIR, "settings.html"), media_type="text/html", headers=_NO_CACHE)
+
+@app.get("/newsletter-demo")
+def serve_newsletter_demo():
+    return FileResponse(os.path.join(_FRONT_DIR, "newsletter-demo.html"), media_type="text/html", headers=_NO_CACHE)
+
+@app.get("/portal-demo")
+def serve_portal_demo():
+    return FileResponse(os.path.join(_FRONT_DIR, "portal.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/shared.js")
 def serve_shared_js():

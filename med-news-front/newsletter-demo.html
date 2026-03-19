@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>[MedNews] Médecine générale — Veille réglementaire mars 2026 (17 textes)</title>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:       #08090e;
+    --surface:  #0d0e16;
+    --surface2: #11121c;
+    --border:   #1c1e30;
+    --border2:  #252840;
+    --text:     #e8e9f4;
+    --text2:    #c8c8d4;
+    --text3:    #8b8fa8;
+    --text4:    #6b6f88;
+    --text5:    #4a4e68;
+    --green:    #1f9478;
+    --strip:    #11121c;
+    --impact:   #11121c;
+  }
+}
+:root {
+  --bg:       #f6f5f2;
+  --surface:  #ffffff;
+  --surface2: #f0ede8;
+  --border:   #e4e0d8;
+  --border2:  #cac4bb;
+  --text:     #1a1814;
+  --text2:    #4a4540;
+  --text3:    #7a7268;
+  --text4:    #9a9288;
+  --text5:    #bcb6ac;
+  --green:    #1f9478;
+  --strip:    #f0ede8;
+  --impact:   #f6f5f2;
+}
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); font-family: 'Outfit', sans-serif;
+       font-weight: 300; margin: 0; padding: 0; color: var(--text); }
+.bg  { background: var(--bg); padding: 32px 16px; }
+.wrap { max-width: 600px; margin: 0 auto; }
+
+/* Header */
+.hd { background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px 10px 0 0; padding: 36px 40px 30px; }
+.hd-eye { font-family: 'DM Mono', monospace; font-size: 10px;
+           color: var(--text5); letter-spacing: 2px;
+           text-transform: uppercase; margin-bottom: 14px; }
+.hd-dot { width: 6px; height: 6px; background: var(--green);
+           border-radius: 50%; display: inline-block;
+           margin-right: 6px; vertical-align: middle; }
+.hd-title { font-family: 'Instrument Serif', Georgia, serif;
+             font-size: 28px; font-weight: 400; color: var(--text);
+             line-height: 1.2; margin-bottom: 4px; }
+.hd-title em { font-style: italic; color: var(--green); }
+.hd-meta { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+.hd-chip { font-family: 'DM Mono', monospace; font-size: 10px;
+            color: var(--text5); letter-spacing: .5px; }
+.hd-sep  { width: 1px; height: 10px; background: var(--border); }
+
+/* Édito */
+.edito { background: var(--surface); border: 1px solid var(--border);
+          border-top: none; padding: 24px 40px 26px; }
+.edito p { font-size: 13px; color: var(--text3); line-height: 1.85; }
+.edito-sign { font-family: 'DM Mono', monospace; font-size: 10px;
+               color: var(--text5); margin-top: 12px;
+               letter-spacing: 1px; text-transform: uppercase; }
+
+/* CTA portal */
+.portal-strip { background: var(--strip); border: 1px solid var(--border);
+                border-top: none; padding: 18px 40px;
+                display: flex; align-items: center;
+                justify-content: space-between; gap: 16px; }
+.portal-strip p { font-size: 12px; color: var(--text4);
+                  font-family: 'DM Mono', monospace;
+                  letter-spacing: .3px; line-height: 1.6; }
+.portal-btn { font-family: 'Outfit', sans-serif; font-size: 12px;
+              font-weight: 500; color: var(--text);
+              text-decoration: none; background: var(--surface);
+              border: 1px solid var(--border2);
+              padding: 8px 18px; border-radius: 6px;
+              white-space: nowrap; flex-shrink: 0; }
+
+/* Séparateurs de section */
+.grp { padding: 26px 0 8px; display: flex;
+        align-items: center; gap: 10px; }
+.grp-dot { width: 5px; height: 5px; border-radius: 50%;
+            background: var(--border2); flex-shrink: 0; }
+.grp-label { font-family: 'DM Mono', monospace; font-size: 10px;
+              letter-spacing: 1.5px; text-transform: uppercase;
+              color: var(--text5); }
+.grp-line { flex: 1; height: 1px; background: var(--border); }
+
+/* Cards articles */
+.card { background: var(--surface); border: 1px solid var(--border);
+         border-radius: 10px; padding: 24px 28px 22px;
+         margin-bottom: 10px; }
+.card-top { display: flex; align-items: center; gap: 7px;
+             margin-bottom: 12px; flex-wrap: wrap; }
+.prio { font-family: 'DM Mono', monospace; font-size: 10px;
+         font-weight: 400; letter-spacing: .3px; }
+.prio.h { color: #e05252; }
+.prio.m { color: #d4921a; }
+.prio.l { color: #2a9d7a; }
+.card-date { font-family: 'DM Mono', monospace; font-size: 10px;
+              color: var(--text5); }
+
+/* Catégories */
+.cat { font-family: 'DM Mono', monospace; font-size: 9px;
+        letter-spacing: .5px; text-transform: uppercase;
+        padding: 2px 7px; border-radius: 2px; }
+.cat-medicament       { background: rgba(160,123,224,.08); color: #a07be0;
+                         border: 0.5px solid rgba(160,123,224,.25); }
+.cat-clinique         { background: rgba(107,159,212,.08); color: #6b9fd4;
+                         border: 0.5px solid rgba(107,159,212,.25); }
+.cat-dispositifs      { background: rgba(91,168,207,.08);  color: #5ba8cf;
+                         border: 0.5px solid rgba(91,168,207,.25); }
+.cat-facturation      { background: rgba(212,146,26,.08);  color: #d4921a;
+                         border: 0.5px solid rgba(212,146,26,.25); }
+.cat-administratif    { background: rgba(192,106,170,.08); color: #c06aaa;
+                         border: 0.5px solid rgba(192,106,170,.25); }
+.cat-sante_publique   { background: rgba(42,157,122,.08);  color: #2a9d7a;
+                         border: 0.5px solid rgba(42,157,122,.25); }
+.cat-exercice         { background: rgba(74,158,187,.08);  color: #4a9ebb;
+                         border: 0.5px solid rgba(74,158,187,.25); }
+
+.card-title { font-family: 'Instrument Serif', Georgia, serif;
+               font-size: 19px; font-weight: 400; color: var(--text);
+               line-height: 1.35; margin-bottom: 10px; }
+.card-resume { font-size: 13px; font-weight: 300; color: var(--text3);
+                line-height: 1.7; margin-bottom: 12px; }
+.card-impact { font-size: 12px; color: var(--text3); line-height: 1.65;
+                padding: 10px 14px; margin-bottom: 14px;
+                background: var(--impact); border-radius: 4px;
+                font-weight: 300; border: 1px solid var(--border); }
+.card-link { font-family: 'Outfit', sans-serif; font-size: 12px;
+              font-weight: 500; color: var(--text2);
+              text-decoration: none; border: 1px solid var(--border2);
+              padding: 6px 16px; border-radius: 6px;
+              display: inline-block; }
+
+/* Footer */
+.footer { padding: 24px 0 8px; text-align: center; }
+.footer p { font-family: 'DM Mono', monospace; font-size: 10px;
+             color: var(--text5); letter-spacing: .4px; line-height: 2; }
+.footer a { color: var(--text5); }
+</style>
+</head>
+<body>
+<div class="bg">
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="hd">
+    <div class="hd-eye">
+      <span class="hd-dot"></span>Veille réglementaire · MedNews
+    </div>
+    <div class="hd-title">
+      Médecine générale<br><em>Mars 2026</em>
+    </div>
+    <div class="hd-meta">
+      <span class="hd-chip">17 textes</span>
+      <div class="hd-sep"></div>
+      <span class="hd-chip">11 alertes · 6 arrêtés/reco</span>
+      <div class="hd-sep"></div>
+      <span class="hd-chip">JORF · ANSM · HAS</span>
+    </div>
+  </div>
+
+  <!-- ÉDITO -->
+  <div class="edito">
+    <p>Ce mois de mars, 17 textes à impact direct sur votre pratique de Médecine générale : 6 arrêtés/recommandations et 11 alertes de sécurité. Aucun article ne devrait vous prendre plus de deux minutes.</p>
+    <div class="edito-sign">— L'équipe MedNews</div>
+  </div>
+
+  <!-- CTA PORTAL -->
+  <div class="portal-strip">
+    <p>Retrouvez tous vos articles,<br>archives et favoris sur votre espace</p>
+    <a class="portal-btn" href="https://med-news-back-fmgu.onrender.com/portal">Accéder à mon espace →</a>
+  </div>
+
+  <!-- ARTICLES SPÉCIALITÉ -->
+  <div class="grp">
+    <div class="grp-dot"></div>
+    <div class="grp-label">Médecine générale</div>
+    <div class="grp-line"></div>
+  </div>
+
+  
+<div class="card">
+  <div class="card-top">
+    <span class="prio h">▲ À lire impérativement</span>
+    <span class="card-date">5 mars 2026</span>
+    
+  </div>
+  <div class="card-title">Tarification soins infirmiers domicile personnes âgées handicapées</div>
+  <p class="card-resume">Nouveau décret fixant les tarifs et modalités de facturation des soins infirmiers à domicile pour les seniors et personnes en situation de handicap. Change les conditions de rémunération et les processus de facturation auprès de l&#x27;assurance maladie.</p>
+  <div class="card-impact">Les infirmiers libéraux doivent adapter leur facturation et vérifier les nouveaux tarifs applicables à leur patientèle domiciliaire dès la publication.</div>
+  <a class="card-link" href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053618926">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio h">▲ À lire impérativement</span>
+    <span class="card-date">15 mars 2026</span>
+    
+  </div>
+  <div class="card-title">Liste des personnes autorisées à exercer la médecine cardiovasculaire</div>
+  <p class="card-resume">Arrêté fixant la liste des personnes autorisées à exercer en France la profession de médecin dans la spécialité « médecine cardiovasculaire ». Cette liste est établie en application des dispositions de l&#x27;article L. 4111-2 (I) du code de la santé publique et du IV de l&#x27;article 83 de la loi n° 2006-1640 du 21 décembre 2006 de financement de la sécurité sociale pour 2007.</p>
+  <div class="card-impact">Les professionnels de santé concernés doivent vérifier s&#x27;ils figurent sur cette liste.</div>
+  <a class="card-link" href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053671914">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio h">▲ À lire impérativement</span>
+    <span class="card-date">19 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte ANSM acide tranexamique Tillomed 0,5g</div>
+  <p class="card-resume">L&#x27;ANSM émet une alerte de sécurité sur l&#x27;acide tranexamique Tillomed 0,5 g/5 mL (Medipha Santé). Cette solution injectable utilisée en prévention/traitement des hémorragies fait l&#x27;objet d&#x27;une notification de pharmacovigilance. Action immédiate requise pour vérifier votre stock et signaler tout incident.</p>
+  <div class="card-impact">Vérifiez immédiatement vos stocks d&#x27;acide tranexamique Tillomed, signalez tout problème détecté à la pharmacovigilance, consultez l&#x27;alerte complète ANSM pour restrictions ou contre-indications additionnelles.</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/acide-tranexamique-tillomed-0-5-g-5-ml-solution-injectable-medipha-sante">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio h">▲ À lire impérativement</span>
+    <span class="card-date">19 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Arixtra : défaut critique aiguille seringue pré-remplie</div>
+  <p class="card-resume">L&#x27;ANSM signale un défaut grave de qualité affectant les seringues pré-remplies d&#x27;Arixtra (fondaparinux sodium) : présence d&#x27;aiguilles défectueuses pouvant compromettre l&#x27;injection. Cet anticoagulant injectable est largement utilisé en prévention/traitement thromboembolique. Les professionnels doivent vérifier les lots affectés avant prescription et signaler tout incident.</p>
+  <div class="card-impact">Vérifier immédiatement les numéros de lot d&#x27;Arixtra en stock ; suspendre les prescriptions des lots incriminés ; signaler à l&#x27;ANSM tout incident lié à l&#x27;injection.</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/arixtra-fondaparinux-sodium-defaut-qualite-grave-lie-a-laiguille-dans-une-seringue-pre-remplie">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio h">▲ À lire impérativement</span>
+    <span class="card-date">15 mars 2026</span>
+    
+  </div>
+  <div class="card-title">Liste des personnes autorisées à exercer la médecine cardiovasculaire</div>
+  <p class="card-resume">Arrêté fixant la liste des personnes autorisées à exercer en France la profession de médecin dans la spécialité « médecine cardiovasculaire ». Cette liste est établie en application des dispositions de l&#x27;article L. 4111-2 (II) du code de la santé publique.</p>
+  <div class="card-impact">Les professionnels de santé concernés doivent vérifier leur inscription sur cette liste.</div>
+  <a class="card-link" href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053671934">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">14 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Parcours de soins global pour patients atteints de cancer</div>
+  <p class="card-resume">Ce décret instaure un parcours de soins structuré et coordonné pour les personnes en traitement ou ayant été traitées pour un cancer. Il impose une organisation multidisciplinaire avec implication du médecin généraliste, de l&#x27;oncologue et des professionnels paramédicaux. Obligation de mise en place d&#x27;un plan personnalisé de suivi et de réintégration sociale.</p>
+  <div class="card-impact">Les médecins généralistes doivent intégrer un protocole de suivi post-cancer standardisé ; les oncologues et paramédicaux doivent coordonner via un plan documenté remis au patient.</div>
+  <a class="card-link" href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053482815">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">10 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte sécurité gazométrie GEM Premier 5000</div>
+  <p class="card-resume">L&#x27;ANSM signale un problème de sécurité sur les cartouches GEM Premier 5000 PAK utilisées pour la gazométrie artérielle/veineuse. Cette alerte concerne tous les laboratoires et services utilisant cet appareil d&#x27;Instrumentation Laboratory. Action requise : vérifier vos stocks et suivre les directives du fabricant.</p>
+  <div class="card-impact">Vérifier immédiatement auprès de votre fournisseur ou du fabricant si vos cartouches GEM Premier 5000 PAK sont concernées et respecter les mesures correctives.</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/gazometrie-cartouche-gem-premier-5000-pak-instrumentation-laboratory">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">25 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte sécurité poignée impacteur Ergo Exactech</div>
+  <p class="card-resume">L&#x27;ANSM signale un problème de sécurité sur la poignée d&#x27;impacteur Ergo du fabricant Exactech, utilisée en chirurgie orthopédique. Cette alerte de matériovigilance concerne la fiabilité et la sécurité du matériel pendant les interventions. Les chirurgiens orthopédiques doivent vérifier leurs stocks et suivre les recommandations de l&#x27;ANSM.</p>
+  <div class="card-impact">Vérifier l&#x27;utilisation du matériel Exactech en stocks, consulter l&#x27;alerte ANSM complète pour les mesures correctives (remplacement, suspension d&#x27;utilisation).</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/materiel-ancillaire-orthopedie-poignee-dimpacteur-ergo-exactech">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">10 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte sécurité érythromycine base micronisée Inresa</div>
+  <p class="card-resume">L&#x27;ANSM signale un problème de sécurité sur l&#x27;érythromycine base micronisée du laboratoire Inresa. Cette alerte concerne un antibiotique macrolide couramment prescrit en pédiatrie et infectiologie. Les prescripteurs et dispensateurs doivent être vigilants sur les lots affectés.</p>
+  <div class="card-impact">Vérifier les lots en stock, consulter l&#x27;alerte ANSM complète pour identifier les numéros de lots à risque, adapter la prescription si nécessaire vers d&#x27;autres formes ou marques.</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/erythromycine-base-micronisee-laboratoire-inresa">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">2 mars 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte sécurité matériel orthopédique Stryker</div>
+  <p class="card-resume">L&#x27;ANSM signale un problème de sécurité sur les kits orthopédiques T2, Gamma4, CRF II et T2 Alpha de Stryker. Cette alerte matériovigilance concerne directement les chirurgiens orthopédiques qui implantent ces dispositifs. Une action corrective est requise.</p>
+  <div class="card-impact">Vérifier l&#x27;applicabilité de cette alerte sur votre stock et consulter les recommandations du fabricant ou de l&#x27;ANSM pour les procédures à suivre (traçabilité, notification, substitution).</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/materiel-ancillaire-orthopedie-kits-t2-gamma4-crf-ii-t2-alpha-stryker">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">27 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte sécurité automates Vitros QuidelOrtho</div>
+  <p class="card-resume">L&#x27;ANSM signale un problème de sécurité sur les automates de biochimie Vitros (plusieurs références) de QuidelOrtho. Cette alerte concerne les laboratoires et structures utilisant ces appareils pour les dosages biologiques. Action immédiate requise : vérification de conformité et respect des consignes du fabricant.</p>
+  <div class="card-impact">Les biologistes et laboratoires doivent vérifier l&#x27;applicabilité de l&#x27;alerte à leurs appareils et mettre en œuvre les mesures correctives recommandées par QuidelOrtho et l&#x27;ANSM sans délai.</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/automates-systemes-de-biochimie-vitros-plusieurs-references-quidelortho">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">10 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte sécurité prothèses vasculaires Artivion</div>
+  <p class="card-resume">L&#x27;ANSM signale un problème de sécurité sur trois modèles de prothèses vasculaires Artivion (E-tegra, E-nside multibranches, E-vita Open Neo). Cette alerte concerne directement les chirurgiens vasculaires et cardiologues utilisant ces dispositifs en intervention. Action requise : vérifier les stocks et les lots affectés, consulter les recommandations de l&#x27;ANSM.</p>
+  <div class="card-impact">Les chirurgiens utilisant ces prothèses doivent immédiatement consulter l&#x27;alerte ANSM pour identifier les lots concernés et adapter leur pratique interventionnelle.</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/protheses-vasculaires-e-tegra-e-nside-multibranches-et-e-vita-open-neo-artivion">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">27 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte sécurité Impella RP — Abiomed</div>
+  <p class="card-resume">L&#x27;ANSM signale un problème de sécurité sur le dispositif d&#x27;assistance ventriculaire temporaire Impella RP (Abiomed). Cette alerte concerne les centres de cardiologie interventionnelle et les services d&#x27;urgence cardiologique utilisant ce dispositif. Action immédiate recommandée : vérifier les stocks et consulter l&#x27;alerte détaillée.</p>
+  <div class="card-impact">Si vous utilisez ou prescrivez l&#x27;Impella RP : consultez l&#x27;alerte complète de l&#x27;ANSM et signalez tout incident; les cardiologues interventionnalistes doivent adapter leur protocole d&#x27;urgence.</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/dispositif-dassistance-ventriculaire-temporaire-impella-rp-abiomed">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">26 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte sécurité accessoires endoscopie Olympus</div>
+  <p class="card-resume">L&#x27;ANSM signale un problème de sécurité sur le kit de pistons d&#x27;insufflation/lavage et valves d&#x27;aspiration/biopsie à usage unique Olympus (MAJ-210). Cet accessoire d&#x27;endoscopie stérile pose un risque lors de son utilisation en pratique clinique. Les gastro-entérologues utilisant ce matériel doivent vérifier leur stock et appliquer les mesures correctives communiquées.</p>
+  <div class="card-impact">Vérifier immédiatement si votre établissement/cabinet utilise ce kit Olympus MAJ-210 et consulter la circulaire ANSM pour les actions préconisées (remplacement, signalement d&#x27;incidents).</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/endoscopie-accessoire-maj-210-kit-de-pistons-dinsufflation-de-lavage-et-de-valves-daspiration-et-de-biopsie-a-usage-unique-sterile-olympus-medical">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio m">↑ Important</span>
+    <span class="card-date">20 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Alerte sécurité réactifs Immulite 2000 EPO Siemens</div>
+  <p class="card-resume">L&#x27;ANSM signale un problème de sécurité sur les réactifs Immulite 2000 EPO et le module Control de Siemens Healthcare Diagnostics utilisés en hématologie. Cette alerte affecte les laboratoires d&#x27;analyse médicale et services d&#x27;hématologie effectuant des dosages d&#x27;érythropoïétine. Actions correctives requises avant continuation de l&#x27;utilisation.</p>
+  <div class="card-impact">Vérifier immédiatement le lot et la version des réactifs EPO en stock ; suspendre les dosages concernés si nécessaire et contacter Siemens pour les actions correctives.</div>
+  <a class="card-link" href="https://ansm.sante.fr/informations-de-securite/hematologie-reactifs-immulite-2000-epo-immulite-2000-epo-control-module-siemens-healthcare-diagnostics">Lire le texte officiel →</a>
+</div>
+
+
+  <!-- ARTICLES TRANSVERSAUX (si présents) -->
+  
+<div class="grp">
+  <div class="grp-dot"></div>
+  <div class="grp-label">Tous les médecins libéraux</div>
+  <div class="grp-line"></div>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio h">▲ À lire impérativement</span>
+    <span class="card-date">5 mars 2026</span>
+    
+  </div>
+  <div class="card-title">Modification code déontologie pharmaciens</div>
+  <p class="card-resume">Le décret n° 2026-156 modifie le code de déontologie des pharmaciens et d&#x27;autres dispositions du code de la santé publique. Ces modifications s&#x27;appliquent directement aux obligations légales et professionnelles des pharmaciens d&#x27;officine. Le texte entre en vigueur à la date de sa publication au JORF.</p>
+  <div class="card-impact">Vérifier immédiatement les modifications déontologiques applicables à votre pratique officinale et adapter vos protocoles en conséquence.</div>
+  <a class="card-link" href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053618939">Lire le texte officiel →</a>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <span class="prio h">▲ À lire impérativement</span>
+    <span class="card-date">20 fév. 2026</span>
+    
+  </div>
+  <div class="card-title">Montants rémunération missions article D.311-1</div>
+  <p class="card-resume">Cet arrêté fixe les rémunérations versées aux médecins libéraux pour les missions énumérées à l&#x27;article 30° du D.311-1 du code de la sécurité sociale. Il concerne directement les revenus complémentaires des praticiens exerçant en libéral. Les nouveaux montants s&#x27;appliquent à partir de la date de publication.</p>
+  <div class="card-impact">Vérifiez les nouveaux barèmes de rémunération applicables à vos missions conventionnées et actualiser votre facturation si concerné.</div>
+  <a class="card-link" href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053510098">Lire le texte officiel →</a>
+</div>
+
+
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>
+      Abonné à MedNews ·
+      <a href="{{unsubscribe_url}}">Se désabonner</a> ·
+      <a href="{{archive_url}}">Voir en ligne</a><br>
+      MedNews — Veille réglementaire pour médecins libéraux
+    </p>
+  </div>
+
+</div>
+</div>
+</body>
+</html>

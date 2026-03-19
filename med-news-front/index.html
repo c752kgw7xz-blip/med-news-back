@@ -293,6 +293,8 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
 .mail-toolbar{background:#201c18;padding:10px 16px;display:flex;align-items:center;gap:6px}
 .mail-from{font-size:11px;color:#8b8fa8;font-family:var(--mono);margin-left:10px}
 .mail-body img{width:100%;display:block}
+.newsletter-iframe{width:100%;height:520px;border:none;display:block;background:#f6f5f2;}
+.portal-iframe{width:100%;height:600px;border:none;display:block;}
 .newsletter-perks{display:flex;flex-direction:column;gap:18px;margin-top:32px}
 .newsletter-perk{display:flex;align-items:flex-start;gap:12px}
 .newsletter-perk-icon{width:28px;height:28px;border-radius:5px;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
@@ -379,7 +381,7 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
         <div class="browser-dot dot-green"></div>
         <div class="browser-url">mednews.fr/portal</div>
       </div>
-      <img src="screenshots/portal-desktop.png" alt="Portail MedNews — vue bureau" style="width:100%;display:block">
+      <iframe src="/portal-demo?demo=1" class="portal-iframe" title="Portail MedNews démo" scrolling="yes"></iframe>
     </div>
   </div>
 </section>
@@ -476,9 +478,7 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
         <div class="browser-dot dot-green"></div>
         <div class="mail-from">newsletter@mednews.fr</div>
       </div>
-      <div class="mail-body">
-        <img src="screenshots/newsletter.png" alt="Newsletter MedNews">
-      </div>
+      <iframe src="/newsletter-demo" class="newsletter-iframe" title="Aperçu newsletter MedNews" scrolling="yes"></iframe>
     </div>
   </div>
 </div>

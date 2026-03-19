@@ -490,6 +490,10 @@
     </div>
   </header>
 
+  <div class="demo-banner" id="demo-banner" style="display:none;background:#1d1916;border-bottom:1px solid #3d3228;padding:7px 24px;font-size:0.78rem;color:#a89070;text-align:center;letter-spacing:.3px;">
+    MODE DÉMO · <a href="/signup" style="color:#1f9478;text-decoration:none;font-weight:500;">Créer mon compte gratuitement →</a>
+  </div>
+
   <div class="verify-banner" id="verify-banner">
     Votre email n'est pas encore v&#233;rifi&#233;.
     <button onclick="resendVerification()">Renvoyer le lien</button>
@@ -634,6 +638,7 @@
   </div>
 
 <script>
+const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
 const API = window.location.origin;
 let currentPage = 1;
 const perPage = 20;
@@ -852,6 +857,7 @@ async function tryRefresh() {
 }
 
 async function logout() {
+  if (DEMO_MODE) { return; }
   try {
     const csrf = getCsrfToken();
     await fetch(`${API}/auth/logout`, {
@@ -1152,6 +1158,11 @@ async function loadFavorites() {
 
 async function toggleFavorite(event, itemId) {
   event.stopPropagation();
+  if (DEMO_MODE) {
+    const btn = document.querySelector(`.btn-fav[data-item-id="${itemId}"]`);
+    if (btn) btn.classList.toggle('active');
+    return;
+  }
   const btn = event.currentTarget;
   if (favoritesSet.has(itemId)) {
     await authFetch(`${API}/favorites/${itemId}`, { method: 'DELETE' });
@@ -1418,21 +1429,192 @@ async function loadMore() {
   btn.disabled = false;
 }
 
+// ── Demo data ─────────────────────────────────────────────────
+const DEMO_ARTICLES = [
+  {
+    id: 'demo-1',
+    title_raw: 'Alerte ANSM acide tranexamique Tillomed 0,5g',
+    official_url: 'https://ansm.sante.fr',
+    official_date: '2026-02-19',
+    score_density: 9,
+    categorie: 'medicament',
+    tri_json: {
+      titre_court: 'Alerte ANSM acide tranexamique Tillomed 0,5g',
+      resume: "L'ANSM émet une alerte de sécurité sur l'acide tranexamique Tillomed 0,5g/5mL (Medipha Santé). Cette solution injectable utilisée en prévention/traitement des hémorragies fait l'objet d'un rappel de lot.",
+      impact_pratique: "Vérifier vos stocks immédiatement et suspendre l'utilisation des lots concernés. Contacter votre pharmacien.",
+      date_publication: '2026-02-19'
+    },
+    lecture_json: {
+      points_cles: [
+        'Rappel de lot immédiat — vérifier les numéros de lot en stock',
+        'Risque de contamination particulaire détecté lors des contrôles',
+        "Substitution possible par d'autres spécialités d'acide tranexamique"
+      ],
+      texte_long: "L'ANSM a identifié un problème de qualité sur plusieurs lots d'acide tranexamique Tillomed 0,5g/5mL injectable. Les contrôles ont révélé une contamination particulaire potentielle.",
+      references: ['Décision ANSM du 19/02/2026']
+    }
+  },
+  {
+    id: 'demo-2',
+    title_raw: 'Alerte sécurité pompes infusion BD Alaris',
+    official_url: 'https://ansm.sante.fr',
+    official_date: '2026-02-24',
+    score_density: 7,
+    categorie: 'dispositifs_medicaux',
+    tri_json: {
+      titre_court: 'Alerte sécurité pompes infusion BD Alaris',
+      resume: "L'ANSM signale un problème de sécurité sur les pousse-seringues BD Alaris NeXus et Alaris Plus utilisés en milieu hospitalier et structure médicale. Cette alerte concerne les établissements disposant de ces dispositifs.",
+      impact_pratique: "Vérifier immédiatement vos appareils BD Alaris et appliquer la mise à jour firmware si disponible.",
+      date_publication: '2026-02-24'
+    },
+    lecture_json: {
+      points_cles: [
+        "Dysfonctionnement possible du système d'alarme de la pompe",
+        "Mise à jour firmware obligatoire pour les versions antérieures à 9.15",
+        "Signaler tout incident au fabricant et à l'ANSM via matériovigilance"
+      ],
+      texte_long: "BD Medical a identifié un défaut potentiel sur le système d'alarme des pompes Alaris NeXus et Plus. Dans de rares cas, l'alarme d'occlusion peut ne pas se déclencher correctement.",
+      references: ['Alerte ANSM matériovigilance 2026-02-24']
+    }
+  },
+  {
+    id: 'demo-3',
+    title_raw: 'Alerte sécurité pousse-seringue Spaceplus Perfusor',
+    official_url: 'https://ansm.sante.fr',
+    official_date: '2026-02-19',
+    score_density: 7,
+    categorie: 'dispositifs_medicaux',
+    tri_json: {
+      titre_court: 'Alerte sécurité pousse-seringue Spaceplus Perfusor',
+      resume: "L'ANSM signale un risque de sécurité sur le pousse-seringue Spaceplus Perfusor de B. Braun Medical, concernant la fonctionnalité de relais de voies TOM.",
+      impact_pratique: "Suspendre l'utilisation du mode TOM jusqu'à la mise à jour logicielle. Contacter B. Braun pour planifier la mise à jour.",
+      date_publication: '2026-02-19'
+    },
+    lecture_json: {
+      points_cles: [
+        'Défaut de la fonction relais TOM dans certaines configurations',
+        'Ne pas utiliser le mode TOM en attendant le correctif',
+        'Mise à jour gratuite disponible sur demande auprès de B. Braun Medical'
+      ],
+      texte_long: null,
+      references: ['Alerte matériovigilance B. Braun / ANSM 02/2026']
+    }
+  },
+  {
+    id: 'demo-4',
+    title_raw: 'Alerte sécurité masques chirurgicaux MPB-CH1X Paul Boyé',
+    official_url: 'https://ansm.sante.fr',
+    official_date: '2026-02-16',
+    score_density: 6,
+    categorie: 'dispositifs_medicaux',
+    tri_json: {
+      titre_court: 'Alerte sécurité masques chirurgicaux MPB-CH1X Paul Boyé',
+      resume: "L'ANSM a identifié un problème de sécurité sur les masques chirurgicaux MPB-CH1X de Paul Boyé. Cette alerte impose une vigilance accrue lors de la dispensation.",
+      impact_pratique: "Retirer les lots concernés de la circulation. Vérifier les stocks et contacter le fournisseur.",
+      date_publication: '2026-02-16'
+    },
+    lecture_json: {
+      points_cles: [
+        'Non-conformité aux normes EN 14683 pour certains lots',
+        'Efficacité de filtration bactérienne inférieure aux spécifications',
+        'Retrait immédiat des lots identifiés dans la décision ANSM'
+      ],
+      texte_long: null,
+      references: ['Décision de retrait ANSM 16/02/2026']
+    }
+  },
+  {
+    id: 'demo-5',
+    title_raw: 'Alerte sécurité gazométrie GEM Premier 5000',
+    official_url: 'https://ansm.sante.fr',
+    official_date: '2026-02-10',
+    score_density: 6,
+    categorie: 'exercice',
+    tri_json: {
+      titre_court: 'Alerte sécurité gazométrie GEM Premier 5000',
+      resume: "L'ANSM signale un problème de sécurité sur les cartouches GEM Premier 5000 PAK utilisées pour la gazométrie artérielle/veineuse. Cette alerte concerne tous les laboratoires et services d'urgence.",
+      impact_pratique: "Vérifier les numéros de série des cartouches en stock. Effectuer un contrôle qualité avant toute utilisation si les lots concernés sont présents.",
+      date_publication: '2026-02-10'
+    },
+    lecture_json: {
+      points_cles: [
+        'Risque de résultats erronés sur la mesure du lactate dans certaines conditions',
+        'Lots concernés : vérifier le tableau de correspondance ANSM',
+        'Contacter Werfen France pour remplacement des lots défectueux'
+      ],
+      texte_long: null,
+      references: ['Alerte ANSM matériovigilance 10/02/2026']
+    }
+  },
+  {
+    id: 'demo-6',
+    title_raw: 'Nouvelles recommandations HAS réanimation cardio-pulmonaire 2026',
+    official_url: 'https://has-sante.fr',
+    official_date: '2026-03-01',
+    score_density: 8,
+    categorie: 'clinique',
+    tri_json: {
+      titre_court: 'Recommandations HAS RCP — mise à jour 2026',
+      resume: "La HAS publie une mise à jour des recommandations de réanimation cardio-pulmonaire pour les professionnels de santé. Ces nouvelles recommandations intègrent les dernières données de l'ERC 2025.",
+      impact_pratique: "Mettre à jour vos protocoles RCP internes. Formation recommandée avant le 30 juin 2026.",
+      date_publication: '2026-03-01'
+    },
+    lecture_json: {
+      points_cles: [
+        'Ratio compressions/ventilations inchangé (30:2) mais rythme augmenté à 110/min',
+        'Défibrillation précoce renforcée — objectif < 3 min en intra-hospitalier',
+        "Nouvelles posologies adrénaline ajustées selon durée de l'arrêt"
+      ],
+      texte_long: "La HAS a actualisé ses recommandations RCP sur la base des guidelines ERC 2025. Les principaux changements concernent le rythme de compression recommandé et la stratégie de défibrillation précoce.",
+      references: ['Recommandation HAS mars 2026', 'ERC Guidelines 2025']
+    }
+  }
+];
+
+const DEMO_SPECIALTIES = [
+  { slug: 'medecine-d-urgence', name: "Médecine d'urgence" },
+  { slug: 'anesthesiologie-reanimation', name: 'Anesthésiologie-réanimation' },
+  { slug: 'cardiologie', name: 'Cardiologie' },
+  { slug: 'medecine-generale', name: 'Médecine générale' },
+  { slug: 'chirurgie-orthopedique', name: 'Chirurgie orthopédique' },
+  { slug: 'biologie-medicale', name: 'Biologie médicale' },
+];
+
+function loadDemoData() {
+  document.getElementById('demo-banner').style.display = 'block';
+  document.getElementById('user-email').textContent = 'demo@mednews.fr';
+  userSpecSlug = 'medecine-d-urgence';
+  userSpecName = "Médecine d'urgence";
+  activeSpecSlug = userSpecSlug;
+  activeAudience = 'MY_SPEC';
+  document.getElementById('spec-label').textContent = userSpecName;
+  allSpecialties = DEMO_SPECIALTIES;
+  specCounts = { 'medecine-d-urgence': 5, 'anesthesiologie-reanimation': 3, 'cardiologie': 5, 'medecine-generale': 8, 'chirurgie-orthopedique': 2, 'biologie-medicale': 4 };
+  transversalCount = 8;
+  totalArticles = DEMO_ARTICLES.length;
+  allLoadedArticles = [...DEMO_ARTICLES];
+  buildSidebar();
+  renderGroupedArticles();
+  updateRubrique();
+  updateCounters();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  if (window.lucide) lucide.createIcons();
+}
+
 // ── Init ──────────────────────────────────────────────────────
 (async () => {
+  if (DEMO_MODE) { loadDemoData(); return; }
   if (!getToken()) { window.location.href = '/login'; return; }
-  // Admin → rediriger vers /review
   if (MedNews.isAdmin()) { window.location.href = '/review'; return; }
   await loadProfile();
-  await loadFavorites(); // populate favoritesSet before first render
+  await loadFavorites();
   await Promise.all([loadSpecialties(), loadCounts()]);
   buildSidebar();
-
   await loadArticles(1);
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
-  if (window.lucide) lucide.createIcons(); // process static icons (sidebar labels, filter pills)
-  // Retour depuis settings → rouvrir Compte immédiatement (pas de flash Ma spé)
+  if (window.lucide) lucide.createIcons();
   if (location.hash === '#compte') {
     history.replaceState(null, '', location.pathname);
     mobileNavClick('compte');
