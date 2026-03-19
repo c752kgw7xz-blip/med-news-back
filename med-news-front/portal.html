@@ -1601,18 +1601,27 @@ function loadDemoData() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
   if (window.lucide) lucide.createIcons();
-  // Redirect all internal navigation to parent frame, open external links in new tab
-  document.querySelectorAll('[onclick]').forEach(el => {
-    const oc = el.getAttribute('onclick');
-    if (oc && oc.includes('window.location.href')) {
-      el.setAttribute('onclick', oc.replace(/window\.location\.href\s*=/g, 'window.top.location.href ='));
+  // Global click interceptor: catches static AND dynamically-built nav elements
+  document.addEventListener('click', function(e) {
+    let el = e.target;
+    while (el && el !== document.body) {
+      const oc = el.getAttribute && el.getAttribute('onclick');
+      if (oc && oc.includes('location.href') && !oc.includes('window.top')) {
+        const match = oc.match(/location\.href\s*=\s*['"]([^'"]+)['"]/);
+        if (match && match[1] !== '/portal') {
+          e.preventDefault(); e.stopImmediatePropagation();
+          window.top.location.href = '/signup';
+          return false;
+        }
+      }
+      el = el.parentElement;
     }
-  });
+  }, true);
+  // Open all plain links in new tab
   document.querySelectorAll('a[href]').forEach(a => {
-    const href = a.getAttribute('href');
-    if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
-      a.setAttribute('target', '_blank');
-      a.setAttribute('rel', 'noopener');
+    const h = a.getAttribute('href');
+    if (h && !h.startsWith('#') && !h.startsWith('javascript') && !a.getAttribute('target')) {
+      a.target = '_blank'; a.rel = 'noopener';
     }
   });
 }

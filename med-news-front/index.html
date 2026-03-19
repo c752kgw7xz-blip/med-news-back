@@ -275,7 +275,7 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
 .mobile-section-device{flex:0 0 auto;display:flex;justify-content:center}
 .mobile-bullets{display:flex;flex-direction:column;gap:18px;margin-top:32px}
 .mobile-bullet{display:flex;align-items:flex-start;gap:12px}
-.mobile-bullet-icon{width:28px;height:28px;border-radius:5px;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.mobile-bullet-icon{display:none}
 .mobile-bullet-title{font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:1px}
 .mobile-bullet-desc{font-size:0.76rem;color:var(--text2);line-height:1.6}
 
@@ -295,6 +295,11 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
 .mail-body img{width:100%;display:block}
 .newsletter-iframe{width:100%;height:520px;border:none;display:block;background:#f6f5f2;}
 .portal-iframe{width:100%;height:600px;border:none;display:block;}
+@media(max-width:768px){
+  .portal-preview-wrap{padding:0}
+  .mail-frame{max-width:100%;width:100%}
+  .newsletter-full-preview{width:100%}
+}
 .newsletter-perks{display:flex;flex-direction:column;gap:18px;margin-top:32px}
 .newsletter-perk{display:flex;align-items:flex-start;gap:12px}
 .newsletter-perk-icon{width:28px;height:28px;border-radius:5px;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
@@ -311,10 +316,13 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
   .browser-frame{border-radius:8px}
 }
 @media(max-width:600px){
-  .browser-frame{display:none}
   .newsletter-full{padding:48px 16px}
   .mobile-section{padding:48px 16px}
   .phone-frame{width:220px}
+  .portal-iframe{height:480px}
+  .newsletter-iframe{height:420px}
+  .browser-bar{display:none}
+  .portal-preview-wrap{padding:0 8px}
 }
 </style>
 </head>
@@ -361,7 +369,7 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
     </div>
     <div class="stat-item">
       <div class="stat-n">1<span style="font-size:20px;color:var(--text2);font-family:var(--sans)">er</span></div>
-      <div class="stat-l">Du mois, dans votre boîte</div>
+      <div class="stat-l">Du mois, dans votre boîte mail</div>
     </div>
   </div>
 </section>
@@ -429,7 +437,7 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
 <div class="newsletter-full">
   <div class="newsletter-full-text reveal">
     <div class="section-tag" style="margin-bottom:16px">La newsletter</div>
-    <div class="section-title" style="margin-bottom:16px">Votre veille,<br><em>dans votre boîte</em></div>
+    <div class="section-title" style="margin-bottom:16px">Votre veille,<br><em>dans votre boîte mail</em></div>
     <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;margin-bottom:0">Le 1<sup>er</sup> de chaque mois, un email rédigé spécifiquement pour votre spécialité : vos articles classés par urgence, chaque texte résumé en 3 lignes actionnables.</p>
     <div class="newsletter-perks reveal reveal-delay-1">
       <div class="newsletter-perk">
