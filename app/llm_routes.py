@@ -28,7 +28,7 @@ from fastapi import APIRouter, HTTPException, Request, Query
 from pydantic import BaseModel
 
 from app.db import get_conn
-from app.llm_analysis import analyse_candidate, LLM_MODEL, pre_filter_candidate
+from app.llm_analysis import analyse_candidate, LLM_MODEL, pre_filter_candidate, get_source_type
 from app.security import bearer_scheme, decode_access_token, require_admin
 
 logger = logging.getLogger(__name__)
@@ -62,6 +62,7 @@ INSERT INTO items (
     score_density,
     categorie,
     type_praticien,
+    source_type,
     llm_raw,
     llm_model,
     review_status
@@ -75,6 +76,7 @@ VALUES (
     %(score_density)s,
     %(categorie)s,
     %(type_praticien)s,
+    %(source_type)s,
     %(llm_raw)s,
     %(llm_model)s,
     'PENDING'
@@ -179,6 +181,7 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
     specialites: list[str] = result.get("specialites", [])
     audience: str = result.get("audience", "TRANSVERSAL_LIBERAL")
     type_praticien: str | None = result.get("type_praticien")
+    source_type: str = get_source_type(candidate.get("source"))
 
     # TRANSVERSAL_LIBERAL → 1 item sans specialty_slug
     # PHARMACIENS         → 1 item avec specialty_slug = 'pharmacien'
@@ -205,6 +208,7 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
                     "score_density": result.get("score_density", 5),
                     "categorie": result.get("categorie", None),
                     "type_praticien": type_praticien,
+                    "source_type": source_type,
                     "llm_raw": llm_raw_text,
                     "llm_model": result.get("llm_model", LLM_MODEL),
                 }

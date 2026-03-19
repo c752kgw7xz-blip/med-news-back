@@ -71,7 +71,43 @@ def _get_anthropic_client() -> anthropic.AsyncAnthropic:
         _anthropic_client = anthropic.AsyncAnthropic(api_key=key)
     return _anthropic_client
 
-KNOWN_TYPE_PRATICIEN = {"prescripteur", "interventionnel", "biologiste", "pharmacien", "tous"}
+KNOWN_TYPE_PRATICIEN  = {"prescripteur", "interventionnel", "biologiste", "pharmacien", "tous"}
+KNOWN_SOURCE_TYPES    = {"reglementaire", "recommandation", "therapeutique", "formation"}
+
+# ---------------------------------------------------------------------------
+# Mapping source → source_type (déterministe, 0 appel LLM)
+# Toute source absente de ce dict → "reglementaire" par défaut.
+# ---------------------------------------------------------------------------
+SOURCE_TO_TYPE: dict[str, str] = {
+    # Sources réglementaires
+    "legifrance_jorf":      "reglementaire",
+    "piste_kali":           "reglementaire",
+    "ansm_securite":        "reglementaire",
+    "ansm_securite_med":    "reglementaire",
+    "ansm_ruptures_med":    "reglementaire",
+    "ansm_ruptures_vaccins":"reglementaire",
+    "bo_social":            "reglementaire",
+    # Recommandations de pratique
+    "has_rbp":              "recommandation",
+    "has_fiches_memo":      "recommandation",
+    "has_parcours":         "recommandation",
+    "has_outils":           "recommandation",
+    "academie_medecine":    "recommandation",
+    "sfc_recommandations":  "recommandation",
+    "sfmu_recommandations": "recommandation",
+    "sfp_recommandations":  "recommandation",
+    "sofcot_recommandations":"recommandation",
+    "cngof_recommandations":"recommandation",
+    # Bon usage / thérapeutique
+    "ansm_bon_usage":       "therapeutique",
+}
+
+
+def get_source_type(source: str | None) -> str:
+    """Retourne le source_type d'un candidat à partir de sa source.
+    Déterministe — pas d'appel LLM.
+    """
+    return SOURCE_TO_TYPE.get(source or "", "reglementaire")
 
 KNOWN_SPECIALTIES = {
     # Médecine générale
@@ -186,15 +222,22 @@ sage-femme, biologiste) plutôt que TRANSVERSAL_LIBERAL.
    - Un texte peut concerner plusieurs spécialités : retourne un tableau complet.
 
 4. SCORE D'URGENCE (score_density) de 1 à 10 :
-   - 1-3 : informatif, pas d'action immédiate
-   - 4-6 : à lire, impact modéré sur la pratique
+   - 1-3 : informatif, pas d'action immédiate (rapport épidémio, données statistiques)
+   - 4-6 : à lire — recommandation de bonne pratique, guideline clinique, bon usage
    - 7-10 : lecture OBLIGATOIRE — change la pratique, la rémunération, \
      ou crée une obligation légale immédiate
 
+   RÈGLE RECOMMANDATIONS : une recommandation HAS, une fiche mémo, un guideline de \
+   société savante ou un guide de bon usage médicament mérite un score 4-6. \
+   Ce sont des articles utiles à la pratique, même sans urgence réglementaire. \
+   Ne les classer en 1-3 que s'ils n'apportent aucune information actionnable.
+
    Exemples de score 9-10 : avenant tarifaire UNCAM, retrait AMM médicament courant, \
    nouvelle obligation de formation, modification majeure de la convention médicale.
-   Exemples de score 1-2 : recommandation de bonnes pratiques informatifs, \
-   rapport sans modification réglementaire.
+   Exemples de score 4-6 : recommandation HAS sur une pathologie, fiche mémo pratique, \
+   guideline société savante, guide bon usage médicament.
+   Exemples de score 1-3 : rapport statistique sans recommandation, \
+   données épidémiologiques sans changement de pratique.
 
 5. RÉDACTION — Résumé clair et direct pour un professionnel pressé. \
    Pas de jargon juridique, phrases courtes, impact concret en premier.
@@ -349,14 +392,27 @@ JSON attendu (strict, pas de markdown) :
 # ---------------------------------------------------------------------------
 
 SOURCE_HINTS: dict[str, str] = {
-    "legifrance_jorf":   "JORF — texte réglementaire (loi, décret, arrêté)",
-    "piste_kali":        "Convention collective / accord UNCAM — impact sur honoraires et pratique libérale",
-    "has_rbp":           "HAS — Recommandation de bonne pratique clinique",
-    "ansm_securite":     "ANSM — Information de sécurité (pharmacovigilance, matériovigilance)",
-    "ansm_securite_med": "ANSM — Alerte sécurité médicament (retrait AMM, contre-indication, restriction)",
-    "ansm_ruptures_med": "ANSM — Rupture ou tension d'approvisionnement médicament",
+    # Sources réglementaires
+    "legifrance_jorf":       "JORF — texte réglementaire (loi, décret, arrêté)",
+    "piste_kali":            "Convention collective / accord UNCAM — impact sur honoraires et pratique libérale",
+    "ansm_securite":         "ANSM — Information de sécurité (pharmacovigilance, matériovigilance)",
+    "ansm_securite_med":     "ANSM — Alerte sécurité médicament (retrait AMM, contre-indication, restriction)",
+    "ansm_ruptures_med":     "ANSM — Rupture ou tension d'approvisionnement médicament",
     "ansm_ruptures_vaccins": "ANSM — Disponibilité vaccins",
-    "bo_social":         "Bulletin officiel ministères sociaux — circulaire ou instruction ministère Santé",
+    "bo_social":             "Bulletin officiel ministères sociaux — circulaire ou instruction ministère Santé",
+    # Recommandations de pratique
+    "has_rbp":               "HAS — Recommandation de bonne pratique clinique (RBP)",
+    "has_fiches_memo":       "HAS — Fiche mémo (synthèse pratique, directement actionnable en consultation)",
+    "has_parcours":          "HAS — Parcours de soins (organisation prise en charge par pathologie)",
+    "has_outils":            "HAS — Outil ou méthode HAS (évaluation, amélioration des pratiques)",
+    "academie_medecine":     "Académie Nationale de Médecine — publication ou avis scientifique",
+    "sfc_recommandations":   "Société Française de Cardiologie — recommandation ou guideline cardiologie",
+    "sfmu_recommandations":  "SFMU — Recommandation médecine d'urgence",
+    "sfp_recommandations":   "Société Française de Pédiatrie — recommandation pédiatrique",
+    "sofcot_recommandations":"SOFCOT — recommandation chirurgie orthopédique et traumatologie",
+    "cngof_recommandations": "CNGOF — recommandation gynécologie-obstétrique",
+    # Bon usage
+    "ansm_bon_usage":        "ANSM — Bon usage du médicament (guide positif, pas une alerte)",
 }
 
 # ---------------------------------------------------------------------------
@@ -426,6 +482,7 @@ async def analyse_candidate_async(
 # ---------------------------------------------------------------------------
 
 SOURCE_CONFIG: dict[str, dict] = {
+    # ── Sources réglementaires ──────────────────────────────────────────────
     "legifrance_jorf": {
         "require_whitelist": True,   # titre doit contenir un terme santé
         "min_llm_score": 6,          # score_density LLM >= 6 pour créer un item
@@ -450,13 +507,55 @@ SOURCE_CONFIG: dict[str, dict] = {
         "require_whitelist": False,
         "min_llm_score": 6,
     },
-    "has_rbp": {
-        "require_whitelist": False,
-        "min_llm_score": 5,          # recommandations HAS à 5/10 restent utiles
-    },
     "piste_kali": {
         "require_whitelist": False,
         "min_llm_score": 5,
+    },
+    # ── Sources recommandations — seuil plus bas (contenu utile sans urgence) ─
+    "has_rbp": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    "has_fiches_memo": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    "has_parcours": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    "has_outils": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    "academie_medecine": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    "sfc_recommandations": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    "sfmu_recommandations": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    "sfp_recommandations": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    "sofcot_recommandations": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    "cngof_recommandations": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    # ── Sources bon usage / thérapeutique ────────────────────────────────────
+    "ansm_bon_usage": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
     },
 }
 

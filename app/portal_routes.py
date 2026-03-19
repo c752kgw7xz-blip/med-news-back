@@ -146,6 +146,7 @@ def list_articles(
     month: Optional[str] = Query(default=None),
     from_date: Optional[str] = Query(default=None),
     to_date: Optional[str] = Query(default=None),
+    source_type: Optional[str] = Query(default=None, description="reglementaire | recommandation | therapeutique | formation"),
     user_id: str = Depends(_get_current_user_id),
 ):
     # Utiliser la spécialité demandée si fournie, sinon celle de l'utilisateur
@@ -170,6 +171,12 @@ def list_articles(
         extra_clauses.append(
             "(i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')"
         )
+
+    # Filtre source_type (reglementaire | recommandation | therapeutique | formation)
+    _VALID_SOURCE_TYPES = {"reglementaire", "recommandation", "therapeutique", "formation"}
+    if source_type and source_type in _VALID_SOURCE_TYPES:
+        extra_clauses.append("i.source_type = %s")
+        extra_params.append(source_type)
 
     # Full-text search (ILIKE) — métacaractères LIKE échappés pour éviter un full-scan forcé
     if search and search.strip():
@@ -212,7 +219,7 @@ def list_articles(
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
                   AND COALESCE(i.score_density, 0) >= 3
-                  AND {aud_clause}{extra_where};
+                  AND {aud_clause}{extra_where}
             """, all_params)
             total = cur.fetchone()[0]
 
@@ -221,7 +228,7 @@ def list_articles(
                 SELECT i.id, i.audience, i.specialty_slug, i.score_density,
                        i.tri_json, i.lecture_json, i.published_at,
                        c.title_raw, c.official_url, c.official_date::text,
-                       i.categorie
+                       i.categorie, i.source_type
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
@@ -246,6 +253,7 @@ def list_articles(
             "official_url": r[8],
             "official_date": r[9],
             "categorie": r[10],
+            "source_type": r[11] or "reglementaire",
         })
 
     return {

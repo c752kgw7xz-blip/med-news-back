@@ -31,6 +31,7 @@ import httpx
 
 from app.collector_utils import build_candidate_row, insert_candidate
 from app.db import get_conn
+from app.sources_pratique import ALL_PRATIQUE_FEEDS
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +98,10 @@ FEEDS: list[dict] = [
         "source": "bo_social",
         "audience": ["medecins", "pharmaciens"],
     },
+
+    # ── Sources pratiques — recommandations cliniques et bon usage ────────
+    # Importées depuis app/sources_pratique.py
+    *ALL_PRATIQUE_FEEDS,
 ]
 
 
