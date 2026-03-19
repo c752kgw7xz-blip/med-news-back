@@ -312,3 +312,19 @@ def collect_spf(days: int = 35) -> dict[str, Any]:
     # Santé publique France est exclu des sources retenues (épidémiologie,
     # pas réglementaire — voir docstring module). Aucun feed n'a source "spf".
     return {"inserted": 0, "skipped": 0, "errors": 0, "note": "source spf non activée"}
+
+
+def collect_pratique(days: int = 90) -> dict[str, Any]:
+    """
+    Collecte uniquement les sources pratiques médicales (recommandations,
+    bon usage, sociétés savantes, académie de médecine).
+    Par défaut days=90 pour capturer l'historique récent des nouveaux feeds.
+    """
+    results: dict[str, Any] = {}
+    for feed in ALL_PRATIQUE_FEEDS:
+        try:
+            results[feed["source"]] = collect_feed(feed, days=days)
+        except Exception as e:
+            logger.error("[%s] erreur : %s", feed["source"], e)
+            results[feed["source"]] = {"error": str(e)}
+    return results

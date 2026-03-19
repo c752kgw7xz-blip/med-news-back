@@ -227,6 +227,30 @@ def collect_all(request: Request, days: int = Query(default=35, ge=1, le=365)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/collect/pratique")
+def collect_pratique(request: Request, days: int = Query(default=90, ge=1, le=365)):
+    """
+    Collecte uniquement les sources pratiques médicales :
+    recommandations HAS, bon usage ANSM, sociétés savantes, académie de médecine.
+    days=90 par défaut pour capturer l'historique récent lors du premier run.
+    """
+    _require_admin(request)
+    try:
+        from app.rss_collector import collect_pratique as _collect
+        results = _collect(days=days)
+        total_inserted = sum(r.get("inserted", 0) for r in results.values() if isinstance(r, dict))
+        total_errors = sum(r.get("errors", 0) for r in results.values() if isinstance(r, dict))
+        return {
+            "ok": True,
+            "days": days,
+            "total_inserted": total_inserted,
+            "total_errors": total_errors,
+            "results": results,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ---------------------------------------------------------------------------
 # Test d'un flux RSS arbitraire
 # ---------------------------------------------------------------------------
