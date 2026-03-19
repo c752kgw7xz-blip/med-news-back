@@ -17,6 +17,7 @@ Schéma JSON de sortie :
   "pertinent": true | false,
   "audience": "TRANSVERSAL_LIBERAL" | "SPECIALITE" | "PHARMACIENS",
   "specialites": ["medecine-generale", "cardiologie", "chirurgie"],
+  "type_praticien": "prescripteur" | "interventionnel" | "biologiste" | "pharmacien" | "tous",
   "score_density": 1..10,
   "tri_json": {
     "titre_court":     str,   // ≤ 12 mots
@@ -69,6 +70,8 @@ def _get_anthropic_client() -> anthropic.AsyncAnthropic:
             raise RuntimeError("ANTHROPIC_API_KEY manquante dans l'environnement")
         _anthropic_client = anthropic.AsyncAnthropic(api_key=key)
     return _anthropic_client
+
+KNOWN_TYPE_PRATICIEN = {"prescripteur", "interventionnel", "biologiste", "pharmacien", "tous"}
 
 KNOWN_SPECIALTIES = {
     # Médecine générale
@@ -227,6 +230,40 @@ télémédecine, statut libéral, logiciels métier (LAP, DMP, DxCare…)
        Alerte ANSM DxCare (logiciel)        → exercice
        Obligation utilisation LAP DMP       → exercice
 
+7. TYPE DE PRATICIEN (type_praticien) — Détermine le profil professionnel PRINCIPALEMENT \
+concerné par ce texte. Choisis parmi :
+   - "prescripteur"    : médecins qui prescrivent des médicaments en ambulatoire \
+     (MG, internistes, cardiologues, pneumologues, endocrinologues…). \
+     Exemples : alerte pharmacovigilance, nouvelle indication médicamenteuse, \
+     modification de remboursement d'un médicament de ville.
+   - "interventionnel" : praticiens qui réalisent des actes techniques invasifs \
+     (chirurgiens toutes sous-spécialités, anesthésiologistes, radiologues interventionnels). \
+     Exemples : alertes sur dispositifs implantables, prothèses, fils de suture, \
+     matériel de bloc opératoire, cotations CCAM d'actes chirurgicaux, \
+     recommandations HAS sur gestes techniques ou protocoles per-opératoires.
+   - "biologiste"      : biologistes médicaux (analyses biologiques, réactifs, automates de labo).
+   - "pharmacien"      : pharmaciens d'officine (substitution, ruptures de stock officine, \
+     règles de dispensation, convention pharmacien).
+   - "tous"            : tous les praticiens libéraux sans distinction \
+     (textes sur la convention médicale générale, tiers-payant, exercice libéral).
+
+   RÈGLE CHIRURGIENS — Un texte portant sur des MÉDICAMENTS oraux ou injectables \
+   prescrits en ville (alertes pharmacovigilance, nouvelles indications, remboursements) \
+   → type_praticien = "prescripteur". \
+   Le chirurgien N'EST PAS le destinataire principal même si la molécule est utilisée \
+   en lien avec une pathologie chirurgicale.
+
+   Un texte portant sur du matériel chirurgical (implants, prothèses, fils de suture, \
+   instrumentation de bloc, robots chirurgicaux) \
+   → type_praticien = "interventionnel".
+
+   Exemples corrects :
+     Alerte ANSM paracétamol 1 g (surdosage)         → prescripteur
+     Alerte ANSM prothèse de hanche (débris métalliques) → interventionnel
+     Arrêté honoraires convention médicale            → tous
+     Rupture stock amoxicilline (consigne officine)   → pharmacien
+     Automate PCR laboratoire                         → biologiste
+
 IMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans markdown, \
 sans explication autour.
 """
@@ -262,6 +299,7 @@ JSON attendu (strict, pas de markdown) :
   "pertinent": <bool>,
   "audience": "<TRANSVERSAL_LIBERAL|SPECIALITE|PHARMACIENS>",
   "specialites": [<slugs parmi: medecine-generale, cardiologie, dermatologie, endocrinologie, gastro-enterologie, gynecologie, neurologie, ophtalmologie, orl, pediatrie, pneumologie, psychiatrie, rhumatologie, urologie, medecine-interne, medecine-urgences, geriatrie, medecine-physique, oncologie, hematologie, infectiologie, nephrologie, radiologie, anesthesiologie, chirurgie, chirurgie-vasculaire, chirurgie-orthopedique, chirurgie-thoracique, chirurgie-plastique, neurochirurgie, chirurgie-pediatrique, chirurgie-cardiaque, infirmiers, kinesitherapie, sage-femme, biologiste>],
+  "type_praticien": "<prescripteur|interventionnel|biologiste|pharmacien|tous>",
   "score_density": <int 1-10>,
   "categorie": "<clinique|medicament|dispositifs_medicaux|facturation|administratif|sante_publique|exercice>",
   "tri_json": {{
@@ -503,29 +541,22 @@ _DROP_TITLE_PATTERNS = [
 ]
 _DROP_TITLE_RES = [re.compile(p) for p in _DROP_TITLE_PATTERNS]
 
-# Dispositifs médicaux non-médicamenteux — hors scope médecin libéral prescripteur
-# (matériovigilance ANSM : fauteuils, lits, perfuseurs, prothèses non implantables…)
+# Dispositifs médicaux non-médicamenteux — hors scope de tous les praticiens libéraux.
+# NB : prothèses, implants, robots chirurgicaux, instruments de bloc sont CONSERVÉS
+#      car ils concernent les chirurgiens libéraux. Le filtrage fin est géré par
+#      type_praticien dans le pipeline LLM.
 _ANSM_DM_EXCLUDE_PATTERNS = [
-    r"(?i)\bda vinci\b",
-    r"(?i)\brobot chirurgical\b",
-    r"(?i)\binstrument réutilisable\b",
-    r"(?i)\bmatériovigilance\b",
-    r"(?i)\bdispositif implantable\b",
+    # ── Équipements de confort / hôpital (non-clinique) ─────────────────────
     r"(?i)\bfauteuil roulant\b",
     r"(?i)\bdéambulateur\b",
     r"(?i)\blit médical\b",
     r"(?i)\bmatelas\b",
     r"(?i)\bcoussin\b",
-    r"(?i)\borthèse\b",
-    r"(?i)\bprothèse\b(?!.*médicament)",  # prothèse hors contexte médicament
-    r"(?i)\bimplant\b(?!.*médicament)",
-    r"(?i)\bperfusion\b",
+    # ── Perfusion / pompes externes (DM hôpital, hors libéral) ──────────────
     r"(?i)\bdispositif de perfusion\b",
     r"(?i)\bpompe à insuline externe\b",
     r"(?i)\bpompe externe\b",
-    r"(?i)\bdéfibrillateur\b",
-    r"(?i)\bventilateur\b(?!.*médicament)",
-    r"(?i)\brespirateur\b",
+    # ── Monitoring / imagerie (DM institution, alerte biomédicale) ──────────
     r"(?i)\béchographe\b",
     r"(?i)\bscanner\b",
     r"(?i)\bIRM\b",
@@ -651,6 +682,19 @@ def _parse_llm_output(raw: str) -> dict[str, Any]:
 
     raw_slugs = data.get("specialites", [])
     data["specialites"] = [s for s in raw_slugs if s in KNOWN_SPECIALTIES]
+
+    if data.get("type_praticien") not in KNOWN_TYPE_PRATICIEN:
+        # Infer from audience/specialites if Claude missed it
+        aud = data.get("audience", "")
+        specs = data.get("specialites", [])
+        if aud == "PHARMACIENS":
+            data["type_praticien"] = "pharmacien"
+        elif any(s.startswith("chirurgie") or s in ("anesthesiologie", "neurochirurgie") for s in specs):
+            data["type_praticien"] = "interventionnel"
+        elif aud == "TRANSVERSAL_LIBERAL":
+            data["type_praticien"] = "tous"
+        else:
+            data["type_praticien"] = "prescripteur"
 
     try:
         data["score_density"] = max(1, min(10, int(data.get("score_density", 5))))

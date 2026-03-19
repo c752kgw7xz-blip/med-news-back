@@ -28,6 +28,26 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["portal"])
 
+# ---------------------------------------------------------------------------
+# Profils de praticiens — pour le filtrage croisé par type_praticien
+# ---------------------------------------------------------------------------
+
+# Spécialités interventionnelles (actes techniques invasifs)
+_INTERVENTIONAL_SLUGS = frozenset({
+    "chirurgie-vasculaire", "chirurgie-orthopedique", "chirurgie-thoracique",
+    "chirurgie-plastique", "neurochirurgie", "chirurgie-pediatrique",
+    "chirurgie-cardiaque", "anesthesiologie",
+})
+
+# Spécialités prescriptrices (médicaments en ambulatoire)
+_PRESCRIPTEUR_SLUGS = frozenset({
+    "medecine-generale", "cardiologie", "dermatologie", "endocrinologie",
+    "gastro-enterologie", "gynecologie", "neurologie", "ophtalmologie", "orl",
+    "pediatrie", "pneumologie", "psychiatrie", "rhumatologie", "urologie",
+    "medecine-interne", "medecine-urgences", "geriatrie", "medecine-physique",
+    "oncologie", "hematologie", "infectiologie", "nephrologie", "radiologie",
+})
+
 
 # ---------------------------------------------------------------------------
 # Auth dependency
@@ -103,6 +123,15 @@ def _build_audience_clause(audience: str | None, slug: str | None):
         return "i.audience = 'TRANSVERSAL_LIBERAL'", ()
     elif audience == "SPEC_ONLY":
         return "(i.audience != 'TRANSVERSAL_LIBERAL' AND i.specialty_slug = %s)", (slug,)
+    elif slug == "pharmacien":
+        # Pharmaciens voient : transversal + PHARMACIENS + prescripteur-type (médicaments)
+        return (
+            "(i.audience = 'TRANSVERSAL_LIBERAL'"
+            " OR i.audience = 'PHARMACIENS'"
+            " OR i.specialty_slug = 'pharmacien'"
+            " OR i.type_praticien = 'prescripteur')",
+            (),
+        )
     else:
         return "(i.audience = 'TRANSVERSAL_LIBERAL' OR i.specialty_slug = %s)", (slug,)
 
@@ -126,6 +155,21 @@ def list_articles(
     # Build extra WHERE fragments
     extra_clauses: list[str] = []
     extra_params: list[Any] = []
+
+    # Filtrage croisé type_praticien × spécialité
+    # Les items sans type_praticien (NULL) passent toujours (rétrocompatibilité).
+    if slug in _INTERVENTIONAL_SLUGS:
+        # Chirurgiens/anesthésistes : exclure articles prescripteurs sauf score très élevé (≥ 9)
+        extra_clauses.append(
+            "(i.type_praticien IS NULL"
+            " OR i.type_praticien != 'prescripteur'"
+            " OR i.score_density >= 9)"
+        )
+    elif slug in _PRESCRIPTEUR_SLUGS:
+        # Prescripteurs : exclure articles interventionnels
+        extra_clauses.append(
+            "(i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')"
+        )
 
     # Full-text search (ILIKE) — métacaractères LIKE échappés pour éviter un full-scan forcé
     if search and search.strip():

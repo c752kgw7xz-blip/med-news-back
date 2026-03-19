@@ -61,6 +61,7 @@ INSERT INTO items (
     lecture_json,
     score_density,
     categorie,
+    type_praticien,
     llm_raw,
     llm_model,
     review_status
@@ -73,6 +74,7 @@ VALUES (
     %(lecture_json)s,
     %(score_density)s,
     %(categorie)s,
+    %(type_praticien)s,
     %(llm_raw)s,
     %(llm_model)s,
     'PENDING'
@@ -176,13 +178,17 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
 
     specialites: list[str] = result.get("specialites", [])
     audience: str = result.get("audience", "TRANSVERSAL_LIBERAL")
+    type_praticien: str | None = result.get("type_praticien")
 
-    # Pour TRANSVERSAL_LIBERAL → 1 item sans specialty_slug
-    # Pour SPECIALITE → 1 item par spécialité
-    slugs_to_insert: list[str | None] = (
-        [None] if audience in ("TRANSVERSAL_LIBERAL", "PHARMACIENS") or not specialites
-        else specialites
-    )
+    # TRANSVERSAL_LIBERAL → 1 item sans specialty_slug
+    # PHARMACIENS         → 1 item avec specialty_slug = 'pharmacien'
+    # SPECIALITE          → 1 item par spécialité (ou 1 item NULL si aucune spécialité)
+    if audience == "TRANSVERSAL_LIBERAL":
+        slugs_to_insert: list[str | None] = [None]
+    elif audience == "PHARMACIENS":
+        slugs_to_insert = ["pharmacien"]
+    else:
+        slugs_to_insert = specialites if specialites else [None]
 
     llm_raw_text = json.dumps(result, ensure_ascii=False)
     item_ids: list[str] = []
@@ -198,6 +204,7 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
                     "lecture_json": Json(result.get("lecture_json", {})),
                     "score_density": result.get("score_density", 5),
                     "categorie": result.get("categorie", None),
+                    "type_praticien": type_praticien,
                     "llm_raw": llm_raw_text,
                     "llm_model": result.get("llm_model", LLM_MODEL),
                 }
