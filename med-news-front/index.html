@@ -31,7 +31,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,9,14,.85);backdrop-filte
 @keyframes navSlide{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
 .nav-logo{font-family:var(--serif);font-size:1.24rem;color:var(--text);letter-spacing:-.2px;text-decoration:none}
 .nav-links{display:flex;align-items:center;gap:32px}
-.nav-link{font-size:0.76rem;color:var(--text3);text-decoration:none;transition:color .2s}
+.nav-link{font-size:0.76rem;color:var(--text);text-decoration:none;transition:color .2s}
 .nav-link:hover{color:var(--text2)}
 .nav-cta{font-size:0.76rem;font-weight:500;color:var(--bg);background:var(--text);padding:7px 18px;border-radius:4px;text-decoration:none;transition:opacity .2s, transform .2s}
 .nav-cta:hover{opacity:.85;transform:translateY(-1px)}
@@ -285,8 +285,24 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 .section-center .section-tag{display:inline-block}
 .portal-preview-wrap{width:100%;max-width:860px;margin:0 auto}
 
-@media(max-width:900px){.mobile-section{gap:40px}}
+/* Newsletter full section */
+.newsletter-full{display:flex;align-items:flex-start;gap:72px;padding:96px 48px;max-width:1100px;margin:0 auto}
+.newsletter-full-text{flex:0 0 360px}
+.newsletter-full-preview{flex:1;display:flex;justify-content:center}
+.mail-frame{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 80px rgba(0,0,0,.5);max-width:520px;width:100%}
+.mail-toolbar{background:#2a2b36;padding:10px 16px;display:flex;align-items:center;gap:6px}
+.mail-from{font-size:11px;color:#8b8fa8;font-family:var(--mono);margin-left:10px}
+.mail-body img{width:100%;display:block}
+.newsletter-perks{display:flex;flex-direction:column;gap:18px;margin-top:32px}
+.newsletter-perk{display:flex;align-items:flex-start;gap:12px}
+.newsletter-perk-icon{width:28px;height:28px;border-radius:5px;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.newsletter-perk-title{font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:2px}
+.newsletter-perk-desc{font-size:0.76rem;color:var(--text2);line-height:1.6}
+
+@media(max-width:900px){.mobile-section{gap:40px}.newsletter-full{gap:40px}}
 @media(max-width:768px){
+  .newsletter-full{flex-direction:column;gap:48px;padding:64px 24px}
+  .newsletter-full-text{flex:none;width:100%}
   .mobile-section{flex-direction:column-reverse;gap:40px;padding:64px 24px;text-align:center}
   .mobile-bullets{align-items:flex-start}
   .amock,.notif-mock,.vmock{display:none}
@@ -294,6 +310,7 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
 }
 @media(max-width:600px){
   .browser-frame{display:none}
+  .newsletter-full{padding:48px 16px}
   .mobile-section{padding:48px 16px}
   .phone-frame{width:180px}
 }
@@ -414,12 +431,88 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         Newsletter · Portail · Archives
       </div>
-      <div class="notif-mock" style="overflow:hidden">
-        <img src="screenshots/newsletter.png" alt="Newsletter MedNews" style="width:100%;display:block;max-height:130px;object-fit:cover;object-position:top">
+      <div class="notif-mock">
+        <div class="notif-head">
+          <div class="notif-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2a9d7a" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div class="notif-from">MedNews</div>
+          <div class="notif-time">1 avr.</div>
+        </div>
+        <div class="notif-body">
+          <div class="notif-subject">Votre veille Cardiologie — Avril 2026</div>
+          <div class="notif-row">
+            <div class="notif-spec">CARDIOLOGIE</div>
+            <div class="notif-pill crit">1 À LIRE</div>
+            <div class="notif-pill imp">2 IMPORT.</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<!-- ── NEWSLETTER FULL SECTION ── -->
+<div class="newsletter-full">
+  <div class="newsletter-full-text reveal">
+    <div class="section-tag" style="margin-bottom:16px">La newsletter</div>
+    <div class="section-title" style="margin-bottom:16px">Votre veille,<br><em>dans votre boîte</em></div>
+    <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;margin-bottom:0">Le 1<sup>er</sup> de chaque mois, un email rédigé spécifiquement pour votre spécialité : vos articles classés par urgence, chaque texte résumé en 3 lignes actionnables.</p>
+    <div class="newsletter-perks reveal reveal-delay-1">
+      <div class="newsletter-perk">
+        <div class="newsletter-perk-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div>
+          <div class="newsletter-perk-title">Résumés actionnables</div>
+          <div class="newsletter-perk-desc">Chaque texte en 3 lignes — avec l'action concrète à prendre, sans jargon inutile.</div>
+        </div>
+      </div>
+      <div class="newsletter-perk">
+        <div class="newsletter-perk-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div>
+          <div class="newsletter-perk-title">Classée par urgence</div>
+          <div class="newsletter-perk-desc">Ce qui change votre pratique aujourd'hui est en tête. Le reste suit.</div>
+        </div>
+      </div>
+      <div class="newsletter-perk">
+        <div class="newsletter-perk-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <div>
+          <div class="newsletter-perk-title">Lien vers le texte officiel</div>
+          <div class="newsletter-perk-desc">Chaque article renvoie directement au JORF, à la HAS ou à l'ANSM — toujours vérifiable.</div>
+        </div>
+      </div>
+      <div class="newsletter-perk">
+        <div class="newsletter-perk-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div>
+          <div class="newsletter-perk-title">Filtrée pour votre spécialité</div>
+          <div class="newsletter-perk-desc">Pas de bruit. Uniquement les textes qui impactent votre exercice libéral.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="newsletter-full-preview reveal reveal-delay-2">
+    <div class="mail-frame">
+      <div class="mail-toolbar">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+        <div class="mail-from">newsletter@mednews.fr</div>
+      </div>
+      <div class="mail-body">
+        <img src="screenshots/newsletter.png" alt="Newsletter MedNews">
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="divider"><div class="divider-line"></div></div>
 
@@ -471,8 +564,13 @@ footer{border-top:0.5px solid var(--border);padding:32px 48px;display:flex;align
       </div>
       <div class="value-title">Archives consultables</div>
       <div class="value-desc">Retrouvez n'importe quel texte depuis janvier 2026. Recherche full-text, filtres par catégorie, classement par mois.</div>
-      <div class="vmock" style="overflow:hidden">
-        <img src="screenshots/archives-desktop.png" alt="Archives MedNews" style="width:100%;display:block;max-height:90px;object-fit:cover;object-position:top">
+      <div class="vmock">
+        <div class="vmock-search">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4a4e68" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <div class="vmock-search-text">anticoagulants 2026...</div>
+        </div>
+        <div class="vmock-month-row"><div class="vmock-month-label">Février 2026</div><div class="vmock-month-n">4 résultats</div></div>
+        <div class="vmock-month-row"><div class="vmock-month-label">Janvier 2026</div><div class="vmock-month-n">2 résultats</div></div>
       </div>
     </div>
   </div>
