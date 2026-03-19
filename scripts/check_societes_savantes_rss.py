@@ -1,26 +1,43 @@
 #!/usr/bin/env python3
 """
 check_societes_savantes_rss.py
-Teste les flux RSS candidats des sociétés savantes médicales françaises
-via l'endpoint /admin/sources/test-feed du serveur Render.
+Détecte les flux RSS des sociétés savantes médicales françaises via :
+  1. RSS autodiscovery  — balise <link rel="alternate" type="application/rss+xml">
+  2. URLs candidates    — patterns /feed, /rss, /rss.xml, etc.
+  3. Validation finale  — via /admin/sources/test-feed (Render)
 
 Usage :
-    python scripts/check_societes_savantes_rss.py
+    python3 scripts/check_societes_savantes_rss.py
 
 Prérequis :
-    pip install httpx
+    pip3 install httpx beautifulsoup4 lxml
 """
 
 import httpx
 import json
+import re
 import time
+from urllib.parse import urljoin, urlparse
 
-BASE_URL = "https://med-news-back-fmgu.onrender.com"
+try:
+    from bs4 import BeautifulSoup
+    BS4_AVAILABLE = True
+except ImportError:
+    BS4_AVAILABLE = False
+    print("⚠️  beautifulsoup4 non installé — autodiscovery désactivé")
+    print("   pip3 install beautifulsoup4 lxml\n")
+
+BASE_URL   = "https://med-news-back-fmgu.onrender.com"
 ADMIN_SECRET = "mon-secret-admin"
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; MedNewsBot/1.0; RSS scanner)",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+}
+
 # ---------------------------------------------------------------------------
-# Candidats RSS à tester
-# Patterns standards WordPress/Drupal/custom pour chaque société
+# Sociétés savantes à scanner
+# Pour chaque société : homepage + patterns candidats en fallback
 # ---------------------------------------------------------------------------
 
 CANDIDATES = [
@@ -29,31 +46,25 @@ CANDIDATES = [
         "source": "sfmg",
         "label": "SFMG — Médecine générale",
         "specialty": "medecine-generale",
-        "urls": [
+        "homepage": "https://www.sfmg.org/",
+        "extra_urls": [
             "http://www.sfmg.org/rss/actualites_2-4-5-10-14-18.xml",
-            "https://www.sfmg.org/rss/",
-            "https://www.sfmg.org/feed",
+            "https://www.sfmg.org/rss/actualites.xml",
         ],
     },
     {
         "source": "cnge",
         "label": "CNGE — Généralistes enseignants",
         "specialty": "medecine-generale",
-        "urls": [
-            "https://www.cnge.fr/feed",
-            "https://www.cnge.fr/rss.xml",
-            "https://cnge.fr/feed",
-        ],
+        "homepage": "https://www.cnge.fr/",
+        "extra_urls": [],
     },
     {
         "source": "snfmi",
         "label": "SNFMI — Médecine interne",
         "specialty": "medecine-interne",
-        "urls": [
-            "https://www.snfmi.org/feed",
-            "https://www.snfmi.org/rss.xml",
-            "https://snfmi.org/feed",
-        ],
+        "homepage": "https://www.snfmi.org/",
+        "extra_urls": [],
     },
 
     # ── Cardiologie / HTA ─────────────────────────────────────────────────
@@ -61,21 +72,15 @@ CANDIDATES = [
         "source": "sfhta",
         "label": "SFHTA — Hypertension artérielle",
         "specialty": "cardiologie",
-        "urls": [
-            "https://www.sfhta.eu/feed",
-            "https://www.sfhta.eu/rss.xml",
-            "https://sfhta.eu/feed",
-        ],
+        "homepage": "https://www.sfhta.eu/",
+        "extra_urls": [],
     },
     {
         "source": "cardio_online",
         "label": "Cardio-online (bras média SFC)",
         "specialty": "cardiologie",
-        "urls": [
-            "https://www.cardio-online.fr/feed",
-            "https://www.cardio-online.fr/rss.xml",
-            "https://cardio-online.fr/feed",
-        ],
+        "homepage": "https://www.cardio-online.fr/",
+        "extra_urls": [],
     },
 
     # ── Urgences / Réanimation / Anesthésie ───────────────────────────────
@@ -83,45 +88,36 @@ CANDIDATES = [
         "source": "sfar",
         "label": "SFAR — Anesthésie-Réanimation",
         "specialty": "anesthesie-reanimation",
-        "urls": [
-            "https://sfar.org/feed",
-            "https://www.sfar.org/feed",
-            "https://sfar.org/rss.xml",
+        "homepage": "https://sfar.org/",
+        "extra_urls": [
             "https://sfar.org/actualites/feed",
+            "https://sfar.org/recommandations/feed",
         ],
     },
     {
         "source": "srlf",
-        "label": "SRLF — Réanimation langue française",
+        "label": "SRLF — Réanimation",
         "specialty": "reanimation",
-        "urls": [
-            "https://www.srlf.org/feed",
-            "https://srlf.org/feed",
-            "https://www.srlf.org/rss.xml",
-        ],
+        "homepage": "https://www.srlf.org/",
+        "extra_urls": [],
     },
 
     # ── Neurologie / Psychiatrie ──────────────────────────────────────────
     {
         "source": "sfn",
-        "label": "SFN — Société Française de Neurologie",
+        "label": "SFN — Neurologie",
         "specialty": "neurologie",
-        "urls": [
-            "https://www.sf-neuro.org/feed",
-            "https://sf-neuro.org/feed",
-            "https://www.sf-neuro.org/rss.xml",
-            "https://www.sfneuro.org/feed",
+        "homepage": "https://www.sf-neuro.org/",
+        "extra_urls": [
+            "https://www.sf-neuro.org/actualites/feed",
         ],
     },
     {
         "source": "sfpsychiatrie",
         "label": "SFP — Psychiatrie",
         "specialty": "psychiatrie",
-        "urls": [
-            "https://www.sfpsy.org/feed",
-            "https://sfpsy.org/feed",
-            "https://www.sfpsy.org/rss.xml",
-        ],
+        "homepage": "https://www.sfpsy.org/",
+        "extra_urls": [],
     },
 
     # ── Gastroentérologie / Hépatologie ───────────────────────────────────
@@ -129,22 +125,18 @@ CANDIDATES = [
         "source": "snfge",
         "label": "SNFGE — Gastroentérologie",
         "specialty": "gastroenterologie",
-        "urls": [
-            "https://www.snfge.org/feed",
-            "https://snfge.org/feed",
-            "https://www.snfge.org/rss.xml",
+        "homepage": "https://www.snfge.org/",
+        "extra_urls": [
             "https://www.snfge.org/actualites/feed",
+            "https://www.snfge.org/recommandations/feed",
         ],
     },
     {
         "source": "afef",
         "label": "AFEF — Hépatologie",
         "specialty": "hepatologie",
-        "urls": [
-            "https://afef.asso.fr/feed",
-            "https://www.afef.asso.fr/feed",
-            "https://afef.asso.fr/rss.xml",
-        ],
+        "homepage": "https://afef.asso.fr/",
+        "extra_urls": [],
     },
 
     # ── Pneumologie ───────────────────────────────────────────────────────
@@ -152,11 +144,10 @@ CANDIDATES = [
         "source": "splf",
         "label": "SPLF — Pneumologie",
         "specialty": "pneumologie",
-        "urls": [
-            "https://splf.fr/feed",
-            "https://www.splf.fr/feed",
-            "https://splf.fr/rss.xml",
+        "homepage": "https://splf.fr/",
+        "extra_urls": [
             "https://splf.fr/actualites/feed",
+            "https://splf.fr/recommandations/feed",
         ],
     },
 
@@ -165,21 +156,15 @@ CANDIDATES = [
         "source": "sfendocrino",
         "label": "SFE — Endocrinologie",
         "specialty": "endocrinologie",
-        "urls": [
-            "https://www.sfendocrino.org/feed",
-            "https://sfendocrino.org/feed",
-            "https://www.sfendocrino.org/rss.xml",
-        ],
+        "homepage": "https://www.sfendocrino.org/",
+        "extra_urls": [],
     },
     {
         "source": "sfdiabete",
         "label": "SFD — Diabétologie",
         "specialty": "endocrinologie",
-        "urls": [
-            "https://www.sfdiabete.org/feed",
-            "https://sfdiabete.org/feed",
-            "https://www.sfdiabete.org/rss.xml",
-        ],
+        "homepage": "https://www.sfdiabete.org/",
+        "extra_urls": [],
     },
 
     # ── Rhumatologie ──────────────────────────────────────────────────────
@@ -187,10 +172,8 @@ CANDIDATES = [
         "source": "sfrhumato",
         "label": "SFR — Rhumatologie",
         "specialty": "rhumatologie",
-        "urls": [
-            "https://www.larhumatologie.fr/feed",
-            "https://larhumatologie.fr/feed",
-            "https://www.larhumatologie.fr/rss.xml",
+        "homepage": "https://www.larhumatologie.fr/",
+        "extra_urls": [
             "https://www.rheumatologie.asso.fr/feed",
         ],
     },
@@ -200,11 +183,8 @@ CANDIDATES = [
         "source": "sfndt",
         "label": "SFNDT — Néphrologie",
         "specialty": "nephrologie",
-        "urls": [
-            "https://www.sfndt.org/feed",
-            "https://sfndt.org/feed",
-            "https://www.sfndt.org/rss.xml",
-        ],
+        "homepage": "https://www.sfndt.org/",
+        "extra_urls": [],
     },
 
     # ── Dermatologie ──────────────────────────────────────────────────────
@@ -212,10 +192,8 @@ CANDIDATES = [
         "source": "sfdermato",
         "label": "SFD — Dermatologie",
         "specialty": "dermatologie",
-        "urls": [
-            "https://www.sfdermato.org/feed",
-            "https://sfdermato.org/feed",
-            "https://www.sfdermato.org/rss.xml",
+        "homepage": "https://www.sfdermato.org/",
+        "extra_urls": [
             "https://dermato-info.fr/feed",
         ],
     },
@@ -225,10 +203,8 @@ CANDIDATES = [
         "source": "sfo",
         "label": "SFO — Ophtalmologie",
         "specialty": "ophtalmologie",
-        "urls": [
-            "https://www.sfo-online.fr/feed",
-            "https://sfo-online.fr/feed",
-            "https://www.sfo-online.fr/rss.xml",
+        "homepage": "https://www.sfo-online.fr/",
+        "extra_urls": [
             "https://www.sfo.asso.fr/feed",
         ],
     },
@@ -238,10 +214,8 @@ CANDIDATES = [
         "source": "sforl",
         "label": "SFORL — ORL",
         "specialty": "orl",
-        "urls": [
-            "https://www.sforl.org/feed",
-            "https://sforl.org/feed",
-            "https://www.sforl.org/rss.xml",
+        "homepage": "https://www.sforl.org/",
+        "extra_urls": [
             "https://www.sforl.com/feed",
         ],
     },
@@ -251,11 +225,8 @@ CANDIDATES = [
         "source": "afu",
         "label": "AFU — Urologie",
         "specialty": "urologie",
-        "urls": [
-            "https://www.urofrance.org/feed",
-            "https://urofrance.org/feed",
-            "https://www.urofrance.org/rss.xml",
-        ],
+        "homepage": "https://www.urofrance.org/",
+        "extra_urls": [],
     },
 
     # ── Infectiologie ─────────────────────────────────────────────────────
@@ -263,10 +234,8 @@ CANDIDATES = [
         "source": "spilf",
         "label": "SPILF — Infectiologie",
         "specialty": "infectiologie",
-        "urls": [
-            "https://www.infectiologie.com/feed",
-            "https://infectiologie.com/feed",
-            "https://www.infectiologie.com/rss.xml",
+        "homepage": "https://www.infectiologie.com/",
+        "extra_urls": [
             "https://www.infectiologie.com/UserFiles/File/rss/rss.xml",
         ],
     },
@@ -276,11 +245,8 @@ CANDIDATES = [
         "source": "sfgg",
         "label": "SFGG — Gériatrie",
         "specialty": "geriatrie",
-        "urls": [
-            "https://sfgg.org/feed",
-            "https://www.sfgg.org/feed",
-            "https://sfgg.org/rss.xml",
-        ],
+        "homepage": "https://sfgg.org/",
+        "extra_urls": [],
     },
 
     # ── Radiologie ────────────────────────────────────────────────────────
@@ -288,11 +254,9 @@ CANDIDATES = [
         "source": "sfr_radio",
         "label": "SFR — Radiologie",
         "specialty": "radiologie",
-        "urls": [
-            "https://www.radiologie.fr/feed",
-            "https://radiologie.fr/feed",
+        "homepage": "https://www.radiologie.fr/",
+        "extra_urls": [
             "https://www.sfrnet.org/feed",
-            "https://www.sfrnet.org/rss.xml",
         ],
     },
 
@@ -301,29 +265,280 @@ CANDIDATES = [
         "source": "sfh",
         "label": "SFH — Hématologie",
         "specialty": "hematologie",
-        "urls": [
-            "https://sfh.hematologie.net/feed",
-            "https://www.sfh.hematologie.net/feed",
-            "https://sfh.hematologie.net/rss.xml",
-        ],
+        "homepage": "https://sfh.hematologie.net/",
+        "extra_urls": [],
     },
 
-    # ── Oncologie / Radiothérapie ─────────────────────────────────────────
+    # ── Oncologie médicale ────────────────────────────────────────────────
     {
         "source": "sfro",
         "label": "SFRO — Radiothérapie oncologique",
         "specialty": "oncologie",
-        "urls": [
-            "https://www.sfro.fr/feed",
-            "https://sfro.fr/feed",
-            "https://www.sfro.org/feed",
-            "https://sfro.org/feed",
+        "homepage": "https://www.sfro.fr/",
+        "extra_urls": [],
+    },
+    {
+        "source": "ffcd",
+        "label": "FFCD — Cancérologie digestive",
+        "specialty": "oncologie",
+        "homepage": "https://www.ffcd.fr/",
+        "extra_urls": [],
+    },
+    {
+        "source": "unicancer",
+        "label": "UNICANCER — Oncologie",
+        "specialty": "oncologie",
+        "homepage": "https://www.unicancer.fr/",
+        "extra_urls": [],
+    },
+
+    # ── Chirurgie vasculaire ──────────────────────────────────────────────
+    {
+        "source": "scv",
+        "label": "SCV — Chirurgie Vasculaire",
+        "specialty": "chirurgie-vasculaire",
+        "homepage": "https://www.chirurgievasculaire.fr/",
+        "extra_urls": [
+            "https://www.sfcv.org/feed",
+            "https://sfcv.org/feed",
+        ],
+    },
+
+    # ── Chirurgie thoracique / cardiaque ──────────────────────────────────
+    {
+        "source": "sfctcv",
+        "label": "SFCTCV — Chirurgie Thoracique et Cardio-Vasculaire",
+        "specialty": "chirurgie-thoracique",
+        "homepage": "https://www.sfctcv.org/",
+        "extra_urls": [],
+    },
+
+    # ── Chirurgie plastique ───────────────────────────────────────────────
+    {
+        "source": "sofcpre",
+        "label": "SOFCPRE — Chirurgie Plastique Reconstructrice et Esthétique",
+        "specialty": "chirurgie-plastique",
+        "homepage": "https://www.sofcpre.fr/",
+        "extra_urls": [
+            "https://www.sfcpre.fr/feed",
+        ],
+    },
+
+    # ── Neurochirurgie ────────────────────────────────────────────────────
+    {
+        "source": "sfnc",
+        "label": "SFNC — Société Française de Neurochirurgie",
+        "specialty": "neurochirurgie",
+        "homepage": "https://www.sfneurochirurgie.fr/",
+        "extra_urls": [],
+    },
+
+    # ── Colo-proctologie ──────────────────────────────────────────────────
+    {
+        "source": "snfcp",
+        "label": "SNFCP — Colo-Proctologie",
+        "specialty": "gastroenterologie",
+        "homepage": "https://www.snfcp.org/",
+        "extra_urls": [],
+    },
+
+    # ── Médecine physique et réadaptation ─────────────────────────────────
+    {
+        "source": "sofmer",
+        "label": "SOFMER — Médecine Physique et Réadaptation",
+        "specialty": "medecine-physique",
+        "homepage": "https://www.sofmer.com/",
+        "extra_urls": [
+            "https://sofmer.com/feed",
+        ],
+    },
+
+    # ── Allergologie ──────────────────────────────────────────────────────
+    {
+        "source": "sfa_allergo",
+        "label": "SFA — Société Française d'Allergologie",
+        "specialty": "allergologie",
+        "homepage": "https://www.sfa-allergologie.org/",
+        "extra_urls": [
+            "https://sfa-allergologie.org/feed",
+        ],
+    },
+
+    # ── Médecine vasculaire ───────────────────────────────────────────────
+    {
+        "source": "sfmv",
+        "label": "SFMV — Société Française de Médecine Vasculaire",
+        "specialty": "medecine-vasculaire",
+        "homepage": "https://www.sf-mv.fr/",
+        "extra_urls": [
+            "https://sf-mv.fr/feed",
+            "https://www.sfmv.fr/feed",
+        ],
+    },
+
+    # ── Médecine du sport ─────────────────────────────────────────────────
+    {
+        "source": "sfms",
+        "label": "SFMS — Société Française de Médecine du Sport",
+        "specialty": "medecine-sport",
+        "homepage": "https://www.sfms.asso.fr/",
+        "extra_urls": [
+            "https://sfms.asso.fr/feed",
+        ],
+    },
+
+    # ── Addictologie ──────────────────────────────────────────────────────
+    {
+        "source": "sfa_addicto",
+        "label": "SFA — Société Française d'Alcoologie",
+        "specialty": "addictologie",
+        "homepage": "https://www.sfalcoologie.asso.fr/",
+        "extra_urls": [
+            "https://sfalcoologie.asso.fr/feed",
+            "https://www.fsfa.fr/feed",
+        ],
+    },
+
+    # ── Anatomopathologie ─────────────────────────────────────────────────
+    {
+        "source": "sfpath",
+        "label": "SFP — Société Française de Pathologie",
+        "specialty": "anatomopathologie",
+        "homepage": "https://www.sfpathol.org/",
+        "extra_urls": [
+            "https://sfpathol.org/feed",
+        ],
+    },
+
+    # ── Médecine nucléaire ────────────────────────────────────────────────
+    {
+        "source": "sfmn",
+        "label": "SFMN — Société Française de Médecine Nucléaire",
+        "specialty": "medecine-nucleaire",
+        "homepage": "https://www.sfmn.org/",
+        "extra_urls": [
+            "https://sfmn.org/feed",
+        ],
+    },
+
+    # ── Gynécologie médicale ──────────────────────────────────────────────
+    {
+        "source": "fncgm",
+        "label": "FNCGM — Fédération Nationale des Collèges de Gynécologie Médicale",
+        "specialty": "gynecologie",
+        "homepage": "https://www.gynecologie-medicale.com/",
+        "extra_urls": [
+            "https://gynecologie-medicale.com/feed",
+        ],
+    },
+
+    # ── Stomatologie / Chirurgie maxillo-faciale ──────────────────────────
+    {
+        "source": "sfscmf",
+        "label": "SFSCMF — Chirurgie Maxillo-Faciale",
+        "specialty": "stomatologie",
+        "homepage": "https://www.sfscmf.fr/",
+        "extra_urls": [
+            "https://sfscmf.fr/feed",
+        ],
+    },
+
+    # ── Biologie médicale / Microbiologie ─────────────────────────────────
+    {
+        "source": "sfm_micro",
+        "label": "SFM — Société Française de Microbiologie",
+        "specialty": "biologie",
+        "homepage": "https://www.sfm-microbiologie.org/",
+        "extra_urls": [
+            "https://sfm-microbiologie.org/feed",
+        ],
+    },
+
+    # ── Médecine d'urgence (2e tentative) ────────────────────────────────
+    {
+        "source": "sfmu",
+        "label": "SFMU — Médecine d'Urgence",
+        "specialty": "medecine-urgences",
+        "homepage": "https://www.sfmu.org/",
+        "extra_urls": [
+            "https://www.sfmu.org/feed",
+            "https://sfmu.org/fr/feed",
+        ],
+    },
+
+    # ── Pédiatrie (2e tentative) ──────────────────────────────────────────
+    {
+        "source": "sfpediatrie",
+        "label": "SFP — Société Française de Pédiatrie",
+        "specialty": "pediatrie",
+        "homepage": "https://www.sfpediatrie.com/",
+        "extra_urls": [
+            "https://sfpediatrie.com/feed",
+            "https://www.sfpediatrie.com/rss",
+        ],
+    },
+
+    # ── Néonatologie ──────────────────────────────────────────────────────
+    {
+        "source": "sfnn",
+        "label": "SFNN — Société Française de Néonatologie",
+        "specialty": "pediatrie",
+        "homepage": "https://www.sfnn.fr/",
+        "extra_urls": [
+            "https://sfnn.fr/feed",
+        ],
+    },
+
+    # ── Santé publique ────────────────────────────────────────────────────
+    {
+        "source": "sfsp",
+        "label": "SFSP — Société Française de Santé Publique",
+        "specialty": "sante-publique",
+        "homepage": "https://www.sfsp.fr/",
+        "extra_urls": [
+            "https://sfsp.fr/feed",
         ],
     },
 ]
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
-def test_url(url: str, timeout: int = 10) -> dict:
+def autodiscover_rss(homepage: str, timeout: int = 8) -> list[str]:
+    """
+    Récupère la homepage et cherche les balises RSS autodiscovery.
+    Retourne la liste des URLs de flux trouvées.
+    """
+    if not BS4_AVAILABLE:
+        return []
+    try:
+        resp = httpx.get(homepage, headers=HEADERS, timeout=timeout, follow_redirects=True)
+        if resp.status_code != 200:
+            return []
+        soup = BeautifulSoup(resp.text, "lxml")
+        feeds = []
+        # <link rel="alternate" type="application/rss+xml" href="...">
+        # <link rel="alternate" type="application/atom+xml" href="...">
+        for link in soup.find_all("link", rel="alternate"):
+            t = link.get("type", "")
+            if "rss" in t or "atom" in t:
+                href = link.get("href", "")
+                if href:
+                    feeds.append(urljoin(homepage, href))
+        # Also scan <a> tags mentioning RSS/feed
+        if not feeds:
+            for a in soup.find_all("a", href=True):
+                href = a["href"]
+                if re.search(r"/(rss|feed|atom)(\.xml)?$", href, re.I):
+                    feeds.append(urljoin(homepage, href))
+        return feeds
+    except Exception:
+        return []
+
+
+def test_feed_via_render(url: str, timeout: int = 15) -> dict:
+    """Valide un flux RSS via l'endpoint test-feed du serveur Render."""
     try:
         resp = httpx.post(
             f"{BASE_URL}/admin/sources/test-feed",
@@ -333,86 +548,123 @@ def test_url(url: str, timeout: int = 10) -> dict:
         )
         if resp.status_code == 200:
             data = resp.json()
-            if data.get("ok"):
+            if data.get("ok") and data.get("total_entries", 0) > 0:
                 return {
                     "status": "ok",
-                    "total_entries": data.get("total_entries", 0),
+                    "total_entries": data["total_entries"],
                     "feed_title": data.get("feed", {}).get("title", ""),
-                    "sample_titles": [s.get("title", "") for s in data.get("sample", [])[:2]],
+                    "sample": [s.get("title", "") for s in data.get("sample", [])[:2]],
                 }
-            else:
-                return {"status": "error", "error": data.get("error", "unknown")}
-        return {"status": "http_error", "code": resp.status_code}
+            return {"status": "empty_or_invalid"}
+        return {"status": f"http_{resp.status_code}"}
     except Exception as e:
-        return {"status": "exception", "error": str(e)}
+        return {"status": "exception", "error": str(e)[:60]}
 
+
+def find_working_feed(candidate: dict) -> tuple[str | None, dict | None]:
+    """
+    Cherche un flux RSS valide pour une société.
+    Ordre : autodiscovery → extra_urls → patterns génériques.
+    """
+    homepage = candidate["homepage"]
+    base = homepage.rstrip("/")
+
+    # 1. Autodiscovery
+    discovered = autodiscover_rss(homepage)
+    all_urls = discovered + candidate.get("extra_urls", [])
+
+    # 2. Patterns génériques
+    for pattern in ["/feed", "/rss", "/rss.xml", "/feed.xml",
+                    "/actualites/feed", "/actualites/rss.xml",
+                    "/news/feed", "/publications/feed"]:
+        all_urls.append(base + pattern)
+
+    # Dédoublonner en préservant l'ordre
+    seen = set()
+    unique_urls = []
+    for u in all_urls:
+        if u not in seen:
+            seen.add(u)
+            unique_urls.append(u)
+
+    for url in unique_urls:
+        result = test_feed_via_render(url)
+        time.sleep(0.4)
+        if result["status"] == "ok":
+            return url, result
+
+    return None, None
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 def main():
     print(f"\n{'='*70}")
     print("  SCAN RSS — SOCIÉTÉS SAVANTES MÉDICALES FRANÇAISES")
+    print(f"  {len(CANDIDATES)} sociétés • autodiscovery + patterns + validation Render")
     print(f"{'='*70}\n")
 
-    results = []
+    working = []
+    dead    = []
 
-    for candidate in CANDIDATES:
-        source = candidate["source"]
+    for i, candidate in enumerate(CANDIDATES, 1):
         label = candidate["label"]
-        found_url = None
-        found_result = None
+        print(f"[{i:02d}/{len(CANDIDATES)}] {label}")
 
-        print(f"  Testing {label}...")
+        url, result = find_working_feed(candidate)
 
-        for url in candidate["urls"]:
-            result = test_url(url)
-            time.sleep(0.3)  # éviter le rate-limit
-
-            if result["status"] == "ok" and result["total_entries"] > 0:
-                found_url = url
-                found_result = result
-                print(f"    ✅ {url} ({result['total_entries']} entries)")
-                break
-            else:
-                print(f"    ❌ {url} → {result.get('error') or result.get('status')}")
-
-        results.append({
-            "source": source,
-            "label": label,
-            "specialty": candidate["specialty"],
-            "url": found_url,
-            "entries": found_result["total_entries"] if found_result else 0,
-            "feed_title": found_result["feed_title"] if found_result else "",
-            "sample": found_result["sample_titles"] if found_result else [],
-        })
+        if url:
+            print(f"  ✅ {url}")
+            print(f"     → {result['total_entries']} articles | {result.get('feed_title','')}")
+            if result.get("sample"):
+                print(f"     ex: {result['sample'][0][:75]}")
+            working.append({
+                "source": candidate["source"],
+                "label": label,
+                "specialty": candidate["specialty"],
+                "homepage": candidate["homepage"],
+                "rss_url": url,
+                "total_entries": result["total_entries"],
+                "feed_title": result.get("feed_title", ""),
+                "sample": result.get("sample", []),
+            })
+        else:
+            print(f"  ❌ aucun flux RSS valide")
+            dead.append({
+                "source": candidate["source"],
+                "label": label,
+                "specialty": candidate["specialty"],
+                "homepage": candidate["homepage"],
+            })
         print()
 
     # ── Résumé ──────────────────────────────────────────────────────────
-    working = [r for r in results if r["url"]]
-    dead    = [r for r in results if not r["url"]]
-
     print(f"\n{'='*70}")
-    print(f"  RÉSULTAT : {len(working)}/{len(results)} sources avec RSS valide")
+    print(f"  RÉSULTAT FINAL : {len(working)}/{len(CANDIDATES)} sources avec RSS valide")
     print(f"{'='*70}\n")
 
     if working:
-        print("✅ SOURCES VALIDES :\n")
+        print("✅ À AJOUTER dans sources_pratique.py :\n")
         for r in working:
             print(f"  [{r['specialty']}] {r['label']}")
-            print(f"    url   : {r['url']}")
-            print(f"    entrées: {r['entries']}")
-            if r["sample"]:
-                print(f"    ex.   : {r['sample'][0][:80]}")
+            print(f"    source : {r['source']}")
+            print(f"    url    : {r['rss_url']}")
+            print(f"    entrées: {r['total_entries']}")
             print()
 
     if dead:
-        print("❌ SANS RSS :\n")
+        print("❌ PAS DE RSS :\n")
         for r in dead:
-            print(f"  [{r['specialty']}] {r['label']}")
+            print(f"  [{r['specialty']}] {r['label']}  ({r['homepage']})")
 
-    # ── Export JSON ──────────────────────────────────────────────────────
-    output_path = "scripts/societes_savantes_rss_results.json"
-    with open(output_path, "w", encoding="utf-8") as f:
+    # Export JSON
+    output = "scripts/societes_savantes_rss_results.json"
+    with open(output, "w", encoding="utf-8") as f:
         json.dump({"working": working, "dead": dead}, f, ensure_ascii=False, indent=2)
-    print(f"\n→ Résultats exportés dans {output_path}")
+    print(f"\n→ Résultats sauvegardés dans {output}")
+    print("  Colle le contenu de ce fichier pour que je mette à jour sources_pratique.py\n")
 
 
 if __name__ == "__main__":
