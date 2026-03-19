@@ -106,9 +106,14 @@
     html, body { font-size: 16px !important; --font-scale: 1 !important; }
   }
   @media (max-width: 480px) {
+    body { overflow-x: hidden; }
     header { padding: 0 12px; height: 48px; }
-    .content-area { padding: 12px 12px 80px; }
-    .article-card { padding: 12px 14px; }
+    .content-area { padding: 12px 12px 80px; overflow-x: hidden; max-width: 100vw; }
+    .article-card { padding: 12px 14px; max-width: 100%; box-sizing: border-box; word-break: break-word; }
+    .article-title { font-size: 0.95rem; line-height: 1.35; }
+    .rubrique-title { font-size: 1rem; }
+    .article-resume { font-size: 0.8rem; }
+    .detail-box li { font-size: 0.8rem; }
     .detail-box { padding: 10px 12px; }
     .detail-box li { padding-left: 10px; font-size: 0.82rem; }
     .filter-pill { padding: 4px 9px; font-size: 0.65rem; }
@@ -688,7 +693,7 @@ function mobileNavClick(section) {
     if (window.expandExplore) window.expandExplore();
     openFullPage('explorer');
   } else if (section === 'archives') {
-    if (DEMO_MODE) { window.top.location.href = '/signup'; return; }
+    if (DEMO_MODE) { try { window.top.location.href = '/signup'; } catch(e) { window.location.href = '/signup'; } return; }
     window.location.href = '/archives';
   } else if (section === 'compte') {
     openFullPage('compte');
@@ -1323,6 +1328,17 @@ async function selectExploreSpec(slug, el) {
   setActiveSidebar(el);
   activeSpecSlug = slug;
   activeAudience = 'SPEC_ONLY';
+  if (DEMO_MODE) {
+    // En démo, on affiche tous les articles (pas de filtrage par spé côté client)
+    allLoadedArticles = [...DEMO_ARTICLES];
+    totalArticles = allLoadedArticles.length;
+    renderGroupedArticles();
+    updateRubrique();
+    updateCounters();
+    closeFullPage('explorer');
+    closeDrawer();
+    return;
+  }
   await resetAndLoad();
 }
 
@@ -1579,6 +1595,20 @@ const DEMO_SPECIALTIES = [
   { slug: 'medecine-generale', name: 'Médecine générale' },
   { slug: 'chirurgie-orthopedique', name: 'Chirurgie orthopédique' },
   { slug: 'biologie-medicale', name: 'Biologie médicale' },
+  { slug: 'pediatrie', name: 'Pédiatrie' },
+  { slug: 'psychiatrie', name: 'Psychiatrie' },
+  { slug: 'gynecologie-obstetrique', name: 'Gynécologie-obstétrique' },
+  { slug: 'neurologie', name: 'Neurologie' },
+  { slug: 'gastro-enterologie', name: 'Gastro-entérologie' },
+  { slug: 'dermatologie', name: 'Dermatologie' },
+  { slug: 'endocrinologie', name: 'Endocrinologie' },
+  { slug: 'ophtalmologie', name: 'Ophtalmologie' },
+  { slug: 'oto-rhino-laryngologie', name: 'ORL' },
+  { slug: 'rhumatologie', name: 'Rhumatologie' },
+  { slug: 'pneumologie', name: 'Pneumologie' },
+  { slug: 'nephrologie', name: 'Néphrologie' },
+  { slug: 'radiologie', name: 'Radiologie' },
+  { slug: 'chirurgie-generale', name: 'Chirurgie générale' },
 ];
 
 function loadDemoData() {
