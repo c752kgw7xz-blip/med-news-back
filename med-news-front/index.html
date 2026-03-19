@@ -17,8 +17,8 @@
   --border:#2e2720;
   --border2:#3d3228;
   --text:#f0ece5;
-  --text2:#a89070;
-  --text3:#6b5542;
+  --text2:#d8c9a8;
+  --text3:#b09878;
   --mono:'DM Mono',monospace;
   --serif:'Instrument Serif',serif;
   --sans:'Outfit',sans-serif;
@@ -78,7 +78,7 @@ h1 em{font-style:italic;color:var(--text2)}
 
 /* ── SECTIONS ── */
 .section{padding:96px 32px;max-width:1200px;margin:0 auto}
-.section-tag{font-family:var(--mono);font-size:0.59rem;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px}
+.section-tag{font-family:var(--mono);font-size:0.68rem;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px}
 .section-title{font-family:var(--serif);font-size:clamp(28px,4vw,44px);color:var(--text);line-height:1.15;letter-spacing:-.3px;margin-bottom:16px}
 .section-sub{font-size:0.88rem;color:var(--text2);max-width:480px;line-height:1.7;margin-bottom:56px}
 
@@ -104,9 +104,9 @@ h1 em{font-style:italic;color:var(--text2)}
 .spec-section{padding:96px 0;overflow:hidden;border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border);background:var(--bg2)}
 .spec-inner{max-width:1200px;margin:0 auto;padding:0 32px}
 .spec-scroll{display:flex;gap:8px;flex-wrap:wrap;margin-top:40px}
-.spec-pill{font-size:0.71rem;padding:6px 14px;border-radius:20px;background:var(--bg3);border:0.5px solid var(--border2);color:var(--text2);white-space:nowrap;font-family:var(--sans);font-weight:400;transition:border-color .2s, color .2s, transform .2s}
-.spec-pill:hover{border-color:var(--text3);color:var(--text);transform:translateY(-2px)}
-.spec-pill.highlight{border-color:var(--text3);color:var(--text)}
+.spec-pill{font-size:0.71rem;padding:6px 14px;border-radius:20px;background:var(--bg3);border:0.5px solid var(--border2);color:var(--text);white-space:nowrap;font-family:var(--sans);font-weight:400;transition:border-color .2s, transform .2s}
+.spec-pill:hover{border-color:var(--text3);transform:translateY(-2px)}
+.spec-pill.highlight{border-color:var(--text3)}
 
 /* ── PRICING ── */
 .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -270,7 +270,7 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
 .phone-nav-item.active .phone-nav-label{color:#e8e9f4}
 
 /* Mobile section layout */
-.mobile-section{display:flex;align-items:center;gap:72px;padding:96px 32px;max-width:1200px;margin:0 auto}
+.mobile-section{display:flex;align-items:center;gap:48px;padding:96px 32px;max-width:1200px;margin:0 auto}
 .mobile-section-text{flex:1}
 .mobile-section-device{flex:0 0 auto;display:flex;justify-content:center}
 .mobile-bullets{display:flex;flex-direction:column;gap:18px;margin-top:32px}
@@ -371,7 +371,7 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
       <div class="stat-l">Articles analysés / mois</div>
     </div>
     <div class="stat-item">
-      <div class="stat-n">1<span style="font-size:20px;color:var(--text2);font-family:var(--sans)">er</span></div>
+      <div class="stat-n">1<span style="font-size:20px;color:var(--text);font-family:var(--sans)">er</span></div>
       <div class="stat-l">Du mois, dans votre boîte mail</div>
     </div>
   </div>
@@ -608,42 +608,42 @@ footer{border-top:0.5px solid var(--border);padding:32px 32px;display:flex;align
     <div class="section-tag reveal">Couverture</div>
     <div class="section-title reveal reveal-delay-1">36 spécialités médicales<br>et paramédicales</div>
     <div class="spec-scroll reveal reveal-delay-2">
-      <div class="spec-pill highlight">Médecine générale</div>
-      <div class="spec-pill highlight">Cardiologie</div>
-      <div class="spec-pill highlight">Pédiatrie</div>
-      <div class="spec-pill highlight">Psychiatrie</div>
-      <div class="spec-pill">Dermatologie</div>
-      <div class="spec-pill">Gynécologie</div>
-      <div class="spec-pill">Neurologie</div>
-      <div class="spec-pill">Pneumologie</div>
-      <div class="spec-pill">Gastro-entérologie</div>
-      <div class="spec-pill">Endocrinologie</div>
-      <div class="spec-pill">Rhumatologie</div>
-      <div class="spec-pill">Ophtalmologie</div>
-      <div class="spec-pill">ORL</div>
-      <div class="spec-pill">Urologie</div>
       <div class="spec-pill">Anesthésiologie</div>
-      <div class="spec-pill">Radiologie</div>
-      <div class="spec-pill">Médecine d'urgence</div>
-      <div class="spec-pill">Médecine interne</div>
+      <div class="spec-pill">Biologie médicale</div>
+      <div class="spec-pill">Cardiologie</div>
+      <div class="spec-pill">Chir. cardiaque</div>
+      <div class="spec-pill">Chir. orthopédique</div>
+      <div class="spec-pill">Chir. pédiatrique</div>
+      <div class="spec-pill">Chir. plastique</div>
+      <div class="spec-pill">Chir. thoracique</div>
+      <div class="spec-pill">Chir. vasculaire</div>
+      <div class="spec-pill">Dermatologie</div>
+      <div class="spec-pill">Endocrinologie</div>
+      <div class="spec-pill">Gastro-entérologie</div>
       <div class="spec-pill">Gériatrie</div>
-      <div class="spec-pill">Oncologie</div>
+      <div class="spec-pill">Gynécologie</div>
       <div class="spec-pill">Hématologie</div>
       <div class="spec-pill">Infectiologie</div>
-      <div class="spec-pill">Néphrologie</div>
-      <div class="spec-pill">Chir. orthopédique</div>
-      <div class="spec-pill">Chir. vasculaire</div>
-      <div class="spec-pill">Neurochirurgie</div>
-      <div class="spec-pill">Chir. cardiaque</div>
-      <div class="spec-pill">Pharmaciens</div>
       <div class="spec-pill">Infirmiers</div>
-      <div class="spec-pill">Sages-femmes</div>
       <div class="spec-pill">Kinésithérapie</div>
-      <div class="spec-pill">Biologie médicale</div>
-      <div class="spec-pill">Chir. thoracique</div>
-      <div class="spec-pill">Chir. plastique</div>
-      <div class="spec-pill">Chir. pédiatrique</div>
+      <div class="spec-pill">Médecine d'urgence</div>
+      <div class="spec-pill">Médecine générale</div>
+      <div class="spec-pill">Médecine interne</div>
       <div class="spec-pill">MPR</div>
+      <div class="spec-pill">Néphrologie</div>
+      <div class="spec-pill">Neurochirurgie</div>
+      <div class="spec-pill">Neurologie</div>
+      <div class="spec-pill">Oncologie</div>
+      <div class="spec-pill">Ophtalmologie</div>
+      <div class="spec-pill">ORL</div>
+      <div class="spec-pill">Pédiatrie</div>
+      <div class="spec-pill">Pharmaciens</div>
+      <div class="spec-pill">Pneumologie</div>
+      <div class="spec-pill">Psychiatrie</div>
+      <div class="spec-pill">Radiologie</div>
+      <div class="spec-pill">Rhumatologie</div>
+      <div class="spec-pill">Sages-femmes</div>
+      <div class="spec-pill">Urologie</div>
     </div>
   </div>
 </section>

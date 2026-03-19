@@ -227,9 +227,9 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
               color: var(--text5); }
 
 /* Catégories */
-.cat { font-family: 'DM Mono', monospace; font-size: 9px;
+.cat { font-family: 'DM Mono', monospace; font-size: 11px;
         letter-spacing: .5px; text-transform: uppercase;
-        padding: 2px 7px; border-radius: 2px; }
+        padding: 3px 9px; border-radius: 3px; font-weight: 500; }
 .cat-medicament       { background: rgba(160,123,224,.08); color: #a07be0;
                          border: 0.5px solid rgba(160,123,224,.25); }
 .cat-clinique         { background: rgba(107,159,212,.08); color: #6b9fd4;

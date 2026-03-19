@@ -119,17 +119,24 @@ function showError(msg) {
   successEl.style.display = 'none';
 }
 
-// Load specialties
-(async () => {
+// Load specialties with retry
+async function loadSpecialties(attempt = 1) {
   try {
     const res = await fetch(`${API}/specialties`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const specs = await res.json();
+    const sorted = [...specs].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
     specialtySelect.innerHTML = '<option value="">\u2014 Choisir une sp\u00e9cialit\u00e9 \u2014</option>'
-      + specs.map(s => `<option value="${s.slug}">${s.name}</option>`).join('');
+      + sorted.map(s => `<option value="${s.slug}">${s.name}</option>`).join('');
   } catch {
-    specialtySelect.innerHTML = '<option value="">Erreur de chargement</option>';
+    if (attempt < 3) {
+      setTimeout(() => loadSpecialties(attempt + 1), 1500 * attempt);
+    } else {
+      specialtySelect.innerHTML = '<option value="">Erreur de chargement — rechargez la page</option>';
+    }
   }
-})();
+}
+loadSpecialties();
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -168,9 +175,16 @@ form.addEventListener('submit', async (e) => {
     }
 
     form.style.display = 'none';
-    successEl.innerHTML = '<strong>Compte cr\u00e9\u00e9 !</strong> Redirection vers la connexion...';
+    successEl.innerHTML = `
+      <strong>✓ Compte créé avec succès !</strong>
+      <span style="display:block;margin-top:8px;line-height:1.6;">
+        Un email de validation vient de vous être envoyé.<br>
+        <strong>Cliquez sur le lien dans cet email pour activer votre compte.</strong><br>
+        <span style="color:#d4a017;font-weight:500;">⚠ Pensez à vérifier vos spams si vous ne le trouvez pas dans votre boîte principale.</span>
+      </span>
+      <a href="/login" style="display:inline-block;margin-top:14px;padding:8px 20px;background:var(--green);color:#fff;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82rem;">Aller à la connexion →</a>
+    `;
     successEl.style.display = 'block';
-    setTimeout(() => { window.location.href = '/login'; }, 1500);
   } catch (err) {
     showError('Erreur de connexion au serveur');
   } finally {
