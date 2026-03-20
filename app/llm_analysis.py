@@ -148,14 +148,11 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "cnsf":                 "recommandation",
     "sfbc":                 "recommandation",
     "fspf":                 "recommandation",
-    # Nouvelles sources institutionnelles — mars 2026
-    "has_ct":               "therapeutique",
-    "spf_beh":              "reglementaire",
-    "spf_maladies":         "reglementaire",
-    "inca":                 "recommandation",
-    "ameli_pro":            "reglementaire",
-    "andpc":                "formation",
-    "cnom":                 "reglementaire",
+    # Nouvelles sources institutionnelles — audit mars 2026
+    "has_ct":  "therapeutique",  # HAS CT — avis médicaments ✅ RSS p_3081449
+    "spf_beh": "reglementaire",  # SPF — articles (BEH inclus) ✅
+    "cnom":    "reglementaire",  # CNOM — déontologie ✅ RSS /rss.xml
+    # Retirées après audit : inca (pas de RSS), andpc (pas de RSS), ameli_pro (login)
 }
 
 
@@ -516,14 +513,10 @@ SOURCE_HINTS: dict[str, str] = {
     "cnsf":              "CNSF — Recommandation sages-femmes",
     "sfbc":              "SFBC — Recommandation biologie clinique et médicale",
     "fspf":              "FSPF — Actualités réglementaires pharmaciens d'officine",
-    # Nouvelles sources institutionnelles — mars 2026
-    "has_ct":       "HAS Commission de la Transparence — Avis remboursement médicament (ASMR/SMR)",
-    "spf_beh":      "BEH (Santé publique France) — Bulletin épidémiologique hebdomadaire, données surveillance",
-    "spf_maladies": "Santé publique France — Alerte maladies infectieuses, vaccination, épidémie",
-    "inca":         "INCa — Référentiel ou recommandation oncologie nationale (cancer)",
-    "ameli_pro":    "Ameli Pro (CNAM) — Remboursement, tarifs, protocoles ALD, convention médicale",
-    "andpc":        "ANDPC — Formation DPC obligatoire, accréditation, nouvelles obligations de formation",
-    "cnom":         "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
+    # Nouvelles sources institutionnelles — audit mars 2026
+    "has_ct":  "HAS Commission de la Transparence — Avis remboursement médicament (ASMR/SMR)",
+    "spf_beh": "Santé publique France — Article épidémiologique (BEH, alerte sanitaire, vaccination)",
+    "cnom":    "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
 }
 
 # ---------------------------------------------------------------------------
@@ -687,35 +680,25 @@ SOURCE_CONFIG: dict[str, dict] = {
         "require_whitelist": False,
         "min_llm_score": 4,
     },
-    # ── Santé publique France — épidémiologie et alertes sanitaires ───────
-    # Données pas toujours actionnables → seuil à 5 + score 1-3 = données statistiques seules
+    # ── Santé publique France (articles + BEH) ───────────────────────────
+    # RSS général SPF — données épidémio pas toujours actionnables directement
+    # Seuil 5 : seules les alertes sanitaires et changements de recommandation passent
     "spf_beh": {
         "require_whitelist": False,
         "min_llm_score": 5,
     },
-    "spf_maladies": {
-        "require_whitelist": False,
-        "min_llm_score": 5,
-    },
-    # ── Ameli Pro — remboursements, tarifs, ALD ───────────────────────────
-    # Volume moyen, bruit institutionnel → whitelist obligatoire + seuil 5
-    "ameli_pro": {
-        "require_whitelist": True,
-        "min_llm_score": 5,
-    },
-    # ── ANDPC — formation DPC ─────────────────────────────────────────────
-    # Fort volume de catalogues de stages → whitelist + seuil élevé
-    # Seules les actualités sur les OBLIGATIONS DPC méritent d'être conservées
-    "andpc": {
-        "require_whitelist": True,
-        "min_llm_score": 6,
-    },
     # ── CNOM — déontologie et exercice libéral ────────────────────────────
-    # Contenu institutionnel varié → whitelist + seuil 5
+    # Contenu institutionnel varié → whitelist médicale + seuil 5
+    # CGU CNOM autorisent RSS avec attribution ✅
     "cnom": {
         "require_whitelist": True,
         "min_llm_score": 5,
     },
+    # Sources retirées après audit mars 2026 :
+    # "ameli_pro" → login requis
+    # "andpc"     → pas de RSS, CGU restrictives
+    # "inca"      → pas de RSS, autorisation requise
+    # "spf_maladies" → fusionné dans spf_beh
 }
 
 _DEFAULT_SOURCE_CONFIG = {"require_whitelist": False, "min_llm_score": 5}
@@ -863,10 +846,9 @@ _DROP_TITLE_RES = [re.compile(p) for p in _DROP_TITLE_PATTERNS]
 # le filtre au moment de la COLLECTE (avant insert DB) pour garder la DB propre.
 # ---------------------------------------------------------------------------
 NOISY_SOURCES: frozenset[str] = frozenset({
-    "ameli_pro",   # Ameli Pro CNAM — tarifs, remboursement + bruit administratif
-    "cnom",        # Ordre des Médecins — déontologie + institutionnel
-    "andpc",       # ANDPC — DPC formation + catalogues de stages
-    "bo_social",   # BO ministères sociaux — beaucoup de circulaires hors santé
+    "cnom",      # Ordre des Médecins — déontologie + contenu institutionnel varié
+    "bo_social", # BO ministères sociaux — nombreuses circulaires hors santé
+    # ameli_pro et andpc retirés (plus de source active)
 })
 
 # Dispositifs médicaux non-médicamenteux — hors scope de tous les praticiens libéraux.

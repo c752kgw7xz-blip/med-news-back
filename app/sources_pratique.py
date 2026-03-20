@@ -47,11 +47,12 @@ HAS_FEEDS: list[dict] = [
         "audience": ["medecins"],
     },
     # Commission de la Transparence — décisions de remboursement (ASMR/SMR)
-    # Impact direct : médicaments remboursables, nouvelles inscriptions, radiations
-    # ⚠ À VALIDER : l'ID RSS de la CT HAS — vérifier sur
-    #   https://www.has-sante.fr/jcms/c_1771214/fr/nos-flux-d-information-rss
+    # RSS vérifié mars 2026 : ID p_3081449, feed "HAS - Avis sur les médicaments"
+    # Contenu confirmé : KISUNLA (donanémab), ZEMCELPRO, etc.
+    # ~500-800 avis/an — haute valeur prescripteurs + pharmaciens
+    # Légal : Licence Ouverte Etalab ✅
     {
-        "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081459",
+        "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081449",
         "label": "HAS — Commission de la Transparence (avis médicaments)",
         "source": "has_ct",
         "source_type": "therapeutique",
@@ -60,39 +61,21 @@ HAS_FEEDS: list[dict] = [
 ]
 
 # ---------------------------------------------------------------------------
-# INCa — Institut National du Cancer
+# Sources exclues après audit mars 2026
 # ---------------------------------------------------------------------------
-
-INCA_FEEDS: list[dict] = [
-    # Référentiels et recommandations oncologie — LA référence nationale cancer
-    # ⚠ À VALIDER : URL RSS e-cancer.fr — vérifier sur https://www.e-cancer.fr
-    {
-        "url": "https://www.e-cancer.fr/Actualites-et-evenements/Actualites/rss",
-        "label": "INCa — Actualités et référentiels oncologie",
-        "source": "inca",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "oncologie",
-    },
-]
-
-# ---------------------------------------------------------------------------
-# ANDPC — Agence Nationale du DPC (Formation continue obligatoire)
-# ---------------------------------------------------------------------------
-
-ANDPC_FEEDS: list[dict] = [
-    # Informations DPC : nouvelles obligations, accréditations, changements réglementaires
-    # NB : le catalogue de formations lui-même n'est pas un RSS utile —
-    #      on vise ici les actualités/modifications du cadre DPC
-    # ⚠ À VALIDER : URL RSS andpc.fr — vérifier sur https://www.andpc.fr
-    {
-        "url": "https://www.andpc.fr/rss",
-        "label": "ANDPC — Actualités DPC et formation continue",
-        "source": "andpc",
-        "source_type": "formation",
-        "audience": ["medecins"],
-    },
-]
+# INCa (cancer.fr) :
+#   ❌ Aucun RSS sur le site (cancer.fr ni e-cancer.fr)
+#   ❌ CGU : réutilisation requiert autorisation préalable
+#      → Contacter : servicejuridique@institutcancer.fr pour accord data
+#
+# ANDPC (agencedpc.fr) :
+#   ❌ Aucun RSS (404 sur /rss.xml et /feed)
+#   ❌ CGU : "reproduction numérique non autorisée" (L.335-2 CPI)
+#   ❌ Volume très faible (~3 articles/trimestre)
+#
+# Ces listes sont volontairement vides pour garder la trace de la décision.
+INCA_FEEDS: list[dict] = []
+ANDPC_FEEDS: list[dict] = []
 
 # ---------------------------------------------------------------------------
 # Académie Nationale de Médecine ✅

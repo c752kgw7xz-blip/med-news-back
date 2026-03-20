@@ -100,45 +100,38 @@ FEEDS: list[dict] = [
         "audience": ["medecins", "pharmaciens"],
     },
 
-    # ── Santé publique France — BEH + alertes sanitaires ─────────────────
-    # Source : https://www.santepubliquefrance.fr et https://beh.santepubliquefrance.fr
-    # Contient : épidémies en cours, données de surveillance, alertes sanitaires
-    # ⚠ À VALIDER : URL à vérifier sur https://beh.santepubliquefrance.fr
+    # ── Santé publique France — articles (BEH inclus) ────────────────────
+    # Source : https://www.santepubliquefrance.fr/flux-rss
+    # RSS vérifié : flux général des articles SPF (inclut BEH, alertes, épidémiologie)
+    # Note légale : SPF est un organisme public ; usage professionnel de veille
+    #               couvert par la Loi République Numérique (2016, données publiques).
+    #               CGU SPF mentionnent "usage personnel" pour RSS — à surveiller.
+    # Contenu : données surveillance, alertes sanitaires, épidémies, vaccination
+    # Filtre LLM : min_llm_score=5 — seules les alertes actionnables passent
     {
-        "url": "https://beh.santepubliquefrance.fr/feed/",
-        "label": "BEH — Bulletin Épidémiologique Hebdomadaire",
+        "url": "https://www.santepubliquefrance.fr/rss/types-de-documents/article.xml",
+        "label": "Santé publique France — Articles (BEH, alertes, épidémiologie)",
         "source": "spf_beh",
-        "audience": ["medecins"],
-    },
-    # ⚠ À VALIDER : feed principal SPF (alertes maladies infectieuses, vaccinations...)
-    {
-        "url": "https://www.santepubliquefrance.fr/content-pf/maladies-et-traumatismes/rss.xml",
-        "label": "Santé publique France — Maladies et traumatismes",
-        "source": "spf_maladies",
-        "audience": ["medecins"],
-    },
-
-    # ── Ameli Pro (CNAM) — remboursements, tarifs, ALD ───────────────────
-    # Source : https://www.ameli.fr/medecin
-    # Contient : nouveaux actes remboursés, tarifs, protocoles ALD, convention
-    # ⚠ À VALIDER : URL exacte du flux RSS ameli.fr pour médecins
-    {
-        "url": "https://www.ameli.fr/medecin/actualites/rss",
-        "label": "Ameli Pro (CNAM) — Actualités médecins",
-        "source": "ameli_pro",
         "audience": ["medecins"],
     },
 
     # ── Ordre National des Médecins (CNOM) — déontologie, exercice ───────
     # Source : https://www.conseil-national.medecin.fr
-    # Contient : actualités déontologiques, exercice libéral, réglementation
-    # ⚠ À VALIDER : URL exacte du flux RSS
+    # RSS vérifié actif (mars 2026) : /rss.xml — contenu récent confirmé
+    # CGU (section 3.3) : RSS explicitement autorisé avec attribution de la source
+    # Contenu : déontologie médicale, exercice libéral, réglementation professionnelle
+    # Filtre LLM : require_whitelist=True + min_llm_score=5 — élimine le bruit institutionnel
     {
         "url": "https://www.conseil-national.medecin.fr/rss.xml",
         "label": "CNOM — Ordre National des Médecins",
         "source": "cnom",
         "audience": ["medecins"],
     },
+
+    # ── Sources exclues après audit (mars 2026) ───────────────────────────
+    # ameli_pro : login requis pour accès aux données professionnelles
+    # inca      : aucun RSS ; réutilisation requiert autorisation préalable (servicejuridique@institutcancer.fr)
+    # andpc     : aucun RSS (404) ; réutilisation digitale non autorisée par les CGU
 
     # ── Sources pratiques — recommandations cliniques et bon usage ────────
     # Importées depuis app/sources_pratique.py
