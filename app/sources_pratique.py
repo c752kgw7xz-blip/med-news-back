@@ -11,12 +11,33 @@ source_type :
   'therapeutique'  → bon usage médicament, protocoles thérapeutiques
   'formation'      → DPC, accréditation, formations continues
 
-État des sources (mars 2026) — scanné via check_societes_savantes_rss.py + validation manuelle :
-  ✅ 34 sociétés savantes avec flux RSS valide
-  ❌ SFMG, Cardio-online, SRLF, SFD-dermato, SFO, SPILF, SFR, SFH — pas de RSS
-  ❌ SFRO — sfro.org ≠ SFRO française ; sfro.fr = site congrès sans RSS utile
-  ❌ ansm_bon_usage, sfc, sfp, sofcot — confirmés sans RSS
-  ❌ sfa-allergologie.org — site non fonctionnel
+Audit RSS complet — mars 2026 (vérifié URL par URL via browser) :
+  ✅ 34 sources avec flux RSS valide (voir SOCIETES_SAVANTES_FEEDS)
+  ✅ SFMU : URL corrigée → https://www.sfmu.org/full-rss.php
+
+  ❌ has_fiches_memo (p_3081544) — ID HAS invalide ; contenu inclus dans has_rbp
+  ❌ has_parcours (p_3081547)    — ID HAS invalide ; contenu inclus dans has_rbp
+
+  ❌ Sans RSS — specialties sans alternative connue (suivi manuel recommandé) :
+     SFH  (hématologie)        sfh.hematologie.net    — aucun flux, pas de lien RSS
+     SFR  (radiologie)         radiologie.fr          — aucun flux RSS détecté
+     SFO  (ophtalmologie)      sfo-online.fr/feed/    — 404
+     SFCV (chir. vasculaire)   vasculaire.com/feed/   — 404
+     SOFCPRE (chir. obésité)   sofcpre.fr/feed/       — 404
+     SOFMER (méd. physique)    sofmer.com/feed/       — 404
+     SFMV (méd. vasculaire)    sfmv.fr/feed/          — 404
+     SFPathol (anatomopathol.) sfpathol.org/feed/     — 404 (site custom)
+     SFSCMFCO (stomato/maxillo) sfscmfco.com/feed/    — 404
+     SFPédiatrie               sfpediatrie.com/feed/  — 404
+     SFNN (néonatalogie)       sfnn.com/feed/         — 404
+     SFSP (santé publique)     sfsp.fr/feed/          — 404
+     SFCP (chir. pédiatrique)  chirurgie-pediatrique.com/feed/ — 404
+     FFMKR (kinésithérapie)    ffmkr.org/feed/        — 404 (OUPS!)
+     CNSF (sage-femme)         college-sages-femmes.fr/feed/ — 404
+     SOFCOT (orthopédie)       sofcot.fr              — aucun RSS (vérifié sep. 2026)
+     SFDermato                 sfdermato.org          — aucun RSS (vérifié sep. 2026)
+
+  → Pour les spécialités sans RSS : voir STRATEGY_NO_RSS en bas de fichier.
 
 Note : les feeds de sociétés savantes contiennent aussi des annonces de congrès
 et actualités professionnelles. Le filtre LLM (min_llm_score=4) écarte le bruit.
@@ -29,23 +50,6 @@ from __future__ import annotations
 # ---------------------------------------------------------------------------
 
 HAS_FEEDS: list[dict] = [
-    # Fiches mémo — synthèses ultra-condensées, directement actionnables
-    # Publications peu fréquentes (mensuel à trimestriel)
-    {
-        "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081544",
-        "label": "HAS — Fiches mémo",
-        "source": "has_fiches_memo",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-    },
-    # Parcours de soins — guides d'organisation par pathologie
-    {
-        "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081547",
-        "label": "HAS — Parcours de soins",
-        "source": "has_parcours",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-    },
     # Commission de la Transparence — décisions de remboursement (ASMR/SMR)
     # RSS vérifié mars 2026 : ID p_3081449, feed "HAS - Avis sur les médicaments"
     # Contenu confirmé : KISUNLA (donanémab), ZEMCELPRO, etc.
@@ -58,6 +62,9 @@ HAS_FEEDS: list[dict] = [
         "source_type": "therapeutique",
         "audience": ["medecins", "pharmaciens"],
     },
+    # ❌ Fiches mémo (p_3081544) et Parcours de soins (p_3081547) :
+    #    IDs invalides → retournent <root>Invalid parameter</root>
+    #    Ces types de contenu sont inclus dans has_rbp (p_3081452, flux principal RBP)
 ]
 
 # ---------------------------------------------------------------------------
@@ -308,45 +315,10 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
         "specialty_hint": "infectiologie",
     },
 
-    # ── Chirurgie vasculaire ──────────────────────────────────────────────
-    {
-        "url": "https://www.vasculaire.com/feed/",
-        "label": "SCVE/SFCV — Société de Chirurgie Vasculaire et Endovasculaire",
-        "source": "sfcv",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "chirurgie-vasculaire",
-    },
-
-    # ── Proctologie ───────────────────────────────────────────────────────
-    {
-        "url": "https://sofcpre.fr/feed/",
-        "label": "SOFCPRE — Société Française et Francophone de Chirurgie de l'Obésité et des Maladies Métaboliques",
-        "source": "sofcpre",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "gastroenterologie",
-    },
-
-    # ── Médecine physique et réadaptation ─────────────────────────────────
-    {
-        "url": "https://www.sofmer.com/feed/",
-        "label": "SOFMER — Société Française de Médecine Physique et de Réadaptation",
-        "source": "sofmer",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "medecine-physique",
-    },
-
-    # ── Médecine vasculaire ───────────────────────────────────────────────
-    {
-        "url": "https://sfmv.fr/feed/",
-        "label": "SFMV — Société Française de Médecine Vasculaire",
-        "source": "sfmv",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "chirurgie-vasculaire",
-    },
+    # ❌ SFCV (vasculaire.com/feed/) — 404 mars 2026
+    # ❌ SOFCPRE (sofcpre.fr/feed/) — 404 mars 2026
+    # ❌ SOFMER (sofmer.com/feed/) — 404 mars 2026
+    # ❌ SFMV (sfmv.fr/feed/) — 404 mars 2026
 
     # ── Médecine du sport ─────────────────────────────────────────────────
     {
@@ -368,15 +340,7 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
         "specialty_hint": "medecine-interne",
     },
 
-    # ── Anatomie pathologique ─────────────────────────────────────────────
-    {
-        "url": "https://www.sfpathol.org/feed/",
-        "label": "SFP — Société Française de Pathologie",
-        "source": "sfpathol",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "medecine-interne",
-    },
+    # ❌ SFPathol (sfpathol.org/feed/) — 404 mars 2026 (page custom "introuvable")
 
     # ── Médecine nucléaire ────────────────────────────────────────────────
     {
@@ -388,19 +352,13 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
         "specialty_hint": "radiologie",
     },
 
-    # ── Stomatologie / Chirurgie maxillo-faciale ──────────────────────────
-    {
-        "url": "https://www.sfscmfco.com/feed/",
-        "label": "SFSCMFCO — Société Française de Stomatologie, Chirurgie Maxillo-Faciale et Chirurgie Orale",
-        "source": "sfscmfco",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "orl",
-    },
+    # ❌ SFSCMFCO (sfscmfco.com/feed/) — 404 mars 2026
 
     # ── Médecine d'urgence ────────────────────────────────────────────────
+    # URL corrigée mars 2026 : /feed/ renvoyait vers /fr/feed/ (erreur)
+    # URL valide découverte via page flux-rss du site
     {
-        "url": "https://www.sfmu.org/feed/",
+        "url": "https://www.sfmu.org/full-rss.php",
         "label": "SFMU — Société Française de Médecine d'Urgence",
         "source": "sfmu",
         "source_type": "recommandation",
@@ -408,35 +366,9 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
         "specialty_hint": "medecine-urgences",
     },
 
-    # ── Pédiatrie ─────────────────────────────────────────────────────────
-    {
-        "url": "https://www.sfpediatrie.com/feed/",
-        "label": "SFP — Société Française de Pédiatrie",
-        "source": "sfpediatrie",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "pediatrie",
-    },
-
-    # ── Néonatalogie ──────────────────────────────────────────────────────
-    {
-        "url": "https://www.societe-francaise-neonatalogie.com/feed/",
-        "label": "SFN — Société Française de Néonatalogie",
-        "source": "sfnn",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "pediatrie",
-    },
-
-    # ── Santé publique ────────────────────────────────────────────────────
-    {
-        "url": "https://www.sfsp.fr/feed/",
-        "label": "SFSP — Société Française de Santé Publique",
-        "source": "sfsp",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "medecine-generale",
-    },
+    # ❌ SFPédiatrie (sfpediatrie.com/feed/) — 404 mars 2026
+    # ❌ SFNN néonatalogie (sfnn/feed/) — 404 mars 2026
+    # ❌ SFSP santé publique (sfsp.fr/feed/) — 404 mars 2026
 
     # ── Dermatologie ──────────────────────────────────────────────────────
     # ❌ SFDermato (sfdermato.org) : aucun flux RSS disponible (vérifié mars 2026)
@@ -444,14 +376,7 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
     #    → Suivi manuel : https://www.sfdermato.org
 
     # ── Ophtalmologie ─────────────────────────────────────────────────────
-    {
-        "url": "https://www.sfo-online.fr/feed/",
-        "label": "SFO — Société Française d'Ophtalmologie",
-        "source": "sfo",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "ophtalmologie",
-    },
+    # ❌ SFO (sfo-online.fr/feed/) — 404 mars 2026
 
     # ── Oncologie ─────────────────────────────────────────────────────────
     {
@@ -464,49 +389,18 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
     },
 
     # ── Hématologie ───────────────────────────────────────────────────────
-    {
-        "url": "https://sfh.hematologie.net/feed/",
-        "label": "SFH — Société Française d'Hématologie",
-        "source": "sfh",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "hematologie",
-    },
+    # ❌ SFH (sfh.hematologie.net/feed/) — 404 mars 2026, aucun RSS sur homepage
 
     # ── Radiologie diagnostique ───────────────────────────────────────────
-    {
-        "url": "https://www.radiologie.fr/feed/",
-        "label": "SFR — Société Française de Radiologie",
-        "source": "sfr_radiologie",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "radiologie",
-    },
+    # ❌ SFR (radiologie.fr/feed/) — 404 mars 2026, aucun RSS sur radiologie.fr
 
     # ── Chirurgie orthopédique ────────────────────────────────────────────
     # ❌ SOFCOT (sofcot.fr) : aucun flux RSS disponible (vérifié mars 2026)
     #    /feed et 15+ patterns testés — pas de balise RSS dans le HTML
     #    → Suivi manuel : https://www.sofcot.fr/actualites
 
-    # ── Chirurgie plastique ───────────────────────────────────────────────
-    {
-        "url": "https://www.sofcpre.fr/feed/",
-        "label": "SOFCPRE — Société Française de Chirurgie Plastique Reconstructrice et Esthétique",
-        "source": "sofcpre_plastique",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "chirurgie-plastique",
-    },
-
-    # ── Chirurgie pédiatrique ─────────────────────────────────────────────
-    {
-        "url": "https://www.chirurgie-pediatrique.com/feed/",
-        "label": "SFCP — Société Française de Chirurgie Pédiatrique",
-        "source": "sfcp",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "chirurgie-pediatrique",
-    },
+    # ❌ SOFCPRE plastique (sofcpre.fr/feed/) — 404 mars 2026
+    # ❌ SFCP chirurgie pédiatrique (chirurgie-pediatrique.com/feed/) — 404 mars 2026
 
     # ── Infirmiers ────────────────────────────────────────────────────────
     {
@@ -518,25 +412,8 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
         "specialty_hint": "infirmiers",
     },
 
-    # ── Kinésithérapie ────────────────────────────────────────────────────
-    {
-        "url": "https://www.ffmkr.org/feed/",
-        "label": "FFMKR — Fédération Française des Masseurs Kinésithérapeutes Rééducateurs",
-        "source": "ffmkr",
-        "source_type": "recommandation",
-        "audience": ["paramedical"],
-        "specialty_hint": "kinesitherapie",
-    },
-
-    # ── Sage-femme ────────────────────────────────────────────────────────
-    {
-        "url": "https://www.college-sages-femmes.fr/feed/",
-        "label": "CNSF — Collège National des Sages-Femmes de France",
-        "source": "cnsf",
-        "source_type": "recommandation",
-        "audience": ["paramedical"],
-        "specialty_hint": "sage-femme",
-    },
+    # ❌ FFMKR kinésithérapie (ffmkr.org/feed/) — 404 mars 2026
+    # ❌ CNSF sage-femme (college-sages-femmes.fr/feed/) — 404 mars 2026
 
     # ── Biologie médicale ─────────────────────────────────────────────────
     {
@@ -570,3 +447,45 @@ ALL_PRATIQUE_FEEDS: list[dict] = (
     + ANDPC_FEEDS
     + SOCIETES_SAVANTES_FEEDS
 )
+
+
+# ---------------------------------------------------------------------------
+# STRATEGY_NO_RSS — plan d'action pour les spécialités sans flux RSS
+# ---------------------------------------------------------------------------
+#
+# 15 spécialités importantes n'ont pas de RSS fonctionnel (mars 2026).
+# Elles ne peuvent pas être ignorées. Voici les options par priorité :
+#
+# OPTION A — Surveillance de page web (HTML scraping ciblé)
+#   Implémenter un collecteur HTTP qui scrape la page "actualités/publications"
+#   de chaque société, extrait les nouveaux liens et les insère comme candidats.
+#   Avantages : couvre toutes les sociétés, pas de dépendance RSS
+#   Effort : ~2j dev pour un scraper générique + config par société
+#   Candidats prioritaires (haute valeur clinique) :
+#     • SFH  hématologie     → sfh.hematologie.net/nos-publications
+#     • SFR  radiologie      → radiologie.fr/actualites
+#     • SFO  ophtalmologie   → sfo-online.fr/recommandations
+#     • SFPédiatrie          → sfpediatrie.com/recommandations
+#     • SOFCOT orthopédie    → sofcot.fr/actualites
+#
+# OPTION B — Contact direct des sociétés savantes
+#   Demander l'activation d'un flux RSS ou l'accès à une API/newsletter.
+#   La plupart des sites sont sous WordPress ou Drupal → RSS natif désactivé.
+#   Délai : variable (semaines à mois)
+#   Action : envoyer un email type à chaque société (template disponible)
+#
+# OPTION C — Agrégateurs tiers existants
+#   Plusieurs flux agrégés couvrent la littérature médicale française :
+#   • SFMU propose déjà un agrégateur pour ses adhérents (revues + sites urgences)
+#   • Certaines spécialités publient leurs RBP via la HAS (has_rbp les couvre déjà)
+#   • Vidal Reco : https://www.vidal.fr (payant, API possible)
+#
+# OPTION D — Import manuel trimestriel
+#   Pour les spécialités à faible volume (<10 publications/an) :
+#   SOFCOT, SFSCMFCO, SFNN, SFCP → vérification manuelle tous les 3 mois
+#   via l'interface admin /admin/sources/import
+#
+# RECOMMANDATION IMMÉDIATE :
+#   Implémenter OPTION A pour SFH, SFR, SFO, SFPédiatrie (4 spécialités critiques)
+#   → Fichier à créer : app/web_scraper.py avec un collecteur générique
+#   → Configurer dans une nouvelle liste WEB_SCRAPER_SOURCES
