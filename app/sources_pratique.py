@@ -439,14 +439,9 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
     },
 
     # ── Dermatologie ──────────────────────────────────────────────────────
-    {
-        "url": "https://www.sfdermato.org/feed/",
-        "label": "SFDermato — Société Française de Dermatologie",
-        "source": "sfdermato",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "dermatologie",
-    },
+    # ❌ SFDermato (sfdermato.org) : aucun flux RSS disponible (vérifié mars 2026)
+    #    /feed, /rss, /rss.xml tous en 404 — pas de balise RSS dans le HTML
+    #    → Suivi manuel : https://www.sfdermato.org
 
     # ── Ophtalmologie ─────────────────────────────────────────────────────
     {
@@ -489,14 +484,9 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
     },
 
     # ── Chirurgie orthopédique ────────────────────────────────────────────
-    {
-        "url": "https://www.sofcot.fr/feed/",
-        "label": "SOFCOT — Société Française de Chirurgie Orthopédique et Traumatologique",
-        "source": "sofcot",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "chirurgie-orthopedique",
-    },
+    # ❌ SOFCOT (sofcot.fr) : aucun flux RSS disponible (vérifié mars 2026)
+    #    /feed et 15+ patterns testés — pas de balise RSS dans le HTML
+    #    → Suivi manuel : https://www.sofcot.fr/actualites
 
     # ── Chirurgie plastique ───────────────────────────────────────────────
     {
