@@ -408,6 +408,136 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
         "audience": ["medecins"],
         "specialty_hint": "medecine-generale",
     },
+
+    # ── Dermatologie ──────────────────────────────────────────────────────
+    {
+        "url": "https://www.sfdermato.org/feed/",
+        "label": "SFDermato — Société Française de Dermatologie",
+        "source": "sfdermato",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "dermatologie",
+    },
+
+    # ── Ophtalmologie ─────────────────────────────────────────────────────
+    {
+        "url": "https://www.sfo-online.fr/feed/",
+        "label": "SFO — Société Française d'Ophtalmologie",
+        "source": "sfo",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "ophtalmologie",
+    },
+
+    # ── Oncologie ─────────────────────────────────────────────────────────
+    {
+        "url": "https://www.afsos.org/feed/",
+        "label": "AFSOS — Association Francophone pour les Soins Oncologiques de Support",
+        "source": "afsos",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "oncologie",
+    },
+
+    # ── Hématologie ───────────────────────────────────────────────────────
+    {
+        "url": "https://sfh.hematologie.net/feed/",
+        "label": "SFH — Société Française d'Hématologie",
+        "source": "sfh",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "hematologie",
+    },
+
+    # ── Radiologie diagnostique ───────────────────────────────────────────
+    {
+        "url": "https://www.radiologie.fr/feed/",
+        "label": "SFR — Société Française de Radiologie",
+        "source": "sfr_radiologie",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "radiologie",
+    },
+
+    # ── Chirurgie orthopédique ────────────────────────────────────────────
+    {
+        "url": "https://www.sofcot.fr/feed/",
+        "label": "SOFCOT — Société Française de Chirurgie Orthopédique et Traumatologique",
+        "source": "sofcot",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "chirurgie-orthopedique",
+    },
+
+    # ── Chirurgie plastique ───────────────────────────────────────────────
+    {
+        "url": "https://www.sofcpre.fr/feed/",
+        "label": "SOFCPRE — Société Française de Chirurgie Plastique Reconstructrice et Esthétique",
+        "source": "sofcpre_plastique",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "chirurgie-plastique",
+    },
+
+    # ── Chirurgie pédiatrique ─────────────────────────────────────────────
+    {
+        "url": "https://www.chirurgie-pediatrique.com/feed/",
+        "label": "SFCP — Société Française de Chirurgie Pédiatrique",
+        "source": "sfcp",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "chirurgie-pediatrique",
+    },
+
+    # ── Infirmiers ────────────────────────────────────────────────────────
+    {
+        "url": "https://www.sniil.fr/feed/",
+        "label": "SNIIL — Syndicat National des Infirmières et Infirmiers Libéraux",
+        "source": "sniil",
+        "source_type": "recommandation",
+        "audience": ["paramedical"],
+        "specialty_hint": "infirmiers",
+    },
+
+    # ── Kinésithérapie ────────────────────────────────────────────────────
+    {
+        "url": "https://www.ffmkr.org/feed/",
+        "label": "FFMKR — Fédération Française des Masseurs Kinésithérapeutes Rééducateurs",
+        "source": "ffmkr",
+        "source_type": "recommandation",
+        "audience": ["paramedical"],
+        "specialty_hint": "kinesitherapie",
+    },
+
+    # ── Sage-femme ────────────────────────────────────────────────────────
+    {
+        "url": "https://www.college-sages-femmes.fr/feed/",
+        "label": "CNSF — Collège National des Sages-Femmes de France",
+        "source": "cnsf",
+        "source_type": "recommandation",
+        "audience": ["paramedical"],
+        "specialty_hint": "sage-femme",
+    },
+
+    # ── Biologie médicale ─────────────────────────────────────────────────
+    {
+        "url": "https://www.sfbc-asso.fr/feed/",
+        "label": "SFBC — Société Française de Biologie Clinique",
+        "source": "sfbc",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "biologiste",
+    },
+
+    # ── Pharmacie ─────────────────────────────────────────────────────────
+    {
+        "url": "https://www.fspf.fr/feed/",
+        "label": "FSPF — Fédération des Syndicats Pharmaceutiques de France",
+        "source": "fspf",
+        "source_type": "recommandation",
+        "audience": ["pharmacien"],
+        "specialty_hint": "pharmacien",
+    },
 ]
 
 # ---------------------------------------------------------------------------

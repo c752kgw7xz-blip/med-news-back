@@ -134,6 +134,20 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "sfpediatrie":          "recommandation",
     "sfnn":                 "recommandation",
     "sfsp":                 "recommandation",
+    # Nouvelles sources — spécialités manquantes
+    "sfdermato":            "recommandation",
+    "sfo":                  "recommandation",
+    "afsos":                "recommandation",
+    "sfh":                  "recommandation",
+    "sfr_radiologie":       "recommandation",
+    "sofcot":               "recommandation",
+    "sofcpre_plastique":    "recommandation",
+    "sfcp":                 "recommandation",
+    "sniil":                "recommandation",
+    "ffmkr":                "recommandation",
+    "cnsf":                 "recommandation",
+    "sfbc":                 "recommandation",
+    "fspf":                 "recommandation",
 }
 
 
@@ -481,6 +495,19 @@ SOURCE_HINTS: dict[str, str] = {
     "sfpediatrie":       "SFP — Recommandation pédiatrie",
     "sfnn":              "SFN — Recommandation néonatalogie",
     "sfsp":              "SFSP — Recommandation santé publique et prévention",
+    "sfdermato":         "SFDermato — Recommandation dermatologie",
+    "sfo":               "SFO — Recommandation ophtalmologie",
+    "afsos":             "AFSOS — Recommandation soins oncologiques de support",
+    "sfh":               "SFH — Recommandation hématologie",
+    "sfr_radiologie":    "SFR — Recommandation radiologie diagnostique et interventionnelle",
+    "sofcot":            "SOFCOT — Recommandation chirurgie orthopédique et traumatologique",
+    "sofcpre_plastique": "SOFCPRE — Recommandation chirurgie plastique reconstructrice et esthétique",
+    "sfcp":              "SFCP — Recommandation chirurgie pédiatrique",
+    "sniil":             "SNIIL — Recommandation et actualités infirmiers libéraux",
+    "ffmkr":             "FFMKR — Recommandation kinésithérapie et rééducation",
+    "cnsf":              "CNSF — Recommandation sages-femmes",
+    "sfbc":              "SFBC — Recommandation biologie clinique et médicale",
+    "fspf":              "FSPF — Actualités réglementaires pharmaciens d'officine",
 }
 
 # ---------------------------------------------------------------------------
@@ -633,6 +660,8 @@ SOURCE_CONFIG: dict[str, dict] = {
         "sfm_microbiologie", "sfcv", "sofcpre", "sofmer", "sfmv", "sfms",
         "sfalcoologie", "sfpathol", "sfmn", "sfscmfco", "sfmu",
         "sfpediatrie", "sfnn", "sfsp",
+        "sfdermato", "sfo", "afsos", "sfh", "sfr_radiologie", "sofcot",
+        "sofcpre_plastique", "sfcp", "sniil", "ffmkr", "cnsf", "sfbc", "fspf",
     ]},
 }
 
