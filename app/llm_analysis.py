@@ -744,6 +744,19 @@ _JORF_WHITELIST_PATTERNS = [
     r"(?i)\bcardiolog", r"(?i)\bneurolog", r"(?i)\bpédiatrie\b",
     r"(?i)\bmaternité\b", r"(?i)\bgrossesse\b", r"(?i)\baccouchement\b",
     r"(?i)\bdouleur\b", r"(?i)\banesthés",
+    # Épidémiologie / santé publique
+    # Nécessaires pour SPF, alertes sanitaires — termes absents de la whitelist JORF initiale
+    r"(?i)\bdépistage\b",                           # coloscopie post-dépistage, cancer...
+    r"(?i)\bépidémie\b",                            # alertes épidémiques
+    r"(?i)\bépidémiolog",                           # épidémiologie, épidémiologique
+    r"(?i)\bflambée\b",                             # flambée épidémique
+    r"(?i)\bmorbidité\b",
+    r"(?i)\bmortalité\b",
+    r"(?i)\bincidence\b",
+    r"(?i)\bprévalence\b",
+    r"(?i)\binfectieux\b", r"(?i)\binfectieuse\b",
+    r"(?i)\bfacteur(s)?\s+de\s+risque\b",
+    r"(?i)\bprogramme\s+(national|de\s+dépistage|de\s+vaccination|de\s+prévention)\b",
 ]
 _JORF_WHITELIST_RES = [re.compile(p) for p in _JORF_WHITELIST_PATTERNS]
 
