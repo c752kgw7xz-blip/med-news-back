@@ -148,6 +148,14 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "cnsf":                 "recommandation",
     "sfbc":                 "recommandation",
     "fspf":                 "recommandation",
+    # Nouvelles sources institutionnelles — mars 2026
+    "has_ct":               "therapeutique",
+    "spf_beh":              "reglementaire",
+    "spf_maladies":         "reglementaire",
+    "inca":                 "recommandation",
+    "ameli_pro":            "reglementaire",
+    "andpc":                "formation",
+    "cnom":                 "reglementaire",
 }
 
 
@@ -508,6 +516,14 @@ SOURCE_HINTS: dict[str, str] = {
     "cnsf":              "CNSF — Recommandation sages-femmes",
     "sfbc":              "SFBC — Recommandation biologie clinique et médicale",
     "fspf":              "FSPF — Actualités réglementaires pharmaciens d'officine",
+    # Nouvelles sources institutionnelles — mars 2026
+    "has_ct":       "HAS Commission de la Transparence — Avis remboursement médicament (ASMR/SMR)",
+    "spf_beh":      "BEH (Santé publique France) — Bulletin épidémiologique hebdomadaire, données surveillance",
+    "spf_maladies": "Santé publique France — Alerte maladies infectieuses, vaccination, épidémie",
+    "inca":         "INCa — Référentiel ou recommandation oncologie nationale (cancer)",
+    "ameli_pro":    "Ameli Pro (CNAM) — Remboursement, tarifs, protocoles ALD, convention médicale",
+    "andpc":        "ANDPC — Formation DPC obligatoire, accréditation, nouvelles obligations de formation",
+    "cnom":         "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
 }
 
 # ---------------------------------------------------------------------------
@@ -662,7 +678,44 @@ SOURCE_CONFIG: dict[str, dict] = {
         "sfpediatrie", "sfnn", "sfsp",
         "sfdermato", "sfo", "afsos", "sfh", "sfr_radiologie", "sofcot",
         "sofcpre_plastique", "sfcp", "sniil", "ffmkr", "cnsf", "sfbc", "fspf",
+        # INCa — recommandations oncologie haute qualité
+        "inca",
     ]},
+    # ── HAS Commission Transparence — avis médicaments remboursables ──────
+    # Faible volume, haute valeur : chaque avis impacte directement les prescriptions
+    "has_ct": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    # ── Santé publique France — épidémiologie et alertes sanitaires ───────
+    # Données pas toujours actionnables → seuil à 5 + score 1-3 = données statistiques seules
+    "spf_beh": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    "spf_maladies": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    # ── Ameli Pro — remboursements, tarifs, ALD ───────────────────────────
+    # Volume moyen, bruit institutionnel → whitelist obligatoire + seuil 5
+    "ameli_pro": {
+        "require_whitelist": True,
+        "min_llm_score": 5,
+    },
+    # ── ANDPC — formation DPC ─────────────────────────────────────────────
+    # Fort volume de catalogues de stages → whitelist + seuil élevé
+    # Seules les actualités sur les OBLIGATIONS DPC méritent d'être conservées
+    "andpc": {
+        "require_whitelist": True,
+        "min_llm_score": 6,
+    },
+    # ── CNOM — déontologie et exercice libéral ────────────────────────────
+    # Contenu institutionnel varié → whitelist + seuil 5
+    "cnom": {
+        "require_whitelist": True,
+        "min_llm_score": 5,
+    },
 }
 
 _DEFAULT_SOURCE_CONFIG = {"require_whitelist": False, "min_llm_score": 5}
@@ -770,8 +823,51 @@ _DROP_TITLE_PATTERNS = [
     r"(?i)commissaire du gouvernement",
     r"(?i)contrôleur général",
     r"(?i)radiation des cadres",
+    # ── Événements / Congrès / Appels (toutes sources) ──────────────────────
+    # Ces titres n'apportent aucune info clinique actionnable
+    r"(?i)\bappel\s+[àa]\s+candidature(s)?\b",
+    r"(?i)\bappel\s+[àa]\s+(communication|abstract)(s)?\b",
+    r"(?i)\boffre\s+d[e']\s*(emploi|poste)\b",
+    r"(?i)\brecrutement\b",
+    r"(?i)\bposte\s+(ouvert|[àa]\s+pourvoir)\b",
+    r"(?i)\bfelicitation(s)?\b",
+    r"(?i)\bfélicitation(s)?\b",
+    r"(?i)\bprix\s+(de\s+(thèse|recherche|la\s+société)|annuel)\b",
+    r"(?i)\bdistinction(s)?\s+honorifique(s)?\b",
+    r"(?i)\bin\s+memoriam\b",
+    r"(?i)\bnécrolog",
+    r"(?i)\bnouveau(x)?\s+(président|bureau|conseil)\b",
+    r"(?i)\bélection\s+du\s+(président|bureau|conseil)\b",
+    r"(?i)\brésultats?\s+(de\s+l.élection|du\s+vote|du\s+scrutin)\b",
+    r"(?i)\bvotre\s+inscription\b",
+    r"(?i)\bprogramme\s+(définitif|complet|détaillé)\b",
+    r"(?i)\bsave\s+the\s+date\b",
+    r"(?i)\bj-\d+\s+(avant|pour)\b",                # J-30 avant le congrès
+    r"(?i)\binscription(s)?\s+(ouvertes?|disponibles?|en\s+ligne)\b",
+    r"(?i)\bformulaire\s+d.inscription\b",
+    # ── Presse / Communiqués institutionnels sans contenu clinique ───────────
+    r"(?i)\bcommuniqu[eé]\s+de\s+presse\b",
+    r"(?i)\bconférence\s+de\s+presse\b",
+    r"(?i)\boutcomes?\s+médiatiques?\b",
+    r"(?i)\brevue\s+de\s+presse\b",
+    # ── Finance / Gestion interne sociétés savantes ──────────────────────────
+    r"(?i)\bcompte\s+rendu\s+(de\s+)?d[']?assembl[eé]e\s+g[eé]n[eé]rale\b",
+    r"(?i)\brapport\s+moral\b",
+    r"(?i)\brapport\s+financier\b",
 ]
 _DROP_TITLE_RES = [re.compile(p) for p in _DROP_TITLE_PATTERNS]
+
+# ---------------------------------------------------------------------------
+# Sources à fort volume ou bruit institutionnel — whitelist médicale obligatoire
+# En plus de require_whitelist dans SOURCE_CONFIG, ce set permet d'appliquer
+# le filtre au moment de la COLLECTE (avant insert DB) pour garder la DB propre.
+# ---------------------------------------------------------------------------
+NOISY_SOURCES: frozenset[str] = frozenset({
+    "ameli_pro",   # Ameli Pro CNAM — tarifs, remboursement + bruit administratif
+    "cnom",        # Ordre des Médecins — déontologie + institutionnel
+    "andpc",       # ANDPC — DPC formation + catalogues de stages
+    "bo_social",   # BO ministères sociaux — beaucoup de circulaires hors santé
+})
 
 # Dispositifs médicaux non-médicamenteux — hors scope de tous les praticiens libéraux.
 # NB : prothèses, implants, robots chirurgicaux, instruments de bloc sont CONSERVÉS

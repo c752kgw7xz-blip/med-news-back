@@ -46,6 +46,52 @@ HAS_FEEDS: list[dict] = [
         "source_type": "recommandation",
         "audience": ["medecins"],
     },
+    # Commission de la Transparence — décisions de remboursement (ASMR/SMR)
+    # Impact direct : médicaments remboursables, nouvelles inscriptions, radiations
+    # ⚠ À VALIDER : l'ID RSS de la CT HAS — vérifier sur
+    #   https://www.has-sante.fr/jcms/c_1771214/fr/nos-flux-d-information-rss
+    {
+        "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081459",
+        "label": "HAS — Commission de la Transparence (avis médicaments)",
+        "source": "has_ct",
+        "source_type": "therapeutique",
+        "audience": ["medecins", "pharmaciens"],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# INCa — Institut National du Cancer
+# ---------------------------------------------------------------------------
+
+INCA_FEEDS: list[dict] = [
+    # Référentiels et recommandations oncologie — LA référence nationale cancer
+    # ⚠ À VALIDER : URL RSS e-cancer.fr — vérifier sur https://www.e-cancer.fr
+    {
+        "url": "https://www.e-cancer.fr/Actualites-et-evenements/Actualites/rss",
+        "label": "INCa — Actualités et référentiels oncologie",
+        "source": "inca",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "oncologie",
+    },
+]
+
+# ---------------------------------------------------------------------------
+# ANDPC — Agence Nationale du DPC (Formation continue obligatoire)
+# ---------------------------------------------------------------------------
+
+ANDPC_FEEDS: list[dict] = [
+    # Informations DPC : nouvelles obligations, accréditations, changements réglementaires
+    # NB : le catalogue de formations lui-même n'est pas un RSS utile —
+    #      on vise ici les actualités/modifications du cadre DPC
+    # ⚠ À VALIDER : URL RSS andpc.fr — vérifier sur https://www.andpc.fr
+    {
+        "url": "https://www.andpc.fr/rss",
+        "label": "ANDPC — Actualités DPC et formation continue",
+        "source": "andpc",
+        "source_type": "formation",
+        "audience": ["medecins"],
+    },
 ]
 
 # ---------------------------------------------------------------------------
@@ -547,5 +593,7 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
 ALL_PRATIQUE_FEEDS: list[dict] = (
     HAS_FEEDS
     + ACADEMIE_FEEDS
+    + INCA_FEEDS
+    + ANDPC_FEEDS
     + SOCIETES_SAVANTES_FEEDS
 )

@@ -31,6 +31,7 @@ import httpx
 
 from app.collector_utils import build_candidate_row, insert_candidate
 from app.db import get_conn
+from app.llm_analysis import pre_filter_candidate, NOISY_SOURCES, _passes_jorf_whitelist
 from app.sources_pratique import ALL_PRATIQUE_FEEDS
 
 logger = logging.getLogger(__name__)
@@ -97,6 +98,46 @@ FEEDS: list[dict] = [
         "label": "Bulletins officiels ministères sociaux",
         "source": "bo_social",
         "audience": ["medecins", "pharmaciens"],
+    },
+
+    # ── Santé publique France — BEH + alertes sanitaires ─────────────────
+    # Source : https://www.santepubliquefrance.fr et https://beh.santepubliquefrance.fr
+    # Contient : épidémies en cours, données de surveillance, alertes sanitaires
+    # ⚠ À VALIDER : URL à vérifier sur https://beh.santepubliquefrance.fr
+    {
+        "url": "https://beh.santepubliquefrance.fr/feed/",
+        "label": "BEH — Bulletin Épidémiologique Hebdomadaire",
+        "source": "spf_beh",
+        "audience": ["medecins"],
+    },
+    # ⚠ À VALIDER : feed principal SPF (alertes maladies infectieuses, vaccinations...)
+    {
+        "url": "https://www.santepubliquefrance.fr/content-pf/maladies-et-traumatismes/rss.xml",
+        "label": "Santé publique France — Maladies et traumatismes",
+        "source": "spf_maladies",
+        "audience": ["medecins"],
+    },
+
+    # ── Ameli Pro (CNAM) — remboursements, tarifs, ALD ───────────────────
+    # Source : https://www.ameli.fr/medecin
+    # Contient : nouveaux actes remboursés, tarifs, protocoles ALD, convention
+    # ⚠ À VALIDER : URL exacte du flux RSS ameli.fr pour médecins
+    {
+        "url": "https://www.ameli.fr/medecin/actualites/rss",
+        "label": "Ameli Pro (CNAM) — Actualités médecins",
+        "source": "ameli_pro",
+        "audience": ["medecins"],
+    },
+
+    # ── Ordre National des Médecins (CNOM) — déontologie, exercice ───────
+    # Source : https://www.conseil-national.medecin.fr
+    # Contient : actualités déontologiques, exercice libéral, réglementation
+    # ⚠ À VALIDER : URL exacte du flux RSS
+    {
+        "url": "https://www.conseil-national.medecin.fr/rss.xml",
+        "label": "CNOM — Ordre National des Médecins",
+        "source": "cnom",
+        "audience": ["medecins"],
     },
 
     # ── Sources pratiques — recommandations cliniques et bon usage ────────
@@ -230,6 +271,19 @@ def collect_feed(feed_config: dict, days: int = 35) -> dict[str, int]:
                 summary   = _entry_summary(entry)
 
                 if not entry_url:
+                    skipped += 1
+                    continue
+
+                # ── Pré-filtre heuristique (0 appel LLM) ─────────────────────
+                # 1. Filtre générique : nominations, événements, congrès...
+                keep, drop_reason = pre_filter_candidate(title, source=source)
+                if not keep:
+                    logger.debug("[%s] pre_filter DROP '%s' (%s)", source, title[:60], drop_reason)
+                    skipped += 1
+                    continue
+                # 2. Filtre whitelist médicale pour les sources bruyantes
+                if source in NOISY_SOURCES and not _passes_jorf_whitelist(title):
+                    logger.debug("[%s] noisy_source DROP '%s'", source, title[:60])
                     skipped += 1
                     continue
 
