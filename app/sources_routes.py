@@ -10,6 +10,7 @@ POST /admin/sources/collect/kali
 POST /admin/sources/collect/has
 POST /admin/sources/collect/ansm
 POST /admin/sources/collect/spf
+POST /admin/sources/collect/web       ← scraper HTML (SFH, SFR, SFO, SFPédiatrie, SOFCOT)
 POST /admin/sources/collect/all       ← tout en une fois
 
 POST /admin/sources/test-feed?url=…   ← tester un flux RSS manuellement
@@ -206,6 +207,30 @@ def collect_spf(request: Request, days: int = Query(default=35, ge=1, le=365)):
     try:
         from app.rss_collector import collect_spf as _collect
         return {"ok": True, "source": "spf", "results": _collect(days=days)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/collect/web")
+def collect_web(request: Request):
+    """
+    Lance le scraping HTML des sociétés savantes sans flux RSS :
+    SFH (hématologie), SFR (radiologie), SFO (ophtalmologie),
+    SFPédiatrie, SOFCOT (orthopédie).
+    Volume faible — pas de paramètre days (pas de date sur les pages).
+    """
+    _require_admin(request)
+    try:
+        from app.web_scraper import scrape_all_web
+        results = scrape_all_web()
+        total_inserted = sum(r.get("inserted", 0) for r in results.values() if isinstance(r, dict))
+        total_errors = sum(1 for r in results.values() if isinstance(r, dict) and "error" in r)
+        return {
+            "ok": True,
+            "total_inserted": total_inserted,
+            "total_errors": total_errors,
+            "results": results,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

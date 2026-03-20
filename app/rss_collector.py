@@ -33,6 +33,7 @@ from app.collector_utils import build_candidate_row, insert_candidate
 from app.db import get_conn
 from app.llm_analysis import pre_filter_candidate, NOISY_SOURCES, _passes_jorf_whitelist
 from app.sources_pratique import ALL_PRATIQUE_FEEDS
+from app.web_scraper import scrape_all_web
 
 logger = logging.getLogger(__name__)
 
@@ -363,15 +364,25 @@ def collect_spf(days: int = 35) -> dict[str, Any]:
 
 def collect_pratique(days: int = 90) -> dict[str, Any]:
     """
-    Collecte uniquement les sources pratiques médicales (recommandations,
-    bon usage, sociétés savantes, académie de médecine).
+    Collecte les sources pratiques médicales :
+    - Flux RSS : recommandations, bon usage, sociétés savantes (ALL_PRATIQUE_FEEDS)
+    - Scraping HTML : sociétés sans RSS (SFH, SFR, SFO, SFPédiatrie, SOFCOT)
+
     Par défaut days=90 pour capturer l'historique récent des nouveaux feeds.
+    Le scraping HTML n'utilise pas le paramètre days (pas de date dans les pages).
     """
     results: dict[str, Any] = {}
+
+    # ── Flux RSS ─────────────────────────────────────────────────────────
     for feed in ALL_PRATIQUE_FEEDS:
         try:
             results[feed["source"]] = collect_feed(feed, days=days)
         except Exception as e:
             logger.error("[%s] erreur : %s", feed["source"], e)
             results[feed["source"]] = {"error": str(e)}
+
+    # ── Scraping HTML (sociétés sans RSS) ─────────────────────────────────
+    web_results = scrape_all_web()
+    results.update(web_results)
+
     return results
