@@ -48,8 +48,14 @@ CANDIDATES = [
         "specialty": "medecine-generale",
         "homepage": "https://www.sfmg.org/",
         "extra_urls": [
+            # Old URL known to exist — try HTTP (site may not redirect)
             "http://www.sfmg.org/rss/actualites_2-4-5-10-14-18.xml",
-            "https://www.sfmg.org/rss/actualites.xml",
+            "http://www.sfmg.org/rss/actualites_2-4-5.xml",
+            "http://www.sfmg.org/rss/actualites.xml",
+            "https://www.sfmg.org/rss/actualites_2-4-5-10-14-18.xml",
+            # SPIP patterns (sfmg.org looks like SPIP)
+            "http://www.sfmg.org/?page=backend",
+            "http://www.sfmg.org/spip.php?page=backend",
         ],
     },
     {
@@ -99,7 +105,13 @@ CANDIDATES = [
         "label": "SRLF — Réanimation",
         "specialty": "reanimation",
         "homepage": "https://www.srlf.org/",
-        "extra_urls": [],
+        "extra_urls": [
+            "https://www.srlf.org/rss.xml",
+            "https://www.srlf.org/actualites/rss",
+            "https://www.srlf.org/theme/actualites?format=feed&type=rss",
+            "https://srlf.org/?page=backend",
+            "https://srlf.org/spip.php?page=backend",
+        ],
     },
 
     # ── Neurologie / Psychiatrie ──────────────────────────────────────────
@@ -194,7 +206,14 @@ CANDIDATES = [
         "specialty": "dermatologie",
         "homepage": "https://www.sfdermato.org/",
         "extra_urls": [
+            "https://dermato-info.fr/feed/",
             "https://dermato-info.fr/feed",
+            "https://www.dermato-info.fr/feed/",
+            # sfdermato.org uses a custom CMS — try SPIP & TYPO3
+            "https://www.sfdermato.org/spip.php?page=backend",
+            "https://www.sfdermato.org/?page=backend",
+            "https://www.sfdermato.org/index.php?type=9818",
+            "https://www.sfdermato.org/rss.xml",
         ],
     },
 
@@ -205,7 +224,15 @@ CANDIDATES = [
         "specialty": "ophtalmologie",
         "homepage": "https://www.sfo-online.fr/",
         "extra_urls": [
+            "https://www.sfo.asso.fr/feed/",
             "https://www.sfo.asso.fr/feed",
+            "https://sfo.asso.fr/feed/",
+            # sfo-online.fr semble être TYPO3 ou Drupal
+            "https://www.sfo-online.fr/rss.xml",
+            "https://www.sfo-online.fr/?type=9818",
+            "https://www.sfo-online.fr/index.php?type=9818",
+            "https://www.sfo-online.fr/?page=backend",
+            "https://www.sfo-online.fr/actualites/?type=9818",
         ],
     },
 
@@ -236,7 +263,13 @@ CANDIDATES = [
         "specialty": "infectiologie",
         "homepage": "https://www.infectiologie.com/",
         "extra_urls": [
-            "https://www.infectiologie.com/UserFiles/File/rss/rss.xml",
+            # infectiologie.com est un vieux site SPIP — patterns spécifiques
+            "https://www.infectiologie.com/spip.php?page=backend",
+            "https://www.infectiologie.com/?page=backend",
+            "http://www.infectiologie.com/spip.php?page=backend",
+            "http://www.infectiologie.com/?page=backend",
+            "https://www.infectiologie.com/rss.xml",
+            "https://www.infectiologie.com/fr/actualites.html?format=feed&type=rss",
         ],
     },
 
@@ -256,7 +289,13 @@ CANDIDATES = [
         "specialty": "radiologie",
         "homepage": "https://www.radiologie.fr/",
         "extra_urls": [
+            "https://www.sfrnet.org/feed/",
             "https://www.sfrnet.org/feed",
+            "https://www.sfrnet.org/rss.xml",
+            "https://www.radiologie.fr/rss.xml",
+            "https://www.radiologie.fr/?type=9818",
+            "https://www.radiologie.fr/spip.php?page=backend",
+            "https://www.radiologie.fr/actualites/?type=9818",
         ],
     },
 
@@ -266,7 +305,14 @@ CANDIDATES = [
         "label": "SFH — Hématologie",
         "specialty": "hematologie",
         "homepage": "https://sfh.hematologie.net/",
-        "extra_urls": [],
+        "extra_urls": [
+            "https://sfh.hematologie.net/spip.php?page=backend",
+            "https://sfh.hematologie.net/?page=backend",
+            "http://sfh.hematologie.net/spip.php?page=backend",
+            "https://sfh.hematologie.net/rss.xml",
+            "https://www.hematologie.net/feed/",
+            "https://sfh.hematologie.net/index.php?type=9818",
+        ],
     },
 
     # ── Oncologie médicale ────────────────────────────────────────────────
@@ -275,7 +321,12 @@ CANDIDATES = [
         "label": "SFRO — Radiothérapie oncologique",
         "specialty": "oncologie",
         "homepage": "https://www.sfro.fr/",
-        "extra_urls": [],
+        "extra_urls": [
+            "https://www.sfro.fr/spip.php?page=backend",
+            "https://www.sfro.fr/?page=backend",
+            "https://www.sfro.fr/rss.xml",
+            "https://www.sfro.fr/?type=9818",
+        ],
     },
     {
         "source": "ffcd",
@@ -564,24 +615,83 @@ def test_feed_via_render(url: str, timeout: int = 15) -> dict:
 def find_working_feed(candidate: dict) -> tuple[str | None, dict | None]:
     """
     Cherche un flux RSS valide pour une société.
-    Ordre : autodiscovery → extra_urls → patterns génériques.
+    Ordre : autodiscovery → extra_urls → patterns WordPress → patterns CMS français.
     """
     homepage = candidate["homepage"]
     base = homepage.rstrip("/")
 
-    # 1. Autodiscovery
-    discovered = autodiscover_rss(homepage)
-    all_urls = discovered + candidate.get("extra_urls", [])
+    # HTTP fallback pour les vieux sites qui ne redirigent pas
+    base_http = base.replace("https://", "http://")
 
-    # 2. Patterns génériques
-    for pattern in ["/feed", "/rss", "/rss.xml", "/feed.xml",
-                    "/actualites/feed", "/actualites/rss.xml",
-                    "/news/feed", "/publications/feed"]:
-        all_urls.append(base + pattern)
+    # 1. Autodiscovery HTML
+    discovered = autodiscover_rss(homepage)
+    all_urls = list(discovered) + candidate.get("extra_urls", [])
+
+    # 2. Patterns WordPress (les plus courants)
+    wp_patterns = [
+        "/feed/", "/feed", "/rss/", "/rss", "/rss.xml", "/feed.xml",
+        "/wp-json/wp/v2/posts?per_page=10",  # REST API comme fallback
+        "/actualites/feed/", "/news/feed/", "/publications/feed/",
+        "/recommandations/feed/", "/fr/feed/", "/fr/rss/",
+    ]
+    for p in wp_patterns:
+        all_urls.append(base + p)
+
+    # 3. SPIP — CMS français très répandu dans les assoc médicales
+    # URL: /?page=backend ou /spip.php?page=backend
+    spip_patterns = [
+        "/?page=backend",
+        "/spip.php?page=backend",
+        "/fr/?page=backend",
+        "/fr/spip.php?page=backend",
+    ]
+    for p in spip_patterns:
+        all_urls.append(base + p)
+
+    # 4. TYPO3 — utilisé par certaines sociétés savantes
+    typo3_patterns = [
+        "/?type=9818",
+        "/index.php?type=9818",
+        "/actualites/?type=9818",
+        "/news/?type=9818",
+    ]
+    for p in typo3_patterns:
+        all_urls.append(base + p)
+
+    # 5. Joomla
+    joomla_patterns = [
+        "/?format=feed&type=rss",
+        "/index.php?format=feed&type=rss",
+        "/?option=com_content&format=feed&type=rss",
+    ]
+    for p in joomla_patterns:
+        all_urls.append(base + p)
+
+    # 6. Drupal
+    drupal_patterns = [
+        "/rss.xml",
+        "/node/feed",
+        "/front/feed",
+        "/actualites/feed",
+    ]
+    for p in drupal_patterns:
+        all_urls.append(base + p)
+
+    # 7. HTTP fallback (vieux sites sans HTTPS ou sans redirection)
+    http_patterns = ["/feed/", "/rss.xml", "/?page=backend", "/?type=9818"]
+    for p in http_patterns:
+        all_urls.append(base_http + p)
+
+    # 8. Sous-domaines alternatifs courants
+    parsed = homepage.split("//")[-1].split("/")[0]
+    if parsed.startswith("www."):
+        no_www = parsed[4:]
+        for p in ["/feed/", "/rss.xml", "/?page=backend"]:
+            all_urls.append(f"https://{no_www}{p}")
 
     # Dédoublonner en préservant l'ordre
-    seen = set()
-    unique_urls = []
+    seen: set[str] = set()
+    unique_urls: list[str] = []
     for u in all_urls:
         if u not in seen:
             seen.add(u)
@@ -589,7 +699,7 @@ def find_working_feed(candidate: dict) -> tuple[str | None, dict | None]:
 
     for url in unique_urls:
         result = test_feed_via_render(url)
-        time.sleep(0.4)
+        time.sleep(0.3)
         if result["status"] == "ok":
             return url, result
 
