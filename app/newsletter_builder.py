@@ -332,25 +332,34 @@ def _generate_edito(
 
     mois = MOIS_FR_LONG[emission_date.month]
 
-    if n_alertes > 0 and n_autres > 0:
+    # Trouver l'item le plus urgent pour ancrer l'édito
+    all_items_sorted = sorted(all_items, key=lambda x: x.get("score_density") or 0, reverse=True)
+    top = all_items_sorted[0] if all_items_sorted else None
+    top_titre = (top.get("tri_json") or {}).get("titre_court") or "" if top else ""
+    top_impact = (top.get("tri_json") or {}).get("impact_pratique") or "" if top else ""
+
+    if top_titre and top_impact:
+        # Édito ancré sur l'essentiel
+        intro = f"Ce {mois}, l'essentiel\u00a0: {top_titre.rstrip('.')}."
+        detail = f" {top_impact}" if top_impact else ""
+        if n_total > 1:
+            suite = f" Puis {n_total - 1} autre{'s' if n_total > 2 else ''} texte{'s' if n_total > 2 else ''} triés par urgence."
+        else:
+            suite = ""
+        return f"{intro}{detail}{suite}"
+    elif n_alertes > 0 and n_autres > 0:
         contenu = (
-            f"{n_autres} arrêté{'s' if n_autres > 1 else ''}"
-            f"/recommandation{'s' if n_autres > 1 else ''} "
+            f"{n_autres} recommandation{'s' if n_autres > 1 else ''} "
             f"et {n_alertes} alerte{'s' if n_alertes > 1 else ''} de sécurité"
         )
     elif n_alertes > 0:
         contenu = f"{n_alertes} alerte{'s' if n_alertes > 1 else ''} de sécurité"
     else:
-        contenu = (
-            f"{n_autres} texte{'s' if n_autres > 1 else ''} "
-            f"réglementaire{'s' if n_autres > 1 else ''}"
-        )
+        contenu = f"{n_autres} texte{'s' if n_autres > 1 else ''} réglementaire{'s' if n_autres > 1 else ''}"
 
     return (
         f"Ce mois de {mois}, {n_total} texte{'s' if n_total > 1 else ''} "
-        f"à impact direct sur votre pratique de {specialty_name}\u00a0: "
-        f"{contenu}. "
-        f"Aucun article ne devrait vous prendre plus de deux minutes."
+        f"sélectionnés pour votre pratique de {specialty_name}\u00a0: {contenu}."
     )
 
 
@@ -433,18 +442,22 @@ def build_newsletter(
     items = [i for i in items if _in_window(i)]
 
     # Séparer articles spécialité / transversaux
+    # IMPORTANT : on filtre par specialites[] (liste LLM) ET specialty_slug (colonne DB),
+    # PAS par audience=="SPECIALITE" seul — sinon des items d'autres spécialités
+    # (ex: chirurgie-vasculaire) passent dans toutes les newsletters SPECIALITE.
     items_spec = [
         i for i in items
-        if i.get("specialty_slug") == specialty_slug or i.get("audience") == "SPECIALITE"
+        if specialty_slug in (i.get("specialites") or [])
+        or i.get("specialty_slug") == specialty_slug
     ]
     items_transv = [
         i for i in items
-        if i.get("audience") in ("TRANSVERSAL_LIBERAL", "PHARMACIENS")
+        if i.get("audience") in ("TRANSVERSAL_LIBERAL",)
         and (i.get("score_density") or 0) >= 8
         and i not in items_spec
     ]
-    # Max 2 transversaux
-    items_transv = sorted(items_transv, key=lambda x: x.get("score_density") or 0, reverse=True)[:2]
+    # Max 3 transversaux (augmenté de 2 → 3 pour compenser la perte d'items mal routés)
+    items_transv = sorted(items_transv, key=lambda x: x.get("score_density") or 0, reverse=True)[:3]
 
     n_total = len(items_spec) + len(items_transv)
     n_alertes = sum(
@@ -453,11 +466,22 @@ def build_newsletter(
     )
     n_autres = n_total - n_alertes
 
-    sujet = (
-        f"[MedNews] {specialty_name} — Veille réglementaire "
-        f"{MOIS_FR_LONG[emission_date.month]} {emission_date.year} "
-        f"({n_total} texte{'s' if n_total > 1 else ''})"
-    )
+    # Sujet : accroche sur l'item le plus urgent (score le plus élevé)
+    all_sorted = sorted(items_spec + items_transv, key=lambda x: x.get("score_density") or 0, reverse=True)
+    top_item = all_sorted[0] if all_sorted else None
+    if top_item:
+        top_titre = (top_item.get("tri_json") or {}).get("titre_court") or top_item.get("title_raw") or ""
+        # Tronquer à ~50 chars pour éviter coupure client email
+        if len(top_titre) > 52:
+            top_titre = top_titre[:50].rsplit(" ", 1)[0] + "…"
+        if n_alertes >= 2:
+            sujet = f"[MedNews] {top_titre} · {n_alertes} alertes {specialty_name}"
+        elif n_alertes == 1:
+            sujet = f"[MedNews] {top_titre} · {n_total} texte{'s' if n_total > 1 else ''} {specialty_name}"
+        else:
+            sujet = f"[MedNews] {top_titre} · {n_total} reco{'s' if n_total > 1 else ''} {specialty_name}"
+    else:
+        sujet = f"[MedNews] {specialty_name} — Veille {MOIS_FR_LONG[emission_date.month]} {emission_date.year}"
 
     edito_text = _generate_edito(items_spec, items_transv, specialty_name, emission_date)
 
