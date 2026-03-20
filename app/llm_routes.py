@@ -291,6 +291,59 @@ def run_llm_analysis(
     }
 
 
+@router.post("/reset-all")
+def reset_all_pipeline(request: Request):
+    """
+    Nettoyage complet du pipeline LLM :
+      1. Supprime TOUS les items (APPROVED + REJECTED + PENDING)
+      2. Remet TOUS les candidats en status NEW (LLM_DONE + LLM_FAILED)
+    → Permet de ré-analyser l'intégralité avec le prompt LLM actuel.
+    ⚠️  Irréversible — à n'utiliser qu'en migration de prompt.
+    """
+    _require_admin(request)
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            # Compter avant suppression
+            cur.execute("SELECT COUNT(*) FROM items;")
+            items_count = cur.fetchone()[0]
+
+            cur.execute(
+                "SELECT COUNT(*) FROM candidates WHERE status IN ('LLM_DONE', 'LLM_FAILED');"
+            )
+            candidates_count = cur.fetchone()[0]
+
+            # Suppression items
+            cur.execute("DELETE FROM items;")
+
+            # Reset candidats
+            cur.execute(
+                """
+                UPDATE candidates
+                SET status = 'NEW', llm_error = NULL
+                WHERE status IN ('LLM_DONE', 'LLM_FAILED');
+                """
+            )
+            reset_count = cur.rowcount
+
+        conn.commit()
+
+    logger.warning(
+        "reset-all : %d items supprimés, %d candidats remis en NEW", items_count, reset_count
+    )
+
+    return {
+        "ok": True,
+        "items_deleted": items_count,
+        "candidates_reset_to_new": reset_count,
+        "message": (
+            f"{items_count} items supprimés. "
+            f"{reset_count} candidats remis en NEW. "
+            "Lance /admin/llm/run-all pour ré-analyser."
+        ),
+    }
+
+
 @router.post("/run-all")
 def run_llm_all(
     request: Request,
