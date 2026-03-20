@@ -837,6 +837,29 @@ _DROP_TITLE_PATTERNS = [
     r"(?i)\bcompte\s+rendu\s+(de\s+)?d[']?assembl[eé]e\s+g[eé]n[eé]rale\b",
     r"(?i)\brapport\s+moral\b",
     r"(?i)\brapport\s+financier\b",
+    # ── Petites annonces / marché de l'occasion ──────────────────────────────
+    # Détectées dans les feeds SPLF, SNFGE : ventes de matériel, offres de poste
+    r"(?i)\bà\s+vendre\b",
+    r"(?i)\bétat\s+(impeccable|neuf|excellent|parfait|bon)\b",
+    r"(?i)\bocca?sion\b",
+    r"(?i)(cherche?|recherche?)\s+(un|des|un\.e?)?\s*(remplaçant|remplacant|associé|collaborateur)",
+    r"(?i)\bremplaçant(s|e|es)?\s+(cherch|disponible|libéral|pour\s+(congé|vacances))\b",
+    r"(?i)\bcabinet.*\brecherche\b",
+    r"(?i)\bposte\s+(de\s+)?(mé?decin|assistant|interne|praticien)\b",
+    r"(?i)\bopportunit[eé]\s+(d[e']\s+)?installa",
+    # ── Bourses / Prix / Appels à projets formation ───────────────────────────
+    # "bourse" seul est trop risqué (bourse testiculaire → médical)
+    # On cible les formulations typiques des sociétés savantes
+    r"(?i)\bbourses?\s+(annuell|d[e']\s+recherche|de\s+voyage|MAHGE|DES|interne|master|thèse)",
+    r"(?i)\bappel\s+[àa]\s+projets?\b",
+    r"(?i)\bprix\s+\w+\s+202[0-9]\b",           # "Prix XYZ 2026"
+    # ── Applications mobiles / outils numériques (annonces, pas recommandations)
+    r"(?i)\bapplication\s+\w+\s+(est\s+)?disponible\b",
+    r"(?i)\btélécharger\s+(notre|l[a'])\s+application\b",
+    # ── Statuts / documents internes société ─────────────────────────────────
+    r"(?i)^\s*statuts?\s*$",                     # titre = "Statuts" seul
+    r"(?i)\bmise\s+[àa]\s+jour\s+des\s+statuts\b",
+    r"(?i)\brèglement\s+int[eé]rieur\b",
 ]
 _DROP_TITLE_RES = [re.compile(p) for p in _DROP_TITLE_PATTERNS]
 
@@ -848,7 +871,8 @@ _DROP_TITLE_RES = [re.compile(p) for p in _DROP_TITLE_PATTERNS]
 NOISY_SOURCES: frozenset[str] = frozenset({
     "cnom",      # Ordre des Médecins — déontologie + contenu institutionnel varié
     "bo_social", # BO ministères sociaux — nombreuses circulaires hors santé
-    # ameli_pro et andpc retirés (plus de source active)
+    "spf_beh",   # SPF — articles sans résumé, dont beaucoup non actionnables
+                 # (ruralité, sociologie, statistiques) → whitelist médicale obligatoire
 })
 
 # Dispositifs médicaux non-médicamenteux — hors scope de tous les praticiens libéraux.
