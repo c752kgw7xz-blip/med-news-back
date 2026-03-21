@@ -417,9 +417,13 @@ def build_newsletter(
     if emission_date is None:
         emission_date = date.today()
 
+    base = os.environ.get("BASE_URL", "").rstrip("/")
     if not portal_url:
-        base = os.environ.get("BASE_URL", "").rstrip("/")
         portal_url = f"{base}/portal" if base else "#"
+    if unsubscribe_url == "{{unsubscribe_url}}":
+        unsubscribe_url = f"{base}/settings" if base else "#"
+    if archive_url == "{{archive_url}}":
+        archive_url = f"{base}/portal" if base else "#"
 
     specialty_name = SPECIALTY_LABELS.get(specialty_slug, specialty_slug) or "Médecine libérale"
     mois_annee = f"{MOIS_FR_LONG[emission_date.month].capitalize()} {emission_date.year}"

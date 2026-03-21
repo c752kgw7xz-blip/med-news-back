@@ -82,6 +82,8 @@ SOURCE_TO_TYPE: dict[str, str] = {
     # Sources réglementaires
     "legifrance_jorf":      "reglementaire",
     "piste_kali":           "reglementaire",
+    "piste_legi":           "reglementaire",
+    "piste_circ":           "reglementaire",
     "ansm_securite":        "reglementaire",
     "ansm_securite_med":    "reglementaire",
     "ansm_ruptures_med":    "reglementaire",
@@ -421,7 +423,7 @@ JSON attendu (strict, pas de markdown) :
 {{
   "pertinent": <bool>,
   "audience": "<TRANSVERSAL_LIBERAL|SPECIALITE|PHARMACIENS>",
-  "specialites": [<slugs parmi: medecine-generale, cardiologie, dermatologie, endocrinologie, gastro-enterologie, gynecologie, neurologie, ophtalmologie, orl, pediatrie, pneumologie, psychiatrie, rhumatologie, urologie, medecine-interne, medecine-urgences, geriatrie, medecine-physique, oncologie, hematologie, infectiologie, nephrologie, radiologie, anesthesiologie, chirurgie, chirurgie-vasculaire, chirurgie-orthopedique, chirurgie-thoracique, chirurgie-plastique, neurochirurgie, chirurgie-pediatrique, chirurgie-cardiaque, infirmiers, kinesitherapie, sage-femme, biologiste>],
+  "specialites": [<slugs parmi: medecine-generale, cardiologie, dermatologie, endocrinologie, gastro-enterologie, gynecologie, neurologie, ophtalmologie, orl, pediatrie, pneumologie, psychiatrie, rhumatologie, urologie, medecine-interne, medecine-urgences, geriatrie, medecine-physique, oncologie, hematologie, infectiologie, nephrologie, radiologie, anesthesiologie, chirurgie-vasculaire, chirurgie-orthopedique, chirurgie-thoracique, chirurgie-plastique, neurochirurgie, chirurgie-pediatrique, chirurgie-cardiaque, infirmiers, kinesitherapie, sage-femme, biologiste>],
   "type_praticien": "<prescripteur|interventionnel|biologiste|pharmacien|tous>",
   "score_density": <int 1-10>,
   "categorie": "<clinique|medicament|dispositifs_medicaux|facturation|administratif|sante_publique|exercice>",
@@ -448,6 +450,8 @@ SOURCE_HINTS: dict[str, str] = {
     # Sources réglementaires
     "legifrance_jorf":       "JORF — texte réglementaire (loi, décret, arrêté)",
     "piste_kali":            "Convention collective / accord UNCAM — impact sur honoraires et pratique libérale",
+    "piste_legi":            "Code de la santé publique — modification de texte codifié (CSP, CSS, CASF)",
+    "piste_circ":            "Circulaire ou instruction ministérielle — directive santé ou social",
     "ansm_securite":         "ANSM — Information de sécurité (pharmacovigilance, matériovigilance)",
     "ansm_securite_med":     "ANSM — Alerte sécurité médicament (retrait AMM, contre-indication, restriction)",
     "ansm_ruptures_med":     "ANSM — Rupture ou tension d'approvisionnement médicament",
@@ -612,6 +616,14 @@ SOURCE_CONFIG: dict[str, dict] = {
         "min_llm_score": 6,
     },
     "piste_kali": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    "piste_legi": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    "piste_circ": {
         "require_whitelist": False,
         "min_llm_score": 5,
     },

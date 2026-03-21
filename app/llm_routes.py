@@ -432,7 +432,7 @@ def run_llm_all(
         "done": total_done,
         "not_pertinent": total_not_pertinent,
         "failed": total_failed,
-        "groq_calls": total_done + total_not_pertinent + total_failed,
+        "llm_calls": total_done + total_not_pertinent + total_failed,
     }
 
 
