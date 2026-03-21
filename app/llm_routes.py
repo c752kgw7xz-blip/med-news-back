@@ -82,7 +82,7 @@ VALUES (
     %(llm_model)s,
     'PENDING'
 )
-ON CONFLICT (candidate_id) DO NOTHING
+ON CONFLICT (candidate_id, COALESCE(specialty_slug, '')) DO NOTHING
 RETURNING id;
 """
 
