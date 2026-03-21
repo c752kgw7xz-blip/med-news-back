@@ -399,6 +399,66 @@ def run_background(request: Request, body: _RunBackgroundBody = _RunBackgroundBo
     }
 
 
+@router.post("/pre-filter")
+def run_pre_filter(request: Request):
+    """
+    Passe tous les candidats NEW au pré-filtre local (0 appel LLM).
+    - Candidats non pertinents  → status = 'LLM_DONE'  (éliminés proprement)
+    - Candidats pertinents      → restent en NEW         (prêts pour le LLM)
+    Retourne le bilan immédiatement (traitement synchrone, rapide car 0 I/O réseau).
+    """
+    _require_admin(request)
+
+    eliminated = kept = 0
+    batch = 500
+
+    while True:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, title_raw, source
+                    FROM candidates
+                    WHERE status = 'NEW'
+                    ORDER BY id
+                    LIMIT %s;
+                    """,
+                    (batch,),
+                )
+                rows = cur.fetchall()
+
+        if not rows:
+            break
+
+        to_eliminate: list[str] = []
+        for (cid, title_raw, source) in rows:
+            keep, _ = pre_filter_candidate(title_raw or "", source=source or "")
+            if not keep:
+                to_eliminate.append(str(cid))
+            else:
+                kept += 1
+
+        if to_eliminate:
+            with get_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "UPDATE candidates SET status = 'LLM_DONE' WHERE id = ANY(%s::uuid[]);",
+                        (to_eliminate,),
+                    )
+                eliminated += len(to_eliminate)
+
+    logger.info("Pré-filtre terminé : éliminés=%d conservés=%d", eliminated, kept)
+    return {
+        "ok": True,
+        "eliminated": eliminated,
+        "kept_for_llm": kept,
+        "message": (
+            f"{eliminated} candidats éliminés par pré-filtre (0 appel LLM). "
+            f"{kept} candidats restent en NEW, prêts pour /admin/llm/run-background."
+        ),
+    }
+
+
 @router.post("/run-all")
 def run_llm_all(
     request: Request,
