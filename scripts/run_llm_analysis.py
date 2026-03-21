@@ -34,6 +34,7 @@ from app.llm_analysis import (
     analyse_candidate_async,
     pre_filter_candidate,
     get_source_config,
+    get_source_type,
 )
 
 # ---------------------------------------------------------------------------
@@ -81,14 +82,17 @@ def count_remaining() -> int:
 INSERT_ITEM_SQL = """
 INSERT INTO items (
     candidate_id, audience, specialty_slug,
-    tri_json, lecture_json, score_density, llm_raw, llm_model, review_status
+    tri_json, lecture_json, score_density,
+    categorie, type_praticien, source_type,
+    llm_raw, llm_model, review_status
 )
 VALUES (
     %(candidate_id)s, %(audience)s, %(specialty_slug)s,
     %(tri_json)s, %(lecture_json)s, %(score_density)s,
+    %(categorie)s, %(type_praticien)s, %(source_type)s,
     %(llm_raw)s, %(llm_model)s, 'PENDING'
 )
-ON CONFLICT (candidate_id) DO NOTHING
+ON CONFLICT (candidate_id, COALESCE(specialty_slug, '')) DO NOTHING
 RETURNING id;
 """
 
@@ -109,12 +113,15 @@ def _db_mark_failed(cid: str, error: str) -> None:
 
 
 def _db_insert_result(cid: str, result: dict, source: str | None = None) -> list[str]:
-    score      = result.get("score_density", 0)
-    audience   = result.get("audience", "TRANSVERSAL_LIBERAL")
+    score       = result.get("score_density", 0)
+    audience    = result.get("audience", "SPECIALITE")
+    if audience not in ("SPECIALITE", "PHARMACIENS"):
+        audience = "SPECIALITE"
     specialites = result.get("specialites", [])
-    llm_raw    = json.dumps(result, ensure_ascii=False)
+    llm_raw     = json.dumps(result, ensure_ascii=False)
+    source_type = get_source_type(source)
 
-    # Seuil par source (min_llm_score) — remplace le hardcodé score < 3
+    # Seuil par source (min_llm_score)
     min_score = get_source_config(source).get("min_llm_score", 5)
     if not result.get("pertinent", True) or score < min_score:
         with get_conn() as conn:
@@ -122,10 +129,11 @@ def _db_insert_result(cid: str, result: dict, source: str | None = None) -> list
                 cur.execute("UPDATE candidates SET status = 'LLM_DONE' WHERE id = %s;", (cid,))
         return []
 
-    slugs: list[str | None] = (
-        [None] if audience in ("TRANSVERSAL_LIBERAL", "PHARMACIENS") or not specialites
-        else specialites
-    )
+    # PHARMACIENS → 1 item slug='pharmacien' ; SPECIALITE → 1 item par spécialité
+    if audience == "PHARMACIENS":
+        slugs: list[str] = ["pharmacien"]
+    else:
+        slugs = specialites if specialites else ["medecine-generale"]
 
     item_ids: list[str] = []
     with get_conn() as conn:
@@ -138,6 +146,9 @@ def _db_insert_result(cid: str, result: dict, source: str | None = None) -> list
                     "tri_json": Json(result.get("tri_json", {})),
                     "lecture_json": Json(result.get("lecture_json", {})),
                     "score_density": score,
+                    "categorie": result.get("categorie"),
+                    "type_praticien": result.get("type_praticien"),
+                    "source_type": source_type,
                     "llm_raw": llm_raw,
                     "llm_model": result.get("llm_model", ANTHROPIC_MODEL),
                 }
