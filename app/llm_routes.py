@@ -716,7 +716,8 @@ def newsletter_preview(
                 f"""
                 SELECT i.id, i.audience, i.specialty_slug, i.score_density,
                        i.tri_json, i.lecture_json, i.published_at,
-                       c.title_raw, c.official_url, c.official_date::text
+                       c.title_raw, c.official_url, c.official_date::text,
+                       i.categorie
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE {where}
@@ -737,6 +738,7 @@ def newsletter_preview(
             "title_raw": r[7],
             "official_url": r[8],
             "official_date": r[9],
+            "categorie": r[10],
         }
         for r in rows
     ]

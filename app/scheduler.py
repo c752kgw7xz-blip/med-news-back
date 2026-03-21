@@ -130,8 +130,8 @@ def job_collect_and_analyse() -> None:
                 from app.piste_routes import _piste_call as pc, _extract_list as el, _parse_date10 as pd10, _sha256_hex as sh, _json_canonical_bytes as jcb
                 ins = dup = s = 0
                 insert_sql = """
-                INSERT INTO candidates (source, official_url, official_date, title_raw, content_raw, raw_sha256, dedupe_key, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, 'NEW') ON CONFLICT (dedupe_key) DO NOTHING;
+                INSERT INTO candidates (source, official_url, official_date, title_raw, content_raw, raw_json, raw_sha256, dedupe_key, status)
+                VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, 'NEW') ON CONFLICT (dedupe_key) DO NOTHING;
                 """
                 with _get_conn() as conn:
                     with conn.cursor() as cur:
@@ -154,9 +154,10 @@ def job_collect_and_analyse() -> None:
                                 pub_d_val = date.fromisoformat(pub_s)
                                 if not (start_d <= pub_d_val <= today_d):
                                     continue
+                                import json as _json
                                 dk = sh(f"{src}|{text_id}".encode())
                                 rs = sh(jcb(it))
-                                cur.execute(insert_sql, (src, f"https://www.legifrance.gouv.fr/{fond.lower()}/id/{text_id}", pub_d_val, title.strip(), None, rs, dk))
+                                cur.execute(insert_sql, (src, f"https://www.legifrance.gouv.fr/{fond.lower()}/id/{text_id}", pub_d_val, title.strip(), None, _json.dumps(it, ensure_ascii=False), rs, dk))
                                 if cur.rowcount == 1:
                                     ins += 1
                                 else:
@@ -247,7 +248,7 @@ def _get_approved_items(specialty_slug: str) -> list[dict[str, Any]]:
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT i.id, i.audience, i.specialty_slug, i.score_density,
-                       i.tri_json, i.lecture_json,
+                       i.tri_json, i.lecture_json, i.categorie,
                        c.title_raw, c.official_url, c.official_date::text
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
@@ -260,7 +261,8 @@ def _get_approved_items(specialty_slug: str) -> list[dict[str, Any]]:
     return [
         {"item_id": str(r[0]), "audience": r[1], "specialty_slug": r[2],
          "score_density": r[3], "tri_json": r[4], "lecture_json": r[5],
-         "title_raw": r[6], "official_url": r[7], "official_date": r[8]}
+         "categorie": r[6], "title_raw": r[7], "official_url": r[8],
+         "official_date": r[9]}
         for r in rows
     ]
 
