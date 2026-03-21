@@ -20,11 +20,12 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from typing import Any, Optional
 
 import psycopg
 from psycopg.types.json import Json
-from fastapi import APIRouter, HTTPException, Request, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Query
 from pydantic import BaseModel
 
 from app.db import get_conn
@@ -341,6 +342,47 @@ def reset_all_pipeline(request: Request):
             f"{reset_count} candidats remis en NEW. "
             "Lance /admin/llm/run-all pour ré-analyser."
         ),
+    }
+
+
+@router.post("/run-background")
+def run_background(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    batch_size: int = Query(default=20, ge=1, le=100, description="Candidats par itération"),
+):
+    """
+    Lance le traitement LLM en arrière-plan — retourne immédiatement.
+    Le traitement continue côté serveur, requête non-bloquante.
+    Consulte /admin/llm/stats pour suivre la progression.
+    """
+    _require_admin(request)
+
+    def _bg_process():
+        total = 0
+        while True:
+            with get_conn() as conn:
+                with conn.cursor() as cur:
+                    candidates = _fetch_candidates_to_analyse(cur, None, batch_size)
+            if not candidates:
+                logger.info("run-background : terminé, %d candidats traités", total)
+                break
+            for candidate in candidates:
+                _process_one_candidate(candidate)
+                total += 1
+            logger.info("run-background : %d traités jusqu'ici", total)
+
+    background_tasks.add_task(_bg_process)
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM candidates WHERE status = 'NEW';")
+            remaining = cur.fetchone()[0]
+
+    return {
+        "ok": True,
+        "message": f"Traitement lancé en arrière-plan — {remaining} candidats NEW en attente.",
+        "candidates_queued": remaining,
     }
 
 
