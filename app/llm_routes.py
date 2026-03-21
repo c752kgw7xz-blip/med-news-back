@@ -388,8 +388,9 @@ def run_background(request: Request, body: _RunBackgroundBody = _RunBackgroundBo
 
     return {
         "ok": True,
-        "message": f"Traitement lancé en arrière-plan — {remaining} candidats NEW en attente.",
-        "candidates_queued": remaining,
+        "message": f"Traitement lancé en arrière-plan — {min(max_candidates, remaining)} candidats à traiter ({remaining} NEW en attente au total).",
+        "candidates_to_process": min(max_candidates, remaining),
+        "candidates_remaining_total": remaining,
     }
 
 
