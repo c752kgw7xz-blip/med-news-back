@@ -38,7 +38,7 @@ from app.llm_analysis import (
 )
 
 # ---------------------------------------------------------------------------
-MAX_CONCURRENT = 8  # réduit pour éviter les 429 en rafale sur Anthropic
+MAX_CONCURRENT = 3  # réduit pour éviter les 429 en rafale sur Anthropic
 # ---------------------------------------------------------------------------
 
 

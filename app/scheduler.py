@@ -1,16 +1,29 @@
 # app/scheduler.py
 """
-Automatisation mensuelle complète du pipeline.
+Pipeline automatisé — deux cadences distinctes :
 
-JOBS :
-  Jour 1  06h UTC  → job_collect_and_analyse()
-      1. JORF via PISTE (fonds existant)
-      2. KALI / LEGI / CIRCULAIRES via PISTE (nouveaux fonds)
-      3. HAS / ANSM / Santé publique France via RSS
-      4. Analyse Claude sur tous les candidats NEW
+  RÉGLEMENTATION  (mensuel — 1er du mois)
+  ─────────────────────────────────────────
+  Jour 1  06h UTC  → job_collect_regulation()
+      Sources : JORF, KALI, LEGI, CIRCULAIRES, ANSM, BO Social
+      Analyse Claude → items PENDING
+  Quotidien 09h UTC → job_try_send_regulation()
+      Si 0 article PENDING de type réglementaire ET
+      newsletter pas encore envoyée ce mois-ci → envoi
 
-  Jour 7  08h UTC  → job_send_newsletters()
-      Compile + envoie 1 email par spécialité (items APPROVED uniquement)
+  RECOMMANDATIONS (hebdomadaire — chaque lundi)
+  ─────────────────────────────────────────────
+  Lundi   06h UTC  → job_collect_recommendations()
+      Sources : HAS RSS, sociétés savantes, ANSM bon usage
+      Analyse Claude → items PENDING
+  Quotidien 09h UTC → job_try_send_recommendations()
+      Si 0 article PENDING de type recommandation ET
+      newsletter pas encore envoyée cette semaine → envoi
+      Fenêtre : articles des 7 derniers jours uniquement
+
+  MAINTENANCE
+  ─────────────────────────────────────────────
+  Quotidien 03h UTC → job_cleanup_tokens()
 
 ACTIVATION : SCHEDULER_ENABLED=true dans .env
 """
@@ -35,26 +48,88 @@ logger = logging.getLogger(__name__)
 
 _scheduler: AsyncIOScheduler | None = None
 
+# source_types réglementaires (mensuel)
+REGULATION_SOURCE_TYPES = ("reglementaire", "therapeutique")
+# source_types recommandations (hebdomadaire)
+RECOMMENDATION_SOURCE_TYPES = ("recommandation",)
+
 
 # ---------------------------------------------------------------------------
-# JOB 1 — Collecte toutes sources + analyse LLM
+# Helpers DB — gestion newsletter_sends
 # ---------------------------------------------------------------------------
 
-def job_collect_and_analyse() -> None:
+def _count_pending(source_types: tuple[str, ...] | None = None) -> int:
+    """Compte les items PENDING, optionnellement filtrés par source_type."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            if source_types:
+                placeholders = ", ".join(["%s"] * len(source_types))
+                cur.execute(
+                    f"SELECT COUNT(*) FROM items WHERE review_status = 'PENDING' "
+                    f"AND source_type IN ({placeholders});",
+                    source_types,
+                )
+            else:
+                cur.execute("SELECT COUNT(*) FROM items WHERE review_status = 'PENDING';")
+            return cur.fetchone()[0]
+
+
+def _newsletter_already_sent(newsletter_type: str, period_label: str) -> bool:
+    """Vérifie si la newsletter a déjà été envoyée pour cette période."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT 1 FROM newsletter_sends WHERE newsletter_type = %s AND period_label = %s;",
+                (newsletter_type, period_label),
+            )
+            return cur.fetchone() is not None
+
+
+def _record_newsletter_sent(newsletter_type: str, period_label: str, articles_sent: int = 0) -> None:
+    """Enregistre l'envoi de la newsletter pour cette période."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO newsletter_sends (newsletter_type, period_label, articles_sent)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (newsletter_type, period_label) DO UPDATE
+                  SET sent_at = now(), articles_sent = EXCLUDED.articles_sent;
+                """,
+                (newsletter_type, period_label, articles_sent),
+            )
+
+
+def _regulation_period() -> str:
+    """Label de la période mensuelle réglementation, ex. '2026-03'."""
+    return date.today().strftime("%Y-%m")
+
+
+def _recommendation_period() -> str:
+    """Label de la semaine ISO courante, ex. '2026-W12'."""
+    today = date.today()
+    iso = today.isocalendar()
+    return f"{iso.year}-W{iso.week:02d}"
+
+
+# ---------------------------------------------------------------------------
+# JOB 1a — Collecte réglementation (1er du mois)
+# ---------------------------------------------------------------------------
+
+def job_collect_regulation() -> None:
     logger.info("=" * 60)
-    logger.info("JOB COLLECTE démarré — %s", date.today().isoformat())
+    logger.info("JOB COLLECTE RÉGLEMENTATION démarré — %s", date.today().isoformat())
     logger.info("=" * 60)
 
     report: dict[str, Any] = {}
 
-    # ── 1. JORF (pipeline existant) ──────────────────────────────
+    # ── 1. JORF ──────────────────────────────────────────────────
     try:
         from app.piste_routes import (
             _piste_call, _extract_list, _keep_item_with_reason,
             _parse_date10, _official_url, _sha256_hex, _json_canonical_bytes,
         )
         from app.collector_utils import build_candidate_row, insert_candidate
-        from psycopg.types.json import Json
 
         source = "legifrance_jorf"
         today = date.today()
@@ -173,25 +248,82 @@ def job_collect_and_analyse() -> None:
         logger.error("PISTE extra fonds échoués : %s", e)
         report["piste_extra"] = {"error": str(e)}
 
-    # ── 3. RSS (HAS / ANSM / SPF) ────────────────────────────────
+    # ── 3. RSS réglementaires uniquement (ANSM + BO Social) ──────
     try:
-        from app.rss_collector import collect_all_rss
-        report["rss"] = collect_all_rss(days=35)
-    except Exception as e:
-        logger.error("RSS collecte échouée : %s", e)
-        report["rss"] = {"error": str(e)}
+        from app.rss_collector import collect_ansm, collect_feed, FEEDS
+        from app.llm_analysis import SOURCE_TO_TYPE
 
-    # ── 4. Analyse LLM sur tous les NEW ──────────────────────────
+        report["ansm"] = collect_ansm(days=35)
+
+        # BO Social et CNOM depuis FEEDS, filtrés sur source_type = reglementaire
+        reg_sources = {s for s, t in SOURCE_TO_TYPE.items() if t == "reglementaire"}
+        for feed in FEEDS:
+            if feed["source"] in reg_sources and not feed["source"].startswith("ansm"):
+                try:
+                    r = collect_feed(feed, days=35)
+                    report[feed["source"]] = r
+                    logger.info("[%s] ins=%d", feed["source"], r.get("inserted", 0))
+                except Exception as e3:
+                    logger.error("[%s] erreur : %s", feed["source"], e3)
+    except Exception as e:
+        logger.error("RSS réglementation échoué : %s", e)
+        report["rss_regulation"] = {"error": str(e)}
+
+    # ── 4. Analyse LLM ───────────────────────────────────────────
     try:
         _run_llm_batch()
     except Exception as e:
         logger.error("Analyse LLM échouée : %s", e)
 
-    logger.info("=" * 60)
-    logger.info("JOB COLLECTE terminé")
-    logger.info("=" * 60)
+    logger.info("JOB COLLECTE RÉGLEMENTATION terminé")
     return report
 
+
+# ---------------------------------------------------------------------------
+# JOB 1b — Collecte recommandations (chaque lundi)
+# ---------------------------------------------------------------------------
+
+def job_collect_recommendations() -> None:
+    logger.info("=" * 60)
+    logger.info("JOB COLLECTE RECOMMANDATIONS démarré — %s", date.today().isoformat())
+    logger.info("=" * 60)
+
+    report: dict[str, Any] = {}
+
+    # ── HAS + sociétés savantes (RSS) ────────────────────────────
+    try:
+        from app.rss_collector import collect_has, collect_pratique
+        report["has"] = collect_has(days=10)           # légère marge > 7 jours
+        report["pratique"] = collect_pratique(days=10)
+        logger.info("Recommandations RSS collectées")
+    except Exception as e:
+        logger.error("RSS recommandations échoué : %s", e)
+        report["rss"] = {"error": str(e)}
+
+    # ── HAS CT (avis médicaments — source_type=therapeutique) ────
+    try:
+        from app.rss_collector import collect_feed, FEEDS
+        for feed in FEEDS:
+            if feed["source"] == "has_ct":
+                r = collect_feed(feed, days=10)
+                report["has_ct"] = r
+                logger.info("[has_ct] ins=%d", r.get("inserted", 0))
+    except Exception as e:
+        logger.error("has_ct échoué : %s", e)
+
+    # ── Analyse LLM ──────────────────────────────────────────────
+    try:
+        _run_llm_batch()
+    except Exception as e:
+        logger.error("Analyse LLM recommandations échouée : %s", e)
+
+    logger.info("JOB COLLECTE RECOMMANDATIONS terminé")
+    return report
+
+
+# ---------------------------------------------------------------------------
+# LLM batch (partagé)
+# ---------------------------------------------------------------------------
 
 def _run_llm_batch() -> None:
     from app.llm_routes import _fetch_candidates_to_analyse, _process_one_candidate
@@ -221,42 +353,121 @@ def _run_llm_batch() -> None:
 
 
 # ---------------------------------------------------------------------------
-# JOB 2 — Envoi newsletters
+# JOB 2a — Auto-envoi newsletter réglementation (vérification quotidienne)
 # ---------------------------------------------------------------------------
 
-def job_send_newsletters() -> None:
-    logger.info("=" * 60)
-    logger.info("JOB ENVOI NEWSLETTER démarré — %s", date.today().isoformat())
-    logger.info("=" * 60)
+def job_try_send_regulation() -> None:
+    """
+    Vérifie chaque jour si la newsletter réglementation peut être envoyée :
+    - Aucun item PENDING de type réglementaire/thérapeutique
+    - Newsletter pas encore envoyée ce mois-ci
+    Si oui : envoie et enregistre.
+    """
+    period = _regulation_period()
 
-    total_sent = total_failed = 0
+    if _newsletter_already_sent("reglementaire", period):
+        logger.info("Newsletter réglementation %s déjà envoyée — skip", period)
+        return
 
-    for slug in SPECIALTY_LABELS.keys():
-        try:
-            sent, failed = _send_specialty_newsletter(slug)
-            total_sent += sent
-            total_failed += failed
-        except Exception as e:
-            logger.error("Newsletter %s : %s", slug, e)
+    pending = _count_pending(REGULATION_SOURCE_TYPES)
+    if pending > 0:
+        logger.info(
+            "Newsletter réglementation %s : %d article(s) encore en attente de review — report",
+            period, pending,
+        )
+        return
 
-    logger.info("JOB ENVOI terminé : envoyés=%d erreurs=%d", total_sent, total_failed)
+    logger.info(
+        "Newsletter réglementation %s : 0 PENDING — déclenchement de l'envoi", period
+    )
+    total_sent = _send_newsletters_by_source_type(
+        source_types=REGULATION_SOURCE_TYPES,
+        days=35,
+    )
+    _record_newsletter_sent("reglementaire", period, articles_sent=total_sent)
+    logger.info("Newsletter réglementation envoyée : %d articles au total", total_sent)
 
 
-def _get_approved_items(specialty_slug: str) -> list[dict[str, Any]]:
-    since = date.today() - timedelta(days=35)
+# ---------------------------------------------------------------------------
+# JOB 2b — Auto-envoi newsletter recommandations (vérification quotidienne)
+# ---------------------------------------------------------------------------
+
+def job_try_send_recommendations() -> None:
+    """
+    Vérifie chaque jour si la newsletter recommandations peut être envoyée :
+    - Aucun item PENDING de type recommandation
+    - Newsletter pas encore envoyée cette semaine
+    Si oui : envoie (fenêtre = 7 derniers jours uniquement).
+    """
+    period = _recommendation_period()
+
+    if _newsletter_already_sent("recommandation", period):
+        logger.info("Newsletter recommandations %s déjà envoyée — skip", period)
+        return
+
+    pending = _count_pending(RECOMMENDATION_SOURCE_TYPES)
+    if pending > 0:
+        logger.info(
+            "Newsletter recommandations %s : %d article(s) encore en attente de review — report",
+            period, pending,
+        )
+        return
+
+    logger.info(
+        "Newsletter recommandations %s : 0 PENDING — déclenchement de l'envoi", period
+    )
+    total_sent = _send_newsletters_by_source_type(
+        source_types=RECOMMENDATION_SOURCE_TYPES,
+        days=7,  # fenêtre = semaine uniquement
+    )
+    _record_newsletter_sent("recommandation", period, articles_sent=total_sent)
+    logger.info("Newsletter recommandations envoyée : %d articles au total", total_sent)
+
+
+# ---------------------------------------------------------------------------
+# Envoi par spécialité
+# ---------------------------------------------------------------------------
+
+def _get_approved_items(
+    specialty_slug: str,
+    source_types: tuple[str, ...] | None = None,
+    days: int = 35,
+) -> list[dict[str, Any]]:
+    since = date.today() - timedelta(days=days)
     with get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT i.id, i.audience, i.specialty_slug, i.score_density,
-                       i.tri_json, i.lecture_json, i.categorie,
-                       c.title_raw, c.official_url, c.official_date::text
-                FROM items i
-                JOIN candidates c ON c.id = i.candidate_id
-                WHERE i.review_status = 'APPROVED'
-                  AND c.official_date >= %s
-                  AND i.specialty_slug = %s
-                ORDER BY i.score_density DESC, c.official_date DESC;
-            """, (since, specialty_slug))
+            if source_types:
+                placeholders = ", ".join(["%s"] * len(source_types))
+                cur.execute(
+                    f"""
+                    SELECT i.id, i.audience, i.specialty_slug, i.score_density,
+                           i.tri_json, i.lecture_json, i.categorie,
+                           c.title_raw, c.official_url, c.official_date::text
+                    FROM items i
+                    JOIN candidates c ON c.id = i.candidate_id
+                    WHERE i.review_status = 'APPROVED'
+                      AND c.official_date >= %s
+                      AND i.specialty_slug = %s
+                      AND i.source_type IN ({placeholders})
+                    ORDER BY i.score_density DESC, c.official_date DESC;
+                    """,
+                    (since, specialty_slug, *source_types),
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT i.id, i.audience, i.specialty_slug, i.score_density,
+                           i.tri_json, i.lecture_json, i.categorie,
+                           c.title_raw, c.official_url, c.official_date::text
+                    FROM items i
+                    JOIN candidates c ON c.id = i.candidate_id
+                    WHERE i.review_status = 'APPROVED'
+                      AND c.official_date >= %s
+                      AND i.specialty_slug = %s
+                    ORDER BY i.score_density DESC, c.official_date DESC;
+                    """,
+                    (since, specialty_slug),
+                )
             rows = cur.fetchall()
     return [
         {"item_id": str(r[0]), "audience": r[1], "specialty_slug": r[2],
@@ -270,11 +481,14 @@ def _get_approved_items(specialty_slug: str) -> list[dict[str, Any]]:
 def _get_subscribers(specialty_slug: str) -> list[str]:
     with get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT u.email_ciphertext
                 FROM users u
                 WHERE u.specialty_id = %s AND u.email_verified_at IS NOT NULL;
-            """, (specialty_slug,))
+                """,
+                (specialty_slug,),
+            )
             rows = cur.fetchall()
     emails = []
     for (raw,) in rows:
@@ -285,32 +499,54 @@ def _get_subscribers(specialty_slug: str) -> list[str]:
     return emails
 
 
-def _send_specialty_newsletter(specialty_slug: str) -> tuple[int, int]:
-    items = _get_approved_items(specialty_slug)
+def _send_newsletters_by_source_type(
+    source_types: tuple[str, ...] | None = None,
+    days: int = 35,
+) -> int:
+    """Envoie la newsletter à tous les abonnés par spécialité. Retourne le nb total d'articles."""
+    total_articles = 0
+    for slug in SPECIALTY_LABELS.keys():
+        try:
+            sent_articles = _send_specialty_newsletter(slug, source_types=source_types, days=days)
+            total_articles += sent_articles
+        except Exception as e:
+            logger.error("Newsletter %s : %s", slug, e)
+    return total_articles
+
+
+def _send_specialty_newsletter(
+    specialty_slug: str,
+    source_types: tuple[str, ...] | None = None,
+    days: int = 35,
+) -> int:
+    items = _get_approved_items(specialty_slug, source_types=source_types, days=days)
     if not items:
         logger.info("Spécialité %s : aucun item approuvé", specialty_slug)
-        return 0, 0
+        return 0
     subscribers = _get_subscribers(specialty_slug)
     if not subscribers:
         logger.info("Spécialité %s : aucun abonné", specialty_slug)
-        return 0, 0
-    logger.info("Spécialité %s : %d articles → %d abonnés", specialty_slug, len(items), len(subscribers))
+        return 0
+    logger.info(
+        "Spécialité %s : %d articles → %d abonnés",
+        specialty_slug, len(items), len(subscribers),
+    )
     subject, html, plain = build_newsletter(
         specialty_slug=specialty_slug, items=items, emission_date=date.today()
     )
     result = send_bulk(subscribers, subject, html, plain)
-    return result["sent"], result["failed"]
+    logger.info(
+        "Spécialité %s : envoyé=%d erreurs=%d",
+        specialty_slug, result["sent"], result["failed"],
+    )
+    return len(items)
 
 
 # ---------------------------------------------------------------------------
-# JOB 3 — Nettoyage des tokens expirés (refresh + email verification)
+# JOB 3 — Nettoyage des tokens expirés
 # ---------------------------------------------------------------------------
 
 def job_cleanup_tokens() -> None:
-    """Supprime les refresh_tokens et email_verification_tokens expirés.
-
-    Tourne chaque nuit à 03h00 UTC pour éviter l'accumulation en DB.
-    """
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -334,47 +570,77 @@ def job_cleanup_tokens() -> None:
 def start_scheduler() -> AsyncIOScheduler:
     global _scheduler
 
-    collect_day  = int(os.environ.get("SCHEDULER_COLLECT_DAY", "1"))
-    collect_hour = int(os.environ.get("SCHEDULER_COLLECT_HOUR", "6"))
-    send_day     = int(os.environ.get("SCHEDULER_SEND_DAY", "7"))
-    send_hour    = int(os.environ.get("SCHEDULER_SEND_HOUR", "8"))
-
     _scheduler = AsyncIOScheduler(timezone="UTC")
 
+    # ── Collecte réglementation : 1er du mois à 06h UTC ──────────
+    regulation_collect_day  = int(os.environ.get("REGULATION_COLLECT_DAY", "1"))
+    regulation_collect_hour = int(os.environ.get("REGULATION_COLLECT_HOUR", "6"))
+
     _scheduler.add_job(
-        job_collect_and_analyse,
-        trigger=CronTrigger(day=collect_day, hour=collect_hour, minute=0),
-        id="monthly_collect",
-        name=f"Collecte complète + LLM (j={collect_day} h={collect_hour}h UTC)",
-        executor='threadpool',
+        job_collect_regulation,
+        trigger=CronTrigger(day=regulation_collect_day, hour=regulation_collect_hour, minute=0),
+        id="regulation_collect",
+        name=f"Collecte réglementation (j={regulation_collect_day} h={regulation_collect_hour}h UTC)",
+        executor="threadpool",
         replace_existing=True,
         misfire_grace_time=3600,
     )
 
+    # ── Collecte recommandations : chaque lundi à 06h UTC ────────
+    recommendation_collect_hour = int(os.environ.get("RECOMMENDATION_COLLECT_HOUR", "6"))
+
     _scheduler.add_job(
-        job_send_newsletters,
-        trigger=CronTrigger(day=send_day, hour=send_hour, minute=0),
-        id="monthly_send",
-        name=f"Envoi newsletters (j={send_day} h={send_hour}h UTC)",
-        executor='threadpool',
+        job_collect_recommendations,
+        trigger=CronTrigger(day_of_week="mon", hour=recommendation_collect_hour, minute=0),
+        id="recommendation_collect",
+        name=f"Collecte recommandations (lundi h={recommendation_collect_hour}h UTC)",
+        executor="threadpool",
         replace_existing=True,
         misfire_grace_time=3600,
     )
 
+    # ── Auto-envoi réglementation : quotidien à 09h UTC ──────────
+    # Déclenche dès que 0 PENDING et pas encore envoyée ce mois-ci.
+    send_check_hour = int(os.environ.get("NEWSLETTER_CHECK_HOUR", "9"))
+
+    _scheduler.add_job(
+        job_try_send_regulation,
+        trigger=CronTrigger(hour=send_check_hour, minute=0),
+        id="regulation_send_check",
+        name=f"Auto-envoi newsletter réglementation (quotidien h={send_check_hour}h UTC)",
+        executor="threadpool",
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+
+    # ── Auto-envoi recommandations : quotidien à 09h30 UTC ───────
+    _scheduler.add_job(
+        job_try_send_recommendations,
+        trigger=CronTrigger(hour=send_check_hour, minute=30),
+        id="recommendation_send_check",
+        name=f"Auto-envoi newsletter recommandations (quotidien h={send_check_hour}h30 UTC)",
+        executor="threadpool",
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+
+    # ── Nettoyage tokens : quotidien à 03h UTC ───────────────────
     _scheduler.add_job(
         job_cleanup_tokens,
         trigger=CronTrigger(hour=3, minute=0),
         id="daily_cleanup",
         name="Nettoyage tokens expirés (03h00 UTC)",
-        executor='threadpool',
+        executor="threadpool",
         replace_existing=True,
         misfire_grace_time=3600,
     )
 
     _scheduler.start()
     logger.info(
-        "Scheduler démarré — collecte j=%d h=%dh, envoi j=%d h=%dh (UTC)",
-        collect_day, collect_hour, send_day, send_hour,
+        "Scheduler démarré — réglementation j=%d h=%dh | recommandations lundi h=%dh | "
+        "auto-send check h=%dh (UTC)",
+        regulation_collect_day, regulation_collect_hour,
+        recommendation_collect_hour, send_check_hour,
     )
     return _scheduler
 

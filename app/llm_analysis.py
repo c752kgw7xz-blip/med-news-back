@@ -205,8 +205,10 @@ la rémunération, un rapport épidémiologique sans recommandation opérationne
 2. AUDIENCE — Qui est principalement concerné ?
    - SPECIALITE : une ou plusieurs spécialités ou professions précises (voir liste ci-dessous).
      Pour les textes transversaux (honoraires, CCAM, convention médicale, tiers payant, \
-     exercice libéral général) : utilise SPECIALITE avec ["medecine-generale"] comme spécialité \
-     principale, plus les autres spécialités concernées si pertinent.
+     exercice libéral général) : liste TOUTES les spécialités réellement impactées — \
+     n'utilise PAS medecine-generale comme spécialité par défaut. \
+     medecine-generale est RÉSERVÉ aux articles ayant un impact clinique direct \
+     pour le médecin généraliste (pathologie, protocole, prescription courante).
    - PHARMACIENS : impact DIRECT et EXCLUSIF sur l'exercice en officine. \
      Critères stricts — LE TEXTE DOIT porter sur au moins l'un de ces points : \
      règle de substitution générique, gestion de rupture de stock en officine, \
@@ -233,14 +235,23 @@ RÈGLE D'ATTRIBUTION — À LIRE ATTENTIVEMENT :
 1. Audience = TOUJOURS SPECIALITE. Cherche la ou les spécialités exactes concernées.
    Demande-toi : "Quel médecin va concrètement changer sa pratique grâce à cet article ?"
 2. Un article peut concerner 2-5 spécialités simultanément — liste-les toutes.
-3. Pour les textes transversaux (honoraires, CCAM, convention, tiers payant) :
-   → SPECIALITE + ["medecine-generale"] en premier, ajoute les autres spécialités concernées.
-4. En cas de doute → préfère sur-attribuer (plusieurs slugs) plutôt que sous-attribuer.
+3. Pour les textes transversaux (honoraires, CCAM, convention, tiers payant, exercice libéral) :
+   → Identifie les spécialités réellement impactées. Si le texte concerne TOUS les médecins \
+sans distinction, utilise les 4-6 spécialités les plus représentatives (cardiologie, \
+medecine-interne, pneumologie, gynecologie, pediatrie, etc.) plutôt que medecine-generale seul.
+4. medecine-generale UNIQUEMENT si l'article a un impact clinique direct pour un généraliste : \
+   pathologie courante en ville, prescription ambulatoire, protocole de suivi en cabinet. \
+   NE PAS utiliser medecine-generale pour un texte purement administratif ou réglementaire \
+   qui concerne toutes les spécialités au même titre.
+5. En cas de doute → préfère sur-attribuer (plusieurs slugs) plutôt que sous-attribuer.
 Exemples corrects :
   Alerte acide tranexamique → SPECIALITE + [anesthesiologie, chirurgie-orthopedique, medecine-urgences]
   Recommandation HAS HTA   → SPECIALITE + [cardiologie, medecine-generale]
-  Arrêté honoraires        → SPECIALITE + [medecine-generale]
-  Modification CCAM        → SPECIALITE + [medecine-generale]
+  Arrêté honoraires conventionnels (tous médecins) → SPECIALITE + [cardiologie, medecine-interne, gynecologie, pediatrie, pneumologie]
+  Modification CCAM actes chirurgicaux → SPECIALITE + [chirurgie-orthopedique, chirurgie-vasculaire, anesthesiologie]
+  Décret installation médecins zones sous-dotées → SPECIALITE + [medecine-generale, medecine-interne]
+  Recommandation HAS diabète type 2 → SPECIALITE + [endocrinologie, medecine-generale]
+  Arrêté vaccination grippe médecin traitant → SPECIALITE + [medecine-generale, pediatrie]
 
 3. SPÉCIALITÉS — Si audience = SPECIALITE, liste les slugs concernés parmi :
 
