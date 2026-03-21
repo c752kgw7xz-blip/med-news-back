@@ -174,6 +174,21 @@
   }
   .search-clear:hover { color: var(--text3); }
 
+  /* ── Source type pills ──────────────────── */
+  .source-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .source-pill {
+    display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px;
+    border-radius: 3px; font-size:0.71rem; font-weight: 300; cursor: pointer;
+    border: 0.5px solid #252840; background: transparent; color: var(--text3);
+    transition: all .15s; white-space: nowrap; font-family: 'Outfit', sans-serif;
+  }
+  .source-pill:hover { border-color: var(--text4); color: var(--text2); }
+  .source-pill.active { background: var(--surface2); border-color: var(--border-strong); color: var(--text); }
+  .source-pill[data-stype="reglementaire"]        { color: #6366f1; border-color: rgba(99,102,241,.2); }
+  .source-pill[data-stype="reglementaire"].active  { color: #6366f1; background: rgba(99,102,241,.1); border-color: rgba(99,102,241,.35); }
+  .source-pill[data-stype="recommandation"]       { color: #0891b2; border-color: rgba(8,145,178,.2); }
+  .source-pill[data-stype="recommandation"].active { color: #0891b2; background: rgba(8,145,178,.1); border-color: rgba(8,145,178,.35); }
+
   /* ── Nature filter pills ────────────────── */
   .filters-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
   .filter-pill {
@@ -536,6 +551,13 @@
         <button class="search-clear" id="search-clear" onclick="clearSearch()">&times;</button>
       </div>
 
+      <!-- Source type filters -->
+      <div class="source-pills" id="source-pills">
+        <button class="source-pill active" onclick="filterBySourceType('all', this)">Tous types</button>
+        <button class="source-pill" data-stype="reglementaire" onclick="filterBySourceType('reglementaire', this)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>&nbsp;R&#233;glementation</button>
+        <button class="source-pill" data-stype="recommandation" onclick="filterBySourceType('recommandation', this)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>&nbsp;Recommandation</button>
+      </div>
+
       <!-- Catégorie filters -->
       <div class="filters-row" id="filters-row">
         <button class="filter-pill active" onclick="setCatFilter('all', this)">Tous</button>
@@ -660,6 +682,7 @@ let allSpecialties = [];
 let specCounts = {};
 let transversalCount = 0;
 let activeCatFilter = 'all';
+let activeSourceType = 'all';
 
 // Mois exclus des archives (couverts par le portail)
 let portalMonths = new Set();
@@ -847,7 +870,7 @@ function renderArticle(a, idx) {
     ? `<div class="detail-refs">R\u00e9f. : ${refs.map(r => esc(r)).join(' \u00b7 ')}</div>` : '';
 
   return `
-  <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${esc(categorie)}" data-item-id="${a.id}"
+  <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${esc(categorie)}" data-source-type="${a.source_type || 'reglementaire'}" data-item-id="${a.id}"
        style="animation-delay:${delay}ms;">
     <div class="card-top">
       <div class="card-top-left">
@@ -939,6 +962,13 @@ function collapseCard(btn) {
 }
 
 // ── Catégorie filter ───────────────────────────────────────────
+function filterBySourceType(stype, btnEl) {
+  activeSourceType = stype;
+  document.querySelectorAll('.source-pill').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  applyCatFilter();
+}
+
 function setCatFilter(cat, btnEl) {
   activeCatFilter = cat;
   document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
@@ -948,7 +978,9 @@ function setCatFilter(cat, btnEl) {
 
 function applyCatFilter() {
   document.querySelectorAll('.article-card').forEach(card => {
-    card.style.display = (activeCatFilter === 'all' || card.dataset.categorie === activeCatFilter) ? '' : 'none';
+    const typeMatch = activeSourceType === 'all' || card.dataset.sourceType === activeSourceType;
+    const catMatch  = activeCatFilter === 'all' || card.dataset.categorie === activeCatFilter;
+    card.style.display = (typeMatch && catMatch) ? '' : 'none';
   });
   // Hide empty group headers
   document.querySelectorAll('.group-header').forEach(gh => {
