@@ -119,21 +119,18 @@ def get_profile(user_id: str = Depends(_get_current_user_id)):
 
 def _build_audience_clause(audience: str | None, slug: str | None):
     """Return (where_clause, params_tuple) for audience filtering."""
-    if audience == "TRANSVERSAL_LIBERAL":
-        return "i.audience = 'TRANSVERSAL_LIBERAL'", ()
-    elif audience == "SPEC_ONLY":
-        return "(i.audience != 'TRANSVERSAL_LIBERAL' AND i.specialty_slug = %s)", (slug,)
-    elif slug == "pharmacien":
-        # Pharmaciens voient : transversal + PHARMACIENS + prescripteur-type (médicaments)
+    if slug == "pharmacien":
+        # Pharmaciens voient : PHARMACIENS + prescripteur-type (médicaments) + leur slug
         return (
-            "(i.audience = 'TRANSVERSAL_LIBERAL'"
-            " OR i.audience = 'PHARMACIENS'"
+            "(i.audience = 'PHARMACIENS'"
             " OR i.specialty_slug = 'pharmacien'"
             " OR i.type_praticien = 'prescripteur')",
             (),
         )
+    elif slug:
+        return "i.specialty_slug = %s", (slug,)
     else:
-        return "(i.audience = 'TRANSVERSAL_LIBERAL' OR i.specialty_slug = %s)", (slug,)
+        return "i.audience = 'SPECIALITE'", ()
 
 
 @router.get("/articles")
@@ -299,21 +296,8 @@ def article_counts(
             """, date_params)
             per_spec = {row[0]: row[1] for row in cur.fetchall()}
 
-            # Count transversal, filtered by date range
-            cur.execute(f"""
-                SELECT COUNT(*)
-                FROM items i
-                JOIN candidates c ON c.id = i.candidate_id
-                WHERE i.review_status = 'APPROVED'
-                  AND COALESCE(i.score_density, 0) >= 3
-                  AND i.audience = 'TRANSVERSAL_LIBERAL'
-                  {date_clause};
-            """, date_params)
-            transversal = cur.fetchone()[0]
-
     return {
         "per_specialty": per_spec,
-        "transversal": transversal,
     }
 
 
@@ -369,8 +353,7 @@ def get_article(
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.id = %s
                   AND i.review_status = 'APPROVED'
-                  AND (i.audience = 'TRANSVERSAL_LIBERAL'
-                       OR i.specialty_slug = %s);
+                  AND i.specialty_slug = %s;
             """, (item_id, slug))
             row = cur.fetchone()
 

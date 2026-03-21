@@ -8,14 +8,13 @@ Pour chaque candidat au statut NEW :
   3. Mise à jour status candidate : LLM_DONE ou LLM_FAILED
 
 Audiences gérées :
-  TRANSVERSAL_LIBERAL  : tous les médecins libéraux
-  SPECIALITE           : spécialité(s) précise(s)
+  SPECIALITE           : spécialité(s) précise(s) — toujours chercher une spécialité exacte
   PHARMACIENS          : impact spécifique officines / dispensation
 
 Schéma JSON de sortie :
 {
   "pertinent": true | false,
-  "audience": "TRANSVERSAL_LIBERAL" | "SPECIALITE" | "PHARMACIENS",
+  "audience": "SPECIALITE" | "PHARMACIENS",
   "specialites": ["medecine-generale", "cardiologie", "chirurgie-orthopedique"],
   "type_praticien": "prescripteur" | "interventionnel" | "biologiste" | "pharmacien" | "tous",
   "score_density": 1..10,
@@ -182,7 +181,7 @@ KNOWN_SPECIALTIES = {
     # Paramédicaux
     "infirmiers", "kinesitherapie", "sage-femme", "biologiste",
 }
-KNOWN_AUDIENCES   = {"TRANSVERSAL_LIBERAL", "SPECIALITE", "PHARMACIENS"}
+KNOWN_AUDIENCES   = {"SPECIALITE", "PHARMACIENS"}
 
 # ---------------------------------------------------------------------------
 # Prompt système
@@ -204,9 +203,10 @@ un texte purement administratif ou budgétaire sans impact sur la pratique ou \
 la rémunération, un rapport épidémiologique sans recommandation opérationnelle.
 
 2. AUDIENCE — Qui est principalement concerné ?
-   - TRANSVERSAL_LIBERAL : tous les médecins libéraux (facturation, CPAM, \
-     CMU, téléconsultation, exercice libéral en général)
-   - SPECIALITE : une ou plusieurs spécialités ou professions précises (voir liste ci-dessous)
+   - SPECIALITE : une ou plusieurs spécialités ou professions précises (voir liste ci-dessous).
+     Pour les textes transversaux (honoraires, CCAM, convention médicale, tiers payant, \
+     exercice libéral général) : utilise SPECIALITE avec ["medecine-generale"] comme spécialité \
+     principale, plus les autres spécialités concernées si pertinent.
    - PHARMACIENS : impact DIRECT et EXCLUSIF sur l'exercice en officine. \
      Critères stricts — LE TEXTE DOIT porter sur au moins l'un de ces points : \
      règle de substitution générique, gestion de rupture de stock en officine, \
@@ -230,29 +230,17 @@ la rémunération, un rapport épidémiologique sans recommandation opérationne
      Nouvelle indication immunothérapie oncologie   → SPECIALITE (oncologie) ✓
 
 RÈGLE D'ATTRIBUTION — À LIRE ATTENTIVEMENT :
-1. Commence TOUJOURS par chercher une spécialité précise.
+1. Audience = TOUJOURS SPECIALITE. Cherche la ou les spécialités exactes concernées.
    Demande-toi : "Quel médecin va concrètement changer sa pratique grâce à cet article ?"
-2. Si tu identifies une ou plusieurs spécialités concernées
-   → utilise SPECIALITE avec les slugs exacts.
-   Un article peut avoir 2-4 spécialités simultanément.
-3. TRANSVERSAL_LIBERAL uniquement si l'article concerne TOUS les médecins libéraux sans \
-   exception possible :
-   - Réforme de la convention médicale nationale
-   - Modification du tiers payant généralisé
-   - Changement du cadre d'exercice libéral général
-   - Obligations administratives communes à tous
-4. TRANSVERSAL_LIBERAL est INTERDIT pour :
-   - Une alerte médicament → spécialité prescriptrice
-   - Une recommandation clinique → spécialité concernée
-   - Un texte sur une pathologie précise → spécialité
-   - Un texte qui mentionne des spécialistes nommément
-5. En cas de doute entre TRANSVERSAL et une spécialité → choisis la spécialité.
-   Mieux vaut sur-attribuer que sous-attribuer.
+2. Un article peut concerner 2-5 spécialités simultanément — liste-les toutes.
+3. Pour les textes transversaux (honoraires, CCAM, convention, tiers payant) :
+   → SPECIALITE + ["medecine-generale"] en premier, ajoute les autres spécialités concernées.
+4. En cas de doute → préfère sur-attribuer (plusieurs slugs) plutôt que sous-attribuer.
 Exemples corrects :
-  Alerte acide tranexamique → anesthesiologie + chirurgie-orthopedique + medecine-urgences
-  Recommandation HAS HTA   → cardiologie + medecine-generale
-  Arrêté honoraires        → TRANSVERSAL_LIBERAL ✓
-  Modification CCAM        → TRANSVERSAL_LIBERAL ✓
+  Alerte acide tranexamique → SPECIALITE + [anesthesiologie, chirurgie-orthopedique, medecine-urgences]
+  Recommandation HAS HTA   → SPECIALITE + [cardiologie, medecine-generale]
+  Arrêté honoraires        → SPECIALITE + [medecine-generale]
+  Modification CCAM        → SPECIALITE + [medecine-generale]
 
 3. SPÉCIALITÉS — Si audience = SPECIALITE, liste les slugs concernés parmi :
 
@@ -274,7 +262,7 @@ chirurgie-pediatrique, chirurgie-cardiaque
    Règles :
    - Distingue la sous-spécialité chirurgicale exacte plutôt que "chirurgie" générique.
    - Pour les paramédicaux, utilise leurs slugs dédiés (infirmiers, kinesitherapie, \
-sage-femme, biologiste) plutôt que TRANSVERSAL_LIBERAL.
+sage-femme, biologiste).
    - Un texte peut concerner plusieurs spécialités : retourne un tableau complet.
 
 4. SCORE D'URGENCE (score_density) de 1 à 10 :
@@ -1063,7 +1051,7 @@ def _parse_llm_output(raw: str) -> dict[str, Any]:
 
     audience = data.get("audience", "")
     if audience not in KNOWN_AUDIENCES:
-        data["audience"] = "TRANSVERSAL_LIBERAL"
+        data["audience"] = "SPECIALITE"
 
     raw_slugs = data.get("specialites", [])
     data["specialites"] = [s for s in raw_slugs if s in KNOWN_SPECIALTIES]
@@ -1076,8 +1064,6 @@ def _parse_llm_output(raw: str) -> dict[str, Any]:
             data["type_praticien"] = "pharmacien"
         elif any(s.startswith("chirurgie") or s in ("anesthesiologie", "neurochirurgie") for s in specs):
             data["type_praticien"] = "interventionnel"
-        elif aud == "TRANSVERSAL_LIBERAL":
-            data["type_praticien"] = "tous"
         else:
             data["type_praticien"] = "prescripteur"
 

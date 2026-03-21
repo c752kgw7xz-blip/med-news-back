@@ -254,7 +254,7 @@ def _get_approved_items(specialty_slug: str) -> list[dict[str, Any]]:
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
                   AND c.official_date >= %s
-                  AND (i.audience = 'TRANSVERSAL_LIBERAL' OR i.specialty_slug = %s)
+                  AND i.specialty_slug = %s
                 ORDER BY i.score_density DESC, c.official_date DESC;
             """, (since, specialty_slug))
             rows = cur.fetchall()

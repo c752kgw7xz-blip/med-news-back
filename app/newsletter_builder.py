@@ -454,24 +454,15 @@ def build_newsletter(
         if specialty_slug in (i.get("specialites") or [])
         or i.get("specialty_slug") == specialty_slug
     ]
-    items_transv = [
-        i for i in items
-        if i.get("audience") in ("TRANSVERSAL_LIBERAL",)
-        and (i.get("score_density") or 0) >= 8
-        and i not in items_spec
-    ]
-    # Max 3 transversaux (augmenté de 2 → 3 pour compenser la perte d'items mal routés)
-    items_transv = sorted(items_transv, key=lambda x: x.get("score_density") or 0, reverse=True)[:3]
-
-    n_total = len(items_spec) + len(items_transv)
+    n_total = len(items_spec)
     n_alertes = sum(
-        1 for i in items_spec + items_transv
+        1 for i in items_spec
         if (i.get("tri_json") or {}).get("nature", "") in ("ALERTE", "RECOMMANDATION")
     )
     n_autres = n_total - n_alertes
 
     # Sujet : accroche sur l'item le plus urgent (score le plus élevé)
-    all_sorted = sorted(items_spec + items_transv, key=lambda x: x.get("score_density") or 0, reverse=True)
+    all_sorted = sorted(items_spec, key=lambda x: x.get("score_density") or 0, reverse=True)
     top_item = all_sorted[0] if all_sorted else None
     if top_item:
         top_titre = (top_item.get("tri_json") or {}).get("titre_court") or top_item.get("title_raw") or ""
@@ -487,7 +478,7 @@ def build_newsletter(
     else:
         sujet = f"[MedNews] {specialty_name} — Veille {MOIS_FR_LONG[emission_date.month]} {emission_date.year}"
 
-    edito_text = _generate_edito(items_spec, items_transv, specialty_name, emission_date)
+    edito_text = _generate_edito(items_spec, [], specialty_name, emission_date)
 
     # Articles spécialité
     articles_specialite_html = (
@@ -495,18 +486,6 @@ def build_newsletter(
         if items_spec
         else '<p style="color:var(--text5);font-style:italic;padding:20px 0;">Aucun article ce mois-ci.</p>'
     )
-
-    # Section transversal (conditionnelle)
-    if items_transv:
-        articles_transv_html = "".join(_render_article(i) for i in items_transv)
-        section_transversal_html = f"""
-<div class="grp">
-  <div class="grp-label">Tous les médecins libéraux</div>
-</div>
-{articles_transv_html}
-"""
-    else:
-        section_transversal_html = ""
 
     html = f"""<!DOCTYPE html>
 <html lang="fr">
@@ -563,9 +542,6 @@ def build_newsletter(
   </div>
 
   {articles_specialite_html}
-
-  <!-- ARTICLES TRANSVERSAUX (si présents) -->
-  {section_transversal_html}
 
   <!-- FOOTER -->
   <div class="footer">
