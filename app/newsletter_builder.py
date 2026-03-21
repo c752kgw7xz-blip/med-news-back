@@ -101,13 +101,9 @@ def _priority_label(score: int) -> tuple[str, str]:
 
 
 CAT_STYLES: dict[str, tuple[str, str]] = {
-    "medicament":           ("Médicaments",      "cat-medicament"),
-    "clinique":             ("Clinique",          "cat-clinique"),
-    "dispositifs_medicaux": ("Dispositifs méd.",  "cat-dispositifs"),
-    "facturation":          ("Facturation",       "cat-facturation"),
-    "administratif":        ("Administratif",     "cat-administratif"),
-    "sante_publique":       ("Santé publique",    "cat-sante_publique"),
-    "exercice":             ("Exercice libéral",  "cat-exercice"),
+    "therapeutique": ("Médicaments & Dispositifs", "cat-therapeutique"),
+    "clinique":      ("Clinique",                  "cat-clinique"),
+    "exercice":      ("Exercice & Admin",           "cat-exercice"),
 }
 
 # ---------------------------------------------------------------------------
@@ -230,18 +226,10 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
 .cat { font-family: 'DM Mono', monospace; font-size: 11px;
         letter-spacing: .5px; text-transform: uppercase;
         padding: 3px 9px; border-radius: 3px; font-weight: 500; }
-.cat-medicament       { background: rgba(160,123,224,.08); color: #a07be0;
-                         border: 0.5px solid rgba(160,123,224,.25); }
+.cat-therapeutique    { background: rgba(147,51,234,.08);  color: #9333ea;
+                         border: 0.5px solid rgba(147,51,234,.25); }
 .cat-clinique         { background: rgba(107,159,212,.08); color: #6b9fd4;
                          border: 0.5px solid rgba(107,159,212,.25); }
-.cat-dispositifs      { background: rgba(91,168,207,.08);  color: #5ba8cf;
-                         border: 0.5px solid rgba(91,168,207,.25); }
-.cat-facturation      { background: rgba(212,146,26,.08);  color: #d4921a;
-                         border: 0.5px solid rgba(212,146,26,.25); }
-.cat-administratif    { background: rgba(192,106,170,.08); color: #c06aaa;
-                         border: 0.5px solid rgba(192,106,170,.25); }
-.cat-sante_publique   { background: rgba(42,157,122,.08);  color: #2a9d7a;
-                         border: 0.5px solid rgba(42,157,122,.25); }
 .cat-exercice         { background: rgba(74,158,187,.08);  color: #4a9ebb;
                          border: 0.5px solid rgba(74,158,187,.25); }
 

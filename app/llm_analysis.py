@@ -26,7 +26,7 @@ Schéma JSON de sortie :
     "date_publication":      "YYYY-MM-DD",
     "date_entree_en_vigueur": "YYYY-MM-DD"  // date d'application effective (≠ publication)
   },
-  // categorie : clinique | medicament | dispositifs_medicaux | facturation | administratif | sante_publique | exercice
+  // categorie : clinique | therapeutique | exercice
   "lecture_json": {
     "points_cles":  [str, ...],  // 3-5 bullets
     "texte_long":   str,         // analyse complète ~150 mots
@@ -310,35 +310,35 @@ Si absente, utilise la date de publication.
    → date_entree_en_vigueur : date de l'alerte (généralement immédiate).
 
 6. CATÉGORIE MÉTIER — Assigne UNE seule valeur parmi :
-   - clinique              : recommandations HAS, protocoles, guidelines diagnostiques ou thérapeutiques
-   - medicament            : alertes pharmacovigilance sur une MOLÉCULE nommée, retrait/suspension AMM, \
+   - clinique       : recommandations HAS, protocoles, guidelines diagnostiques ou thérapeutiques, \
+dépistage, vaccination, épidémies, prévention, plans de santé publique
+   - therapeutique  : alertes pharmacovigilance sur une MOLÉCULE nommée, retrait/suspension AMM, \
 nouvelle indication thérapeutique, modification posologie/CI/contre-indication, \
-remboursement d'un médicament — STRICTEMENT pharmacologie et prescription médicamenteuse
-   - dispositifs_medicaux  : alertes matériovigilance, problèmes de sécurité ou réglementation \
+remboursement d'un médicament ; alertes matériovigilance, problèmes de sécurité ou réglementation \
 concernant équipements médicaux, imagerie (IRM, scanner, échographe, radiologie), \
-implants, prothèses, instruments chirurgicaux, dispositifs de perfusion, \
-défibrillateurs, ventilateurs, moniteurs, DM-DIV, réactifs de laboratoire
-   - facturation           : CCAM, NGAP, tarifs, cotations, honoraires, remboursement actes
-   - administratif         : obligations déclaratives, formations DPC, certifications, accréditations
-   - sante_publique        : dépistage, vaccination, épidémies, prévention, plans nationaux
-   - exercice              : convention médicale, installation, déserts médicaux, gardes, \
-télémédecine, statut libéral, logiciels métier (LAP, DMP, DxCare…)
+implants, prothèses, instruments chirurgicaux, DM-DIV, réactifs de laboratoire
+   - exercice       : convention médicale, installation, déserts médicaux, gardes, \
+télémédecine, statut libéral, logiciels métier (LAP, DMP, DxCare…) ; \
+CCAM, NGAP, tarifs, cotations, honoraires, remboursement actes ; \
+obligations déclaratives, formations DPC, certifications, accréditations
 
    RÈGLES DE DISCRIMINATION (prioritaires sur les définitions ci-dessus) :
-   - Molécule / DCI / spécialité pharmaceutique nommée / AMM → 'medicament'
-   - Équipement, matériel, appareil, dispositif médical (y compris imagerie) → 'dispositifs_medicaux'
+   - Molécule / DCI / spécialité pharmaceutique nommée / AMM → 'therapeutique'
+   - Équipement, matériel, appareil, dispositif médical (y compris imagerie) → 'therapeutique'
    - Logiciel métier santé (LAP, DxCare, NETSoins, Cortexte, DMP) → 'exercice'
-   - "Médicament" ou "dispositif" sont des mots-clés discriminants : \
-     si le texte ne porte pas sur une molécule précise, ne pas utiliser 'medicament'
+   - Facturation, cotation CCAM/NGAP, honoraires, avenant tarifaire → 'exercice'
+   - Dépistage, vaccination, alerte épidémique, plan national → 'clinique'
 
    Exemples corrects :
-       Alerte ANSM paracétamol 1 g          → medicament
-       Retrait AMM Valsartan                → medicament
-       Alerte ANSM scanner Siemens          → dispositifs_medicaux
-       Alerte ANSM IRM Philips              → dispositifs_medicaux
-       Alerte ANSM bistouri / prothèse      → dispositifs_medicaux
+       Alerte ANSM paracétamol 1 g          → therapeutique
+       Retrait AMM Valsartan                → therapeutique
+       Alerte ANSM scanner Siemens          → therapeutique
+       Alerte ANSM IRM Philips              → therapeutique
+       Alerte ANSM bistouri / prothèse      → therapeutique
        Alerte ANSM DxCare (logiciel)        → exercice
        Obligation utilisation LAP DMP       → exercice
+       Recommandation HAS vaccination       → clinique
+       Avenant tarifaire UNCAM              → exercice
 
 7. TYPE DE PRATICIEN (type_praticien) — Détermine le profil professionnel PRINCIPALEMENT \
 concerné par ce texte. Choisis parmi :
@@ -438,7 +438,7 @@ JSON attendu (strict, pas de markdown) :
   "specialites": [<slugs parmi: medecine-generale, cardiologie, dermatologie, endocrinologie, gastro-enterologie, gynecologie, neurologie, ophtalmologie, orl, pediatrie, pneumologie, psychiatrie, rhumatologie, urologie, medecine-interne, medecine-urgences, geriatrie, medecine-physique, oncologie, hematologie, infectiologie, nephrologie, radiologie, anesthesiologie, chirurgie-vasculaire, chirurgie-orthopedique, chirurgie-thoracique, chirurgie-plastique, neurochirurgie, chirurgie-pediatrique, chirurgie-cardiaque, infirmiers, kinesitherapie, sage-femme, biologiste>],
   "type_praticien": "<prescripteur|interventionnel|biologiste|pharmacien|tous>",
   "score_density": <int 1-10>,
-  "categorie": "<clinique|medicament|dispositifs_medicaux|facturation|administratif|sante_publique|exercice>",
+  "categorie": "<clinique|therapeutique|exercice>",
   "tri_json": {{
     "titre_court": "<≤12 mots>",
     "resume": "<2-3 phrases concrètes selon nature du texte>",
@@ -1072,7 +1072,7 @@ def _parse_llm_output(raw: str) -> dict[str, Any]:
     except (TypeError, ValueError):
         data["score_density"] = 5
 
-    KNOWN_CATEGORIES = {"clinique", "medicament", "dispositifs_medicaux", "facturation", "administratif", "sante_publique", "exercice"}
+    KNOWN_CATEGORIES = {"clinique", "therapeutique", "exercice"}
     if data.get("categorie") not in KNOWN_CATEGORIES:
         data["categorie"] = None  # sera assigné rétroactivement
 

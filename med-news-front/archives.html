@@ -224,20 +224,12 @@
 
 
   /* ── Filter pills — couleurs par catégorie ── */
-  .filter-pill[data-cat="medicament"]       { color: #9333ea; border-color: rgba(147,51,234,.2); }
-  .filter-pill[data-cat="medicament"].active{ color: #9333ea; background: rgba(147,51,234,.1); border-color: rgba(147,51,234,.35); }
-  .filter-pill[data-cat="dispositifs_medicaux"]       { color: #0ea5e9; border-color: rgba(14,165,233,.2); }
-  .filter-pill[data-cat="dispositifs_medicaux"].active{ color: #0ea5e9; background: rgba(14,165,233,.1); border-color: rgba(14,165,233,.35); }
+  .filter-pill[data-cat="therapeutique"]       { color: #9333ea; border-color: rgba(147,51,234,.2); }
+  .filter-pill[data-cat="therapeutique"].active{ color: #9333ea; background: rgba(147,51,234,.1); border-color: rgba(147,51,234,.35); }
   .filter-pill[data-cat="clinique"]       { color: #3b82f6; border-color: rgba(59,130,246,.2); }
   .filter-pill[data-cat="clinique"].active{ color: #3b82f6; background: rgba(59,130,246,.1); border-color: rgba(59,130,246,.35); }
   .filter-pill[data-cat="exercice"]       { color: #0891b2; border-color: rgba(8,145,178,.2); }
   .filter-pill[data-cat="exercice"].active{ color: #0891b2; background: rgba(8,145,178,.1); border-color: rgba(8,145,178,.35); }
-  .filter-pill[data-cat="facturation"]       { color: #d97706; border-color: rgba(217,119,6,.2); }
-  .filter-pill[data-cat="facturation"].active{ color: #d97706; background: rgba(217,119,6,.1); border-color: rgba(217,119,6,.35); }
-  .filter-pill[data-cat="sante_publique"]       { color: #059669; border-color: rgba(5,150,105,.2); }
-  .filter-pill[data-cat="sante_publique"].active{ color: #059669; background: rgba(5,150,105,.1); border-color: rgba(5,150,105,.35); }
-  .filter-pill[data-cat="administratif"]       { color: #db2777; border-color: rgba(219,39,119,.2); }
-  .filter-pill[data-cat="administratif"].active{ color: #db2777; background: rgba(219,39,119,.1); border-color: rgba(219,39,119,.35); }
 
   /* ── Loading ────────────────────────────── */
   .loading { text-align: center; padding: 80px 0; }
@@ -561,13 +553,9 @@
       <!-- Catégorie filters -->
       <div class="filters-row" id="filters-row">
         <button class="filter-pill active" onclick="setCatFilter('all', this)">Tous</button>
-        <button class="filter-pill" data-cat="medicament" onclick="setCatFilter('medicament', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>&nbsp;M&#233;dicaments</button>
-        <button class="filter-pill" data-cat="dispositifs_medicaux" onclick="setCatFilter('dispositifs_medicaux', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect width="10" height="8" x="7" y="8" rx="1"/></svg>&nbsp;Dispositifs m&#233;d.</button>
+        <button class="filter-pill" data-cat="therapeutique" onclick="setCatFilter('therapeutique', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>&nbsp;M&#233;d. &amp; Dispositifs</button>
         <button class="filter-pill" data-cat="clinique" onclick="setCatFilter('clinique', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>&nbsp;Clinique</button>
-        <button class="filter-pill" data-cat="exercice" onclick="setCatFilter('exercice', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21H17"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>&nbsp;Exercice</button>
-        <button class="filter-pill" data-cat="facturation" onclick="setCatFilter('facturation', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="5 7 5 21 12 17 19 21 19 7"/><rect width="14" height="5" x="5" y="2" rx="2"/></svg>&nbsp;Facturation</button>
-        <button class="filter-pill" data-cat="sante_publique" onclick="setCatFilter('sante_publique', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>&nbsp;Sant&#233; publique</button>
-        <button class="filter-pill" data-cat="administratif" onclick="setCatFilter('administratif', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>&nbsp;Administratif</button>
+        <button class="filter-pill" data-cat="exercice" onclick="setCatFilter('exercice', this)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21H17"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>&nbsp;Exercice &amp; Admin</button>
       </div>
 
       <!-- Loading -->
@@ -770,24 +758,16 @@ async function logout() {
 }
 
 // ── Rendering helpers ─────────────────────────────────────────
-const CATEGORY_ORDER = ['medicament','dispositifs_medicaux','clinique','exercice','facturation','sante_publique','administratif'];
+const CATEGORY_ORDER = ['therapeutique','clinique','exercice'];
 const CATEGORY_META = {
-  medicament:           { icon: 'pill',           label: 'M\u00e9dicaments & prescriptions' },
-  dispositifs_medicaux: { icon: 'scan',           label: 'Dispositifs m\u00e9dicaux' },
-  clinique:             { icon: 'activity',       label: 'Pratique clinique' },
-  exercice:             { icon: 'scale',          label: 'Exercice lib\u00e9ral' },
-  facturation:          { icon: 'receipt',        label: 'Facturation & cotations' },
-  sante_publique:       { icon: 'shield-plus',    label: 'Sant\u00e9 publique' },
-  administratif:        { icon: 'clipboard-list', label: 'Administratif' },
+  therapeutique: { icon: 'pill',     label: 'M\u00e9d. & Dispositifs' },
+  clinique:      { icon: 'activity', label: 'Pratique clinique' },
+  exercice:      { icon: 'scale',    label: 'Exercice & Admin' },
 };
 const CATEGORY_SVG_PATHS = {
-  'pill': '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
+  'pill':     '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
   'activity': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
-  'scan': '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect width="10" height="8" x="7" y="8" rx="1"/>',
-  'scale': '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21H17"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
-  'receipt': '<polyline points="5 7 5 21 12 17 19 21 19 7"/><rect width="14" height="5" x="5" y="2" rx="2"/>',
-  'shield-plus': '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12h6"/><path d="M12 9v6"/>',
-  'clipboard-list': '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+  'scale':    '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21H17"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
 };
 function catIconHtml(iconName, color) {
   const paths = CATEGORY_SVG_PATHS[iconName] || '';
@@ -795,13 +775,9 @@ function catIconHtml(iconName, color) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;flex-shrink:0;">${paths}</svg>`;
 }
 const CATEGORIE_STYLE = {
-  clinique:             { bg: 'rgba(59,130,246,.08)', color: '#3b82f6', border: '0.5px solid rgba(59,130,246,.25)', label: 'Clinique' },
-  medicament:           { bg: 'rgba(147,51,234,.08)', color: '#9333ea', border: '0.5px solid rgba(147,51,234,.25)', label: 'M\u00e9dicaments' },
-  dispositifs_medicaux: { bg: 'rgba(59,130,246,.08)', color: '#3b82f6', border: '0.5px solid rgba(59,130,246,.25)', label: 'Dispositifs m\u00e9d.' },
-  facturation:          { bg: 'rgba(217,119,6,.08)',   color: '#d97706', border: '0.5px solid rgba(217,119,6,.25)',   label: 'Facturation' },
-  administratif:        { bg: 'rgba(219,39,119,.08)',  color: '#db2777', border: '0.5px solid rgba(219,39,119,.25)',  label: 'Administratif' },
-  sante_publique:       { bg: 'rgba(5,150,105,.08)',   color: '#059669', border: '0.5px solid rgba(5,150,105,.25)',   label: 'Sant\u00e9 publique' },
-  exercice:             { bg: 'rgba(8,145,178,.08)',   color: '#0891b2', border: '0.5px solid rgba(8,145,178,.25)',   label: 'Exercice lib\u00e9ral' },
+  therapeutique: { bg: 'rgba(147,51,234,.08)', color: '#9333ea', border: '0.5px solid rgba(147,51,234,.25)', label: 'M\u00e9d. & Dispositifs' },
+  clinique:      { bg: 'rgba(59,130,246,.08)', color: '#3b82f6', border: '0.5px solid rgba(59,130,246,.25)', label: 'Clinique' },
+  exercice:      { bg: 'rgba(8,145,178,.08)',  color: '#0891b2', border: '0.5px solid rgba(8,145,178,.25)',  label: 'Exercice & Admin' },
 };
 
 function categorieBadge(categorie) {
