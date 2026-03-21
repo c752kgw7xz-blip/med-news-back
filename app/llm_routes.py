@@ -363,20 +363,24 @@ def run_background(request: Request, body: _RunBackgroundBody = _RunBackgroundBo
     batch_size = max(1, min(body.batch_size, 100))
 
     def _bg_process(cap: int):
-        total = 0
-        while total < cap:
-            to_fetch = min(batch_size, cap - total)
-            with get_conn() as conn:
-                with conn.cursor() as cur:
-                    candidates = _fetch_candidates_to_analyse(cur, None, to_fetch)
-            if not candidates:
-                logger.info("run-background : terminé (NEW épuisés), %d traités", total)
-                break
-            for candidate in candidates:
-                _process_one_candidate(candidate)
-                total += 1
-            logger.info("run-background : %d/%d traités", total, cap)
-        logger.info("run-background : arrêt — %d traités (plafond=%d)", total, cap)
+        try:
+            logger.info("run-background : démarrage thread, cap=%d", cap)
+            total = 0
+            while total < cap:
+                to_fetch = min(batch_size, cap - total)
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        candidates = _fetch_candidates_to_analyse(cur, None, to_fetch)
+                if not candidates:
+                    logger.info("run-background : terminé (NEW épuisés), %d traités", total)
+                    break
+                for candidate in candidates:
+                    _process_one_candidate(candidate)
+                    total += 1
+                logger.info("run-background : %d/%d traités", total, cap)
+            logger.info("run-background : arrêt — %d traités (plafond=%d)", total, cap)
+        except Exception:
+            logger.exception("run-background : ERREUR FATALE dans le thread")
 
     t = threading.Thread(target=_bg_process, args=(max_candidates,), daemon=True)
     t.start()
