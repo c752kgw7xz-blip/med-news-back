@@ -16,7 +16,7 @@ Schéma JSON de sortie :
 {
   "pertinent": true | false,
   "audience": "TRANSVERSAL_LIBERAL" | "SPECIALITE" | "PHARMACIENS",
-  "specialites": ["medecine-generale", "cardiologie", "chirurgie"],
+  "specialites": ["medecine-generale", "cardiologie", "chirurgie-orthopedique"],
   "type_praticien": "prescripteur" | "interventionnel" | "biologiste" | "pharmacien" | "tous",
   "score_density": 1..10,
   "tri_json": {
