@@ -404,56 +404,73 @@ def run_pre_filter(request: Request):
     Passe tous les candidats NEW au pré-filtre local (0 appel LLM).
     - Candidats non pertinents  → status = 'LLM_DONE'  (éliminés proprement)
     - Candidats pertinents      → restent en NEW         (prêts pour le LLM)
-    Retourne le bilan immédiatement (traitement synchrone, rapide car 0 I/O réseau).
+    Lance le traitement dans un thread séparé — retourne immédiatement.
+    Consulte /admin/llm/stats pour suivre la progression (candidates_new diminue).
     """
     _require_admin(request)
 
-    eliminated = kept = 0
     batch = 500
 
-    while True:
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT id, title_raw, source
-                    FROM candidates
-                    WHERE status = 'NEW'
-                    ORDER BY id
-                    LIMIT %s;
-                    """,
-                    (batch,),
-                )
-                rows = cur.fetchall()
+    def _bg_pre_filter():
+        eliminated = kept = 0
+        try:
+            logger.info("pre-filter : démarrage thread background")
+            while True:
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            """
+                            SELECT id, title_raw, source
+                            FROM candidates
+                            WHERE status = 'NEW'
+                            ORDER BY id
+                            LIMIT %s;
+                            """,
+                            (batch,),
+                        )
+                        rows = cur.fetchall()
 
-        if not rows:
-            break
+                if not rows:
+                    break
 
-        to_eliminate: list[str] = []
-        for (cid, title_raw, source) in rows:
-            keep, _ = pre_filter_candidate(title_raw or "", source=source or "")
-            if not keep:
-                to_eliminate.append(str(cid))
-            else:
-                kept += 1
+                to_eliminate: list[str] = []
+                for (cid, title_raw, source) in rows:
+                    keep, _ = pre_filter_candidate(title_raw or "", source=source or "")
+                    if not keep:
+                        to_eliminate.append(str(cid))
+                    else:
+                        kept += 1
 
-        if to_eliminate:
-            with get_conn() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        "UPDATE candidates SET status = 'LLM_DONE' WHERE id = ANY(%s::uuid[]);",
-                        (to_eliminate,),
-                    )
-                eliminated += len(to_eliminate)
+                if to_eliminate:
+                    with get_conn() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute(
+                                "UPDATE candidates SET status = 'LLM_DONE' WHERE id = ANY(%s::uuid[]);",
+                                (to_eliminate,),
+                            )
+                    eliminated += len(to_eliminate)
 
-    logger.info("Pré-filtre terminé : éliminés=%d conservés=%d", eliminated, kept)
+                logger.info("pre-filter : éliminés=%d conservés=%d (batch terminé)", eliminated, kept)
+
+            logger.info("pre-filter : TERMINÉ — éliminés=%d conservés=%d", eliminated, kept)
+        except Exception:
+            logger.exception("pre-filter : ERREUR FATALE dans le thread")
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM candidates WHERE status = 'NEW';")
+            remaining = cur.fetchone()[0]
+
+    t = threading.Thread(target=_bg_pre_filter, daemon=True)
+    t.start()
+
     return {
         "ok": True,
-        "eliminated": eliminated,
-        "kept_for_llm": kept,
+        "started": True,
+        "candidates_new_at_start": remaining,
         "message": (
-            f"{eliminated} candidats éliminés par pré-filtre (0 appel LLM). "
-            f"{kept} candidats restent en NEW, prêts pour /admin/llm/run-background."
+            f"Pré-filtre lancé en arrière-plan sur {remaining} candidats NEW. "
+            "Consulte /admin/llm/stats pour suivre (candidates_new diminue au fil du traitement)."
         ),
     }
 
