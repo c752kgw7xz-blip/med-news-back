@@ -315,7 +315,16 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
         "specialty_hint": "infectiologie",
     },
 
-    # ❌ SFCV (vasculaire.com/feed/) — 404 mars 2026
+    # ── Chirurgie vasculaire ───────────────────────────────────────────────
+    {
+        "url": "https://www.vasculaire.com/rss.xml",
+        "label": "SCVE — Société de Chirurgie Vasculaire et Endovasculaire",
+        "source": "sfcv",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "chirurgie-vasculaire",
+    },
+
     # ❌ SOFCPRE (sofcpre.fr/feed/) — 404 mars 2026
     # ❌ SOFMER (sofmer.com/feed/) — 404 mars 2026
     # ❌ SFMV (sfmv.fr/feed/) — 404 mars 2026
