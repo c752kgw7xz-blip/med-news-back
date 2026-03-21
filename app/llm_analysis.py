@@ -20,11 +20,12 @@ Schéma JSON de sortie :
   "type_praticien": "prescripteur" | "interventionnel" | "biologiste" | "pharmacien" | "tous",
   "score_density": 1..10,
   "tri_json": {
-    "titre_court":     str,   // ≤ 12 mots
-    "resume":          str,   // 2-3 phrases, ce que ça change concrètement
-    "impact_pratique": str,   // 1 phrase : action à faire / point à retenir
-    "nature":          str,   // ARRETE | DECRET | LOI | ORDONNANCE | RECOMMANDATION | ALERTE | AUTRE
-    "date_publication": "YYYY-MM-DD"
+    "titre_court":           str,   // ≤ 12 mots
+    "resume":                str,   // 2-3 phrases, ce que ça change concrètement
+    "impact_pratique":       str,   // 1 phrase : action à faire / point à retenir
+    "nature":                str,   // ARRETE | DECRET | LOI | ORDONNANCE | RECOMMANDATION | ALERTE | AUTRE
+    "date_publication":      "YYYY-MM-DD",
+    "date_entree_en_vigueur": "YYYY-MM-DD"  // date d'application effective (≠ publication)
   },
   // categorie : clinique | medicament | dispositifs_medicaux | facturation | administratif | sante_publique | exercice
   "lecture_json": {
@@ -297,6 +298,29 @@ sage-femme, biologiste) plutôt que TRANSVERSAL_LIBERAL.
 5. RÉDACTION — Résumé clair et direct pour un professionnel pressé. \
    Pas de jargon juridique, phrases courtes, impact concret en premier.
 
+   Adapte la rédaction selon la nature du texte :
+
+   Texte RÉGLEMENTAIRE (loi, décret, arrêté, circulaire, avenant tarifaire) :
+   → resume : "À compter du [date d'application], [obligation/changement concret]. \
+[Qui est concerné]. [Conséquence ou sanction si pertinente]."
+   → impact_pratique : "Action requise avant le [date] : [verbe d'action précis]."
+   → date_entree_en_vigueur : cherche la date d'application effective dans le texte \
+(souvent différente de la date de publication au JO). \
+Si absente, utilise la date de publication.
+
+   Texte CLINIQUE / RECOMMANDATION (HAS, société savante, guideline) :
+   → resume : "[Nouveau traitement/protocole/seuil] recommandé en [situation clinique]. \
+[Population cible si précisée]. [Ce qui change vs pratique antérieure si mentionné]."
+   → impact_pratique : "[Verbe clinique] chez [population] si [critère]. \
+[Niveau de preuve ou grade si disponible dans le texte]."
+   → date_entree_en_vigueur : date de publication de la recommandation.
+
+   Texte ALERTE SÉCURITÉ (ANSM retrait, matériovigilance) :
+   → resume : "[Produit/molécule] concerné(e). [Risque identifié]. \
+[Mesure prise : suspension, retrait, restriction]."
+   → impact_pratique : "Ne plus [prescrire/utiliser] [produit] — [alternative si mentionnée]."
+   → date_entree_en_vigueur : date de l'alerte (généralement immédiate).
+
 6. CATÉGORIE MÉTIER — Assigne UNE seule valeur parmi :
    - clinique              : recommandations HAS, protocoles, guidelines diagnostiques ou thérapeutiques
    - medicament            : alertes pharmacovigilance sur une MOLÉCULE nommée, retrait/suspension AMM, \
@@ -429,10 +453,11 @@ JSON attendu (strict, pas de markdown) :
   "categorie": "<clinique|medicament|dispositifs_medicaux|facturation|administratif|sante_publique|exercice>",
   "tri_json": {{
     "titre_court": "<≤12 mots>",
-    "resume": "<2-3 phrases concrètes>",
-    "impact_pratique": "<1 phrase : que faire / retenir>",
+    "resume": "<2-3 phrases concrètes selon nature du texte>",
+    "impact_pratique": "<1 phrase : action précise à faire / retenir>",
     "nature": "<ARRETE|DECRET|LOI|ORDONNANCE|RECOMMANDATION|ALERTE|AVENANT|CIRCULAIRE|AUTRE>",
-    "date_publication": "{date_pub}"
+    "date_publication": "{date_pub}",
+    "date_entree_en_vigueur": "<YYYY-MM-DD — date d'application effective, différente de date_publication si précisée dans le texte>"
   }},
   "lecture_json": {{
     "points_cles": ["<bullet 1>", "..."],
