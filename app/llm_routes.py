@@ -345,19 +345,22 @@ def reset_all_pipeline(request: Request):
     }
 
 
+class _RunBackgroundBody(BaseModel):
+    max_candidates: int = 200
+    batch_size: int = 20
+
+
 @router.post("/run-background")
-def run_background(
-    request: Request,
-    batch_size: int = Query(default=20, ge=1, le=100, description="Candidats par itération"),
-    max_candidates: int = Query(default=500, ge=1, le=10000, description="Plafond total de candidats à traiter"),
-):
+def run_background(request: Request, body: _RunBackgroundBody = _RunBackgroundBody()):
     """
     Lance le traitement LLM dans un thread séparé — retourne immédiatement.
     Le traitement continue côté serveur, requête non-bloquante.
     Consulte /admin/llm/stats pour suivre la progression.
-    Par défaut : 500 candidats max (ajustable via ?max_candidates=N).
+    Body JSON : { "max_candidates": 200, "batch_size": 20 }
     """
     _require_admin(request)
+    max_candidates = max(1, min(body.max_candidates, 10000))
+    batch_size = max(1, min(body.batch_size, 100))
 
     def _bg_process(cap: int):
         total = 0
