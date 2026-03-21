@@ -348,12 +348,11 @@ def reset_all_pipeline(request: Request):
 @router.post("/run-background")
 def run_background(
     request: Request,
-    background_tasks: BackgroundTasks,
     batch_size: int = Query(default=20, ge=1, le=100, description="Candidats par itération"),
     max_candidates: int = Query(default=500, ge=1, le=10000, description="Plafond total de candidats à traiter"),
 ):
     """
-    Lance le traitement LLM en arrière-plan — retourne immédiatement.
+    Lance le traitement LLM dans un thread séparé — retourne immédiatement.
     Le traitement continue côté serveur, requête non-bloquante.
     Consulte /admin/llm/stats pour suivre la progression.
     Par défaut : 500 candidats max (ajustable via ?max_candidates=N).
@@ -368,15 +367,16 @@ def run_background(
                 with conn.cursor() as cur:
                     candidates = _fetch_candidates_to_analyse(cur, None, to_fetch)
             if not candidates:
-                logger.info("run-background : terminé (NEW épuisés), %d candidats traités", total)
+                logger.info("run-background : terminé (NEW épuisés), %d traités", total)
                 break
             for candidate in candidates:
                 _process_one_candidate(candidate)
                 total += 1
             logger.info("run-background : %d/%d traités", total, cap)
-        logger.info("run-background : arrêt — %d candidats traités (plafond=%d)", total, cap)
+        logger.info("run-background : arrêt — %d traités (plafond=%d)", total, cap)
 
-    background_tasks.add_task(_bg_process, max_candidates)
+    t = threading.Thread(target=_bg_process, args=(max_candidates,), daemon=True)
+    t.start()
 
     with get_conn() as conn:
         with conn.cursor() as cur:
