@@ -29,7 +29,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Query
 from pydantic import BaseModel
 
 from app.db import get_conn
-from app.llm_analysis import analyse_candidate, LLM_MODEL, pre_filter_candidate, get_source_type
+from app.llm_analysis import analyse_candidate, LLM_MODEL, pre_filter_candidate, get_source_type, get_source_config
 from app.security import bearer_scheme, decode_access_token, require_admin
 
 logger = logging.getLogger(__name__)
@@ -168,7 +168,8 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
 
     # Si non pertinent ou score trop faible → on marque LLM_DONE mais on n'insère pas dans items
     score = result.get("score_density", 0)
-    if not result.get("pertinent", True) or score < 3:
+    min_score = get_source_config(candidate.get("source")).get("min_llm_score", 5)
+    if not result.get("pertinent", True) or score < min_score:
         with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute(
