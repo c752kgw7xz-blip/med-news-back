@@ -380,7 +380,6 @@
   }
   .mobile-nav-item.active { color: var(--green); }
   #mnav-specialite.active { color: var(--green); }
-  #mnav-transversal.active { color: #3b82f6; }
   #mnav-explorer.active { color: #9333ea; }
   #mnav-archives.active { color: #d97706; }
   #mnav-compte.active { color: #059669; }
@@ -508,9 +507,6 @@
       <div class="sidebar-label">Ma sp&#233;cialit&#233;</div>
       <div id="sidebar-my-spec"></div>
       <hr class="sidebar-sep">
-      <div class="sidebar-label">Transversal<div style="font-size:0.53rem;letter-spacing:0.2px;text-transform:none;color:var(--text4);margin-top:2px;font-weight:300;line-height:1.35;font-family:'Outfit',sans-serif;">Articles concernant tous les médecins,<br>indépendamment de votre spécialité</div></div>
-      <div id="sidebar-transversal"></div>
-      <hr class="sidebar-sep">
       <div class="sidebar-label">Explorer</div>
       <div id="sidebar-explore"></div>
       <hr class="sidebar-sep">
@@ -532,7 +528,6 @@
         </button>
         <div class="arch-segment" id="arch-segment">
           <button class="arch-seg-btn active" id="arch-seg-spec" onclick="archSegClick('specialite', this)">Ma sp&#233;</button>
-          <button class="arch-seg-btn" id="arch-seg-trans" onclick="archSegClick('transversal', this)">Transversal</button>
           <button class="arch-seg-btn" id="arch-seg-explore" onclick="archSegClick('explorer', this)">Explorer</button>
         </div>
       </div>
@@ -586,9 +581,6 @@
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
       <span class="mobile-nav-label">Ma sp&#233;</span>
     </button>
-    <button class="mobile-nav-item" onclick="archNavClick('transversal')" id="mnav-transversal">
-      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
-      <span class="mobile-nav-label">Transversal</span>
     </button>
     <button class="mobile-nav-item" onclick="archNavClick('explorer')" id="mnav-explorer">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
@@ -668,7 +660,6 @@ let activeSpecSlug = '';
 let activeAudience = 'SPEC_ONLY';
 let allSpecialties = [];
 let specCounts = {};
-let transversalCount = 0;
 let activeCatFilter = 'all';
 let activeSourceType = 'all';
 
@@ -780,10 +771,18 @@ const CATEGORIE_STYLE = {
   exercice:      { bg: 'rgba(8,145,178,.08)',  color: '#0891b2', border: '0.5px solid rgba(8,145,178,.25)',  label: 'Exercice & Admin' },
 };
 
+// Remap anciennes catégories vers les 3 nouvelles
+function normalizeCategorie(cat) {
+  if (cat === 'medicament' || cat === 'dispositifs_medicaux') return 'therapeutique';
+  if (cat === 'facturation' || cat === 'administratif' || cat === 'sante_publique') return 'exercice';
+  return cat;
+}
+
 function categorieBadge(categorie) {
-  if (!categorie) return '<span class="nature-badge" style="background:var(--surface2);color:var(--text4);">Non class\u00e9</span>';
-  const s = CATEGORIE_STYLE[categorie] || { bg: 'var(--surface2)', color: 'var(--text3)', label: categorie };
-  const m = CATEGORY_META[categorie];
+  const cat = normalizeCategorie(categorie);
+  if (!cat) return '<span class="nature-badge" style="background:var(--surface2);color:var(--text4);">Non class\u00e9</span>';
+  const s = CATEGORIE_STYLE[cat] || { bg: 'var(--surface2)', color: 'var(--text3)', label: cat };
+  const m = CATEGORY_META[cat];
   const icon = m ? catIconHtml(m.icon, s.color) + '\u00a0' : '';
   return `<span class="nature-badge" style="background:${s.bg};color:${s.color};${s.border ? `border:${s.border};` : ''}">${icon}${esc(s.label)}</span>`;
 }
@@ -876,8 +875,9 @@ function renderArticle(a, idx) {
 }
 
 function categoryHeader(categorie, count) {
-  const m = CATEGORY_META[categorie] || { icon: null, label: categorie || 'Non class\u00e9' };
-  const s = CATEGORIE_STYLE[categorie] || { color: 'var(--text3)' };
+  const cat = normalizeCategorie(categorie);
+  const m = CATEGORY_META[cat] || { icon: null, label: cat || 'Non class\u00e9' };
+  const s = CATEGORIE_STYLE[cat] || { color: 'var(--text3)' };
   const icon = m.icon ? catIconHtml(m.icon, s.color) : '<span style="font-size:0.65rem;">\u2022</span>';
   return `<div class="group-header" data-cat="${categorie || ''}">
     <span class="group-dot" style="background:${s.color};"></span>
@@ -890,13 +890,13 @@ function categoryHeader(categorie, count) {
 function renderGroupedArticles(articles, container) {
   const catIdx = cat => { const i = CATEGORY_ORDER.indexOf(cat); return i >= 0 ? i : 99; };
   const sorted = [...articles].sort((a, b) => {
-    const diff = catIdx(a.categorie) - catIdx(b.categorie);
+    const diff = catIdx(normalizeCategorie(a.categorie)) - catIdx(normalizeCategorie(b.categorie));
     if (diff !== 0) return diff;
     return (b.score_density || 5) - (a.score_density || 5);
   });
   const groups = new Map();
   sorted.forEach(a => {
-    const cat = a.categorie || '__none__';
+    const cat = normalizeCategorie(a.categorie) || '__none__';
     if (!groups.has(cat)) groups.set(cat, []);
     groups.get(cat).push(a);
   });
@@ -1003,12 +1003,7 @@ function buildSidebar() {
       <span class="count">${myCount}</span>
     </div>`;
 
-  const transEl = document.getElementById('sidebar-transversal');
-  transEl.innerHTML = `
-    <div class="sidebar-item" onclick="selectSpec('', 'TRANSVERSAL_LIBERAL', this)">
-      <span>Tous les médecins</span>
-      <span class="count">${transversalCount}</span>
-    </div>`;
+  // Transversal supprimé — articles trans-spécialités affectés à medecine-generale
 
   const exploreEl = document.getElementById('sidebar-explore');
   const others = allSpecialties.filter(s => s.slug !== userSpecSlug);
@@ -1058,7 +1053,7 @@ async function selectSpec(slug, audience, el) {
   setActiveSidebar(el);
   activeSpecSlug = slug || userSpecSlug;
   activeAudience = audience;
-  updateSpecLabel(audience === 'TRANSVERSAL_LIBERAL' ? 'Tous les médecins' : (userSpecName || 'Archives'));
+  updateSpecLabel(userSpecName || 'Archives');
   await reloadArchives();
 }
 
@@ -1141,15 +1136,12 @@ async function loadCounts() {
     if (!res) return;
     const data = await res.json();
     specCounts = data.per_specialty || {};
-    transversalCount = data.transversal || 0;
   } catch {}
 }
 
 function buildAudienceParams() {
   let params = '';
-  if (activeAudience === 'TRANSVERSAL_LIBERAL') {
-    params += '&audience=TRANSVERSAL_LIBERAL';
-  } else if (activeAudience === 'SPEC_ONLY') {
+  if (activeAudience === 'SPEC_ONLY') {
     params += `&specialty=${encodeURIComponent(activeSpecSlug)}&audience=SPEC_ONLY`;
   } else if (activeSpecSlug) {
     params += `&specialty=${encodeURIComponent(activeSpecSlug)}`;
@@ -1357,9 +1349,6 @@ function archSegClick(section, btnEl) {
   if (section === 'specialite') {
     const el = document.getElementById('sidebar-item-mine');
     if (el) el.click();
-  } else if (section === 'transversal') {
-    const el = document.querySelector('#sidebar-transversal .sidebar-item');
-    if (el) el.click();
   } else if (section === 'explorer') {
     if (window.archExpandExplore) window.archExpandExplore();
     const listHtml = document.getElementById('sidebar-explore')?.innerHTML || '';
@@ -1376,7 +1365,7 @@ function archSegClick(section, btnEl) {
 // ── Mobile navigation (archives) — bottom nav ─────────────────
 function archNavClick(section) {
   // Ma spé / Transversal / Explorer → retour au portail (contenu du mois actuel)
-  if (section === 'specialite' || section === 'transversal' || section === 'explorer') {
+  if (section === 'specialite' || section === 'explorer') {
     window.location.href = '/portal';
   } else if (section === 'compte') {
     openFullPage('compte');
