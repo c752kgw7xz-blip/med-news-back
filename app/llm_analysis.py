@@ -434,7 +434,7 @@ DATE : {date_pub}{source_line}{content_section}
 JSON attendu (strict, pas de markdown) :
 {{
   "pertinent": <bool>,
-  "audience": "<TRANSVERSAL_LIBERAL|SPECIALITE|PHARMACIENS>",
+  "audience": "<SPECIALITE|PHARMACIENS>",
   "specialites": [<slugs parmi: medecine-generale, cardiologie, dermatologie, endocrinologie, gastro-enterologie, gynecologie, neurologie, ophtalmologie, orl, pediatrie, pneumologie, psychiatrie, rhumatologie, urologie, medecine-interne, medecine-urgences, geriatrie, medecine-physique, oncologie, hematologie, infectiologie, nephrologie, radiologie, anesthesiologie, chirurgie-vasculaire, chirurgie-orthopedique, chirurgie-thoracique, chirurgie-plastique, neurochirurgie, chirurgie-pediatrique, chirurgie-cardiaque, infirmiers, kinesitherapie, sage-femme, biologiste>],
   "type_praticien": "<prescripteur|interventionnel|biologiste|pharmacien|tous>",
   "score_density": <int 1-10>,

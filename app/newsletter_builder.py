@@ -558,6 +558,6 @@ def build_newsletter(
 </body>
 </html>"""
 
-    plain = _build_plain(specialty_name, items_spec, items_transv, portal_url)
+    plain = _build_plain(specialty_name, items_spec, [], portal_url)
 
     return sujet, html, plain

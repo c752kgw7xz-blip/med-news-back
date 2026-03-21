@@ -680,10 +680,9 @@ let activeSourceType = 'all';
 let userSpecSlug = '';
 let userSpecName = '';
 let activeSpecSlug = '';  // currently selected specialty
-let activeAudience = 'SPEC_ONLY';  // 'SPEC_ONLY', 'TRANSVERSAL_LIBERAL', or '' (mixed)
+let activeAudience = 'SPEC_ONLY';
 let allSpecialties = [];
 let specCounts = {};
-let transversalCount = 0;
 
 // Favorites state
 let favoritesSet = new Set();
@@ -1160,18 +1159,10 @@ function filterBySourceType(stype, btnEl) {
 function updateRubrique() {
   document.getElementById('rubrique-month').textContent = portalHeaderLabel();
 
-  let label = '';
-  if (activeAudience === 'TRANSVERSAL_LIBERAL') {
-    label = 'Tous les médecins';
-  } else {
-    const spec = allSpecialties.find(s => s.slug === activeSpecSlug);
-    label = spec ? spec.name : userSpecName;
-  }
+  const spec = allSpecialties.find(s => s.slug === activeSpecSlug);
+  const label = spec ? spec.name : userSpecName;
   document.getElementById('rubrique-meta').textContent = `${totalArticles} article${totalArticles > 1 ? 's' : ''} \u00b7 ${label}`;
   document.getElementById('spec-label').textContent = label;
-
-  const descEl = document.getElementById('transversal-desc');
-  if (descEl) descEl.style.display = activeAudience === 'TRANSVERSAL_LIBERAL' ? '' : 'none';
 }
 
 // ── Compteur visible (après filtre catégorie) ─────────────────
@@ -1180,15 +1171,10 @@ function updateCounters() {
   let count = 0;
   cards.forEach(c => { if (c.style.display !== 'none') count++; });
 
-  let label = '';
-  if (activeAudience === 'TRANSVERSAL_LIBERAL') {
-    label = 'Tous les médecins';
-  } else {
-    const spec = allSpecialties.find(s => s.slug === activeSpecSlug);
-    label = spec ? spec.name : userSpecName;
-  }
+  const spec2 = allSpecialties.find(s => s.slug === activeSpecSlug);
+  const label2 = spec2 ? spec2.name : userSpecName;
   document.getElementById('rubrique-meta').textContent =
-    `${count} article${count > 1 ? 's' : ''} \u00b7 ${label}`;
+    `${count} article${count > 1 ? 's' : ''} \u00b7 ${label2}`;
 }
 
 // ── Favorites ────────────────────────────────────────────────
@@ -1293,13 +1279,7 @@ function buildSidebar() {
       <span class="count">${myCount}</span>
     </div>`;
 
-  // 2. Transversal — multi-spé / tous domaines
-  const transEl = document.getElementById('sidebar-transversal');
-  transEl.innerHTML = `
-    <div class="sidebar-item" onclick="selectSpec('', 'TRANSVERSAL_LIBERAL', this)">
-      <span>Tous les médecins</span>
-      <span class="count">${transversalCount}</span>
-    </div>`;
+  // 2. Transversal supprimé — les articles trans-spécialités sont désormais affectés à medecine-generale
 
   // 3. Explore — other specialties (exclude user's own), only their own count
   const exploreEl = document.getElementById('sidebar-explore');
@@ -1450,18 +1430,13 @@ async function loadCounts() {
     if (!res) return;
     const data = await res.json();
     specCounts = data.per_specialty || {};
-    transversalCount = data.transversal || 0;
   } catch {}
 }
 
 async function loadArticles(page) {
   const from = portalFromDate();
   let url = `${API}/articles?page=${page}&per_page=${perPage}&from_date=${from}`;
-  if (activeAudience === 'TRANSVERSAL_LIBERAL') {
-    url += `&audience=TRANSVERSAL_LIBERAL`;
-  } else if (activeAudience === 'SPEC_ONLY') {
-    url += `&specialty=${encodeURIComponent(activeSpecSlug)}&audience=SPEC_ONLY`;
-  } else if (activeSpecSlug) {
+  if (activeSpecSlug) {
     url += `&specialty=${encodeURIComponent(activeSpecSlug)}`;
   }
 
@@ -1676,7 +1651,6 @@ function loadDemoData() {
   document.getElementById('spec-label').textContent = userSpecName;
   allSpecialties = DEMO_SPECIALTIES;
   specCounts = { 'medecine-d-urgence': 5, 'anesthesiologie-reanimation': 3, 'cardiologie': 5, 'medecine-generale': 8, 'chirurgie-orthopedique': 2, 'biologie-medicale': 4 };
-  transversalCount = 8;
   totalArticles = DEMO_ARTICLES.length;
   allLoadedArticles = [...DEMO_ARTICLES];
   buildSidebar();

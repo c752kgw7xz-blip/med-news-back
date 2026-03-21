@@ -353,8 +353,8 @@ def get_article(
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.id = %s
                   AND i.review_status = 'APPROVED'
-                  AND i.specialty_slug = %s;
-            """, (item_id, slug))
+                  AND (%s IS NULL OR i.specialty_slug = %s);
+            """, (item_id, slug, slug))
             row = cur.fetchone()
 
     if not row:

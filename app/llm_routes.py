@@ -181,19 +181,18 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
         return report
 
     specialites: list[str] = result.get("specialites", [])
-    audience: str = result.get("audience", "TRANSVERSAL_LIBERAL")
+    audience: str = result.get("audience", "SPECIALITE")
+    if audience not in ("SPECIALITE", "PHARMACIENS"):
+        audience = "SPECIALITE"
     type_praticien: str | None = result.get("type_praticien")
     source_type: str = get_source_type(candidate.get("source"))
 
-    # TRANSVERSAL_LIBERAL → 1 item sans specialty_slug
-    # PHARMACIENS         → 1 item avec specialty_slug = 'pharmacien'
-    # SPECIALITE          → 1 item par spécialité (ou 1 item NULL si aucune spécialité)
-    if audience == "TRANSVERSAL_LIBERAL":
-        slugs_to_insert: list[str | None] = [None]
-    elif audience == "PHARMACIENS":
-        slugs_to_insert = ["pharmacien"]
+    # PHARMACIENS → 1 item avec specialty_slug = 'pharmacien'
+    # SPECIALITE  → 1 item par spécialité (medecine-generale si aucune spécialité identifiée)
+    if audience == "PHARMACIENS":
+        slugs_to_insert: list[str | None] = ["pharmacien"]
     else:
-        slugs_to_insert = specialites if specialites else [None]
+        slugs_to_insert = specialites if specialites else ["medecine-generale"]
 
     llm_raw_text = json.dumps(result, ensure_ascii=False)
     item_ids: list[str] = []
