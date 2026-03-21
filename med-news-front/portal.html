@@ -179,6 +179,32 @@
   }
   .sidebar-item .count { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text4); font-weight: 400; }
   .sidebar-item.active .count { color: var(--text3); }
+  /* ── Sidebar accordion ── */
+  .sidebar-accord {
+    display: flex; align-items: center; gap: 5px; width: 100%; box-sizing: border-box;
+    padding: 7px 16px; border: none; background: transparent; cursor: pointer;
+    font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 500;
+    color: var(--text2); transition: all .15s; border-left: 2px solid transparent; text-align: left;
+  }
+  .sidebar-accord:hover { color: var(--text); background: rgba(0,0,0,.04); }
+  .sidebar-accord.subactive { border-left-color: var(--green); color: var(--text); }
+  .sidebar-accord .count { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text4); margin-left: auto; }
+  .accord-chevron { font-size: 0.55rem; transition: transform .2s ease; flex-shrink: 0; opacity: .5; }
+  .sidebar-accord.open .accord-chevron { transform: rotate(90deg); }
+  .sidebar-subitems { overflow: hidden; }
+  .sidebar-subitem {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 16px 4px 32px; cursor: pointer;
+    font-size: 0.79rem; color: var(--text3); transition: all .15s;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-subitem:hover { color: var(--text); background: rgba(0,0,0,.03); }
+  .sidebar-subitem.active { color: var(--text); background: rgba(0,0,0,.05); border-left-color: var(--green); }
+  .sidebar-subitem .count { font-family: 'DM Mono', monospace; font-size:0.63rem; color: var(--text4); margin-left: auto; }
+  .sidebar-subitem.active .count { color: var(--text3); }
+  .subitem-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .reg-dot { background: #6366f1; }
+  .reco-dot { background: #0891b2; }
   .sidebar-more {
     padding: 5px 16px; font-size: 0.71rem; color: var(--text5); cursor: default;
   }
@@ -671,6 +697,7 @@ let activeSpecSlug = '';  // currently selected specialty
 let activeAudience = 'SPEC_ONLY';
 let allSpecialties = [];
 let specCounts = {};
+let specTypeCounts = {};  // {slug: {total, reglementaire, recommandation}}
 
 // Favorites state
 let favoritesSet = new Set();
@@ -1244,31 +1271,100 @@ function updateSidebarFavCount() {
   if (el) el.textContent = favoritesSet.size;
 }
 
+// ── Sidebar helpers ──────────────────────────────────────────
+function showSourcePills() {
+  const el = document.getElementById('source-pills');
+  if (el) el.style.display = '';
+}
+function hideSourcePills() {
+  const el = document.getElementById('source-pills');
+  if (el) el.style.display = 'none';
+}
+
+function _accordHtml(slug, name, counts, id) {
+  const reg  = counts ? (counts.reglementaire || 0) : 0;
+  const reco = counts ? (counts.recommandation || 0) : 0;
+  const tot  = counts ? (counts.total || 0) : 0;
+  return `
+    <button class="sidebar-accord" id="accord-${id}" onclick="toggleAccord('${id}')">
+      <span class="accord-chevron">&#9658;</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(name)}</span>
+      <span class="count">${tot}</span>
+    </button>
+    <div class="sidebar-subitems" id="subitems-${id}" style="display:none;">
+      <div class="sidebar-subitem" id="sub-${id}-reg" onclick="selectSpecType('${slug}','reglementaire','${id}')">
+        <span class="subitem-dot reg-dot"></span>R\u00e9glementation
+        <span class="count">${reg}</span>
+      </div>
+      <div class="sidebar-subitem" id="sub-${id}-reco" onclick="selectSpecType('${slug}','recommandation','${id}')">
+        <span class="subitem-dot reco-dot"></span>Recommandation
+        <span class="count">${reco}</span>
+      </div>
+    </div>`;
+}
+
+let _activeAccordId = null;   // id of currently open accordion
+let _activeSubId   = null;    // id of active subitem element
+
+function toggleAccord(id) {
+  const header   = document.getElementById(`accord-${id}`);
+  const subitems = document.getElementById(`subitems-${id}`);
+  if (!header || !subitems) return;
+  const isOpen = subitems.style.display !== 'none';
+  // Close all
+  document.querySelectorAll('.sidebar-subitems').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('open'));
+  if (!isOpen) {
+    subitems.style.display = '';
+    header.classList.add('open');
+    _activeAccordId = id;
+  } else {
+    _activeAccordId = null;
+  }
+}
+
+async function selectSpecType(slug, stype, accordId) {
+  // Clear all active sub-items
+  document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
+  // Set active
+  const subEl   = document.getElementById(`sub-${accordId}-${stype === 'reglementaire' ? 'reg' : 'reco'}`);
+  const headEl  = document.getElementById(`accord-${accordId}`);
+  if (subEl)  subEl.classList.add('active');
+  if (headEl) headEl.classList.add('subactive');
+  _activeSubId = `sub-${accordId}-${stype === 'reglementaire' ? 'reg' : 'reco'}`;
+  // Update state
+  activeSpecSlug    = slug;
+  activeSourceType  = stype;
+  hideSourcePills();
+  favoritesMode = false;
+  await resetAndLoad();
+}
+
 // ── Sidebar ──────────────────────────────────────────────────
 function buildSidebar() {
-  // 1. My specialty — only spec-specific articles (no transversal)
+  // 1. My specialty accordion (auto-open on build)
   const mySpecEl = document.getElementById('sidebar-my-spec');
-  const myCount = specCounts[userSpecSlug] || 0;
-  mySpecEl.innerHTML = `
-    <div class="sidebar-item active" id="sidebar-item-mine" onclick="selectMySpec(this)">
-      <span>${esc(userSpecName)}</span>
-      <span class="count">${myCount}</span>
-    </div>`;
+  const myCounts = specTypeCounts[userSpecSlug] || { total: specCounts[userSpecSlug] || 0, reglementaire: 0, recommandation: 0 };
+  mySpecEl.innerHTML = _accordHtml(userSpecSlug, userSpecName, myCounts, 'mine');
+  // Auto-open my specialty accordion
+  const mySubitems = document.getElementById('subitems-mine');
+  const myHeader   = document.getElementById('accord-mine');
+  if (mySubitems) mySubitems.style.display = '';
+  if (myHeader)   myHeader.classList.add('open');
+  _activeAccordId = 'mine';
 
-  // 2. Transversal supprimé — les articles trans-spécialités sont désormais affectés à medecine-generale
-
-  // 3. Explore — other specialties (exclude user's own), only their own count
-  const exploreEl = document.getElementById('sidebar-explore');
+  // 2. Explore — other specialties
+  const exploreEl      = document.getElementById('sidebar-explore');
   const exploreSearchEl = document.getElementById('sidebar-explore-search');
-  const others = allSpecialties.filter(s => s.slug !== userSpecSlug);
-  const MAX_VISIBLE = 7;
-  let exploreExpanded = false;
+  const others         = allSpecialties.filter(s => s.slug !== userSpecSlug);
+  const MAX_VISIBLE    = 7;
+  let exploreExpanded  = false;
   let exploreSearchQuery = '';
 
-  // Search input for desktop sidebar
   exploreSearchEl.innerHTML = `<div style="position:relative;">
     <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text5);display:flex;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
-    <input id="sidebar-spec-search" type="search" placeholder="Rechercher une spécialité…"
+    <input id="sidebar-spec-search" type="search" placeholder="Rechercher une sp\u00e9cialit\u00e9\u2026"
       oninput="filterSidebarSpecs(this.value)"
       style="width:100%;padding:6px 8px 6px 28px;border:1px solid var(--border);border-radius:6px;
              background:var(--surface);color:var(--text);font-family:'Outfit',sans-serif;
@@ -1282,11 +1378,8 @@ function buildSidebar() {
     const hidden = others.length - MAX_VISIBLE;
 
     exploreEl.innerHTML = list.map(s => {
-      const cnt = specCounts[s.slug] || 0;
-      return `<div class="sidebar-item" onclick="selectExploreSpec('${s.slug}', this)">
-        <span>${esc(s.name)}</span>
-        <span class="count">${cnt}</span>
-      </div>`;
+      const cnt = specTypeCounts[s.slug] || { total: specCounts[s.slug] || 0, reglementaire: 0, recommandation: 0 };
+      return _accordHtml(s.slug, s.name, cnt, `exp-${s.slug}`);
     }).join('');
 
     if (!q && !exploreExpanded && hidden > 0) {
@@ -1301,31 +1394,31 @@ function buildSidebar() {
   }
 
   window.filterSidebarSpecs = function(q) { exploreSearchQuery = q; renderExploreList(); };
-  window.expandExplore = function() { exploreExpanded = true; renderExploreList(); };
+  window.expandExplore  = function() { exploreExpanded = true;  renderExploreList(); };
   window.collapseExplore = function() { exploreExpanded = false; renderExploreList(); };
   renderExploreList();
 }
 
-// "Ma spécialité" — spec-only, no transversal mixed in
+// Legacy — conservé pour compatibilité demo/autres chemins
 async function selectMySpec(el) {
-  setActiveSidebar(el);
-  activeSpecSlug = userSpecSlug;
-  activeAudience = 'SPEC_ONLY';  // special flag for spec-only fetch
+  activeSpecSlug   = userSpecSlug;
+  activeSourceType = 'all';
+  showSourcePills();
+  document.querySelectorAll('.sidebar-subitem').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.sidebar-accord').forEach(e => e.classList.remove('subactive'));
   await resetAndLoad();
 }
 
 async function selectSpec(slug, audience, el) {
-  setActiveSidebar(el);
   activeSpecSlug = slug || userSpecSlug;
-  activeAudience = audience;
   await resetAndLoad();
 }
 
-// Explorer items — spec-only articles for that specialty
+// Explorer items — legacy (remplacé par accordéon, conservé pour démo)
 async function selectExploreSpec(slug, el) {
-  setActiveSidebar(el);
   activeSpecSlug = slug;
-  activeAudience = 'SPEC_ONLY';
+  activeSourceType = 'all';
+  showSourcePills();
   if (DEMO_MODE) {
     // En démo, on affiche tous les articles (pas de filtrage par spé côté client)
     allLoadedArticles = [...DEMO_ARTICLES];
@@ -1352,9 +1445,8 @@ async function resetAndLoad() {
   allLoadedArticles = [];
   totalArticles = 0;
   activeFilter = 'all';
-  activeSourceType = 'all';
+  // NE PAS réinitialiser activeSourceType ici — géré par l'appelant (sidebar sub-item ou pills)
   document.querySelectorAll('.filter-pill').forEach((b, i) => b.classList.toggle('active', i === 0));
-  document.querySelectorAll('.source-pill').forEach((b, i) => b.classList.toggle('active', i === 0));
 
   if (DEMO_MODE) {
     allLoadedArticles = [...DEMO_ARTICLES];
@@ -1405,7 +1497,12 @@ async function loadCounts() {
     const res = await authFetch(`${API}/articles/counts?from_date=${from}`);
     if (!res) return;
     const data = await res.json();
-    specCounts = data.per_specialty || {};
+    specTypeCounts = data.per_specialty || {};
+    // Flat counts pour compatibilité
+    specCounts = {};
+    Object.entries(specTypeCounts).forEach(([slug, c]) => {
+      specCounts[slug] = (c && typeof c === 'object') ? (c.total || 0) : (c || 0);
+    });
   } catch {}
 }
 
@@ -1414,6 +1511,10 @@ async function loadArticles(page) {
   let url = `${API}/articles?page=${page}&per_page=${perPage}&from_date=${from}`;
   if (activeSpecSlug) {
     url += `&specialty=${encodeURIComponent(activeSpecSlug)}`;
+  }
+  // Filtre source_type activé depuis la sidebar (server-side)
+  if (activeSourceType && activeSourceType !== 'all') {
+    url += `&source_type=${encodeURIComponent(activeSourceType)}`;
   }
 
   const res = await authFetch(url);
@@ -1626,7 +1727,15 @@ function loadDemoData() {
   activeAudience = 'MY_SPEC';
   document.getElementById('spec-label').textContent = userSpecName;
   allSpecialties = DEMO_SPECIALTIES;
-  specCounts = { 'medecine-d-urgence': 5, 'anesthesiologie-reanimation': 3, 'cardiologie': 5, 'medecine-generale': 8, 'chirurgie-orthopedique': 2, 'biologie-medicale': 4 };
+  specTypeCounts = {
+    'medecine-d-urgence':        { total:5, reglementaire:2, recommandation:3 },
+    'anesthesiologie-reanimation':{ total:3, reglementaire:1, recommandation:2 },
+    'cardiologie':               { total:5, reglementaire:2, recommandation:3 },
+    'medecine-generale':         { total:8, reglementaire:4, recommandation:4 },
+    'chirurgie-orthopedique':    { total:2, reglementaire:1, recommandation:1 },
+    'biologie-medicale':         { total:4, reglementaire:2, recommandation:2 },
+  };
+  specCounts = Object.fromEntries(Object.entries(specTypeCounts).map(([k,v]) => [k, v.total]));
   totalArticles = DEMO_ARTICLES.length;
   allLoadedArticles = [...DEMO_ARTICLES];
   buildSidebar();

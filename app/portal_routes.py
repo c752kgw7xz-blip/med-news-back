@@ -282,19 +282,24 @@ def article_counts(
 
     with get_conn() as conn:
         with conn.cursor() as cur:
-            # Count per specialty (non-transversal), filtered by date range
+            # Count per specialty per source_type, filtered by date range
             cur.execute(f"""
-                SELECT i.specialty_slug, COUNT(*)
+                SELECT i.specialty_slug, COALESCE(i.source_type, 'reglementaire'), COUNT(*)
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
                   AND COALESCE(i.score_density, 0) >= 3
-                  AND i.audience != 'TRANSVERSAL_LIBERAL'
                   AND i.specialty_slug IS NOT NULL
                   {date_clause}
-                GROUP BY i.specialty_slug;
+                GROUP BY i.specialty_slug, i.source_type;
             """, date_params)
-            per_spec = {row[0]: row[1] for row in cur.fetchall()}
+            per_spec: dict = {}
+            for slug, stype, count in cur.fetchall():
+                if slug not in per_spec:
+                    per_spec[slug] = {"total": 0, "reglementaire": 0, "recommandation": 0}
+                key = stype if stype in ("reglementaire", "recommandation") else "reglementaire"
+                per_spec[slug][key] = count
+                per_spec[slug]["total"] += count
 
     return {
         "per_specialty": per_spec,
