@@ -136,6 +136,9 @@ KALI_KEYWORDS = [
     "acte", "cotation", "remboursement", "avenant",
     "secteur", "omnipraticien", "généraliste", "spécialiste",
     "libéral", "libéraux", "ccam", "ngap",
+    # Paramédicaux — conventions et avenants kiné, IDEL, sages-femmes
+    "kinésithér", "infirmier", "infirmière", "sage-femme", "sages-femmes",
+    "auxiliaire médical", "masseur",
 ]
 
 

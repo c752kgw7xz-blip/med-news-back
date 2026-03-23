@@ -77,17 +77,19 @@ WEB_SCRAPER_SOURCES: list[dict] = [
     },
 
     # ── SFO — Société Française d'Ophtalmologie ──────────────────────────
-    # Section publications/rapports : rapports annuels de recommandations.
-    # Volume : ~1-3 rapports/an + actualités ANSM liées à l'ophtalmologie.
+    # Page Actualités (publique) — contient ruptures d'approvisionnement,
+    # alertes ANSM relayées, arrêts de commercialisation de collyres/pommades,
+    # recommandations antibioprophylaxie en chirurgie ophtalmologique.
+    # /publications/rapports est DERRIÈRE LOGIN — scraper y récupère zéro.
     {
-        "url": "https://www.sfo-online.fr/publications/rapports",
+        "url": "https://www.sfo-online.fr/actualites",
         "source": "sfo",
-        "label": "SFO — Rapports et recommandations ophtalmologie",
+        "label": "SFO — Actualités ophtalmologie",
         "source_type": "recommandation",
         "audience": ["medecins"],
         "specialty_hint": "ophtalmologie",
-        "link_pattern": r"sfo-online\.fr/publications",
-        "exclude_pattern": r"/(agenda|annuaire|adhesion|contacts|jfo$|fiches-informations-aux-medecins)(/|$)",
+        "link_pattern": r"sfo-online\.fr/",
+        "exclude_pattern": r"(?i)/(agenda|annuaire|adhesion|contacts|congres|assemblee-generale|hommage|disparition|election|jeunes-ophtalmos|comptes-annuels|mediatheque)(/|$)",
     },
 
     # ── SFPédiatrie ───────────────────────────────────────────────────────
