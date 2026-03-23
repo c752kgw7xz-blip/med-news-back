@@ -449,7 +449,7 @@ def _get_approved_items(
                       AND c.official_date >= %s
                       AND i.specialty_slug = %s
                       AND i.source_type IN ({placeholders})
-                      AND c.source NOT IN ('has_rbp')
+                      AND c.source NOT IN ('has_rbp', 'ansm_ruptures_med', 'ansm_ruptures_vaccins')
                     ORDER BY i.score_density DESC, c.official_date DESC;
                     """,
                     (since, specialty_slug, *source_types),
@@ -465,7 +465,7 @@ def _get_approved_items(
                     WHERE i.review_status = 'APPROVED'
                       AND c.official_date >= %s
                       AND i.specialty_slug = %s
-                      AND c.source NOT IN ('has_rbp')
+                      AND c.source NOT IN ('has_rbp', 'ansm_ruptures_med', 'ansm_ruptures_vaccins')
                     ORDER BY i.score_density DESC, c.official_date DESC;
                     """,
                     (since, specialty_slug),
