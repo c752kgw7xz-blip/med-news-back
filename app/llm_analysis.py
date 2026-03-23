@@ -86,6 +86,7 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "piste_circ":           "reglementaire",
     "ansm_securite":        "reglementaire",
     "ansm_securite_med":    "reglementaire",
+    "ansm_securite_dm":     "reglementaire",  # ANSM — Sécurité dispositifs médicaux
     "ansm_ruptures_med":    "reglementaire",
     "ansm_ruptures_vaccins":"reglementaire",
     "bo_social":            "reglementaire",
@@ -626,6 +627,10 @@ SOURCE_CONFIG: dict[str, dict] = {
     "ansm_securite_med": {
         "require_whitelist": False,
         "min_llm_score": 6,
+    },
+    "ansm_securite_dm": {
+        "require_whitelist": False,
+        "min_llm_score": 6,  # Alertes DM — même exigence que les alertes médicaments
     },
     "ansm_ruptures_med": {
         "require_whitelist": False,

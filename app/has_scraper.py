@@ -94,10 +94,95 @@ _RESUME_RE = re.compile(r"(?i)r[eé]sum[eé]")
 _MESSAGES_RE = re.compile(r"(?i)messages?\s+cl[eé]s?")
 _DATE_VALID_RE = re.compile(r"(?i)date\s+de\s+validation\s*:\s*(\d{1,2}\s+\w+\s+\d{4})")
 
+# Patterns spécifiques aux pages CT (Commission de la Transparence)
+_CT_SMR_RE = re.compile(r"(?i)service\s+m[eé]dical\s+rendu|^SMR$|\bSMR\b")
+_CT_ASMR_RE = re.compile(r"(?i)am[eé]lioration\s+du\s+service|^ASMR$|\bASMR\b")
+_CT_INDICATION_RE = re.compile(r"(?i)indication(s)?\s+(th[eé]rapeutique|revendiqu)")
+_CT_POPULATION_RE = re.compile(r"(?i)population\s+cible")
+_CT_CONCLUSION_RE = re.compile(r"(?i)avis\s+de\s+la\s+commission|conclusion\s+de\s+la\s+commission")
+# Détecte si l'URL est une page CT (avis médicament) ou une RBP
+_CT_URL_RE = re.compile(r"(?i)/jcms/[a-z]_\d+/fr/avis|/jcms/p_\d+/fr/.*-avis-")
 
-def scrape_has_page(url: str) -> dict[str, Any]:
+
+def scrape_has_ct_page(url: str) -> dict[str, Any]:
     """
-    Scrape une page HAS de recommandation.
+    Scrape une page HAS Commission de la Transparence (avis médicament).
+
+    Structure typique :
+      - Indication thérapeutique (DCI + pathologie)
+      - SMR (Service médical rendu = niveau de remboursabilité)
+      - ASMR (Amélioration du SMR = valeur ajoutée vs comparateur)
+      - Population cible (estimation patients concernés)
+      - Conclusion de la commission
+
+    Ces informations sont directement actionnables pour prescripteurs+pharmaciens :
+    → déremboursement (SMR insuffisant), nouveau remboursement, nouvelle indication.
+    """
+    result: dict[str, Any] = {
+        "resume": None,
+        "messages_cles": None,
+        "date_validation": None,
+        "type_doc": "HAS — Avis Commission de la Transparence",
+        "is_scoping_doc": False,
+    }
+
+    html = _fetch_html(url)
+    if not html:
+        return result
+
+    soup = BeautifulSoup(html, "html.parser")
+    main_text = soup.get_text(" ", strip=True)
+
+    # Date de l'avis
+    m = _DATE_VALID_RE.search(main_text)
+    if m:
+        result["date_validation"] = m.group(1)
+
+    # Indication : première section (DCI + pathologie = le quoi)
+    indication = _extract_text_block(soup, _CT_INDICATION_RE)
+
+    # SMR : service médical rendu — "important", "modéré", "insuffisant"
+    smr = _extract_text_block(soup, _CT_SMR_RE)
+
+    # ASMR : niveau 1 (majeur) à 5 (inexistant) — valeur ajoutée vs comparateur
+    asmr = _extract_text_block(soup, _CT_ASMR_RE)
+
+    # Population cible
+    pop = _extract_text_block(soup, _CT_POPULATION_RE)
+
+    # Conclusion / synthèse de la commission
+    conclusion = _extract_text_block(soup, _CT_CONCLUSION_RE)
+
+    parts = []
+    if indication:
+        parts.append(f"Indication : {indication[:400]}")
+    if smr:
+        parts.append(f"SMR : {smr[:400]}")
+    if asmr:
+        parts.append(f"ASMR : {asmr[:400]}")
+    if pop:
+        parts.append(f"Population cible : {pop[:300]}")
+    if conclusion:
+        parts.append(f"Conclusion CT : {conclusion[:500]}")
+
+    if parts:
+        result["resume"] = "\n".join(parts)
+    elif main_text:
+        # Fallback : extrait le début de la page body
+        result["resume"] = main_text[:1500]
+
+    logger.info(
+        "HAS CT scraper OK %s | SMR=%s | ASMR=%s",
+        url, bool(smr), bool(asmr),
+    )
+    return result
+
+
+def scrape_has_page(url: str, source: str | None = None) -> dict[str, Any]:
+    """
+    Scrape une page HAS.
+    Route vers scrape_has_ct_page() pour les avis CT (source='has_ct'),
+    sinon extraction RBP standard (résumé + messages clés).
 
     Retourne un dict :
       {
@@ -108,6 +193,9 @@ def scrape_has_page(url: str) -> dict[str, Any]:
         "is_scoping_doc": bool,        # True si Note de cadrage détectée
       }
     """
+    # Route CT : source='has_ct' ou URL contenant les patterns d'un avis CT
+    if source == "has_ct" or _CT_URL_RE.search(url or ""):
+        return scrape_has_ct_page(url)
     result: dict[str, Any] = {
         "resume": None,
         "messages_cles": None,

@@ -36,8 +36,10 @@ from app.sources_pratique import ALL_PRATIQUE_FEEDS
 from app.web_scraper import scrape_all_web
 from app.has_scraper import scrape_has_page, build_enriched_content
 
-# Sources HAS dont on enrichit le contenu par scraping de la page de recommandation
-_HAS_ENRICHABLE_SOURCES = {"has_rbp"}
+# Sources HAS dont on enrichit le contenu par scraping de la page.
+# has_rbp  → résumé clinique + messages clés (RBP finales)
+# has_ct   → SMR/ASMR/indication/population cible (avis médicaments CT)
+_HAS_ENRICHABLE_SOURCES = {"has_rbp", "has_ct"}
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +78,18 @@ FEEDS: list[dict] = [
         "label": "ANSM — Sécurité médicaments",
         "source": "ansm_securite_med",
         "audience": ["medecins", "pharmaciens"],
+    },
+
+    # ── ANSM : sécurité dispositifs médicaux (chirurgiens, infirmières) ───
+    # Inclus : retraits d'implants, alertes matériel d'injection/perfusion,
+    #          instruments chirurgicaux défectueux, dispositifs de surveillance.
+    # NB : on n'applique PAS le filtre _ANSM_DM_EXCLUDE_PATTERNS sur cette source —
+    #      les alertes DM pour chirurgiens/IDEL ont un contenu clinique réel.
+    {
+        "url": "https://ansm.sante.fr/rss/informations_securite?produitsSante=dispositifs_medicaux",
+        "label": "ANSM — Sécurité dispositifs médicaux",
+        "source": "ansm_securite_dm",
+        "audience": ["medecins", "infirmiers"],
     },
 
     # ── ANSM : ruptures et tensions d'approvisionnement ──────────────────
@@ -291,7 +305,7 @@ def collect_feed(feed_config: dict, days: int = 35) -> dict[str, int]:
                 enriched_content = summary  # fallback : description RSS (souvent vide)
                 if source in _HAS_ENRICHABLE_SOURCES and entry_url:
                     try:
-                        scraped = scrape_has_page(entry_url)
+                        scraped = scrape_has_page(entry_url, source=source)
                         # Si la page est finalement un doc de cadrage, on skip
                         if scraped.get("is_scoping_doc"):
                             logger.debug("[%s] has_scraper: scoping_doc DROP '%s'", source, title[:60])
