@@ -479,6 +479,7 @@ SOURCE_HINTS: dict[str, str] = {
     "piste_circ":            "Circulaire ou instruction ministérielle — directive santé ou social",
     "ansm_securite":         "ANSM — Information de sécurité (pharmacovigilance, matériovigilance)",
     "ansm_securite_med":     "ANSM — Alerte sécurité médicament (retrait AMM, contre-indication, restriction)",
+    "ansm_securite_dm":      "ANSM — Alerte matériovigilance dispositif médical (implants, instruments chirurgicaux, DM soins infirmiers)",
     "ansm_ruptures_med":     "ANSM — Rupture ou tension d'approvisionnement médicament",
     "ansm_ruptures_vaccins": "ANSM — Disponibilité vaccins",
     "bo_social":             "Bulletin officiel ministères sociaux — circulaire ou instruction ministère Santé",
@@ -978,7 +979,36 @@ _ANSM_DM_EXCLUDE_PATTERNS = [
 ]
 _ANSM_DM_EXCLUDE_RES = [re.compile(p) for p in _ANSM_DM_EXCLUDE_PATTERNS]
 
+# Sources pour lesquelles on applique _ANSM_DM_EXCLUDE_PATTERNS
+# (filtrage des DM non-cliniques avant appel LLM)
+# ansm_securite_dm est EXCLU intentionnellement : c'est un feed 100% DM,
+# on lui applique un filtre dédié _ANSM_DM_LIBÉRAL_EXCLUDE_PATTERNS ci-dessous.
 _ANSM_SOURCES = {"ansm_securite", "ansm_securite_med", "ansm_ruptures_med", "ansm_ruptures_vaccins"}
+
+# Filtre pré-LLM pour ansm_securite_dm : exclure les DM purement hospitaliers
+# (biomédical, imagerie lourde, labo hospitalier) qui ne concernent ni le
+# chirurgien libéral, ni l'infirmière libérale (IDEL).
+_ANSM_DM_LIBERAL_EXCLUDE_PATTERNS = [
+    r"(?i)\bautomate\b",           # automate de labo hospitalier
+    r"(?i)\banalyseur\b",          # analyseur biologique
+    r"(?i)\bréactif\b",            # réactifs de laboratoire
+    r"(?i)\bDM-DIV\b",             # dispositif diagnostic in vitro
+    r"(?i)diagnostic in vitro",
+    r"(?i)\bIRM\b",
+    r"(?i)\bscanner\b",
+    r"(?i)\btomographe\b",
+    r"(?i)\baccélérateur de particules\b",
+    r"(?i)\blithotriteur\b",
+    r"(?i)\bmonitorage hémodynamique\b",
+    r"(?i)\bsystème de monitorage\b",
+    r"(?i)\blit médicalisé\b",
+    r"(?i)\bmatelas\b",
+    r"(?i)\bfauteuil roulant\b",
+    r"(?i)\bdéambulateur\b",
+    r"(?i)\bkwik.stik\b",
+    r"(?i)\blyfo.disk\b",
+]
+_ANSM_DM_LIBERAL_EXCLUDE_RES = [re.compile(p) for p in _ANSM_DM_LIBERAL_EXCLUDE_PATTERNS]
 
 
 def pre_filter_candidate(title: str, source: str | None = None) -> tuple[bool, str | None]:
@@ -989,11 +1019,18 @@ def pre_filter_candidate(title: str, source: str | None = None) -> tuple[bool, s
     for pat in _DROP_TITLE_RES:
         if pat.search(t):
             return False, f"drop_title:{pat.pattern}"
-    # Exclusion ANSM dispositifs médicaux non-médicamenteux
+    # Exclusion ANSM dispositifs médicaux non-médicamenteux (feeds généraux)
     if source in _ANSM_SOURCES:
         for pat in _ANSM_DM_EXCLUDE_RES:
             if pat.search(t):
                 return False, f"ansm_dm:{pat.pattern}"
+    # Exclusion ANSM DM libéral : filtre dédié pour ansm_securite_dm
+    # Élimine les DM purement hospitaliers (labo, imagerie lourde)
+    # avant appel LLM — conserve implants, instruments, DM soins infirmiers
+    if source == "ansm_securite_dm":
+        for pat in _ANSM_DM_LIBERAL_EXCLUDE_RES:
+            if pat.search(t):
+                return False, f"ansm_dm_liberal:{pat.pattern}"
     # Whitelist JORF : titre doit contenir au moins un terme santé
     cfg = get_source_config(source)
     if cfg.get("require_whitelist") and not _passes_jorf_whitelist(t):

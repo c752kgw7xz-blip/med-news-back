@@ -64,13 +64,15 @@ FEEDS: list[dict] = [
     # ── ANSM : alertes de sécurité médicaments ───────────────────────────
     # Source : https://ansm.sante.fr/page/flux-rss
     # Inclus  : pharmacovigilance, retraits AMM, nouvelles contre-indications,
-    #           restrictions d'utilisation, lettres aux professionnels de santé
-    # Pertinent pour médecins (prescripteurs) ET pharmaciens
+    #           restrictions d'utilisation, lettres aux professionnels de santé (DHPC)
+    # DHPC = "Direct Healthcare Professional Communication" — alerte la plus urgente
+    # Pertinent pour médecins (prescripteurs), pharmaciens ET infirmiers
+    # (ex. DHPC sur stylos injecteurs, dispositifs d'injection, cathéters)
     {
         "url": "https://ansm.sante.fr/rss/informations_securite",
-        "label": "ANSM — Informations de sécurité (pharmacovigilance)",
+        "label": "ANSM — Informations de sécurité (pharmacovigilance + DHPC)",
         "source": "ansm_securite",
-        "audience": ["medecins", "pharmaciens"],
+        "audience": ["medecins", "pharmaciens", "infirmiers"],
     },
     # Alertes sécurité filtrées médicaments uniquement
     {
