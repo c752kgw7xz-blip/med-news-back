@@ -234,7 +234,8 @@ la rémunération, un rapport épidémiologique sans recommandation opérationne
 
 RÈGLE D'ATTRIBUTION — À LIRE ATTENTIVEMENT :
 1. Audience = TOUJOURS SPECIALITE. Cherche la ou les spécialités exactes concernées.
-   Demande-toi : "Quel médecin va concrètement changer sa pratique grâce à cet article ?"
+   Demande-toi : "Quel professionnel de santé — médecin, chirurgien, infirmier, kiné,
+   sage-femme, pharmacien — va concrètement changer sa pratique ou ses actes grâce à cet article ?"
 2. Un article peut concerner 2-5 spécialités simultanément — liste-les toutes.
 3. Pour les textes transversaux (honoraires, CCAM, convention, tiers payant, exercice libéral) :
    → Identifie les spécialités réellement impactées. Si le texte concerne TOUS les médecins \
@@ -253,6 +254,12 @@ Exemples corrects :
   Décret installation médecins zones sous-dotées → SPECIALITE + [medecine-generale, medecine-interne]
   Recommandation HAS diabète type 2 → SPECIALITE + [endocrinologie, medecine-generale]
   Arrêté vaccination grippe médecin traitant → SPECIALITE + [medecine-generale, pediatrie]
+  Rappel implant prothèse de hanche (matériovigilance) → SPECIALITE + [chirurgie-orthopedique]
+  Modification NGAP actes infirmiers (pansements complexes) → SPECIALITE + [infirmiers]
+  Alerte dispositif d'injection insuline (stylo défectueux) → SPECIALITE + [infirmiers, endocrinologie]
+  Nouveau tarif actes de kinésithérapie NGAP → SPECIALITE + [kinesitherapie]
+  Alerte lentilles intraoculaires (matériovigilance) → SPECIALITE + [ophtalmologie]
+  Recommandation protocole cicatrisation plaies chroniques → SPECIALITE + [infirmiers, chirurgie-vasculaire, medecine-generale]
 
 3. SPÉCIALITÉS — Si audience = SPECIALITE, liste les slugs concernés parmi :
 
@@ -288,12 +295,20 @@ sage-femme, biologiste).
    Ce sont des articles utiles à la pratique, même sans urgence réglementaire. \
    Ne les classer en 1-3 que s'ils n'apportent aucune information actionnable.
 
-   Exemples de score 9-10 : avenant tarifaire UNCAM, retrait AMM médicament courant, \
-   nouvelle obligation de formation, modification majeure de la convention médicale.
-   Exemples de score 4-6 : recommandation HAS sur une pathologie, fiche mémo pratique, \
-   guideline société savante, guide bon usage médicament.
-   Exemples de score 1-3 : rapport statistique sans recommandation, \
-   données épidémiologiques sans changement de pratique.
+   Exemples de score 9-10 :
+     - Avenant tarifaire UNCAM, modification majeure de la convention médicale
+     - Rappel/retrait d'implant orthopédique ou d'instrument chirurgical défectueux
+     - Nouvelle cotation CCAM ou modification NGAP infirmiers/kinés (actes remboursés)
+     - Retrait AMM médicament courant, nouvelle contre-indication majeure
+     - Alerte matériovigilance obligeant un praticien à contacter ses patients
+   Exemples de score 4-6 :
+     - Recommandation HAS sur une pathologie, fiche mémo pratique
+     - Guideline société savante, guide bon usage médicament
+     - Nouveau protocole de rééducation, actualisation technique chirurgicale
+   Exemples de score 1-3 :
+     - Rapport statistique sans recommandation opérationnelle
+     - Données épidémiologiques sans changement de pratique
+     - Communication institutionnelle sans impact sur les actes
 
 5. RÉDACTION — Résumé clair et direct pour un professionnel pressé. \
    Pas de jargon juridique, phrases courtes, impact concret en premier.
