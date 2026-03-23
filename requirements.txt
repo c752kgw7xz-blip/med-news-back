@@ -16,6 +16,9 @@ anthropic>=0.40
 # Parsing RSS (HAS, ANSM, Santé publique France)
 feedparser>=6.0
 
+# Parsing HTML (HAS page scraper — extraction résumé/messages clés des RBP)
+beautifulsoup4>=4.12
+
 # Sécurité / auth
 PyJWT>=2.8
 cryptography>=42.0

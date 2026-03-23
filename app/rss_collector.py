@@ -34,6 +34,10 @@ from app.db import get_conn
 from app.llm_analysis import pre_filter_candidate, NOISY_SOURCES, _passes_jorf_whitelist
 from app.sources_pratique import ALL_PRATIQUE_FEEDS
 from app.web_scraper import scrape_all_web
+from app.has_scraper import scrape_has_page, build_enriched_content
+
+# Sources HAS dont on enrichit le contenu par scraping de la page de recommandation
+_HAS_ENRICHABLE_SOURCES = {"has_rbp"}
 
 logger = logging.getLogger(__name__)
 
@@ -281,11 +285,27 @@ def collect_feed(feed_config: dict, days: int = 35) -> dict[str, int]:
                     skipped += 1
                     continue
 
+                # ── Enrichissement HAS : scraping de la page de recommandation ──
+                # Le flux RSS HAS ne contient que le titre. On va chercher le vrai
+                # résumé clinique + messages clés directement sur la page HTML.
+                enriched_content = summary  # fallback : description RSS (souvent vide)
+                if source in _HAS_ENRICHABLE_SOURCES and entry_url:
+                    try:
+                        scraped = scrape_has_page(entry_url)
+                        # Si la page est finalement un doc de cadrage, on skip
+                        if scraped.get("is_scoping_doc"):
+                            logger.debug("[%s] has_scraper: scoping_doc DROP '%s'", source, title[:60])
+                            skipped += 1
+                            continue
+                        enriched_content = build_enriched_content(summary, scraped)
+                    except Exception as e:
+                        logger.warning("[%s] has_scraper error for %s : %s", source, entry_url, e)
+
                 raw_payload = {
                     "id": entry_id,
                     "title": title,
                     "link": entry_url,
-                    "summary": summary,
+                    "summary": enriched_content,
                     "published": str(getattr(entry, "published", "")),
                     "feed_source": source,
                     "feed_label": feed_config.get("label", ""),
@@ -298,7 +318,7 @@ def collect_feed(feed_config: dict, days: int = 35) -> dict[str, int]:
                     official_url=entry_url,
                     official_date=pub_date,
                     title_raw=title,
-                    content_raw=summary,
+                    content_raw=enriched_content,
                     raw_payload=raw_payload,
                 )
 

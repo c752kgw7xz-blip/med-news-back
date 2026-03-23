@@ -910,6 +910,14 @@ _DROP_TITLE_PATTERNS = [
     r"(?i)^\s*statuts?\s*$",                     # titre = "Statuts" seul
     r"(?i)\bmise\s+[àa]\s+jour\s+des\s+statuts\b",
     r"(?i)\brèglement\s+int[eé]rieur\b",
+    # ── HAS : documents préparatoires sans contenu clinique ──────────────────
+    # "Note de cadrage" = document de planification (HAS annonce qu'elle VA travailler
+    # sur X, pas de contenu clinique). "Note de synthèse" = document intermédiaire.
+    # Ces titres finissent systématiquement par "– Note de cadrage" ou similaire.
+    r"(?i)\bnote\s+de\s+cadrage\b",
+    r"(?i)\bnote\s+de\s+synth[eè]se\b",
+    # "Note de problématique" = autre doc préparatoire HAS
+    r"(?i)\bnote\s+de\s+probl[eé]matique\b",
 ]
 _DROP_TITLE_RES = [re.compile(p) for p in _DROP_TITLE_PATTERNS]
 
