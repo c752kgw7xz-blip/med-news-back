@@ -727,7 +727,9 @@ SOURCE_CONFIG: dict[str, dict] = {
         "sfalcoologie", "sfpathol", "sfmn", "sfscmfco", "sfmu",
         "sfpediatrie", "sfnn", "sfsp",
         "sfo", "afsos", "sfh", "sfr_radiologie",
-        # sfdermato et sofcot retirés : aucun RSS disponible (vérifié mars 2026)
+        # sofcot = source web scraper (pas de RSS)
+        "sofcot",
+        # sfdermato retiré : aucun RSS disponible (vérifié mars 2026)
         "sofcpre_plastique", "sfcp", "sniil", "ffmkr", "cnsf", "sfbc", "fspf",
         # INCa — recommandations oncologie haute qualité
         "inca",

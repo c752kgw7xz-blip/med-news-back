@@ -8,7 +8,7 @@ pipeline que le collecteur RSS.
 
 Utilisé pour couvrir les spécialités importantes dont le site ne propose pas
 de flux RSS (SFH hématologie, SFR radiologie, SFO ophtalmologie, SFPédiatrie,
-SOFCOT orthopédie) — voir STRATEGY_NO_RSS dans sources_pratique.py.
+SOFCOT orthopédie, SOFMER médecine physique) — voir STRATEGY_NO_RSS dans sources_pratique.py.
 
 Volume attendu : 2-10 documents/an par société → collecte trimestrielle suffit.
 Les recommandations de ces sociétés passent aussi partiellement par has_rbp
@@ -90,6 +90,23 @@ WEB_SCRAPER_SOURCES: list[dict] = [
         "specialty_hint": "ophtalmologie",
         "link_pattern": r"sfo-online\.fr/",
         "exclude_pattern": r"(?i)/(agenda|annuaire|adhesion|contacts|congres|assemblee-generale|hommage|disparition|election|jeunes-ophtalmos|comptes-annuels|mediatheque)(/|$)",
+    },
+
+    # ── SOFMER — Société Française de Médecine Physique et de Réadaptation ─
+    # Page recommandations professionnelles.
+    # ⚠️  Le site utilise un routage ?pageID= qui peut être client-side (JS).
+    #     Si le HTML retourné par httpx est un shell vide (0 liens trouvés),
+    #     le scraper échoue silencieusement avec seen=0 — sans impact.
+    #     Dans ce cas, envisager un flux RSS alternatif ou une page de presse.
+    {
+        "url": "https://www.sofmer.com/?pageID=sf23_sofmer_collab",
+        "source": "sofmer",
+        "label": "SOFMER — Recommandations médecine physique et réadaptation",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "medecine-physique",
+        "link_pattern": r"sofmer\.com",
+        "exclude_pattern": r"(?i)(pageID=sf23_(annuaire|adhesion|bureau|congres|agenda|bourses|formation|contact|decouvrir|conseil|comite|newsletter|membre))",
     },
 
     # ── SFPédiatrie ───────────────────────────────────────────────────────
