@@ -10,7 +10,13 @@ from datetime import date
 from typing import Optional, Any
 from app.piste_routes import router as piste_router
 from app.llm_routes import router as llm_router
-from app.scheduler import lifespan, job_collect_and_analyse, job_send_newsletters
+from app.scheduler import (
+    lifespan,
+    job_collect_regulation,
+    job_collect_recommendations,
+    job_try_send_regulation,
+    job_try_send_recommendations,
+)
 from app.sources_routes import router as sources_router
 
 import psycopg
@@ -314,22 +320,24 @@ async def admin_migrate(request: Request):
 
 @app.post("/admin/scheduler/run-collect")
 def admin_run_collect(request: Request):
-    """Déclenche manuellement collecte JORF + analyse LLM."""
+    """Déclenche manuellement collecte réglementation + recommandations."""
     _require_secret(request, "x-admin-secret", ADMIN_SECRET)
     try:
-        job_collect_and_analyse()
-        return {"ok": True, "job": "collect_and_analyse"}
+        job_collect_regulation()
+        job_collect_recommendations()
+        return {"ok": True, "job": "collect_regulation+recommendations"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/admin/scheduler/run-send")
 def admin_run_send(request: Request):
-    """Déclenche manuellement l'envoi des newsletters."""
+    """Déclenche manuellement l'envoi des newsletters réglementation + recommandations."""
     _require_secret(request, "x-admin-secret", ADMIN_SECRET)
     try:
-        job_send_newsletters()
-        return {"ok": True, "job": "send_newsletters"}
+        job_try_send_regulation()
+        job_try_send_recommendations()
+        return {"ok": True, "job": "send_regulation+recommendations"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
