@@ -384,8 +384,15 @@ def job_try_send_regulation() -> None:
         source_types=REGULATION_SOURCE_TYPES,
         days=35,
     )
-    _record_newsletter_sent("reglementaire", period, articles_sent=total_sent)
-    logger.info("Newsletter réglementation envoyée : %d articles au total", total_sent)
+    if total_sent > 0:
+        _record_newsletter_sent("reglementaire", period, articles_sent=total_sent)
+        logger.info("Newsletter réglementation envoyée : %d articles au total", total_sent)
+    else:
+        logger.warning(
+            "[newsletter réglementation] 0 items approuvés pour la période %s — "
+            "période non verrouillée, nouvelle tentative possible demain",
+            period,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -420,8 +427,15 @@ def job_try_send_recommendations() -> None:
         source_types=RECOMMENDATION_SOURCE_TYPES,
         days=7,  # fenêtre = semaine uniquement
     )
-    _record_newsletter_sent("recommandation", period, articles_sent=total_sent)
-    logger.info("Newsletter recommandations envoyée : %d articles au total", total_sent)
+    if total_sent > 0:
+        _record_newsletter_sent("recommandation", period, articles_sent=total_sent)
+        logger.info("Newsletter recommandations envoyée : %d articles au total", total_sent)
+    else:
+        logger.warning(
+            "[newsletter recommandations] 0 items approuvés pour la période %s — "
+            "période non verrouillée, nouvelle tentative possible demain",
+            period,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -449,7 +463,11 @@ def _get_approved_items(
                       AND c.official_date >= %s
                       AND i.specialty_slug = %s
                       AND i.source_type IN ({placeholders})
-                      AND c.source NOT IN ('has_rbp', 'ansm_ruptures_med', 'ansm_ruptures_vaccins')
+                      -- has_rbp inclus volontairement : les RBP HAS font partie
+                      -- de la newsletter recommandations (score >= 5 requis dans SOURCE_CONFIG).
+                      -- ansm_ruptures_* exclus : volume élevé, pas de changement de pratique
+                      -- immédiat pour le prescripteur — gestion assurée côté officine.
+                      AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins')
                     ORDER BY i.score_density DESC, c.official_date DESC;
                     """,
                     (since, specialty_slug, *source_types),
@@ -465,7 +483,11 @@ def _get_approved_items(
                     WHERE i.review_status = 'APPROVED'
                       AND c.official_date >= %s
                       AND i.specialty_slug = %s
-                      AND c.source NOT IN ('has_rbp', 'ansm_ruptures_med', 'ansm_ruptures_vaccins')
+                      -- has_rbp inclus volontairement : les RBP HAS font partie
+                      -- de la newsletter recommandations (score >= 5 requis dans SOURCE_CONFIG).
+                      -- ansm_ruptures_* exclus : volume élevé, pas de changement de pratique
+                      -- immédiat pour le prescripteur — gestion assurée côté officine.
+                      AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins')
                     ORDER BY i.score_density DESC, c.official_date DESC;
                     """,
                     (since, specialty_slug),
