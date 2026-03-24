@@ -675,7 +675,10 @@ SOURCE_CONFIG: dict[str, dict] = {
     # ── Sources recommandations — seuil plus bas (contenu utile sans urgence) ─
     "has_rbp": {
         "require_whitelist": False,
-        "min_llm_score": 4,
+        # Seuil relevé à 5 (vs 4 initial) pour éviter que des révisions mineures
+        # ou des mises à jour cosmétiques de RBP noient la newsletter.
+        # Seules les RBP apportant un changement clinique actionnable passent.
+        "min_llm_score": 5,
     },
     "has_fiches_memo": {
         "require_whitelist": False,
@@ -992,7 +995,11 @@ _ANSM_DM_EXCLUDE_PATTERNS = [
     r"(?i)kit de d[eé]tection",
     r"(?i)\bPCR\b",
     r"(?i)test rapide",
-    r"(?i)\bbandelette\b",
+    # "bandelette" seul retiré : trop large — exclut les bandelettes de glycémie
+    # (autocontrôle diabète) qui sont un DM ambulatoire courant pour MG, endocrinologues
+    # et IDE. On cible uniquement les bandelettes de laboratoire hospitalier.
+    r"(?i)\bbandelette\b.*\b(?:urinaire|bactériolog|laboratoire|réactif)\b",
+    r"(?i)\b(?:urinaire|bactériolog|laboratoire)\b.*\bbandelette\b",
 ]
 _ANSM_DM_EXCLUDE_RES = [re.compile(p) for p in _ANSM_DM_EXCLUDE_PATTERNS]
 
@@ -1142,6 +1149,10 @@ def _parse_llm_output(raw: str) -> dict[str, Any]:
             data["type_praticien"] = "pharmacien"
         elif any(s.startswith("chirurgie") or s in ("anesthesiologie", "neurochirurgie") for s in specs):
             data["type_praticien"] = "interventionnel"
+        elif any(s in ("infirmiers", "kinesitherapie", "sage-femme", "biologiste") for s in specs):
+            # Paramédicaux : "tous" est plus juste que "prescripteur" pour un avenant
+            # NGAP kiné ou une modification des actes infirmiers.
+            data["type_praticien"] = "tous"
         else:
             data["type_praticien"] = "prescripteur"
 
