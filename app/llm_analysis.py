@@ -310,6 +310,27 @@ sage-femme, biologiste).
      - Données épidémiologiques sans changement de pratique
      - Communication institutionnelle sans impact sur les actes
 
+   SCORE PAR SPÉCIALITÉ (score_par_specialite) — champ optionnel :
+   Quand un article concerne plusieurs spécialités avec des degrés de pertinence \
+   différents, renseigne ce dictionnaire pour moduler le score par spécialité.
+   Règle : utilise ce champ UNIQUEMENT si au moins une spécialité a un score \
+   différent du score_density global.
+
+   Cas typiques :
+   - Recommandation d'anesthésie (SFAR) distribuée aux chirurgiens : \
+     anesthesiologie → score global (7), chirurgie-* → score réduit (3-4, indirect)
+   - Alerte médicament ciblant cardiologie mais distribuée à médecine-générale : \
+     cardiologie → score global (8), medecine-generale → score réduit (5, pour info)
+   - Arrêté JORF purement réglementaire transversal → NE PAS utiliser ce champ \
+     (le score est identique pour toutes les spécialités)
+
+   Exemple :
+     "score_par_specialite": {{
+       "anesthesiologie": 7,
+       "chirurgie-orthopedique": 4,
+       "chirurgie-plastique": 3
+     }}
+
 5. RÉDACTION — Résumé clair et direct pour un professionnel pressé. \
    Pas de jargon juridique, phrases courtes, impact concret en premier.
 
@@ -465,6 +486,7 @@ JSON attendu (strict, pas de markdown) :
   "specialites": [<slugs parmi: medecine-generale, cardiologie, dermatologie, endocrinologie, gastro-enterologie, gynecologie, neurologie, ophtalmologie, orl, pediatrie, pneumologie, psychiatrie, rhumatologie, urologie, medecine-interne, medecine-urgences, geriatrie, medecine-physique, oncologie, hematologie, infectiologie, nephrologie, radiologie, anesthesiologie, chirurgie-vasculaire, chirurgie-orthopedique, chirurgie-thoracique, chirurgie-plastique, neurochirurgie, chirurgie-pediatrique, chirurgie-cardiaque, infirmiers, kinesitherapie, sage-femme, biologiste>],
   "type_praticien": "<prescripteur|interventionnel|biologiste|pharmacien|tous>",
   "score_density": <int 1-10>,
+  "score_par_specialite": {{"<slug>": <int 1-10>}},
   "categorie": "<clinique|therapeutique|exercice>",
   "tri_json": {{
     "titre_court": "<≤12 mots>",
@@ -1160,6 +1182,18 @@ def _parse_llm_output(raw: str) -> dict[str, Any]:
         data["score_density"] = max(1, min(10, int(data.get("score_density", 5))))
     except (TypeError, ValueError):
         data["score_density"] = 5
+
+    # Valider score_par_specialite : garder uniquement les slugs connus avec scores valides
+    raw_sps = data.get("score_par_specialite", {})
+    if isinstance(raw_sps, dict):
+        data["score_par_specialite"] = {
+            slug: max(1, min(10, int(s)))
+            for slug, s in raw_sps.items()
+            if slug in KNOWN_SPECIALTIES
+            and isinstance(s, (int, float))
+        }
+    else:
+        data["score_par_specialite"] = {}
 
     KNOWN_CATEGORIES = {"clinique", "therapeutique", "exercice"}
     if data.get("categorie") not in KNOWN_CATEGORIES:

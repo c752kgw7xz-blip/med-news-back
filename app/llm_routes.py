@@ -196,17 +196,24 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
 
     llm_raw_text = json.dumps(result, ensure_ascii=False)
     item_ids: list[str] = []
+    # score_par_specialite : modulation du score selon la pertinence par spécialité.
+    # Si le LLM a renseigné ce dict, chaque slug utilise son score spécifique ;
+    # sinon on retombe sur le score_density global.
+    score_par_specialite: dict = result.get("score_par_specialite", {})
+    global_score: int = result.get("score_density", 5)
 
     with get_conn() as conn:
         with conn.cursor() as cur:
             for slug in slugs_to_insert:
+                # Score modulé : spécifique si disponible, global sinon
+                item_score = score_par_specialite.get(slug, global_score) if slug else global_score
                 params = {
                     "candidate_id": cid,
                     "audience": audience,
                     "specialty_slug": slug,
                     "tri_json": Json(result.get("tri_json", {})),
                     "lecture_json": Json(result.get("lecture_json", {})),
-                    "score_density": result.get("score_density", 5),
+                    "score_density": item_score,
                     "categorie": result.get("categorie", None),
                     "type_praticien": type_praticien,
                     "source_type": source_type,
