@@ -388,6 +388,19 @@
   }
   .btn-collapse:hover { color: var(--text3); }
 
+  /* ── Portal page title ──────────────────── */
+  .portal-page-title { margin-bottom: 20px; }
+  .portal-page-title h2 {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 2rem; font-weight: 400; color: var(--text);
+    letter-spacing: -.3px; line-height: 1.2;
+  }
+  .portal-page-title p {
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    color: var(--text3); letter-spacing: 1px; text-transform: uppercase;
+    margin-top: 4px;
+  }
+
   /* ── Favoris sidebar item ───────────────── */
   #sidebar-favorites { color: #c9961a; }
   #sidebar-favorites:hover { color: #e0aa1e; }
@@ -586,6 +599,11 @@
     </aside>
 
     <div class="content-area">
+      <!-- Page title -->
+      <div class="portal-page-title">
+        <h2>Ce mois-ci</h2>
+        <p id="portal-month-subtitle"></p>
+      </div>
       <!-- Rubrique header -->
       <div class="rubrique-header" id="rubrique-header">
         <div class="rubrique-month" id="rubrique-month"></div>
@@ -853,23 +871,21 @@ function bnSelect(id) {
   else if (id === 'home') mobileNavClick('specialite');
 }
 
-// ── Fenêtre portail : mois courant + mois précédent ──────────
+// ── Fenêtre portail : mois calendaire courant ────────────────
 function portalFromDate() {
-  // Premier jour du mois précédent
   const now = new Date();
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}-01`;
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
+function portalUntilDate() {
+  const now = new Date();
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`;
 }
 
 function portalHeaderLabel() {
   const now = new Date();
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const pLabel = MONTHS[prev.getMonth()];
-  const cLabel = MONTHS[now.getMonth()];
-  if (prev.getFullYear() === now.getFullYear()) {
-    return `${pLabel} \u2014 ${cLabel} ${now.getFullYear()}`;
-  }
-  return `${pLabel} ${prev.getFullYear()} \u2014 ${cLabel} ${now.getFullYear()}`;
+  return `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 }
 
 // ── Auth helpers ──────────────────────────────────────────────
@@ -1551,8 +1567,9 @@ async function loadSpecialties() {
 
 async function loadCounts() {
   try {
-    const from = portalFromDate();
-    const res = await authFetch(`${API}/articles/counts?from_date=${from}`);
+    const from  = portalFromDate();
+    const until = portalUntilDate();
+    const res = await authFetch(`${API}/articles/counts?from_date=${from}&to_date=${until}`);
     if (!res) return;
     const data = await res.json();
     specTypeCounts = data.per_specialty || {};
@@ -1565,8 +1582,9 @@ async function loadCounts() {
 }
 
 async function loadArticles(page) {
-  const from = portalFromDate();
-  let url = `${API}/articles?page=${page}&per_page=${perPage}&from_date=${from}`;
+  const from  = portalFromDate();
+  const until = portalUntilDate();
+  let url = `${API}/articles?page=${page}&per_page=${perPage}&from_date=${from}&to_date=${until}`;
   if (activeSpecSlug) {
     url += `&specialty=${encodeURIComponent(activeSpecSlug)}`;
   }
@@ -1582,7 +1600,8 @@ async function loadArticles(page) {
 
   const container = document.getElementById('articles-container');
   if (page === 1 && data.articles.length === 0) {
-    container.innerHTML = '<div class="empty">Aucun article valid\u00e9 pour cette rubrique.<br>La prochaine collecte a lieu le 1er du mois.</div>';
+    const monthLabel = `${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}`;
+    container.innerHTML = `<div class="empty">Aucun article pour ${monthLabel} \u2014 <a href="/archives" style="color:var(--green);text-decoration:underline;">consultez les Archives</a> pour les mois pr\u00e9c\u00e9dents.</div>`;
   } else {
     data.articles.forEach(a => allLoadedArticles.push(a));
     renderGroupedArticles();
@@ -1833,6 +1852,10 @@ function loadDemoData() {
   if (DEMO_MODE) { loadDemoData(); return; }
   if (!getToken()) { window.location.href = '/login'; return; }
   if (MedNews.isAdmin()) { window.location.href = '/review'; return; }
+  // Sous-titre dynamique : "Mars 2026"
+  const _now = new Date();
+  const _sub = document.getElementById('portal-month-subtitle');
+  if (_sub) _sub.textContent = `${MONTHS[_now.getMonth()]} ${_now.getFullYear()}`;
   await loadProfile();
   await loadFavorites();
   await Promise.all([loadSpecialties(), loadCounts()]);
