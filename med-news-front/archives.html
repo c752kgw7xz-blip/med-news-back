@@ -159,6 +159,32 @@
     color: var(--green); font-size: 0.86rem; font-weight: 500;
   }
   .sidebar-back:hover { color: var(--text); }
+  /* ── Sidebar accordion ── */
+  .sidebar-accord {
+    display: flex; align-items: center; gap: 5px; width: 100%; box-sizing: border-box;
+    padding: 7px 16px; border: none; background: transparent; cursor: pointer;
+    font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 500;
+    color: var(--text2); transition: all .15s; border-left: 2px solid transparent; text-align: left;
+  }
+  .sidebar-accord:hover { color: var(--text); background: rgba(0,0,0,.04); }
+  .sidebar-accord.subactive { border-left-color: var(--green); color: var(--text); }
+  .sidebar-accord .count { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text4); margin-left: auto; }
+  .accord-chevron { font-size: 0.55rem; transition: transform .2s ease; flex-shrink: 0; opacity: .5; }
+  .sidebar-accord.open .accord-chevron { transform: rotate(90deg); }
+  .sidebar-subitems { overflow: hidden; }
+  .sidebar-subitem {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 16px 4px 32px; cursor: pointer;
+    font-size: 0.79rem; color: var(--text3); transition: all .15s;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-subitem:hover { color: var(--text); background: rgba(0,0,0,.03); }
+  .sidebar-subitem.active { color: var(--text); background: rgba(0,0,0,.05); border-left-color: var(--green); }
+  .sidebar-subitem .count { font-family: 'DM Mono', monospace; font-size:0.63rem; color: var(--text4); margin-left: auto; }
+  .sidebar-subitem.active .count { color: var(--text3); }
+  .subitem-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .reg-dot { background: #6366f1; }
+  .reco-dot { background: #0891b2; }
 
   /* ── Content area ──────────────────────── */
   .content-area { padding: 28px 40px; }
@@ -561,6 +587,7 @@
       <div id="sidebar-my-spec"></div>
       <hr class="sidebar-sep">
       <div class="sidebar-label">Explorer</div>
+      <div id="sidebar-explore-search" style="padding:0 10px 6px;"></div>
       <div id="sidebar-explore"></div>
       <hr class="sidebar-sep">
       <div class="sidebar-item" id="sidebar-favorites" onclick="showFavorites()">
@@ -710,8 +737,11 @@ let activeSpecSlug = '';
 let activeAudience = 'SPEC_ONLY';
 let allSpecialties = [];
 let specCounts = {};
+let specTypeCounts = {};  // {slug: {total, reglementaire, recommandation}}
 let activeCatFilter = 'all';
 let activeSourceType = 'all';
+let _activeAccordId = null;
+let _activeSubId   = null;
 
 // Mois exclus des archives (couverts par le portail)
 let portalMonths = new Set();
@@ -1050,47 +1080,127 @@ function monthDisplayName(monthStr) {
   return `${MONTHS_FR[parseInt(m, 10) - 1]} ${y}`;
 }
 
+// ── Source pills visibility ───────────────────────────────────
+function showSourcePills() {
+  const el = document.getElementById('source-pills');
+  if (el) el.style.display = '';
+}
+function hideSourcePills() {
+  const el = document.getElementById('source-pills');
+  if (el) el.style.display = 'none';
+}
+
+// ── Sidebar accordion helpers (identiques portal) ─────────────
+function _accordHtml(slug, name, counts, id) {
+  const reg  = counts ? (counts.reglementaire || 0) : 0;
+  const reco = counts ? (counts.recommandation || 0) : 0;
+  const tot  = counts ? (counts.total || 0) : 0;
+  return `
+    <button class="sidebar-accord" id="accord-${id}" onclick="toggleAccord('${id}')">
+      <span class="accord-chevron">&#9658;</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(name)}</span>
+      <span class="count">${tot}</span>
+    </button>
+    <div class="sidebar-subitems" id="subitems-${id}" style="display:none;">
+      <div class="sidebar-subitem" id="sub-${id}-reg" onclick="selectSpecType('${slug}','reglementaire','${id}')">
+        <span class="subitem-dot reg-dot"></span>R\u00e9glementation
+        <span class="count">${reg}</span>
+      </div>
+      <div class="sidebar-subitem" id="sub-${id}-reco" onclick="selectSpecType('${slug}','recommandation','${id}')">
+        <span class="subitem-dot reco-dot"></span>Recommandation
+        <span class="count">${reco}</span>
+      </div>
+    </div>`;
+}
+
+function toggleAccord(id) {
+  const header   = document.getElementById(`accord-${id}`);
+  const subitems = document.getElementById(`subitems-${id}`);
+  if (!header || !subitems) return;
+  const isOpen = subitems.style.display !== 'none';
+  document.querySelectorAll('.sidebar-subitems').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('open'));
+  if (!isOpen) {
+    subitems.style.display = '';
+    header.classList.add('open');
+    _activeAccordId = id;
+  } else {
+    _activeAccordId = null;
+  }
+}
+
+async function selectSpecType(slug, stype, accordId) {
+  document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
+  const subEl  = document.getElementById(`sub-${accordId}-${stype === 'reglementaire' ? 'reg' : 'reco'}`);
+  const headEl = document.getElementById(`accord-${accordId}`);
+  if (subEl)  subEl.classList.add('active');
+  if (headEl) headEl.classList.add('subactive');
+  _activeSubId = `sub-${accordId}-${stype === 'reglementaire' ? 'reg' : 'reco'}`;
+  activeSpecSlug   = slug;
+  activeSourceType = stype;
+  activeAudience   = 'SPEC_ONLY';
+  favoritesMode    = false;
+  hideSourcePills();
+  updateSpecLabel((allSpecialties.find(s => s.slug === slug) || {}).name || slug);
+  await reloadArchives();
+}
+
 // ── Sidebar ──────────────────────────────────────────────────
 function buildSidebar() {
+  // 1. Ma spécialité — accordion auto-ouvert
   const mySpecEl = document.getElementById('sidebar-my-spec');
-  const myCount = specCounts[userSpecSlug] || 0;
-  mySpecEl.innerHTML = `
-    <div class="sidebar-item active" id="sidebar-item-mine" onclick="selectMySpec(this)">
-      <span>${esc(userSpecName)}</span>
-      <span class="count">${myCount}</span>
-    </div>`;
+  const myCounts = specTypeCounts[userSpecSlug] || { total: specCounts[userSpecSlug] || 0, reglementaire: 0, recommandation: 0 };
+  mySpecEl.innerHTML = _accordHtml(userSpecSlug, userSpecName, myCounts, 'mine');
+  const mySubitems = document.getElementById('subitems-mine');
+  const myHeader   = document.getElementById('accord-mine');
+  if (mySubitems) mySubitems.style.display = '';
+  if (myHeader)   myHeader.classList.add('open');
+  _activeAccordId = 'mine';
 
-  // Transversal supprimé — articles trans-spécialités affectés à medecine-generale
+  // 2. Explorer — autres spécialités avec accordion + recherche
+  const exploreEl       = document.getElementById('sidebar-explore');
+  const exploreSearchEl = document.getElementById('sidebar-explore-search');
+  const others          = allSpecialties.filter(s => s.slug !== userSpecSlug);
+  const MAX_VISIBLE     = 7;
+  let exploreExpanded   = false;
+  let exploreSearchQuery = '';
 
-  const exploreEl = document.getElementById('sidebar-explore');
-  const others = allSpecialties.filter(s => s.slug !== userSpecSlug);
-  const MAX_VISIBLE = 7;
-  let exploreExpanded = false;
+  exploreSearchEl.innerHTML = `<div style="position:relative;">
+    <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text5);display:flex;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+    <input id="sidebar-spec-search" type="search" placeholder="Rechercher une sp\u00e9cialit\u00e9\u2026"
+      oninput="filterSidebarSpecs(this.value)"
+      style="width:100%;padding:6px 8px 6px 28px;border:1px solid var(--border);border-radius:6px;
+             background:var(--surface);color:var(--text);font-family:'Outfit',sans-serif;
+             font-size:0.78rem;outline:none;"/>
+  </div>`;
 
   function renderExploreList() {
-    const list = exploreExpanded ? others : others.slice(0, MAX_VISIBLE);
+    const q = exploreSearchQuery.trim().toLowerCase();
+    const filtered = q ? others.filter(s => s.name.toLowerCase().includes(q)) : others;
+    const list = (!q && !exploreExpanded) ? filtered.slice(0, MAX_VISIBLE) : filtered;
     const hidden = others.length - MAX_VISIBLE;
+
     exploreEl.innerHTML = list.map(s => {
-      const cnt = specCounts[s.slug] || 0;
-      return `<div class="sidebar-item" onclick="selectExploreSpec('${s.slug}', this)">
-        <span>${esc(s.name)}</span>
-        <span class="count">${cnt}</span>
-      </div>`;
+      const cnt = specTypeCounts[s.slug] || { total: specCounts[s.slug] || 0, reglementaire: 0, recommandation: 0 };
+      return _accordHtml(s.slug, s.name, cnt, `exp-${s.slug}`);
     }).join('');
-    if (!exploreExpanded && hidden > 0) {
+
+    if (!q && !exploreExpanded && hidden > 0) {
       exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:0.65rem;" onclick="expandExplore()">
         <span>+ ${hidden} sp\u00e9cialit\u00e9s\u2026</span>
       </div>`;
-    } else if (exploreExpanded && others.length > MAX_VISIBLE) {
+    } else if (!q && exploreExpanded && others.length > MAX_VISIBLE) {
       exploreEl.innerHTML += `<div class="sidebar-item" style="color:var(--text5);font-size:0.65rem;" onclick="collapseExplore()">
         <span>R\u00e9duire</span>
       </div>`;
     }
   }
 
-  window.archExpandExplore = function() { exploreExpanded = true; renderExploreList(); };
-  window.expandExplore = window.archExpandExplore;
-  window.collapseExplore = function() { exploreExpanded = false; renderExploreList(); };
+  window.filterSidebarSpecs = function(q) { exploreSearchQuery = q; renderExploreList(); };
+  window.archExpandExplore  = function() { exploreExpanded = true;  renderExploreList(); };
+  window.expandExplore      = window.archExpandExplore;
+  window.collapseExplore    = function() { exploreExpanded = false; renderExploreList(); };
   renderExploreList();
 }
 
@@ -1230,7 +1340,9 @@ async function loadCounts() {
     if (!res) return;
     const data = await res.json();
     const raw = data.per_specialty || {};
-    // Aplatir : l'API peut renvoyer {total, reglementaire, recommandation} par spé
+    // Stocker les counts détaillés pour l'accordion reg/reco
+    specTypeCounts = raw;
+    // Aplatir en nombre pour la sidebar simple
     specCounts = {};
     Object.entries(raw).forEach(([slug, c]) => {
       specCounts[slug] = (c && typeof c === 'object') ? (c.total || 0) : (c || 0);
@@ -1244,6 +1356,9 @@ function buildAudienceParams() {
     params += `&specialty=${encodeURIComponent(activeSpecSlug)}&audience=SPEC_ONLY`;
   } else if (activeSpecSlug) {
     params += `&specialty=${encodeURIComponent(activeSpecSlug)}`;
+  }
+  if (activeSourceType && activeSourceType !== 'all') {
+    params += `&source_type=${encodeURIComponent(activeSourceType)}`;
   }
   return params;
 }
@@ -1446,8 +1561,14 @@ function archSegClick(section, btnEl) {
   if (btnEl) btnEl.classList.add('active');
 
   if (section === 'specialite') {
-    const el = document.getElementById('sidebar-item-mine');
-    if (el) el.click();
+    // Ouvrir l'accordion "Ma spécialité" et réinitialiser les filtres
+    document.querySelectorAll('.sidebar-subitems').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('open'));
+    const mySubitems = document.getElementById('subitems-mine');
+    const myHeader   = document.getElementById('accord-mine');
+    if (mySubitems) mySubitems.style.display = '';
+    if (myHeader)   myHeader.classList.add('open');
+    _activeAccordId = 'mine';
   } else if (section === 'explorer') {
     if (window.archExpandExplore) window.archExpandExplore();
     const listHtml = document.getElementById('sidebar-explore')?.innerHTML || '';
