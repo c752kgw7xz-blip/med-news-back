@@ -952,6 +952,15 @@ async function resendVerification() {
   }
 }
 
+// ── Normalisation source_type ─────────────────────────────────
+// therapeutique et formation sont exposés sous 'recommandation' côté UI.
+// Les données en base sont conservées ; seul l'affichage est normalisé.
+function normalizeSourceType(st) {
+  if (!st) return 'reglementaire';
+  if (st === 'therapeutique' || st === 'formation') return 'recommandation';
+  return st;
+}
+
 // ── Rendering ─────────────────────────────────────────────────
 const CATEGORY_ORDER = ['therapeutique','clinique','exercice'];
 const CATEGORY_META = {
@@ -1041,7 +1050,7 @@ function renderArticle(a, idx) {
 
   const isFav = favoritesSet.has(a.id);
   return `
-  <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${categorie || ''}" data-source-type="${a.source_type || 'reglementaire'}" data-item-id="${a.id}"
+  <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${categorie || ''}" data-source-type="${normalizeSourceType(a.source_type)}" data-item-id="${a.id}"
        style="animation-delay:${delay}ms;">
     <div class="card-top">
       <div class="card-top-left">
