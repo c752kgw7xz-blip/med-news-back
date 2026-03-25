@@ -189,6 +189,18 @@
   /* ── Content area ──────────────────────── */
   .content-area { padding: 28px 40px; }
 
+  /* ── Page title (Archives) ──────────────── */
+  .arch-page-title { margin-bottom: 20px; }
+  .arch-page-title h2 {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.9rem; font-weight: 400; font-style: italic;
+    color: var(--text); letter-spacing: -.3px; margin-bottom: 3px;
+  }
+  .arch-page-title p {
+    font-size: 0.72rem; color: var(--text4);
+    font-family: 'DM Mono', monospace; letter-spacing: .4px;
+  }
+
   /* ── Search bar ─────────────────────────── */
   .search-wrap { margin-bottom: 20px; position: relative; }
   .search-input {
@@ -565,7 +577,7 @@
     </div>
     <span class="header-archives-tag">Archives</span>
     <div class="header-right">
-      <span class="email"><span class="header-dot"></span><span id="user-email"></span></span>
+      <span class="email" style="display:none;"><span class="header-dot"></span><span id="user-email"></span></span>
       <button class="btn-logout" onclick="logout()">D&#233;connexion</button>
     </div>
   </header>
@@ -612,6 +624,12 @@
           <button class="arch-seg-btn" id="arch-seg-explore" onclick="archSegClick('explorer', this)">Explorer</button>
         </div>
       </div>
+      <!-- Page title -->
+      <div class="arch-page-title">
+        <h2>Archives</h2>
+        <p>HISTORIQUE DE VOS ARTICLES VALID&#201;S</p>
+      </div>
+
       <!-- Search bar -->
       <div class="search-wrap">
         <span class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
