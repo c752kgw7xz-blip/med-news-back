@@ -54,6 +54,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["X-XSS-Protection"] = "0"  # Désactivé : CSP est plus sûr
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         if request.url.path in _IFRAME_ALLOWED_PATHS:
             # Allow these pages to be embedded in iframes from the same origin
             response.headers["Content-Security-Policy"] = (
@@ -327,7 +329,8 @@ def admin_run_collect(request: Request):
         job_collect_recommendations()
         return {"ok": True, "job": "collect_regulation+recommendations"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        _startup_logger.exception("Erreur admin run-collect")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 @app.post("/admin/scheduler/run-send")
@@ -339,7 +342,8 @@ def admin_run_send(request: Request):
         job_try_send_recommendations()
         return {"ok": True, "job": "send_regulation+recommendations"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        _startup_logger.exception("Erreur admin run-send")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 @app.post("/admin/test-email")

@@ -18,6 +18,10 @@ POST /admin/sources/test-feed?url=…   ← tester un flux RSS manuellement
 
 from __future__ import annotations
 
+import ipaddress
+import logging
+import socket
+import urllib.parse
 from datetime import date, timedelta
 from typing import Any
 
@@ -26,7 +30,50 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from app.db import get_conn
 from app.security import require_admin as _require_admin
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/admin/sources", tags=["sources"])
+
+
+# ---------------------------------------------------------------------------
+# Anti-SSRF : validation d'URL avant tout fetch externe
+# ---------------------------------------------------------------------------
+
+_ALLOWED_SCHEMES = {"http", "https"}
+_BLOCKED_RANGES = [
+    ipaddress.ip_network("169.254.0.0/16"),   # link-local / métadonnées cloud
+    ipaddress.ip_network("10.0.0.0/8"),        # RFC1918
+    ipaddress.ip_network("172.16.0.0/12"),     # RFC1918
+    ipaddress.ip_network("192.168.0.0/16"),    # RFC1918
+    ipaddress.ip_network("127.0.0.0/8"),       # loopback IPv4
+    ipaddress.ip_network("::1/128"),           # loopback IPv6
+    ipaddress.ip_network("fc00::/7"),          # ULA IPv6
+]
+
+
+def _validate_url(url: str) -> None:
+    """Vérifie que l'URL ne pointe pas vers des ressources internes (anti-SSRF)."""
+    try:
+        parsed = urllib.parse.urlparse(url)
+    except Exception:
+        raise HTTPException(status_code=400, detail="URL invalide")
+    if parsed.scheme not in _ALLOWED_SCHEMES:
+        raise HTTPException(status_code=400, detail="Scheme non autorisé (http/https uniquement)")
+    hostname = parsed.hostname
+    if not hostname:
+        raise HTTPException(status_code=400, detail="Hostname manquant dans l'URL")
+    try:
+        ip = ipaddress.ip_address(socket.gethostbyname(hostname))
+    except OSError:
+        raise HTTPException(status_code=400, detail="Impossible de résoudre le hostname")
+    except Exception:
+        raise HTTPException(status_code=400, detail="URL invalide")
+    for blocked in _BLOCKED_RANGES:
+        if ip in blocked:
+            raise HTTPException(
+                status_code=400,
+                detail="Adresse IP bloquée (réseau privé ou métadonnées cloud)",
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -167,8 +214,11 @@ def collect_jorf(request: Request, days: int = Query(default=35, ge=1, le=365)):
 
         return {"ok": True, "source": "legifrance_jorf", "days": days,
                 "seen": seen, "inserted": ins, "deduped": dup}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Erreur sources admin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 @router.post("/collect/kali")
@@ -177,8 +227,11 @@ def collect_kali(request: Request, days: int = Query(default=35, ge=1, le=365)):
     try:
         from app.piste_collector import collect_kali as _collect
         return {"ok": True, "source": "piste_kali", **_collect(days=days)}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Erreur sources admin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 @router.post("/collect/has")
@@ -187,8 +240,11 @@ def collect_has(request: Request, days: int = Query(default=35, ge=1, le=365)):
     try:
         from app.rss_collector import collect_has as _collect
         return {"ok": True, "source": "has", "results": _collect(days=days)}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Erreur sources admin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 @router.post("/collect/ansm")
@@ -197,8 +253,11 @@ def collect_ansm(request: Request, days: int = Query(default=35, ge=1, le=365)):
     try:
         from app.rss_collector import collect_ansm as _collect
         return {"ok": True, "source": "ansm", "results": _collect(days=days)}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Erreur sources admin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 @router.post("/collect/spf")
@@ -207,8 +266,11 @@ def collect_spf(request: Request, days: int = Query(default=35, ge=1, le=365)):
     try:
         from app.rss_collector import collect_spf as _collect
         return {"ok": True, "source": "spf", "results": _collect(days=days)}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Erreur sources admin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 @router.post("/collect/web")
@@ -231,8 +293,11 @@ def collect_web(request: Request):
             "total_errors": total_errors,
             "results": results,
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Erreur sources admin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 @router.post("/collect/all")
@@ -248,8 +313,11 @@ def collect_all(request: Request, days: int = Query(default=35, ge=1, le=365)):
             "piste_extra": collect_all_piste_fonds(days=days),
             "rss": collect_all_rss(days=days),
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Erreur sources admin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 @router.post("/collect/pratique")
@@ -272,8 +340,11 @@ def collect_pratique(request: Request, days: int = Query(default=90, ge=1, le=36
             "total_errors": total_errors,
             "results": results,
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Erreur sources admin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
 # ---------------------------------------------------------------------------
@@ -290,6 +361,8 @@ def test_rss_feed(
     Utile pour vérifier qu'un nouveau flux est lisible avant de l'activer.
     """
     _require_admin(request)
+
+    _validate_url(url)
 
     try:
         from app.rss_collector import fetch_feed, _entry_title, _parse_entry_date, _entry_url
@@ -321,5 +394,8 @@ def test_rss_feed(
             "total_entries": len(parsed.entries or []),
             "sample": sample,
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Erreur sources admin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")

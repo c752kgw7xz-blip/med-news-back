@@ -7,6 +7,7 @@ from pydantic import BaseModel, EmailStr
 
 from app.db import get_conn
 from app.security import (
+    hash_password,
     verify_password,
     create_access_token,
     new_refresh_token,
@@ -17,7 +18,27 @@ from app.security import (
     check_login_rate_limit,
 )
 
+# Hash factice généré au démarrage — utilisé pour égaliser le temps de réponse
+# quand un email n'existe pas (protection timing oracle).
+_DUMMY_HASH = hash_password("Dummy_P4ssw0rd_MedNews_2026!")
+
 router = APIRouter()
+
+
+# -----------------------
+# Helpers
+# -----------------------
+
+def _real_ip(request: Request) -> str:
+    """Retourne l'IP réelle du client.
+
+    Sur Render (et tout reverse proxy), request.client.host retourne l'IP
+    interne du proxy, pas celle du client. On lit X-Forwarded-For en priorité.
+    """
+    xff = request.headers.get("x-forwarded-for", "")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
 
 
 # -----------------------
@@ -70,7 +91,7 @@ def clear_auth_cookies(resp: Response):
 
 @router.post("/auth/login")
 def login(payload: LoginPayload, request: Request, response: Response):
-    ip = request.client.host if request.client else "unknown"
+    ip = _real_ip(request)
     check_login_rate_limit(ip)
 
     email_norm = payload.email.strip().lower()
@@ -87,6 +108,9 @@ def login(payload: LoginPayload, request: Request, response: Response):
             row = cur.fetchone()
 
             if not row:
+                # Exécuter quand même le PBKDF2 pour égaliser le temps de réponse
+                # et empêcher l'énumération d'emails par timing attack.
+                verify_password(payload.password, _DUMMY_HASH)
                 raise HTTPException(status_code=401, detail="invalid credentials")
 
             user_id, password_hash, is_admin, email_verified_at = row
