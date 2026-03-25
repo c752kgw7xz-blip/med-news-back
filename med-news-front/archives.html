@@ -1013,10 +1013,8 @@ function renderGroupedArticles(articles, container) {
   });
   container.innerHTML = html;
   if (window.lucide) lucide.createIcons();
-  if (activeCatFilter !== 'all') {
-    applyCatFilter();
-    document.querySelector(`.filter-pill[data-cat="${activeCatFilter}"]`)?.classList.add('active');
-  }
+  // Re-apply all active filters (cat + source_type) après chaque rendu
+  applyCatFilter();
 }
 
 function toggleDetail(e, card) {
@@ -1063,15 +1061,17 @@ function applyCatFilter() {
     const catMatch  = activeCatFilter === 'all' || card.dataset.categorie === activeCatFilter;
     card.style.display = (typeMatch && catMatch) ? '' : 'none';
   });
-  // Hide empty group headers
+  // Hide empty group headers + mettre à jour le compteur par catégorie
   document.querySelectorAll('.group-header').forEach(gh => {
     let next = gh.nextElementSibling;
-    let hasVisible = false;
+    let visCount = 0;
     while (next && !next.classList.contains('group-header') && !next.classList.contains('month-section')) {
-      if (next.classList.contains('article-card') && next.style.display !== 'none') hasVisible = true;
+      if (next.classList.contains('article-card') && next.style.display !== 'none') visCount++;
       next = next.nextElementSibling;
     }
-    gh.style.display = hasVisible ? '' : 'none';
+    gh.style.display = visCount > 0 ? '' : 'none';
+    const countEl = gh.querySelector('.group-count');
+    if (countEl) countEl.textContent = `${visCount}\u00a0article${visCount > 1 ? 's' : ''}`;
   });
   updateCounters();
 }
