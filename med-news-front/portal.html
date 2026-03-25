@@ -1119,8 +1119,8 @@ function renderGroupedArticles() {
   if (window.lucide) lucide.createIcons();
   applyAccordionState();
 
-  // Re-apply active category filter (pass the pill btn pour garder l'état visuel actif)
-  if (activeFilter !== 'all') filterArticles(activeFilter, document.querySelector(`.filter-pill[data-cat="${activeFilter}"]`));
+  // Re-apply all active filters (cat + source_type)
+  applyFilters();
 }
 
 function esc(s) {
@@ -1163,25 +1163,28 @@ function applyFilters() {
     const typeMatch = activeSourceType === 'all' || card.dataset.sourceType  === activeSourceType;
     card.style.display = (catMatch && typeMatch) ? '' : 'none';
   });
-  // Masquer les group-headers (et leur wrapper) sans cartes visibles
+  // Masquer les group-headers sans cartes visibles + mettre à jour le compteur
   document.querySelectorAll('.group-header').forEach(gh => {
     const wrapper = gh.nextElementSibling;
+    let visCount = 0;
     if (wrapper && wrapper.classList.contains('cat-articles')) {
       // DOM wrappé (accordéon)
-      const hasVisible = Array.from(wrapper.querySelectorAll('.article-card'))
-        .some(c => c.style.display !== 'none');
-      gh.style.display = hasVisible ? '' : 'none';
-      wrapper.style.display = hasVisible ? '' : 'none';
+      wrapper.querySelectorAll('.article-card').forEach(c => {
+        if (c.style.display !== 'none') visCount++;
+      });
+      gh.style.display = visCount > 0 ? '' : 'none';
+      wrapper.style.display = visCount > 0 ? '' : 'none';
     } else {
       // Fallback DOM plat (legacy)
       let next = gh.nextElementSibling;
-      let hasVisible = false;
       while (next && !next.classList.contains('group-header')) {
-        if (next.classList.contains('article-card') && next.style.display !== 'none') hasVisible = true;
+        if (next.classList.contains('article-card') && next.style.display !== 'none') visCount++;
         next = next.nextElementSibling;
       }
-      gh.style.display = hasVisible ? '' : 'none';
+      gh.style.display = visCount > 0 ? '' : 'none';
     }
+    const countEl = gh.querySelector('.group-count');
+    if (countEl) countEl.textContent = `${visCount}\u00a0article${visCount > 1 ? 's' : ''}`;
   });
   updateCounters();
 }
