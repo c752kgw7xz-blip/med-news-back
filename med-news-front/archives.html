@@ -40,7 +40,7 @@
     height: 52px; padding: 0 32px; display: flex; align-items: center;
     justify-content: space-between; position: sticky; top: 0; z-index: 100;
   }
-  .header-left { display: flex; align-items: baseline; gap: 12px; }
+  .header-left { display: flex; align-items: baseline; gap: 12px; min-width: 0; overflow: hidden; }
   .header-left h1 {
     font-family: 'Instrument Serif', Georgia, serif; font-size:1.18rem; font-weight: 400;
     color: var(--text); letter-spacing: -.2px;
@@ -61,6 +61,16 @@
     cursor: pointer; transition: all .2s; font-family: 'DM Mono', monospace;
   }
   .btn-logout:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+
+  /* ── Verify banner ──────────────────────── */
+  .verify-banner {
+    background: var(--surface2); border-bottom: 1px solid var(--border); padding: 8px 24px;
+    font-size: 0.86rem; color: var(--amber); display: none; align-items: center; gap: 10px; font-weight: 500;
+  }
+  .verify-banner button {
+    background: var(--amber); color: #000; border: none; border-radius: 4px;
+    padding: 3px 10px; font-size: 0.79rem; cursor: pointer; font-weight: 600; font-family: inherit;
+  }
 
   /* ── Layout ─────────────────────────────── */
   .layout {
@@ -127,21 +137,21 @@
   .sidebar-label {
     font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400;
     letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase;
-    padding: 0 16px; margin-bottom: 6px;
+    padding: 6px 16px 4px; margin-bottom: 2px;
   }
-  .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 12px 16px; }
+  .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 10px 16px; }
   .sidebar-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 7px 16px; cursor: pointer; transition: all .12s;
+    padding: 6px 16px 6px 20px; cursor: pointer; transition: all .12s;
     color: var(--text3); font-size:0.82rem; font-weight: 300; font-family: 'Outfit', sans-serif;
     border-left: 2px solid transparent;
   }
   .sidebar-item:hover { color: var(--text2); background: rgba(0,0,0,.04); }
   .sidebar-item.active {
     color: var(--text); border-left-color: var(--green);
-    padding-left: 14px; background: rgba(0,0,0,.05);
+    padding-left: 18px; background: rgba(0,0,0,.05); font-weight: 500;
   }
-  .sidebar-item .count { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text5); font-weight: 400; }
+  .sidebar-item .count { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text4); font-weight: 400; }
   .sidebar-item.active .count { color: var(--text3); }
   .sidebar-back {
     display: flex; align-items: center; gap: 6px;
@@ -175,19 +185,24 @@
   .search-clear:hover { color: var(--text3); }
 
   /* ── Source type pills ──────────────────── */
-  .source-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .source-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; padding-bottom: 4px; }
   .source-pill {
-    display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px;
-    border-radius: 3px; font-size:0.71rem; font-weight: 300; cursor: pointer;
-    border: 0.5px solid #252840; background: transparent; color: var(--text3);
-    transition: all .15s; white-space: nowrap; font-family: 'Outfit', sans-serif;
+    padding: 3px 9px; font-size: 0.65rem; font-family: 'DM Mono', monospace;
+    letter-spacing: .5px; text-transform: uppercase; font-weight: 400;
+    border: 1px solid var(--border); border-radius: 4px;
+    background: transparent; color: var(--text4); cursor: pointer;
+    white-space: nowrap; transition: all .15s;
   }
   .source-pill:hover { border-color: var(--text4); color: var(--text2); }
   .source-pill.active { background: var(--surface2); border-color: var(--border-strong); color: var(--text); }
-  .source-pill[data-stype="reglementaire"]        { color: #6366f1; border-color: rgba(99,102,241,.2); }
-  .source-pill[data-stype="reglementaire"].active  { color: #6366f1; background: rgba(99,102,241,.1); border-color: rgba(99,102,241,.35); }
   .source-pill[data-stype="recommandation"]       { color: #0891b2; border-color: rgba(8,145,178,.2); }
   .source-pill[data-stype="recommandation"].active { color: #0891b2; background: rgba(8,145,178,.1); border-color: rgba(8,145,178,.35); }
+  .source-pill[data-stype="therapeutique"]       { color: #059669; border-color: rgba(5,150,105,.2); }
+  .source-pill[data-stype="therapeutique"].active{ color: #059669; background: rgba(5,150,105,.1); border-color: rgba(5,150,105,.35); }
+  .source-pill[data-stype="formation"]       { color: #d97706; border-color: rgba(217,119,6,.2); }
+  .source-pill[data-stype="formation"].active{ color: #d97706; background: rgba(217,119,6,.1); border-color: rgba(217,119,6,.35); }
+  .source-pill[data-stype="reglementaire"]       { color: #6366f1; border-color: rgba(99,102,241,.2); }
+  .source-pill[data-stype="reglementaire"].active{ color: #6366f1; background: rgba(99,102,241,.1); border-color: rgba(99,102,241,.35); }
 
   /* ── Nature filter pills ────────────────── */
   .filters-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -248,8 +263,9 @@
   /* ── Article card ───────────────────────── */
   .article-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 18px 20px; margin-bottom: 8px; cursor: pointer; min-width: 0; overflow: hidden;
+    padding: 16px 18px; cursor: pointer; min-width: 0; overflow: hidden;
     transition: background .15s, border-color .15s;
+    touch-action: manipulation;
     animation: fadeUp .2s ease forwards; opacity: 0;
     border-left: 3px solid var(--border);
   }
@@ -272,8 +288,8 @@
     padding: 2px 7px; border-radius: 2px; font-size:0.53rem; font-weight: 400;
     font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .5px;
   }
-  .card-date { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text4); }
-  .card-freshness { font-size: 0.64rem; font-weight: 600; }
+  .card-date { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text4); font-weight: 400; }
+  .card-freshness { font-size: 0.71rem; font-weight: 600; }
   .urgency-pill {
     display: inline-flex; align-items: center; gap: 4px;
     font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400;
@@ -285,14 +301,19 @@
   .urgency-pill.low { color: #059669; }
 
   .card-title {
-    font-family: 'Outfit', sans-serif; font-size:1.0rem; font-weight: 400; color: var(--text); line-height: 1.4; margin-bottom: 8px;
+    font-family: 'Outfit', sans-serif; font-size:1.0rem; font-weight: 400; color: var(--text); line-height: 1.4; margin-bottom: 7px;
   }
 
-
-  .card-summary { font-family: 'Outfit', sans-serif; font-size:0.76rem; font-weight: 300; color: var(--text3); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  /* Résumé : 1 ligne en mode réduit, taille plus lisible */
+  .card-summary {
+    font-family: 'Outfit', sans-serif; font-size:0.76rem; font-weight: 300; color: var(--text3); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  /* Impact pratique : masqué tant que la carte n'est pas ouverte */
+  .article-card:not(.expanded) .card-impact { display: none; }
   .card-impact {
-    font-size: 0.86rem; color: var(--text2); font-style: italic; line-height: 1.5;
-    padding-left: 10px; margin-top: 8px;
+    font-size: 0.93rem; color: var(--text2); font-style: italic; line-height: 1.5;
+    padding-left: 10px; margin-top: 10px;
   }
   .card-impact.impact-high { border-left: 2px solid var(--red); }
   .card-impact.impact-mid { border-left: 2px solid var(--amber); }
@@ -300,10 +321,10 @@
 
   /* ── Expanded detail ────────────────────── */
   .card-detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--border); }
-  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .detail-grid { grid-template-columns: 1fr; min-width: 0; } }
   .detail-box {
-    background: rgba(0,0,0,.025); border-radius: 8px; padding: 14px 16px;
+    background: rgba(0,0,0,.025); border-radius: 8px; padding: 14px 16px; min-width: 0;
   }
   .detail-box h4 {
     font-size: 0.71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
@@ -311,14 +332,14 @@
   }
   .detail-box ul { margin: 0; padding: 0; list-style: none; }
   .detail-box li {
-    margin: 6px 0; font-size: 0.86rem; color: var(--text2); line-height: 1.5;
-    padding-left: 14px; position: relative;
+    margin: 7px 0; font-size: 0.93rem; color: var(--text2); line-height: 1.55;
+    padding-left: 14px; position: relative; overflow-wrap: break-word; word-break: break-word;
   }
   .detail-box li.bullet-high::before { content: "\2022"; position: absolute; left: 0; color: var(--red); font-size: 1rem; line-height: 1.3; }
   .detail-box li.bullet-mid::before { content: "\2022"; position: absolute; left: 0; color: var(--amber); font-size: 1rem; line-height: 1.3; }
   .detail-box li.bullet-low::before { content: "\2022"; position: absolute; left: 0; color: var(--green); font-size: 1rem; line-height: 1.3; }
-  .detail-box .texte-long { font-size: 0.86rem; color: var(--text3); line-height: 1.65; font-style: italic; }
-  .detail-refs { font-size: 0.79rem; color: var(--text4); margin-top: 10px; }
+  .detail-box .texte-long { font-size: 0.93rem; color: var(--text3); line-height: 1.7; font-style: italic; }
+  .detail-refs { font-size: 0.79rem; color: var(--text4); margin-top: 10px; overflow-wrap: break-word; word-break: break-word; }
 
   .detail-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
   .btn-official {
@@ -335,6 +356,22 @@
   }
   .btn-collapse:hover { color: var(--text3); }
 
+  /* ── Favoris sidebar item ───────────────── */
+  #sidebar-favorites { color: #c9961a; }
+  #sidebar-favorites:hover { color: #e0aa1e; }
+  #sidebar-favorites.active { color: #e0aa1e; }
+
+  /* ── Btn favorites ──────────────────────── */
+  .btn-fav {
+    background: transparent; border: none; cursor: pointer;
+    color: var(--text4); padding: 6px 8px; border-radius: 4px; min-width: 36px; min-height: 36px;
+    transition: color .15s; display: inline-flex; align-items: center; justify-content: center; line-height: 1;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  .btn-fav:hover { color: var(--amber); }
+  .btn-fav.active { color: var(--amber); }
+  .btn-fav.active svg { fill: currentColor; }
+
   /* ── Group headers ────────────────────────── */
   .group-header {
     display: flex; align-items: center; gap: 10px;
@@ -346,6 +383,12 @@
   .group-count { font-size: 0.79rem; color: var(--text5); font-weight: 400; }
   .group-line { flex: 1; height: 1px; background: var(--border); }
 
+  .group-header.high .group-dot { background: var(--red); }
+  .group-header.high .group-label { color: var(--red); }
+  .group-header.mid .group-dot { background: var(--amber); }
+  .group-header.mid .group-label { color: var(--amber); }
+  .group-header.low .group-dot { background: var(--green); }
+  .group-header.low .group-label { color: var(--green); }
 
   /* ── Search results meta ─────────────────── */
   .search-meta { font-size: 0.86rem; color: var(--text4); margin-bottom: 16px; }
@@ -380,6 +423,7 @@
   }
   .mobile-nav-item.active { color: var(--green); }
   #mnav-specialite.active { color: var(--green); }
+  #mnav-transversal.active { color: #3b82f6; }
   #mnav-explorer.active { color: #9333ea; }
   #mnav-archives.active { color: #d97706; }
   #mnav-compte.active { color: #059669; }
@@ -500,6 +544,15 @@
     </div>
   </header>
 
+  <div class="demo-banner" id="demo-banner" style="display:none;background:#1d1916;border-bottom:1px solid #3d3228;padding:7px 24px;font-size:0.78rem;color:#a89070;text-align:center;letter-spacing:.3px;">
+    MODE DÉMO · <a href="/signup" target="_top" style="color:#1f9478;text-decoration:none;font-weight:500;">Créer mon compte gratuitement →</a>
+  </div>
+
+  <div class="verify-banner" id="verify-banner">
+    Votre email n'est pas encore v&#233;rifi&#233;.
+    <button onclick="resendVerification()">Renvoyer le lien</button>
+  </div>
+
   <div class="layout">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-back" onclick="MedNews.goHome()">&#8592; Ce mois-ci</div>
@@ -512,6 +565,7 @@
       <hr class="sidebar-sep">
       <div class="sidebar-item" id="sidebar-favorites" onclick="showFavorites()">
         <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris</span>
+        <span class="count" id="fav-count">0</span>
       </div>
       <div class="sidebar-item" onclick="window.location.href='/settings'">
         <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
@@ -581,7 +635,6 @@
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
       <span class="mobile-nav-label">Ma sp&#233;</span>
     </button>
-    </button>
     <button class="mobile-nav-item" onclick="archNavClick('explorer')" id="mnav-explorer">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
       <span class="mobile-nav-label">Explorer</span>
@@ -628,12 +681,8 @@
 
   <!-- Full-page overlay — Compte archives (nav visible) -->
   <div class="fp-overlay compte-mode" id="fp-compte">
-    <div class="fp-overlay-header">
-      <button class="fp-overlay-back" onclick="closeFullPage('compte')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        Retour
-      </button>
-      <span class="fp-overlay-title">Compte</span>
+    <div class="fp-overlay-header" style="justify-content:center;">
+      <span class="fp-overlay-title" style="padding-right:0;">Compte</span>
     </div>
     <div class="fp-overlay-content">
       <div class="sidebar-item" onclick="closeFullPage('compte');showFavorites();" style="display:flex;padding:14px 20px;">
@@ -651,6 +700,7 @@
   </div>
 
 <script>
+const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
 const API = window.location.origin;
 
 // ── State ─────────────────────────────────────────────────────
@@ -703,6 +753,7 @@ function getCsrfToken() {
 }
 
 async function authFetch(url, opts = {}) {
+  if (DEMO_MODE) return null; // jamais d'appel API en démo
   const token = getToken();
   if (!token) { window.location.href = '/login'; return; }
   opts.headers = { ...opts.headers, 'Authorization': `Bearer ${token}` };
@@ -834,6 +885,7 @@ function renderArticle(a, idx) {
   const delay = Math.min(idx * 30, 600);
   const categorie = a.categorie || '';
   const sourceMeta = [nature, MedNews.formatDate(datePub)].filter(Boolean).join(' \u00b7 ');
+  const isFav = favoritesSet.has(a.id);
 
   const pointsHtml = points.length
     ? `<div class="detail-box"><h4>Points cl\u00e9s</h4><ul>${points.map(p => `<li class="bullet-${prio}">${esc(p)}</li>`).join('')}</ul></div>`
@@ -855,6 +907,11 @@ function renderArticle(a, idx) {
       <div class="card-top-right">
         ${categorieBadge(categorie)}
         ${sourceMeta ? `<span class="card-date" style="font-size:0.59rem;color:var(--text3);">${esc(sourceMeta)}</span>` : ''}
+        <button class="btn-fav${isFav ? ' active' : ''}" data-item-id="${a.id}"
+          title="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}"
+          onclick="toggleFavorite(event, '${a.id}')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
         ${a.official_url ? `<a class="btn-ext-icon" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" title="Texte officiel"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
       </div>
     </div>
@@ -1081,6 +1138,9 @@ async function loadProfile() {
   userSpecName = p.specialty_name || '';
   activeSpecSlug = userSpecSlug;
   document.getElementById('spec-label').textContent = 'Archives';
+  if (!p.email_verified) {
+    document.getElementById('verify-banner').style.display = 'flex';
+  }
 }
 
 async function loadFavorites() {
@@ -1116,6 +1176,40 @@ function showFavorites() {
     const container = document.getElementById('months-view');
     if (container) container.innerHTML = '<div class="empty">Aucun article en favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
   }
+}
+
+async function toggleFavorite(event, itemId) {
+  event.stopPropagation();
+  if (favoritesSet.has(itemId)) {
+    await authFetch(`${API}/favorites/${itemId}`, { method: 'DELETE' });
+    favoritesSet.delete(itemId);
+    document.querySelectorAll(`.btn-fav[data-item-id="${itemId}"]`).forEach(b => {
+      b.classList.remove('active');
+      b.title = 'Ajouter aux favoris';
+      const svg = b.querySelector('svg');
+      if (svg) svg.style.fill = '';
+    });
+    if (favoritesMode) {
+      const btn = event.currentTarget;
+      const card = btn.closest('.article-card');
+      if (card) card.style.display = 'none';
+    }
+  } else {
+    await authFetch(`${API}/favorites/${itemId}`, { method: 'POST' });
+    favoritesSet.add(itemId);
+    document.querySelectorAll(`.btn-fav[data-item-id="${itemId}"]`).forEach(b => {
+      b.classList.add('active');
+      b.title = 'Retirer des favoris';
+      const svg = b.querySelector('svg');
+      if (svg) svg.style.fill = 'currentColor';
+    });
+  }
+  updateSidebarFavCount();
+}
+
+function updateSidebarFavCount() {
+  const el = document.getElementById('fav-count');
+  if (el) el.textContent = favoritesSet.size;
 }
 
 async function loadSpecialties() {
@@ -1441,6 +1535,7 @@ function filterDrawerSpecs(query) {
 // ── Init ──────────────────────────────────────────────────────
 (async () => {
   if (!getToken()) { window.location.href = '/login'; return; }
+  if (MedNews.isAdmin()) { window.location.href = '/review'; return; }
   await loadProfile();
   await loadFavorites();
   await Promise.all([loadSpecialties(), loadCounts()]);
