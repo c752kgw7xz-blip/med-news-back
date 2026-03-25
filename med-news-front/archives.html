@@ -847,13 +847,6 @@ async function logout() {
   window.location.href = '/login';
 }
 
-// ── Normalisation source_type ─────────────────────────────────
-function normalizeSourceType(st) {
-  if (!st) return 'reglementaire';
-  if (st === 'therapeutique' || st === 'formation') return 'recommandation';
-  return st;
-}
-
 // ── Rendering helpers ─────────────────────────────────────────
 const CATEGORY_ORDER = ['therapeutique','clinique','exercice'];
 const CATEGORY_META = {
@@ -952,7 +945,7 @@ function renderArticle(a, idx) {
     ? `<div class="detail-refs">R\u00e9f. : ${refs.map(r => esc(r)).join(' \u00b7 ')}</div>` : '';
 
   return `
-  <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${esc(categorie)}" data-source-type="${normalizeSourceType(a.source_type)}" data-item-id="${a.id}"
+  <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${esc(categorie)}" data-source-type="${a.source_type || 'reglementaire'}" data-item-id="${a.id}"
        style="animation-delay:${delay}ms;">
     <div class="card-top">
       <div class="card-top-left">

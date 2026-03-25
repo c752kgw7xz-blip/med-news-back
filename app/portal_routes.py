@@ -169,17 +169,10 @@ def list_articles(
             "(i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')"
         )
 
-    # Filtre source_type — normalisation : therapeutique/formation → recommandation,
-    # NULL/vide → reglementaire. Les données en base sont conservées telles quelles.
+    # Filtre source_type (reglementaire | recommandation)
     _VALID_SOURCE_TYPES = {"reglementaire", "recommandation"}
     if source_type and source_type in _VALID_SOURCE_TYPES:
-        extra_clauses.append("""
-            CASE
-              WHEN i.source_type IN ('therapeutique', 'formation') THEN 'recommandation'
-              WHEN i.source_type IS NULL OR i.source_type = '' THEN 'reglementaire'
-              ELSE i.source_type
-            END = %s
-        """)
+        extra_clauses.append("COALESCE(i.source_type, 'reglementaire') = %s")
         extra_params.append(source_type)
 
     # Full-text search (ILIKE) — métacaractères LIKE échappés pour éviter un full-scan forcé
@@ -291,25 +284,14 @@ def article_counts(
         with conn.cursor() as cur:
             # Count per specialty per source_type, filtered by date range
             cur.execute(f"""
-                SELECT i.specialty_slug,
-                       CASE
-                         WHEN i.source_type IN ('therapeutique', 'formation') THEN 'recommandation'
-                         WHEN i.source_type IS NULL OR i.source_type = '' THEN 'reglementaire'
-                         ELSE i.source_type
-                       END AS stype_norm,
-                       COUNT(*)
+                SELECT i.specialty_slug, COALESCE(i.source_type, 'reglementaire'), COUNT(*)
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
                   AND COALESCE(i.score_density, 0) >= 3
                   AND i.specialty_slug IS NOT NULL
                   {date_clause}
-                GROUP BY i.specialty_slug,
-                         CASE
-                           WHEN i.source_type IN ('therapeutique', 'formation') THEN 'recommandation'
-                           WHEN i.source_type IS NULL OR i.source_type = '' THEN 'reglementaire'
-                           ELSE i.source_type
-                         END;
+                GROUP BY i.specialty_slug, COALESCE(i.source_type, 'reglementaire');
             """, date_params)
             per_spec: dict = {}
             for slug, stype, count in cur.fetchall():
