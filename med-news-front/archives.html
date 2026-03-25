@@ -1041,11 +1041,13 @@ function collapseCard(btn) {
 }
 
 // ── Catégorie filter ───────────────────────────────────────────
-function filterBySourceType(stype, btnEl) {
+async function filterBySourceType(stype, btnEl) {
   activeSourceType = stype;
   document.querySelectorAll('.source-pill').forEach(b => b.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
-  applyCatFilter();
+  // Rechargement complet : les mois mis en cache avec un filtre différent
+  // pourraient manquer des articles → on invalide le cache et on recharge.
+  await reloadArchives();
 }
 
 function setCatFilter(cat, btnEl) {
