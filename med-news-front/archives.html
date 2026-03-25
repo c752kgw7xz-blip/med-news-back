@@ -1229,7 +1229,12 @@ async function loadCounts() {
     const res = await authFetch(`${API}/articles/counts${qs}`);
     if (!res) return;
     const data = await res.json();
-    specCounts = data.per_specialty || {};
+    const raw = data.per_specialty || {};
+    // Aplatir : l'API peut renvoyer {total, reglementaire, recommandation} par spé
+    specCounts = {};
+    Object.entries(raw).forEach(([slug, c]) => {
+      specCounts[slug] = (c && typeof c === 'object') ? (c.total || 0) : (c || 0);
+    });
   } catch {}
 }
 
