@@ -72,7 +72,7 @@ def _get_anthropic_client() -> anthropic.AsyncAnthropic:
     return _anthropic_client
 
 KNOWN_TYPE_PRATICIEN  = {"prescripteur", "interventionnel", "biologiste", "pharmacien", "tous"}
-KNOWN_SOURCE_TYPES    = {"reglementaire", "recommandation", "therapeutique", "formation"}
+KNOWN_SOURCE_TYPES    = {"reglementaire", "recommandation"}
 
 # ---------------------------------------------------------------------------
 # Mapping source → source_type (déterministe, 0 appel LLM)
@@ -101,8 +101,8 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "sfp_recommandations":  "recommandation",
     "sofcot_recommandations":"recommandation",
     "cngof_recommandations":"recommandation",
-    # Bon usage / thérapeutique
-    "ansm_bon_usage":       "therapeutique",
+    # Bon usage
+    "ansm_bon_usage":       "recommandation",
     # Sociétés savantes — scan mars 2026
     "cnge":                 "recommandation",
     "snfmi":                "recommandation",
@@ -152,7 +152,7 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "sfbc":                 "recommandation",
     "fspf":                 "recommandation",
     # Nouvelles sources institutionnelles — audit mars 2026
-    "has_ct":  "therapeutique",  # HAS CT — avis médicaments ✅ RSS p_3081449
+    "has_ct":  "recommandation",  # HAS CT — avis médicaments ✅ RSS p_3081449
     "spf_beh": "reglementaire",  # SPF — articles (BEH inclus) ✅
     "cnom":    "reglementaire",  # CNOM — déontologie ✅ RSS /rss.xml
     # Retirées après audit : inca (pas de RSS), andpc (pas de RSS), ameli_pro (login)
