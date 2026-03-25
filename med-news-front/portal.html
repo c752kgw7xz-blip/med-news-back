@@ -1198,11 +1198,14 @@ function filterArticles(categorie, btnEl) {
 }
 
 // ── Filtre source type ────────────────────────────────────────
-function filterBySourceType(stype, btnEl) {
+async function filterBySourceType(stype, btnEl) {
   activeSourceType = stype;
   document.querySelectorAll('.source-pill').forEach(b => b.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
-  applyFilters();
+  // Rechargement serveur pour garantir la cohérence avec la pagination :
+  // loadArticles envoie &source_type au serveur, donc les pages suivantes
+  // doivent être cohérentes avec le filtre actif dès la page 1.
+  await resetAndLoad();
 }
 
 // ── Accordéon catégorie ───────────────────────────────────────

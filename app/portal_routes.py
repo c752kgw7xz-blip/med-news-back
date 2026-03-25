@@ -170,9 +170,11 @@ def list_articles(
         )
 
     # Filtre source_type (reglementaire | recommandation | therapeutique | formation)
+    # COALESCE : les items à source_type NULL sont traités comme 'reglementaire'
+    # pour ne jamais perdre un article APPROVED au filtrage.
     _VALID_SOURCE_TYPES = {"reglementaire", "recommandation", "therapeutique", "formation"}
     if source_type and source_type in _VALID_SOURCE_TYPES:
-        extra_clauses.append("i.source_type = %s")
+        extra_clauses.append("COALESCE(i.source_type, 'reglementaire') = %s")
         extra_params.append(source_type)
 
     # Full-text search (ILIKE) — métacaractères LIKE échappés pour éviter un full-scan forcé
@@ -291,7 +293,7 @@ def article_counts(
                   AND COALESCE(i.score_density, 0) >= 3
                   AND i.specialty_slug IS NOT NULL
                   {date_clause}
-                GROUP BY i.specialty_slug, i.source_type;
+                GROUP BY i.specialty_slug, COALESCE(i.source_type, 'reglementaire');
             """, date_params)
             per_spec: dict = {}
             for slug, stype, count in cur.fetchall():
