@@ -212,26 +212,37 @@ def list_articles(
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(f"""
-                SELECT COUNT(*) FROM items i
-                JOIN candidates c ON c.id = i.candidate_id
-                WHERE i.review_status = 'APPROVED'
-                  AND COALESCE(i.score_density, 0) >= 3
-                  AND {aud_clause}{extra_where}
+                SELECT COUNT(*) FROM (
+                    SELECT DISTINCT i.candidate_id
+                    FROM items i
+                    JOIN candidates c ON c.id = i.candidate_id
+                    WHERE i.review_status = 'APPROVED'
+                      AND COALESCE(i.score_density, 0) >= 3
+                      AND {aud_clause}{extra_where}
+                ) _cnt
             """, all_params)
             total = cur.fetchone()[0]
 
             offset = (page - 1) * per_page
             cur.execute(f"""
-                SELECT i.id, i.audience, i.specialty_slug, i.score_density,
-                       i.tri_json, i.lecture_json, i.published_at,
-                       c.title_raw, c.official_url, c.official_date::text,
-                       i.categorie, i.source_type
-                FROM items i
-                JOIN candidates c ON c.id = i.candidate_id
-                WHERE i.review_status = 'APPROVED'
-                  AND COALESCE(i.score_density, 0) >= 3
-                  AND {aud_clause}{extra_where}
-                ORDER BY i.score_density DESC, c.official_date DESC
+                SELECT id, audience, specialty_slug, score_density,
+                       tri_json, lecture_json, published_at,
+                       title_raw, official_url, official_date,
+                       categorie, source_type
+                FROM (
+                    SELECT DISTINCT ON (i.candidate_id)
+                           i.id, i.audience, i.specialty_slug, i.score_density,
+                           i.tri_json, i.lecture_json, i.published_at,
+                           c.title_raw, c.official_url, c.official_date::text,
+                           i.categorie, i.source_type
+                    FROM items i
+                    JOIN candidates c ON c.id = i.candidate_id
+                    WHERE i.review_status = 'APPROVED'
+                      AND COALESCE(i.score_density, 0) >= 3
+                      AND {aud_clause}{extra_where}
+                    ORDER BY i.candidate_id, i.score_density DESC
+                ) deduped
+                ORDER BY score_density DESC, official_date DESC
                 LIMIT %s OFFSET %s;
             """, (*all_params, per_page, offset))
             rows = cur.fetchall()
