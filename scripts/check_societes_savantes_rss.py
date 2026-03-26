@@ -15,6 +15,7 @@ Prérequis :
 
 import httpx
 import json
+import os
 import re
 import time
 from urllib.parse import urljoin, urlparse
@@ -27,8 +28,10 @@ except ImportError:
     print("⚠️  beautifulsoup4 non installé — autodiscovery désactivé")
     print("   pip3 install beautifulsoup4 lxml\n")
 
-BASE_URL   = "https://med-news-back-fmgu.onrender.com"
-ADMIN_SECRET = "mon-secret-admin"
+BASE_URL     = "https://med-news-back-fmgu.onrender.com"
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "")
+if not ADMIN_SECRET:
+    raise RuntimeError("ADMIN_SECRET env var is not set — export ADMIN_SECRET=<your-secret> before running this script")
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; MedNewsBot/1.0; RSS scanner)",
