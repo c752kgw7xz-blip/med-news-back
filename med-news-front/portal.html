@@ -839,6 +839,25 @@ function openFullPage(section) {
     const inp = document.getElementById('fp-search-spec');
     if (inp) inp.value = '';
     document.getElementById('fp-spec-list').onclick = (e) => {
+      // Accordion toggle scopé à l'overlay (évite le bug des IDs dupliqués avec la sidebar cachée)
+      const accordBtn = e.target.closest('#fp-spec-list .sidebar-accord');
+      if (accordBtn) {
+        const subitems = accordBtn.nextElementSibling;
+        if (!subitems) return;
+        const isOpen = subitems.style.display !== 'none';
+        document.querySelectorAll('#fp-spec-list .sidebar-subitems').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('#fp-spec-list .sidebar-accord').forEach(el => el.classList.remove('open'));
+        if (!isOpen) { subitems.style.display = ''; accordBtn.classList.add('open'); }
+        return;
+      }
+      // Sélection d'un sous-type (Réglementation / Recommandation)
+      const sub = e.target.closest('#fp-spec-list .sidebar-subitem');
+      if (sub) {
+        const m = (sub.getAttribute('onclick') || '').match(/selectSpecType\('([^']+)','([^']+)','([^']+)'\)/);
+        if (m) selectSpecType(m[1], m[2], m[3]);
+        setTimeout(() => closeFullPage('explorer'), 100);
+        return;
+      }
       if (e.target.closest('.sidebar-item')) setTimeout(() => closeFullPage('explorer'), 100);
     };
   }
