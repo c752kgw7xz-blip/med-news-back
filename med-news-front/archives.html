@@ -782,14 +782,12 @@ const MONTHS_FR = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin',
   'Juillet','Ao\u00fbt','Septembre','Octobre','Novembre','D\u00e9cembre'];
 
 // ── Mois couverts par le portail (même logique que portalFromDate() dans portal.html) ──
-// Le portail affiche mois courant + mois précédent → les deux sont exclus des archives.
+// Le portail affiche uniquement le mois courant → seul ce mois est exclu des archives.
 // Calcul JS pur, sans dépendance à la liste API.
 function portalWindowMonths() {
   const now = new Date();
   const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const prevKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
-  return new Set([currentKey, prevKey]);
+  return new Set([currentKey]);
 }
 
 // ── Auth helpers ──────────────────────────────────────────────
@@ -1351,7 +1349,7 @@ async function loadSpecialties() {
 
 async function loadCounts() {
   try {
-    // Exclure les mois affichés dans le portal (courant + précédent)
+    // Exclure le mois affiché dans le portail (mois courant uniquement)
     const pm = portalWindowMonths();
     const keys = [...pm].sort();
     const toDate = keys.length ? keys[0] + '-01' : '';
