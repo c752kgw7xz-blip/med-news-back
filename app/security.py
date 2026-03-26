@@ -186,6 +186,32 @@ def check_login_rate_limit(ip: str) -> None:
 
 
 # -----------------------
+# Resend-verification rate limiting
+# Max 3 emails par user_id par heure
+# -----------------------
+
+_RESEND_WINDOW = 3600  # 1 heure
+_RESEND_MAX    = 3
+
+_resend_attempts: dict[str, collections.deque] = collections.defaultdict(collections.deque)
+
+
+def check_resend_verification_rate_limit(user_id: str) -> None:
+    """Lève HTTP 429 si l'utilisateur a demandé trop de renvois d'email de vérification."""
+    now = time.time()
+    dq = _resend_attempts[user_id]
+    while dq and now - dq[0] > _RESEND_WINDOW:
+        dq.popleft()
+    if len(dq) >= _RESEND_MAX:
+        raise HTTPException(
+            status_code=429,
+            detail="too many verification emails — retry in 1 hour",
+            headers={"Retry-After": str(_RESEND_WINDOW)},
+        )
+    dq.append(now)
+
+
+# -----------------------
 # Email encryption (Fernet / AES-128-CBC)
 # Set EMAIL_ENCRYPTION_KEY to a valid Fernet key (generate with:
 #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")

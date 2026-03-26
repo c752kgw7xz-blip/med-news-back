@@ -22,7 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from app.db import get_conn
-from app.security import bearer_scheme, decode_access_token, decrypt_email
+from app.security import bearer_scheme, decode_access_token, decrypt_email, check_resend_verification_rate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -746,6 +746,7 @@ def update_preferences(payload: PreferencesUpdate, user_id: str = Depends(_get_c
 
 @router.post("/auth/resend-verification")
 def resend_verification(user_id: str = Depends(_get_current_user_id)):
+    check_resend_verification_rate_limit(user_id)
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
