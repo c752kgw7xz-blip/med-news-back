@@ -452,6 +452,21 @@ def create_user(payload: UserCreate):
 
 
 
+@app.post("/admin/users/{user_id}/verify-email")
+def admin_verify_email(user_id: str, _=Depends(require_admin)):
+    """Force la vérification email d'un compte (admin uniquement — usage test/support)."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET email_verified_at = now() WHERE id = %s RETURNING id;",
+                (user_id,),
+            )
+            row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="user not found")
+    return {"ok": True, "user_id": user_id}
+
+
 @app.get("/_version")
 def version():
     return {"commit": os.environ.get("RENDER_GIT_COMMIT", "unknown")}
