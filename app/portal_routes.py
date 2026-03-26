@@ -309,8 +309,8 @@ def article_counts(
             per_spec: dict = {}
             for slug, stype, count in cur.fetchall():
                 if slug not in per_spec:
-                    per_spec[slug] = {"total": 0, "reglementaire": 0, "recommandation": 0}
-                key = stype if stype in ("reglementaire", "recommandation") else "reglementaire"
+                    per_spec[slug] = {"total": 0, "reglementaire": 0, "recommandation": 0, "innovation": 0}
+                key = stype if stype in ("reglementaire", "recommandation", "innovation") else "reglementaire"
                 per_spec[slug][key] = count
                 per_spec[slug]["total"] += count
 

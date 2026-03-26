@@ -185,6 +185,7 @@
   .subitem-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
   .reg-dot { background: #6366f1; }
   .reco-dot { background: #0891b2; }
+  .innov-dot { background: #ea7d29; }
 
   /* ── Content area ──────────────────────── */
   .content-area { padding: 28px 40px; }
@@ -241,6 +242,8 @@
   .source-pill[data-stype="formation"].active{ color: #d97706; background: rgba(217,119,6,.1); border-color: rgba(217,119,6,.35); }
   .source-pill[data-stype="reglementaire"]       { color: #6366f1; border-color: rgba(99,102,241,.2); }
   .source-pill[data-stype="reglementaire"].active{ color: #6366f1; background: rgba(99,102,241,.1); border-color: rgba(99,102,241,.35); }
+  .source-pill[data-stype="innovation"]          { color: #ea7d29; border-color: rgba(234,125,41,.2); }
+  .source-pill[data-stype="innovation"].active   { color: #ea7d29; background: rgba(234,125,41,.1); border-color: rgba(234,125,41,.35); }
 
   /* ── Nature filter pills ────────────────── */
   .filters-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -642,6 +645,7 @@
         <button class="source-pill active" onclick="filterBySourceType('all', this)">Tous types</button>
         <button class="source-pill" data-stype="reglementaire" onclick="filterBySourceType('reglementaire', this)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>&nbsp;R&#233;glementation</button>
         <button class="source-pill" data-stype="recommandation" onclick="filterBySourceType('recommandation', this)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>&nbsp;Recommandation</button>
+        <button class="source-pill" data-stype="innovation" onclick="filterBySourceType('innovation', this)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>&nbsp;Innovation</button>
       </div>
 
       <!-- Catégorie filters -->
@@ -755,7 +759,7 @@ let activeSpecSlug = '';
 let activeAudience = 'SPEC_ONLY';
 let allSpecialties = [];
 let specCounts = {};
-let specTypeCounts = {};  // {slug: {total, reglementaire, recommandation}}
+let specTypeCounts = {};  // {slug: {total, reglementaire, recommandation, innovation}}
 let activeCatFilter = 'all';
 let activeSourceType = 'all';
 let _activeAccordId = null;
@@ -1110,9 +1114,10 @@ function hideSourcePills() {
 
 // ── Sidebar accordion helpers (identiques portal) ─────────────
 function _accordHtml(slug, name, counts, id) {
-  const reg  = counts ? (counts.reglementaire || 0) : 0;
-  const reco = counts ? (counts.recommandation || 0) : 0;
-  const tot  = counts ? (counts.total || 0) : 0;
+  const reg   = counts ? (counts.reglementaire || 0) : 0;
+  const reco  = counts ? (counts.recommandation || 0) : 0;
+  const innov = counts ? (counts.innovation || 0) : 0;
+  const tot   = counts ? (counts.total || 0) : 0;
   return `
     <button class="sidebar-accord" id="accord-${id}" onclick="toggleAccord('${id}')">
       <span class="accord-chevron">&#9658;</span>
@@ -1128,6 +1133,10 @@ function _accordHtml(slug, name, counts, id) {
         <span class="subitem-dot reco-dot"></span>Recommandation
         <span class="count">${reco}</span>
       </div>
+      ${innov > 0 ? `<div class="sidebar-subitem" id="sub-${id}-innov" onclick="selectSpecType('${slug}','innovation','${id}')">
+        <span class="subitem-dot innov-dot"></span>Innovation
+        <span class="count">${innov}</span>
+      </div>` : ''}
     </div>`;
 }
 
@@ -1150,11 +1159,12 @@ function toggleAccord(id) {
 async function selectSpecType(slug, stype, accordId) {
   document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
-  const subEl  = document.getElementById(`sub-${accordId}-${stype === 'reglementaire' ? 'reg' : 'reco'}`);
+  const subKey = stype === 'reglementaire' ? 'reg' : stype === 'innovation' ? 'innov' : 'reco';
+  const subEl  = document.getElementById(`sub-${accordId}-${subKey}`);
   const headEl = document.getElementById(`accord-${accordId}`);
   if (subEl)  subEl.classList.add('active');
   if (headEl) headEl.classList.add('subactive');
-  _activeSubId = `sub-${accordId}-${stype === 'reglementaire' ? 'reg' : 'reco'}`;
+  _activeSubId = `sub-${accordId}-${subKey}`;
   activeSpecSlug   = slug;
   activeSourceType = stype;
   activeAudience   = 'SPEC_ONLY';
@@ -1168,7 +1178,7 @@ async function selectSpecType(slug, stype, accordId) {
 function buildSidebar() {
   // 1. Ma spécialité — accordion auto-ouvert
   const mySpecEl = document.getElementById('sidebar-my-spec');
-  const myCounts = specTypeCounts[userSpecSlug] || { total: specCounts[userSpecSlug] || 0, reglementaire: 0, recommandation: 0 };
+  const myCounts = specTypeCounts[userSpecSlug] || { total: specCounts[userSpecSlug] || 0, reglementaire: 0, recommandation: 0, innovation: 0 };
   mySpecEl.innerHTML = _accordHtml(userSpecSlug, userSpecName, myCounts, 'mine');
   const mySubitems = document.getElementById('subitems-mine');
   const myHeader   = document.getElementById('accord-mine');
@@ -1200,7 +1210,7 @@ function buildSidebar() {
     const hidden = others.length - MAX_VISIBLE;
 
     exploreEl.innerHTML = list.map(s => {
-      const cnt = specTypeCounts[s.slug] || { total: specCounts[s.slug] || 0, reglementaire: 0, recommandation: 0 };
+      const cnt = specTypeCounts[s.slug] || { total: specCounts[s.slug] || 0, reglementaire: 0, recommandation: 0, innovation: 0 };
       return _accordHtml(s.slug, s.name, cnt, `exp-${s.slug}`);
     }).join('');
 
