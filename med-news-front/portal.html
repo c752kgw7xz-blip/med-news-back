@@ -834,31 +834,42 @@ function openFullPage(section) {
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
 
   if (section === 'explorer') {
-    const listHtml = document.getElementById('sidebar-explore')?.innerHTML || '';
-    document.getElementById('fp-spec-list').innerHTML = listHtml;
+    const fpList = document.getElementById('fp-spec-list');
+    fpList.innerHTML = document.getElementById('sidebar-explore')?.innerHTML || '';
+
+    // Supprime les onclick inline : ils appellent document.getElementById qui retourne
+    // l'élément de la sidebar cachée (IDs dupliqués) → double action + état incohérent.
+    // Les données de navigation sont conservées dans des data-attributes.
+    fpList.querySelectorAll('.sidebar-accord').forEach(btn => btn.removeAttribute('onclick'));
+    fpList.querySelectorAll('.sidebar-subitem').forEach(div => {
+      const m = (div.getAttribute('onclick') || '').match(/selectSpecType\('([^']+)','([^']+)','([^']+)'\)/);
+      if (m) { div.dataset.slug = m[1]; div.dataset.stype = m[2]; div.dataset.accordId = m[3]; }
+      div.removeAttribute('onclick');
+    });
+
     const inp = document.getElementById('fp-search-spec');
     if (inp) inp.value = '';
-    document.getElementById('fp-spec-list').onclick = (e) => {
-      // Accordion toggle scopé à l'overlay (évite le bug des IDs dupliqués avec la sidebar cachée)
-      const accordBtn = e.target.closest('#fp-spec-list .sidebar-accord');
+
+    fpList.onclick = (e) => {
+      // Accordion toggle — opère uniquement dans l'overlay via nextElementSibling
+      const accordBtn = e.target.closest('.sidebar-accord');
       if (accordBtn) {
+        e.stopPropagation();
         const subitems = accordBtn.nextElementSibling;
         if (!subitems) return;
         const isOpen = subitems.style.display !== 'none';
-        document.querySelectorAll('#fp-spec-list .sidebar-subitems').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('#fp-spec-list .sidebar-accord').forEach(el => el.classList.remove('open'));
+        fpList.querySelectorAll('.sidebar-subitems').forEach(el => el.style.display = 'none');
+        fpList.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('open'));
         if (!isOpen) { subitems.style.display = ''; accordBtn.classList.add('open'); }
         return;
       }
       // Sélection d'un sous-type (Réglementation / Recommandation)
-      const sub = e.target.closest('#fp-spec-list .sidebar-subitem');
-      if (sub) {
-        const m = (sub.getAttribute('onclick') || '').match(/selectSpecType\('([^']+)','([^']+)','([^']+)'\)/);
-        if (m) selectSpecType(m[1], m[2], m[3]);
+      const sub = e.target.closest('.sidebar-subitem');
+      if (sub && sub.dataset.slug) {
+        e.stopPropagation();
+        selectSpecType(sub.dataset.slug, sub.dataset.stype, sub.dataset.accordId);
         setTimeout(() => closeFullPage('explorer'), 100);
-        return;
       }
-      if (e.target.closest('.sidebar-item')) setTimeout(() => closeFullPage('explorer'), 100);
     };
   }
 }
