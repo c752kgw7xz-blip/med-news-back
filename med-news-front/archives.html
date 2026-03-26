@@ -1518,10 +1518,22 @@ async function performSearch() {
     metaEl.textContent = '';
   }
 
-  const url = `${API}/articles?page=${searchPage}&per_page=20&search=${encodeURIComponent(searchQuery)}${buildAudienceParams()}`;
-  const res = await authFetch(url);
-  if (!res) return;
-  const data = await res.json();
+  let data;
+  try {
+    const url = `${API}/articles?page=${searchPage}&per_page=20&search=${encodeURIComponent(searchQuery)}${buildAudienceParams()}`;
+    const res = await authFetch(url);
+    if (!res) return;
+    if (!res.ok) {
+      resultsEl.innerHTML = '<div class="empty" style="padding:40px 0;">Erreur lors de la recherche. Réessayez.</div>';
+      metaEl.textContent = '';
+      return;
+    }
+    data = await res.json();
+  } catch (err) {
+    resultsEl.innerHTML = '<div class="empty" style="padding:40px 0;">Erreur lors de la recherche. Réessayez.</div>';
+    metaEl.textContent = '';
+    return;
+  }
 
   searchTotal = data.total;
   if (searchPage === 1) searchArticles = [];

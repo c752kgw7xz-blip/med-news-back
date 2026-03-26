@@ -175,14 +175,16 @@ def list_articles(
         extra_clauses.append("COALESCE(i.source_type, 'reglementaire') = %s")
         extra_params.append(source_type)
 
-    # Full-text search (ILIKE) — métacaractères LIKE échappés pour éviter un full-scan forcé
+    # Full-text search (ILIKE) — métacaractères LIKE échappés.
+    # Escape char = '!' (1 seul char, compatible standard_conforming_strings=on).
+    # '\\\\'  (ancien code) = 2 chars en SQL → PostgreSQL error "ESCAPE string must be 0 or 1 char".
     if search and search.strip():
-        _s = search.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        _s = search.strip().replace("!", "!!").replace("%", "!%").replace("_", "!_")
         pattern = f"%{_s}%"
         extra_clauses.append(
-            "(c.title_raw ILIKE %s ESCAPE '\\\\' "
-            "OR i.tri_json->>'titre_court' ILIKE %s ESCAPE '\\\\' "
-            "OR i.tri_json->>'resume' ILIKE %s ESCAPE '\\\\')"
+            "(c.title_raw ILIKE %s ESCAPE '!' "
+            "OR i.tri_json->>'titre_court' ILIKE %s ESCAPE '!' "
+            "OR i.tri_json->>'resume' ILIKE %s ESCAPE '!')"
         )
         extra_params.extend([pattern, pattern, pattern])
 
