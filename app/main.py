@@ -24,7 +24,7 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from pydantic import BaseModel, EmailStr
 
 from app.db import get_conn
-from app.security import hash_password, encrypt_email
+from app.security import hash_password, encrypt_email, require_admin as _require_admin
 
 try:
     from app.migrations import run_migrations  # type: ignore
@@ -453,8 +453,9 @@ def create_user(payload: UserCreate):
 
 
 @app.post("/admin/users/{user_id}/verify-email")
-def admin_verify_email(user_id: str, _=Depends(require_admin)):
+def admin_verify_email(user_id: str, request: Request):
     """Force la vérification email d'un compte (admin uniquement — usage test/support)."""
+    _require_admin(request)
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
