@@ -179,8 +179,13 @@ KNOWN_SPECIALTIES = {
     "chirurgie-vasculaire", "chirurgie-orthopedique",
     "chirurgie-thoracique", "chirurgie-plastique", "neurochirurgie",
     "chirurgie-pediatrique", "chirurgie-cardiaque",
-    # Paramédicaux
+    # Paramédicaux et professions de santé non-médicales
     "infirmiers", "kinesitherapie", "sage-femme", "biologiste",
+    # Chirurgiens-dentistes et orthodontistes
+    "dentiste", "orthodontiste",
+    # Pharmaciens (NOTE: la veille pharmacien passe par type_praticien="pharmacien"
+    # ET par specialty_hint="pharmacien" pour les sources dédiées)
+    "pharmacien",
 }
 KNOWN_AUDIENCES   = {"SPECIALITE", "PHARMACIENS"}
 
@@ -276,12 +281,21 @@ générique n'existe pas) : chirurgie-vasculaire, chirurgie-orthopedique, \
 chirurgie-thoracique, chirurgie-plastique, neurochirurgie, \
 chirurgie-pediatrique, chirurgie-cardiaque
 
-   Paramédicaux : infirmiers, kinesitherapie, sage-femme, biologiste
+   Paramédicaux et professions de santé non-médicales : infirmiers, kinesitherapie, \
+sage-femme, biologiste
+
+   Chirurgiens-dentistes et orthodontistes : dentiste, orthodontiste
+   - "dentiste" : parodontologie, implantologie, soins conservateurs, prothèse dentaire,\
+ chirurgie orale
+   - "orthodontiste" : traitements orthodontiques fixes/amovibles, orthopédie dento-faciale
+
+   Pharmaciens : pharmacien (pour les sources dédiées pharmacie)
 
    Règles :
    - Distingue la sous-spécialité chirurgicale exacte plutôt que "chirurgie" générique.
    - Pour les paramédicaux, utilise leurs slugs dédiés (infirmiers, kinesitherapie, \
 sage-femme, biologiste).
+   - Pour les chirurgiens-dentistes, utilise dentiste ou orthodontiste selon la discipline.
    - Un texte peut concerner plusieurs spécialités : retourne un tableau complet.
 
 4. SCORE D'URGENCE (score_density) de 1 à 10 :
@@ -301,14 +315,19 @@ sage-femme, biologiste).
      - Nouvelle cotation CCAM ou modification NGAP infirmiers/kinés (actes remboursés)
      - Retrait AMM médicament courant, nouvelle contre-indication majeure
      - Alerte matériovigilance obligeant un praticien à contacter ses patients
+     - Alerte ANSM implant dentaire ou matériau défectueux → retrait marché
+     - Nouvelle cotation CCAM actes dentaires ou orthodontiques
    Exemples de score 4-6 :
      - Recommandation HAS sur une pathologie, fiche mémo pratique
      - Guideline société savante, guide bon usage médicament
      - Nouveau protocole de rééducation, actualisation technique chirurgicale
+     - Guideline EFP parodontite (scores 5-6 : change la pratique des dentistes)
+     - Guideline EOS / consensus orthodontique (score 4-5 pour orthodontistes)
    Exemples de score 1-3 :
      - Rapport statistique sans recommandation opérationnelle
      - Données épidémiologiques sans changement de pratique
      - Communication institutionnelle sans impact sur les actes
+     - Article de recherche fondamentale EJO sans implication clinique directe
 
    SCORE PAR SPÉCIALITÉ (score_par_specialite) — champ optionnel :
    Quand un article concerne plusieurs spécialités avec des degrés de pertinence \
@@ -401,11 +420,13 @@ téléconsultation ; certificats, ordonnances, responsabilité médicale.
 instruments de bloc opératoire, matériovigilance sur DM invasifs.
 
    "interventionnel" — chirurgien (toutes sous-spécialités), anesthésiste, \
-gynécologue-obstétricien réalisant des actes, radiologue interventionnel.
-   CONCERNE : dispositifs implantables, prothèses, fils de suture, équipements \
-de bloc opératoire, robots chirurgicaux ; matériovigilance sur DM invasifs ; \
-cotations CCAM des actes chirurgicaux ; recommandations HAS sur gestes techniques \
-et protocoles per-opératoires ; accréditation chirurgicale.
+gynécologue-obstétricien réalisant des actes, radiologue interventionnel, \
+chirurgien-dentiste (dentiste + orthodontiste), stomatologue.
+   CONCERNE : dispositifs implantables, prothèses (y compris prothèses dentaires, \
+implants dentaires, appareils orthodontiques), matériaux et instruments de soins ; \
+matériovigilance sur DM invasifs ; cotations CCAM des actes techniques (chirurgicaux, \
+dentaires, orthodontiques) ; recommandations HAS et EFP sur gestes techniques ; \
+accréditation chirurgicale et dentaire.
    NE CONCERNE PAS : alertes médicaments de ville, listes remboursables de \
 médicaments, protocoles médicamenteux ambulatoires.
 
@@ -416,12 +437,12 @@ examens remboursés, DM-DIV.
    NE CONCERNE PAS : médicaments (sauf interaction biologie), \
 dispositifs chirurgicaux invasifs.
 
-   "pharmacien" — pharmacien d'officine.
+   "pharmacien" — pharmacien d'officine ou hospitalier.
    CONCERNE : alertes médicaments, retraits AMM, génériques, remboursements \
 spécialités pharmaceutiques ; nouvelles missions officine (vaccination, \
 substitution biosimilaires, dépistage) ; rémunération sur objectifs, \
 honoraires de dispensation ; stupéfiants, psychotropes, réglementation des \
-délivrances ; convention pharmaceutique.
+délivrances ; convention pharmaceutique ; pharmacie hospitalière (EAHP).
    NE CONCERNE PAS : cotations d'actes médicaux, dispositifs chirurgicaux, \
 matériovigilance sur DM non dispensés en officine.
 
@@ -442,6 +463,9 @@ réforme des retraites médicales, protection sociale des libéraux.
      Nouvelle indication immunothérapie oncologie        → prescripteur
      Alerte ANSM prothèse de hanche (débris métalliques) → interventionnel
      Vis ostéosynthèse Stryker — matériovigilance        → interventionnel
+     Guidelines EFP parodontite stade I-III              → interventionnel  (dentiste)
+     Alerte ANSM implant dentaire (corrosion)            → interventionnel  (dentiste)
+     Cotation CCAM acte orthodontique (contention)       → interventionnel  (orthodontiste)
      Automate gazométrie GEM Premier / réactifs Beckman  → biologiste
      Nomenclature NABM nouveaux actes de biologie        → biologiste
      Rupture stock amoxicilline (consigne officine)      → pharmacien
@@ -483,8 +507,9 @@ JSON attendu (strict, pas de markdown) :
 {{
   "pertinent": <bool>,
   "audience": "<SPECIALITE|PHARMACIENS>",
-  "specialites": [<slugs parmi: medecine-generale, cardiologie, dermatologie, endocrinologie, gastro-enterologie, gynecologie, neurologie, ophtalmologie, orl, pediatrie, pneumologie, psychiatrie, rhumatologie, urologie, medecine-interne, medecine-urgences, geriatrie, medecine-physique, oncologie, hematologie, infectiologie, nephrologie, radiologie, anesthesiologie, chirurgie-vasculaire, chirurgie-orthopedique, chirurgie-thoracique, chirurgie-plastique, neurochirurgie, chirurgie-pediatrique, chirurgie-cardiaque, infirmiers, kinesitherapie, sage-femme, biologiste>],
+  "specialites": [<slugs parmi: medecine-generale, cardiologie, dermatologie, endocrinologie, gastro-enterologie, gynecologie, neurologie, ophtalmologie, orl, pediatrie, pneumologie, psychiatrie, rhumatologie, urologie, medecine-interne, medecine-urgences, geriatrie, medecine-physique, oncologie, hematologie, infectiologie, nephrologie, radiologie, anesthesiologie, chirurgie-vasculaire, chirurgie-orthopedique, chirurgie-thoracique, chirurgie-plastique, neurochirurgie, chirurgie-pediatrique, chirurgie-cardiaque, infirmiers, kinesitherapie, sage-femme, biologiste, dentiste, orthodontiste, pharmacien>],
   "type_praticien": "<prescripteur|interventionnel|biologiste|pharmacien|tous>",
+  // Note : dentiste et orthodontiste → "interventionnel" (praticiens d'actes techniques)
   "score_density": <int 1-10>,
   "score_par_specialite": {{"<slug>": <int 1-10>}},
   "categorie": "<clinique|therapeutique|exercice>",
@@ -1169,7 +1194,8 @@ def _parse_llm_output(raw: str) -> dict[str, Any]:
         specs = data.get("specialites", [])
         if aud == "PHARMACIENS":
             data["type_praticien"] = "pharmacien"
-        elif any(s.startswith("chirurgie") or s in ("anesthesiologie", "neurochirurgie") for s in specs):
+        elif any(s.startswith("chirurgie") or s in ("anesthesiologie", "neurochirurgie",
+                                                     "dentiste", "orthodontiste") for s in specs):
             data["type_praticien"] = "interventionnel"
         elif any(s in ("infirmiers", "kinesitherapie", "sage-femme", "biologiste") for s in specs):
             # Paramédicaux : "tous" est plus juste que "prescripteur" pour un avenant

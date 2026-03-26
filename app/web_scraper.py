@@ -6,17 +6,20 @@ Stratégie : scrape la page "publications/recommandations" de chaque société,
 extrait les liens vers des documents récents, insère en base via le même
 pipeline que le collecteur RSS.
 
-Utilisé pour couvrir les spécialités importantes dont le site ne propose pas
-de flux RSS (SFH hématologie, SFR radiologie, SFO ophtalmologie, SFPédiatrie,
-SOFCOT orthopédie, SOFMER médecine physique) — voir STRATEGY_NO_RSS dans sources_pratique.py.
+Deux périmètres couverts :
+  1. Sources FR  (WEB_SCRAPER_SOURCES)  : SFH, SFR, SFO, SFPédiatrie, SOFCOT, SOFMER
+  2. Sources EUR (EUROPE_WEB_SOURCES)   : ESC, EULAR, EAU, ESCMID, EAN, ECCO, EHA,
+                                          EASD, ESE, ERA — priorité médico-légale haute
 
 Volume attendu : 2-10 documents/an par société → collecte trimestrielle suffit.
-Les recommandations de ces sociétés passent aussi partiellement par has_rbp
-(HAS valide la plupart des guidelines nationales), donc la couverture est
-partiellement assurée même sans ce scraper.
+Les guidelines européennes passent partiellement via les feeds RSS déjà actifs
+(ESMO, ERS, EASL, ESICM, ESO, ESVS, EADV...), mais ESC/EULAR/EAU/ESCMID
+sont UNIQUEMENT couverts par ce scraper — ne pas les ignorer.
 """
 
 from __future__ import annotations
+
+from app.sources_europe import EUROPE_WEB_SOURCES_TODO as EUROPE_WEB_SOURCES
 
 import logging
 import re
@@ -286,11 +289,27 @@ def scrape_source(config: dict) -> dict[str, int]:
 def scrape_all_web(sources: list[dict] | None = None) -> dict[str, Any]:
     """
     Lance le scraping de toutes les sources HTML configurées (ou un sous-ensemble).
+    Couvre : sources FR (WEB_SCRAPER_SOURCES) + sources européennes sans RSS (EUROPE_WEB_SOURCES).
     Volume faible → pas de parallélisme nécessaire.
     """
-    targets = sources or WEB_SCRAPER_SOURCES
+    targets = sources or (WEB_SCRAPER_SOURCES + EUROPE_WEB_SOURCES)
     results: dict[str, Any] = {}
     for config in targets:
+        try:
+            results[config["source"]] = scrape_source(config)
+        except Exception as e:
+            logger.error("[%s] erreur : %s", config["source"], e)
+            results[config["source"]] = {"error": str(e)}
+    return results
+
+
+def scrape_europe_web() -> dict[str, Any]:
+    """
+    Lance uniquement le scraping des sources européennes sans RSS.
+    Peut être appelé séparément via l'interface admin.
+    """
+    results: dict[str, Any] = {}
+    for config in EUROPE_WEB_SOURCES:
         try:
             results[config["source"]] = scrape_source(config)
         except Exception as e:

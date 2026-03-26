@@ -64,6 +64,9 @@ SPECIALTY_LABELS: dict[str, str] = {
     "kinesitherapie": "Kinésithérapie",
     "sage-femme": "Sage-femme",
     "biologiste": "Biologie médicale",
+    # Chirurgiens-dentistes et orthodontistes
+    "dentiste": "Dentisterie",
+    "orthodontiste": "Orthodontie",
     # Pharmaciens — slug 'pharmacien' (sans s) : utilisé par llm_routes.py
     # pour tous les items audience=PHARMACIENS (cf. llm_routes.py:193).
     "pharmacien": "Pharmacien d'officine",
