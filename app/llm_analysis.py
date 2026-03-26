@@ -72,11 +72,16 @@ def _get_anthropic_client() -> anthropic.AsyncAnthropic:
     return _anthropic_client
 
 KNOWN_TYPE_PRATICIEN  = {"prescripteur", "interventionnel", "biologiste", "pharmacien", "tous"}
-KNOWN_SOURCE_TYPES    = {"reglementaire", "recommandation"}
+KNOWN_SOURCE_TYPES    = {"reglementaire", "recommandation", "innovation"}
 
 # ---------------------------------------------------------------------------
 # Mapping source → source_type (déterministe, 0 appel LLM)
 # Toute source absente de ce dict → "reglementaire" par défaut.
+#
+# 3 sections :
+#   • reglementaire : JORF, conventions, alertes ANSM, circulaires — flux moyen
+#   • recommandation : HAS RBP, sociétés savantes, EMA guidelines — flux faible, opposable
+#   • innovation    : nouvelles AMM, nouveaux dispositifs médicaux, thérapies émergentes
 # ---------------------------------------------------------------------------
 SOURCE_TO_TYPE: dict[str, str] = {
     # Sources réglementaires
@@ -156,6 +161,56 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "spf_beh": "reglementaire",  # SPF — articles (BEH inclus) ✅
     "cnom":    "reglementaire",  # CNOM — déontologie ✅ RSS /rss.xml
     # Retirées après audit : inca (pas de RSS), andpc (pas de RSS), ameli_pro (login)
+    # ── Sources européennes (RSS) ──────────────────────────────────────────────
+    # EMA — European Medicines Agency
+    "ema_news":             "reglementaire",   # alertes, retraits AMM, mesures sécurité
+    "ema_guidelines":       "recommandation",  # standards évaluation médicaments
+    "ema_new_medicines":    "innovation",      # ← nouvelles AMM européennes
+    # ECDC — European Centre for Disease Prevention and Control
+    "ecdc_risk":            "reglementaire",   # risk assessments épidémiques
+    "ecdc_guidance":        "recommandation",  # technical guidance
+    "ecdc_cdtr":            "reglementaire",   # Communicable Disease Threats Report
+    # Sociétés savantes européennes — recommandations (RSS)
+    "esmo":                 "recommandation",  # oncologie
+    "ers":                  "recommandation",  # pneumologie
+    "easl":                 "recommandation",  # gastro-entérologie/hépatologie
+    "esicm":                "recommandation",  # anesthésiologie/réanimation
+    "eso_stroke":           "recommandation",  # neurologie (AVC)
+    "esvs":                 "recommandation",  # chirurgie vasculaire
+    "eadv":                 "recommandation",  # dermatologie
+    "esgo":                 "recommandation",  # gynécologie oncologie
+    "efort":                "recommandation",  # chirurgie orthopédique
+    "epa_psychiatrie":      "recommandation",  # psychiatrie
+    "esaic":                "recommandation",  # anesthésiologie
+    "eacts":                "recommandation",  # chirurgie cardiaque/thoracique
+    "iagg_geriatrie":       "recommandation",  # gériatrie
+    "esprm":                "recommandation",  # médecine physique/réadaptation
+    "eap_pediatrie":        "recommandation",  # pédiatrie
+    "esr_radiologie":       "recommandation",  # radiologie
+    "eos_ejo":              "recommandation",  # chirurgie orthopédique/colonne
+    "ard_eular":            "recommandation",  # rhumatologie
+    "eupsa_ejps":           "recommandation",  # chirurgie pédiatrique
+    # Sociétés savantes européennes — web scraping
+    "esc_guidelines":       "recommandation",  # cardiologie
+    "eular_recommendations":"recommandation",  # rhumatologie
+    "eau_guidelines":       "recommandation",  # urologie
+    "escmid_guidelines":    "recommandation",  # infectiologie
+    "ean_guidelines":       "recommandation",  # neurologie
+    "ecco_guidelines":      "recommandation",  # gastro-entérologie
+    "eha_guidelines":       "recommandation",  # hématologie
+    "easd_guidelines":      "recommandation",  # endocrinologie/diabète
+    "ese_guidelines":       "recommandation",  # endocrinologie
+    "era_guidelines":       "recommandation",  # néphologie
+    "ueg_guidelines":       "recommandation",  # gastro-entérologie
+    "esge_guidelines":      "recommandation",  # gastro-entérologie
+    "eusem_guidelines":     "recommandation",  # médecine d'urgence
+    "efim_guidelines":      "recommandation",  # médecine interne
+    "eflm_guidelines":      "recommandation",  # biologie médicale
+    "eshre_guidelines":     "recommandation",  # gynécologie/sage-femme
+    "egs_guidelines":       "recommandation",  # gériatrie
+    "euretina_guidelines":  "recommandation",  # ophtalmologie
+    "efp_guidelines":       "recommandation",  # dentisterie (parodontologie)
+    "eahp_statements":      "recommandation",  # pharmacie hospitalière
 }
 
 

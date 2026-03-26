@@ -119,7 +119,7 @@ EMA_FEEDS: list[dict] = [
         "url": "https://www.ema.europa.eu/en/human-medicine-new.xml",
         "label": "EMA — Nouvelles AMM européennes (médicaments humains)",
         "source": "ema_new_medicines",
-        "source_type": "reglementaire",
+        "source_type": "innovation",  # ← section Innovation : nouvelles thérapies disponibles
         "audience": ["medecins", "pharmaciens"],
         "specialty_hint": "tous",
     },
