@@ -748,6 +748,17 @@ def stop_scheduler() -> None:
 
 @asynccontextmanager
 async def lifespan(app: Any):
+    # Auto-apply pending SQL migrations on startup
+    try:
+        from app.migrations import run_migrations
+        n, files = run_migrations()
+        if n:
+            logger.info("Auto-migration : %d appliquée(s) — %s", n, ", ".join(files))
+        else:
+            logger.info("Auto-migration : aucune migration en attente")
+    except Exception as e:
+        logger.error("Auto-migration échouée : %s", e)
+
     enabled = os.environ.get("SCHEDULER_ENABLED", "false").lower() == "true"
     if enabled:
         start_scheduler()
