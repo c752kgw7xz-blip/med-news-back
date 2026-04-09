@@ -1649,6 +1649,12 @@ async function loadArticles(page) {
 
   const res = await authFetch(url);
   if (!res) return;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const container = document.getElementById('articles-container');
+    container.innerHTML = `<div class="empty" style="color:var(--red);">Erreur ${res.status} lors du chargement${err.detail ? ' — ' + err.detail : ''}.<br>Rechargez la page ou contactez le support.</div>`;
+    return;
+  }
   const data = await res.json();
   totalArticles = data.total;
 
@@ -1910,17 +1916,24 @@ function loadDemoData() {
   const _now = new Date();
   const _sub = document.getElementById('portal-month-subtitle');
   if (_sub) _sub.textContent = `${MONTHS[_now.getMonth()]} ${_now.getFullYear()}`;
-  await loadProfile();
-  await loadFavorites();
-  await Promise.all([loadSpecialties(), loadCounts()]);
-  buildSidebar();
-  await loadArticles(1);
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('content').style.display = 'block';
-  if (window.lucide) lucide.createIcons();
-  if (location.hash === '#compte') {
-    history.replaceState(null, '', location.pathname);
-    mobileNavClick('compte');
+  try {
+    await loadProfile();
+    await loadFavorites();
+    await Promise.all([loadSpecialties(), loadCounts()]);
+    buildSidebar();
+    await loadArticles(1);
+  } catch (e) {
+    console.error('Init error:', e);
+    document.getElementById('articles-container').innerHTML =
+      `<div class="empty" style="color:var(--red);">Erreur inattendue : ${e.message}<br>Rechargez la page.</div>`;
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    if (window.lucide) lucide.createIcons();
+    if (location.hash === '#compte') {
+      history.replaceState(null, '', location.pathname);
+      mobileNavClick('compte');
+    }
   }
 })();
 
