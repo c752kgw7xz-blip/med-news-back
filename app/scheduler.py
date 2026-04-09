@@ -160,6 +160,7 @@ def job_collect_regulation() -> None:
             _parse_date10, _official_url, _sha256_hex, _json_canonical_bytes,
         )
         from app.collector_utils import build_candidate_row, insert_candidate
+        from app.llm_analysis import pre_filter_candidate as _pfc_jorf
 
         source = "legifrance_jorf"
         today = date.today()
@@ -197,6 +198,10 @@ def job_collect_regulation() -> None:
                         ok, _ = _keep_item_with_reason(nature, title)
                         if not ok:
                             continue
+                        # Pré-filtre heuristique (nominations, événements…)
+                        keep, _ = _pfc_jorf((title or "").strip(), source=source)
+                        if not keep:
+                            continue
                         pub_s = _parse_date10(it.get("datePublication")) or _parse_date10(it.get("date"))
                         if not pub_s:
                             continue
@@ -227,13 +232,14 @@ def job_collect_regulation() -> None:
     try:
         from app.piste_routes import EXTRA_FONDS
         from app.db import get_conn as _get_conn
+        from app.llm_analysis import pre_filter_candidate as _pfc
         extra_report: dict[str, Any] = {}
         for fond, src in EXTRA_FONDS.items():
             try:
                 today_d = date.today()
                 start_d = today_d - timedelta(days=35)
                 from app.piste_routes import _piste_call as pc, _extract_list as el, _parse_date10 as pd10, _sha256_hex as sh, _json_canonical_bytes as jcb
-                ins = dup = s = 0
+                ins = dup = s = filtered = 0
                 insert_sql = """
                 INSERT INTO candidates (source, official_url, official_date, title_raw, content_raw, raw_json, raw_sha256, dedupe_key, status)
                 VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, 'NEW') ON CONFLICT (dedupe_key) DO NOTHING;
@@ -259,6 +265,11 @@ def job_collect_regulation() -> None:
                                 pub_d_val = date.fromisoformat(pub_s)
                                 if not (start_d <= pub_d_val <= today_d):
                                     continue
+                                # Pré-filtre heuristique (nominations, événements…)
+                                keep, _reason = _pfc(title.strip(), source=src)
+                                if not keep:
+                                    filtered += 1
+                                    continue
                                 import json as _json
                                 dk = sh(f"{src}|{text_id}".encode())
                                 rs = sh(jcb(it))
@@ -268,8 +279,8 @@ def job_collect_regulation() -> None:
                                 else:
                                     dup += 1
                     conn.commit()
-                extra_report[fond] = {"seen": s, "inserted": ins, "deduped": dup}
-                logger.info("%s : vu=%d ins=%d dup=%d", fond, s, ins, dup)
+                extra_report[fond] = {"seen": s, "inserted": ins, "deduped": dup, "filtered": filtered}
+                logger.info("%s : vu=%d ins=%d dup=%d filtrés=%d", fond, s, ins, dup, filtered)
             except Exception as e2:
                 logger.error("%s échoué : %s", fond, e2)
                 extra_report[fond] = {"error": str(e2)}
@@ -340,6 +351,18 @@ def job_collect_recommendations() -> None:
                 logger.info("[has_ct] ins=%d", r.get("inserted", 0))
     except Exception as e:
         logger.error("has_ct échoué : %s", e)
+
+    # ── Web scraping européen (ESC, EULAR, EAU, ESCMID…) ────────
+    # Guidelines publiées 2-10/an par société → collecte hebdo suffit.
+    try:
+        from app.web_scraper import scrape_all_web
+        web_report = scrape_all_web()
+        report["web_scraping"] = web_report
+        total_web_ins = sum(v.get("inserted", 0) for v in web_report.values() if isinstance(v, dict))
+        logger.info("Web scraping (FR + EU) : %d sources, %d insérés", len(web_report), total_web_ins)
+    except Exception as e:
+        logger.error("Web scraping échoué : %s", e)
+        report["web_scraping"] = {"error": str(e)}
 
     # ── Analyse LLM ──────────────────────────────────────────────
     try:

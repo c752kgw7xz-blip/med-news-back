@@ -28,6 +28,49 @@ from html.parser import HTMLParser
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
+# ---------------------------------------------------------------------------
+# Best-effort date extraction from title/link text
+# ---------------------------------------------------------------------------
+
+_MONTH_FR: dict[str, int] = {
+    "janvier": 1, "février": 2, "mars": 3, "avril": 4, "mai": 5, "juin": 6,
+    "juillet": 7, "août": 8, "septembre": 9, "octobre": 10, "novembre": 11, "décembre": 12,
+    "jan": 1, "fev": 2, "fév": 2, "avr": 4, "juil": 7, "sept": 9, "oct": 10, "nov": 11, "déc": 12,
+}
+_MONTH_EN: dict[str, int] = {
+    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
+    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
+_ALL_MONTHS = {**_MONTH_FR, **_MONTH_EN}
+_MONTH_PATTERN = "|".join(re.escape(m) for m in sorted(_ALL_MONTHS, key=len, reverse=True))
+
+# "March 2025", "mars 2024", "septembre 2025", "Feb 2024"
+_RE_MONTH_YEAR = re.compile(rf"(?i)\b({_MONTH_PATTERN})\s+(\d{{4}})\b")
+# Standalone 4-digit year (2020-2029)
+_RE_YEAR = re.compile(r"\b(20[2-3]\d)\b")
+
+
+def _extract_date_from_title(title: str) -> date | None:
+    """Try to extract a publication date from the title text (best-effort)."""
+    # Try month + year first
+    m = _RE_MONTH_YEAR.search(title)
+    if m:
+        month_name = m.group(1).lower()
+        year = int(m.group(2))
+        month = _ALL_MONTHS.get(month_name)
+        if month and 2020 <= year <= date.today().year + 1:
+            return date(year, month, 1)
+
+    # Fallback: standalone year → January 1st of that year
+    m = _RE_YEAR.search(title)
+    if m:
+        year = int(m.group(1))
+        if 2020 <= year <= date.today().year + 1:
+            return date(year, 1, 1)
+
+    return None
+
 import httpx
 
 from app.collector_utils import build_candidate_row, insert_candidate
@@ -250,6 +293,9 @@ def scrape_source(config: dict) -> dict[str, int]:
                     skipped += 1
                     continue
 
+                # Best-effort date extraction from title text
+                pub_date = _extract_date_from_title(title) or today
+
                 raw_payload: dict[str, Any] = {
                     "href": href,
                     "title": title,
@@ -258,13 +304,14 @@ def scrape_source(config: dict) -> dict[str, int]:
                     "feed_label": label,
                     "audience": config.get("audience", []),
                     "scraped_date": str(today),
+                    "date_extracted": pub_date != today,
                 }
 
                 row = build_candidate_row(
                     source=source,
                     external_id=href,           # URL = identifiant stable
                     official_url=href,
-                    official_date=today,        # pas de date publiée → aujourd'hui
+                    official_date=pub_date,
                     title_raw=title,
                     content_raw=None,
                     raw_payload=raw_payload,
