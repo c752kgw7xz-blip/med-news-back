@@ -143,7 +143,7 @@ def list_articles(
     month: Optional[str] = Query(default=None),
     from_date: Optional[str] = Query(default=None),
     to_date: Optional[str] = Query(default=None),
-    source_type: Optional[str] = Query(default=None, description="reglementaire | recommandation | therapeutique | formation"),
+    source_type: Optional[str] = Query(default=None, description="reglementaire | recommandation | innovation"),
     user_id: str = Depends(_get_current_user_id),
 ):
     # Utiliser la spécialité demandée si fournie, sinon celle de l'utilisateur
@@ -169,8 +169,8 @@ def list_articles(
             "(i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')"
         )
 
-    # Filtre source_type (reglementaire | recommandation)
-    _VALID_SOURCE_TYPES = {"reglementaire", "recommandation"}
+    # Filtre source_type (reglementaire | recommandation | innovation)
+    _VALID_SOURCE_TYPES = {"reglementaire", "recommandation", "innovation"}
     if source_type and source_type in _VALID_SOURCE_TYPES:
         extra_clauses.append("COALESCE(i.source_type, 'reglementaire') = %s")
         extra_params.append(source_type)

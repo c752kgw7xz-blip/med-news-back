@@ -211,6 +211,32 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "euretina_guidelines":  "recommandation",  # ophtalmologie
     "efp_guidelines":       "recommandation",  # dentisterie (parodontologie)
     "eahp_statements":      "recommandation",  # pharmacie hospitalière
+    # ── Sources innovation — grands journaux internationaux ───────────────
+    # JAMA Network (12 flux)
+    "jama":                 "innovation",
+    "jama_cardiology":      "innovation",
+    "jama_dermatology":     "innovation",
+    "jama_internal_med":    "innovation",
+    "jama_neurology":       "innovation",
+    "jama_oncology":        "innovation",
+    "jama_ophthalmology":   "innovation",
+    "jama_otolaryngology":  "innovation",
+    "jama_pediatrics":      "innovation",
+    "jama_psychiatry":      "innovation",
+    "jama_surgery":         "innovation",
+    "jama_network_open":    "innovation",
+    # Grands journaux généralistes
+    "nejm":                 "innovation",
+    "lancet":               "innovation",
+    "bmj":                  "innovation",
+    "nature_medicine":      "innovation",
+    # Sources paramédicales
+    "clinical_chemistry":   "innovation",   # biologiste
+    "ptj_kine":             "innovation",   # kinésithérapie
+    "bjog":                 "innovation",   # sage-femme
+    "cpt_pharmacol":        "innovation",   # pharmacien
+    "jdr_dental":           "innovation",   # dentiste / orthodontiste
+    "jan_nursing":          "innovation",   # infirmiers
 }
 
 
@@ -250,11 +276,40 @@ KNOWN_AUDIENCES   = {"SPECIALITE", "PHARMACIENS"}
 
 SYSTEM_PROMPT = """\
 Tu es un expert juridique et médical spécialisé dans la veille réglementaire \
-pour les professionnels de santé libéraux en France.
+et scientifique pour les professionnels de santé libéraux en France.
 
-On te soumet un texte provenant d'une source officielle : Journal Officiel (JORF), \
-convention médicale UNCAM (KALI), recommandation HAS, alerte de sécurité ANSM, \
-circulaire ministérielle ou bulletin officiel santé.
+On te soumet un texte provenant d'une source officielle ou d'un journal scientifique : \
+Journal Officiel (JORF), convention médicale UNCAM (KALI), recommandation HAS, \
+alerte de sécurité ANSM, circulaire ministérielle, bulletin officiel santé ; \
+ou article d'un journal médical international (JAMA, NEJM, Lancet, BMJ, \
+Nature Medicine, Clinical Chemistry, Physical Therapy Journal, BJOG, \
+Clinical Pharmacology & Therapeutics, Journal of Dental Research, \
+Journal of Advanced Nursing, etc.).
+
+SOURCE INNOVATION — Si la SOURCE indique un journal scientifique international :
+→ PERTINENCE : retenir UNIQUEMENT si l'article rapporte des résultats pouvant \
+CONCRÈTEMENT changer la pratique d'un professionnel de santé : essai clinique de \
+phase 3 ou 4, méta-analyse modifiant un standard de traitement, nouvelle thérapie ou \
+technique démontrant une supériorité clinique significative. \
+EXCLURE : recherche fondamentale (mécanismes cellulaires, biomarqueurs exploratoires), \
+données épidémiologiques sans recommandation opérationnelle, éditoriaux/commentaires, \
+lettres, errata, résultats préliminaires de phase 1-2 sans implication clinique directe.
+→ SCORE : calibrer selon l'impact clinique potentiel sur la pratique en France :
+  4-5 : résultats intéressants qui confirment ou nuancent une pratique existante ;
+  6-7 : essai de phase 3 ou méta-analyse majeure qui modifie clairement la pratique \
+(ex. nouvelle thérapie supérieure au standard, abandon d'un traitement établi) ;
+  8+  : réservé aux ruptures majeures de pratique (rare pour des publications RSS \
+avant recommandation officielle).
+→ RÉDACTION pour articles de recherche :
+  resume : "[Thérapie/technique/biomarqueur] montre [résultat clé] chez [population] \
+([type d'essai], N=[effectif]). [Ce que ça change ou confirme vs pratique actuelle]."
+  impact_pratique : "[À retenir / À suivre si confirmé par des recommandations] : \
+[implication clinique concrète pour le professionnel]."
+  date_entree_en_vigueur : date de publication de l'article (pas de date d'application).
+→ NATURE : utilise "ETUDE" pour les articles de recherche originaux (essais cliniques, \
+méta-analyses, études observationnelles de grande envergure). \
+"RECOMMANDATION" reste réservé aux guidelines, consensus et revues systématiques \
+ayant valeur de recommandation explicite (grade de recommandation mentionné).
 
 Ta mission :
 
@@ -372,17 +427,26 @@ sage-femme, biologiste).
      - Alerte matériovigilance obligeant un praticien à contacter ses patients
      - Alerte ANSM implant dentaire ou matériau défectueux → retrait marché
      - Nouvelle cotation CCAM actes dentaires ou orthodontiques
+   Exemples de score 6-7 (innovation / recherche) :
+     - Essai de phase 3 NEJM : nouveau traitement supérieur au standard (ex. thérapie ciblée oncologie)
+     - Méta-analyse Lancet modifiant les seuils de traitement d'une pathologie courante
+     - Étude JAMA Surgery : technique chirurgicale montrant réduction significative de complications
+     - Essai randomisé PTJ : protocole de rééducation supérieur au standard chez les kinés
+     - BJOG : intervention sage-femme réduisant significativement la mortalité maternelle
    Exemples de score 4-6 :
      - Recommandation HAS sur une pathologie, fiche mémo pratique
      - Guideline société savante, guide bon usage médicament
      - Nouveau protocole de rééducation, actualisation technique chirurgicale
      - Guideline EFP parodontite (scores 5-6 : change la pratique des dentistes)
      - Guideline EOS / consensus orthodontique (score 4-5 pour orthodontistes)
+     - Étude JAMA confirmant l'efficacité d'un traitement existant (confirmation utile, pas rupture)
+     - Article JAMA Internal Medicine nuançant une pratique de prescription courante
    Exemples de score 1-3 :
      - Rapport statistique sans recommandation opérationnelle
      - Données épidémiologiques sans changement de pratique
      - Communication institutionnelle sans impact sur les actes
-     - Article de recherche fondamentale EJO sans implication clinique directe
+     - Article de recherche fondamentale (mécanismes, biomarqueurs) sans implication clinique
+     - Éditorial, lettre, commentaire, revue narrative sans méta-analyse ni essai original
 
    SCORE PAR SPÉCIALITÉ (score_par_specialite) — champ optionnel :
    Quand un article concerne plusieurs spécialités avec des degrés de pertinence \
@@ -572,7 +636,7 @@ JSON attendu (strict, pas de markdown) :
     "titre_court": "<≤12 mots>",
     "resume": "<2-3 phrases concrètes selon nature du texte>",
     "impact_pratique": "<1 phrase : action précise à faire / retenir>",
-    "nature": "<ARRETE|DECRET|LOI|ORDONNANCE|RECOMMANDATION|ALERTE|AVENANT|CIRCULAIRE|AUTRE>",
+    "nature": "<ARRETE|DECRET|LOI|ORDONNANCE|RECOMMANDATION|ALERTE|AVENANT|CIRCULAIRE|ETUDE|AUTRE>",
     "date_publication": "{date_pub}",
     "date_entree_en_vigueur": "<YYYY-MM-DD — date d'application effective, différente de date_publication si précisée dans le texte>"
   }},
@@ -664,6 +728,32 @@ SOURCE_HINTS: dict[str, str] = {
     "has_ct":  "HAS Commission de la Transparence — Avis remboursement médicament (ASMR/SMR)",
     "spf_beh": "Santé publique France — Article épidémiologique (BEH, alerte sanitaire, vaccination)",
     "cnom":    "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
+    # ── Sources innovation — journaux scientifiques internationaux ────────
+    # JAMA Network
+    "jama":                "JAMA (Journal of the American Medical Association) — Article de recherche clinique ou editorial (toutes spécialités)",
+    "jama_cardiology":     "JAMA Cardiology — Essai clinique ou méta-analyse en cardiologie",
+    "jama_dermatology":    "JAMA Dermatology — Essai clinique ou méta-analyse en dermatologie",
+    "jama_internal_med":   "JAMA Internal Medicine — Essai clinique ou méta-analyse en médecine interne",
+    "jama_neurology":      "JAMA Neurology — Essai clinique ou méta-analyse en neurologie",
+    "jama_oncology":       "JAMA Oncology — Essai clinique ou méta-analyse en oncologie",
+    "jama_ophthalmology":  "JAMA Ophthalmology — Essai clinique ou méta-analyse en ophtalmologie",
+    "jama_otolaryngology": "JAMA Otolaryngology — Essai clinique ou méta-analyse en ORL et chirurgie cervico-faciale",
+    "jama_pediatrics":     "JAMA Pediatrics — Essai clinique ou méta-analyse en pédiatrie",
+    "jama_psychiatry":     "JAMA Psychiatry — Essai clinique ou méta-analyse en psychiatrie",
+    "jama_surgery":        "JAMA Surgery — Essai clinique ou méta-analyse en chirurgie (toutes sous-spécialités)",
+    "jama_network_open":   "JAMA Network Open — Article de recherche en accès libre (toutes spécialités médicales et paramédicales)",
+    # Grands journaux généralistes
+    "nejm":          "New England Journal of Medicine (NEJM) — Essai clinique de référence ou méta-analyse (impact mondial sur les standards de soins)",
+    "lancet":        "The Lancet — Essai clinique ou méta-analyse internationale (toutes spécialités, focus santé mondiale)",
+    "bmj":           "BMJ (British Medical Journal) — Essai clinique, méta-analyse ou étude observationnelle (pratique clinique britannique et internationale)",
+    "nature_medicine":"Nature Medicine — Recherche translationnelle de pointe (immunothérapies, génomique, IA médicale, nouvelles thérapies)",
+    # Sources paramédicales
+    "clinical_chemistry": "Clinical Chemistry (AACC) — Article de recherche en biologie médicale (nouveaux biomarqueurs, méthodes analytiques, DM-DIV)",
+    "ptj_kine":           "Physical Therapy Journal (PTJ/APTA) — Essai clinique ou méta-analyse en kinésithérapie et rééducation fonctionnelle",
+    "bjog":               "BJOG (British Journal of Obstetrics and Gynaecology) — Essai clinique ou méta-analyse en obstétrique et pratique sage-femme",
+    "cpt_pharmacol":      "Clinical Pharmacology & Therapeutics (ASCPT) — Article de recherche en pharmacologie clinique (pharmacocinétique, interactions, nouvelles molécules)",
+    "jdr_dental":         "Journal of Dental Research (IADR) — Essai clinique ou étude en chirurgie dentaire, parodontologie, implantologie, orthodontie",
+    "jan_nursing":        "Journal of Advanced Nursing (JAN) — Essai clinique ou étude en sciences infirmières et pratiques de soins",
 }
 
 # ---------------------------------------------------------------------------
@@ -864,6 +954,25 @@ SOURCE_CONFIG: dict[str, dict] = {
     # "andpc"     → pas de RSS, CGU restrictives
     # "inca"      → pas de RSS, autorisation requise
     # "spf_maladies" → fusionné dans spf_beh
+    # ── Sources innovation ─────────────────────────────────────────────────
+    # JAMA journaux spécialisés : volume modéré, ciblés → seuil 6
+    **{src: {"require_whitelist": False, "min_llm_score": 6} for src in [
+        "jama", "jama_cardiology", "jama_dermatology", "jama_internal_med",
+        "jama_neurology", "jama_oncology", "jama_ophthalmology",
+        "jama_otolaryngology", "jama_pediatrics", "jama_psychiatry",
+        "jama_surgery", "nature_medicine",
+    ]},
+    # Journaux généralistes + JAMA Network Open : volume élevé → seuil 7 (filtrage strict)
+    # NEJM/Lancet/BMJ publient ~100-150 articles/semaine — seules les études
+    # vraiment pratique-changeantes doivent passer.
+    **{src: {"require_whitelist": False, "min_llm_score": 7} for src in [
+        "nejm", "lancet", "bmj", "jama_network_open",
+    ]},
+    # Sources paramédicales : volume faible, SNR élevé → seuil 6
+    **{src: {"require_whitelist": False, "min_llm_score": 6} for src in [
+        "clinical_chemistry", "ptj_kine", "bjog",
+        "cpt_pharmacol", "jdr_dental", "jan_nursing",
+    ]},
 }
 
 _DEFAULT_SOURCE_CONFIG = {"require_whitelist": False, "min_llm_score": 5}

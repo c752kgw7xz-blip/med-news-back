@@ -34,6 +34,7 @@ from app.db import get_conn
 from app.llm_analysis import pre_filter_candidate, NOISY_SOURCES, _passes_jorf_whitelist
 from app.sources_pratique import ALL_PRATIQUE_FEEDS
 from app.sources_europe import ALL_EUROPE_FEEDS
+from app.sources_innovation import ALL_INNOVATION_FEEDS
 from app.web_scraper import scrape_all_web
 from app.has_scraper import scrape_has_page, build_enriched_content
 
@@ -164,6 +165,13 @@ FEEDS: list[dict] = [
     # Valeur médico-légale : un médecin peut se défendre sur ESC/ESMO/EULAR/ERS
     # Guidelines → référentiels reconnus par la justice française et européenne
     *ALL_EUROPE_FEEDS,
+
+    # ── Sources innovation — grands journaux internationaux ───────────────
+    # Importées depuis app/sources_innovation.py
+    # Couverture : JAMA Network (12), NEJM + Lancet + BMJ + Nature Medicine,
+    #              + 6 sources paramédicales (biologiste, kiné, sage-femme,
+    #                pharmacien, dentiste/orthodontiste, infirmiers)
+    *ALL_INNOVATION_FEEDS,
 ]
 
 

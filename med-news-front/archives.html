@@ -872,6 +872,11 @@ const CATEGORIE_STYLE = {
   exercice:      { bg: 'rgba(8,145,178,.08)',  color: '#0891b2', border: '0.5px solid rgba(8,145,178,.25)',  label: 'Exercice & Admin' },
 };
 
+function innovationBadge(stype) {
+  if (stype !== 'innovation') return '';
+  return '<span class="nature-badge" style="background:rgba(234,125,41,.08);color:#ea7d29;border:0.5px solid rgba(234,125,41,.25);">\u26— Innovation</span>';
+}
+
 // Remap anciennes catégories vers les 3 nouvelles
 function normalizeCategorie(cat) {
   if (cat === 'medicament' || cat === 'dispositifs_medicaux') return 'therapeutique';
@@ -934,6 +939,7 @@ function renderArticle(a, idx) {
   const refs = (lecture.references || []).filter(r => r && r.trim() && r !== 'N NOR...');
   const delay = Math.min(idx * 30, 600);
   const categorie = a.categorie || '';
+  const stype = a.source_type || 'reglementaire';
   const sourceMeta = [nature, MedNews.formatDate(datePub)].filter(Boolean).join(' \u00b7 ');
   const isFav = favoritesSet.has(a.id);
 
@@ -955,6 +961,7 @@ function renderArticle(a, idx) {
         <span class="card-title">${esc(titre)}</span>
       </div>
       <div class="card-top-right">
+        ${innovationBadge(stype)}
         ${categorieBadge(categorie)}
         ${sourceMeta ? `<span class="card-date" style="font-size:0.59rem;color:var(--text3);">${esc(sourceMeta)}</span>` : ''}
         <button class="btn-fav${isFav ? ' active' : ''}" data-item-id="${a.id}"
@@ -1133,10 +1140,10 @@ function _accordHtml(slug, name, counts, id) {
         <span class="subitem-dot reco-dot"></span>Recommandation
         <span class="count">${reco}</span>
       </div>
-      ${innov > 0 ? `<div class="sidebar-subitem" id="sub-${id}-innov" onclick="selectSpecType('${slug}','innovation','${id}')">
+      <div class="sidebar-subitem" id="sub-${id}-innov" onclick="selectSpecType('${slug}','innovation','${id}')">
         <span class="subitem-dot innov-dot"></span>Innovation
         <span class="count">${innov}</span>
-      </div>` : ''}
+      </div>
     </div>`;
 }
 

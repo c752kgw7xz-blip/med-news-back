@@ -1010,6 +1010,12 @@ const CATEGORIE_STYLE = {
   exercice:      { bg: 'rgba(8,145,178,.08)',  color: '#0891b2', border: '0.5px solid rgba(8,145,178,.25)',  label: 'Exercice & Admin' },
 };
 
+// Badge source_type — affiché uniquement pour Innovation (réglementaire/recommandation = défaut implicite)
+function innovationBadge(stype) {
+  if (stype !== 'innovation') return '';
+  return '<span class="nature-badge" style="background:rgba(234,125,41,.08);color:#ea7d29;border:0.5px solid rgba(234,125,41,.25);">\u26— Innovation</span>';
+}
+
 function categorieBadge(categorie) {
   if (!categorie) return '<span class="nature-badge" style="background:var(--surface2);color:var(--text4);">Non class\u00e9</span>';
   const s = CATEGORIE_STYLE[categorie] || { bg: 'var(--surface2)', color: 'var(--text3)', label: categorie };
@@ -1056,6 +1062,7 @@ function renderArticle(a, idx) {
   const resume = tri.resume || '';
   const impact = (tri.impact_pratique && tri.impact_pratique !== 'None' && tri.impact_pratique !== 'null') ? tri.impact_pratique : '';
   const categorie = a.categorie || null;
+  const stype = a.source_type || 'reglementaire';
   const datePub = tri.date_publication || a.official_date || '';
   const score = a.score_density || 5;
   const prio = prioClass(score);
@@ -1083,6 +1090,7 @@ function renderArticle(a, idx) {
         <span class="card-title">${esc(titre)}</span>
       </div>
       <div class="card-top-right">
+        ${innovationBadge(stype)}
         ${categorieBadge(categorie)}
         <span class="card-date">${esc(MedNews.formatDate(datePub))}</span>
         <button class="btn-fav${isFav ? ' active' : ''}" data-item-id="${a.id}"
@@ -1415,10 +1423,10 @@ function _accordHtml(slug, name, counts, id) {
         <span class="subitem-dot reco-dot"></span>Recommandation
         <span class="count">${reco}</span>
       </div>
-      ${innov > 0 ? `<div class="sidebar-subitem" id="sub-${id}-innov" onclick="selectSpecType('${slug}','innovation','${id}')">
+      <div class="sidebar-subitem" id="sub-${id}-innov" onclick="selectSpecType('${slug}','innovation','${id}')">
         <span class="subitem-dot innov-dot"></span>Innovation
         <span class="count">${innov}</span>
-      </div>` : ''}
+      </div>
     </div>`;
 }
 
