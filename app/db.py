@@ -23,20 +23,25 @@ def get_pool() -> ConnectionPool:
     if _pool is None:
         _pool = ConnectionPool(
             get_database_url(),
-            # min_size=0 : aucune connexion idle maintenue → compatible Neon auto-suspend
-            # (Neon suspend la DB après ~5 min d'inactivité ; une connexion idle
-            #  devient stale et fait échouer la requête suivante)
+            # min_size=0 : aucune connexion idle maintenue.
+            # Neon free tier suspend la DB après ~5 min d'inactivité ;
+            # garder des connexions idle les rend stales et fait crasher
+            # la prochaine requête. Avec min_size=0, chaque connexion
+            # est ouverte à la demande et Neon se réveille normalement.
             min_size=0,
             max_size=10,
-            # Ouvre une connexion à la demande, sans attendre au démarrage
+            # open=False : n'essaie pas d'ouvrir des connexions au démarrage
+            # (évite l'erreur si la DB n'est pas encore réveillée)
             open=False,
-            # Reconnexion automatique si une connexion du pool est morte
+            # max_idle : ferme une connexion inutilisée après 4 min,
+            # avant que Neon ne la suspende (5 min), évitant les stale connections
+            max_idle=240,
+            # reconnect_timeout : si l'ouverture échoue, réessaie pendant 30s
             reconnect_timeout=30,
             kwargs={
                 "autocommit": False,
-                # Timeout de connexion : laisse le temps à Neon de sortir du sleep (~2s)
+                # connect_timeout : laisse 10s à Neon pour sortir du sleep
                 "connect_timeout": 10,
-                "options": "-c statement_timeout=30000",
             },
         )
         _pool.open()
@@ -48,21 +53,12 @@ def get_conn():
     """
     Fournit une connexion depuis le pool.
     Commits automatiquement on success, rollback on error.
-    Retry automatique une fois si la connexion est stale (Neon auto-suspend).
     """
     pool = get_pool()
-    for attempt in range(2):
+    with pool.connection() as conn:
         try:
-            with pool.connection() as conn:
-                try:
-                    yield conn
-                    conn.commit()
-                except Exception:
-                    conn.rollback()
-                    raise
-            return  # succès
-        except psycopg.OperationalError as exc:
-            if attempt == 0:
-                logger.warning("DB connexion stale, retry… (%s)", exc)
-                continue
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
             raise
