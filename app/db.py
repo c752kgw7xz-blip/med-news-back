@@ -1,9 +1,12 @@
 # app/db.py
+import logging
 import os
 from contextlib import contextmanager
 
 import psycopg
 from psycopg_pool import ConnectionPool
+
+logger = logging.getLogger(__name__)
 
 _pool: ConnectionPool | None = None
 
@@ -20,10 +23,23 @@ def get_pool() -> ConnectionPool:
     if _pool is None:
         _pool = ConnectionPool(
             get_database_url(),
-            min_size=2,
+            # min_size=0 : aucune connexion idle maintenue → compatible Neon auto-suspend
+            # (Neon suspend la DB après ~5 min d'inactivité ; une connexion idle
+            #  devient stale et fait échouer la requête suivante)
+            min_size=0,
             max_size=10,
-            kwargs={"autocommit": False},
+            # Ouvre une connexion à la demande, sans attendre au démarrage
+            open=False,
+            # Reconnexion automatique si une connexion du pool est morte
+            reconnect_timeout=30,
+            kwargs={
+                "autocommit": False,
+                # Timeout de connexion : laisse le temps à Neon de sortir du sleep (~2s)
+                "connect_timeout": 10,
+                "options": "-c statement_timeout=30000",
+            },
         )
+        _pool.open()
     return _pool
 
 
@@ -32,17 +48,21 @@ def get_conn():
     """
     Fournit une connexion depuis le pool.
     Commits automatiquement on success, rollback on error.
-
-    Usage identique à l'ancienne version :
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute(...)
+    Retry automatique une fois si la connexion est stale (Neon auto-suspend).
     """
     pool = get_pool()
-    with pool.connection() as conn:
+    for attempt in range(2):
         try:
-            yield conn
-            conn.commit()
-        except Exception:
-            conn.rollback()
+            with pool.connection() as conn:
+                try:
+                    yield conn
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
+                    raise
+            return  # succès
+        except psycopg.OperationalError as exc:
+            if attempt == 0:
+                logger.warning("DB connexion stale, retry… (%s)", exc)
+                continue
             raise
