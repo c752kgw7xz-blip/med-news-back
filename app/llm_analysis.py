@@ -973,6 +973,20 @@ SOURCE_CONFIG: dict[str, dict] = {
         "clinical_chemistry", "ptj_kine", "bjog",
         "cpt_pharmacol", "jdr_dental", "jan_nursing",
     ]},
+    # ── EMA — section Innovation ───────────────────────────────────────────
+    # ema_new_medicines : ~200 AMM/an dont ~150 génériques/biosimilaires → bruit.
+    # Seuil 8 : seule l'innovation truly breakthrough passe (first-in-class,
+    # thérapie génique, pathologie sans alternative). Objectif : 5-15 items/an.
+    "ema_new_medicines": {
+        "require_whitelist": False,
+        "min_llm_score": 8,
+    },
+    # ema_news : alertes sécurité EMA (retraits AMM, contre-indications).
+    # Niveau alerte ANSM → seuil 6 comme ansm_securite.
+    "ema_news": {
+        "require_whitelist": False,
+        "min_llm_score": 6,
+    },
 }
 
 _DEFAULT_SOURCE_CONFIG = {"require_whitelist": False, "min_llm_score": 5}
