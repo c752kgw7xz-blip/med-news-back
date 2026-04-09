@@ -160,9 +160,8 @@ _CSS = """
   --strip:    #f0ede8;
   --impact:   #f6f5f2;
 }
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); font-family: 'Outfit', sans-serif;
+body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
        font-weight: 300; margin: 0; padding: 0; color: var(--text); }
 .bg  { background: var(--bg); padding: 32px 16px; }
 .wrap { max-width: 600px; margin: 0 auto; }
@@ -170,27 +169,27 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
 /* Masthead */
 .masthead { text-align: center; padding: 36px 0 28px;
             border-bottom: 1px solid var(--border); }
-.masthead-name { font-family: 'Instrument Serif', Georgia, serif;
+.masthead-name { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
                   font-size: 24px; font-style: italic; color: var(--text); }
 .masthead-name em { color: var(--green); font-style: italic; }
-.masthead-sub { font-family: 'DM Mono', monospace; font-size: 9px;
+.masthead-sub { font-family: 'DM Mono', 'Courier New', monospace; font-size: 9px;
                 letter-spacing: 3px; text-transform: uppercase;
                 color: var(--text5); margin-top: 6px; }
 
 /* Header */
 .hd { background: transparent; border: none;
       border-radius: 0; padding: 32px 40px 28px; }
-.hd-eye { font-family: 'DM Mono', monospace; font-size: 10px;
+.hd-eye { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
            color: var(--text5); letter-spacing: 2px;
            text-transform: uppercase; margin-bottom: 14px; }
 .hd-dot { width: 6px; height: 6px; background: var(--green);
            border-radius: 50%; display: inline-block;
            margin-right: 6px; vertical-align: middle; }
-.hd-title { font-family: 'Instrument Serif', Georgia, serif;
+.hd-title { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
              font-size: 28px; font-weight: 400; color: var(--text);
              line-height: 1.2; margin-bottom: 4px; }
 .hd-title em { font-style: italic; color: var(--green); }
-.hd-stats { font-family: 'DM Mono', monospace; font-size: 10px;
+.hd-stats { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
              color: var(--text4); letter-spacing: 0.3px; margin-top: 16px; }
 .hd-stats .n   { color: var(--text2); }
 .hd-stats .sep { color: var(--border2); margin: 0 8px; }
@@ -199,28 +198,29 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
 .edito { background: transparent; border: none;
           padding: 24px 40px 26px; }
 .edito p { font-size: 13px; color: var(--text3); line-height: 1.85; }
-.edito-sign { font-family: 'DM Mono', monospace; font-size: 10px;
+.edito-sign { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
                color: var(--text5); margin-top: 12px;
                letter-spacing: 1px; text-transform: uppercase; }
 
-/* CTA portal */
+/* CTA portal — table layout for Outlook compatibility */
 .portal-strip { background: transparent; border: none;
-                padding: 18px 40px;
-                display: flex; align-items: center;
-                justify-content: space-between; gap: 16px; }
+                padding: 18px 40px; }
 .portal-strip p { font-size: 12px; color: var(--text4);
-                  font-family: 'DM Mono', monospace;
-                  letter-spacing: .3px; line-height: 1.6; }
-.portal-btn { font-family: 'Outfit', sans-serif; font-size: 12px;
+                  font-family: 'DM Mono', 'Courier New', monospace;
+                  letter-spacing: .3px; line-height: 1.6;
+                  display: inline-block; vertical-align: middle;
+                  max-width: 380px; }
+.portal-btn { font-family: 'Outfit', -apple-system, 'Segoe UI', sans-serif; font-size: 12px;
               font-weight: 500; color: var(--text);
               text-decoration: none; background: var(--surface);
               border: 1px solid var(--border2);
               padding: 8px 18px; border-radius: 6px;
-              white-space: nowrap; flex-shrink: 0; }
+              white-space: nowrap; display: inline-block;
+              vertical-align: middle; margin-left: 16px; }
 
 /* Séparateurs de section */
 .grp { padding: 26px 0 16px; }
-.grp-label { font-family: 'DM Mono', monospace; font-size: 0.7rem;
+.grp-label { font-family: 'DM Mono', 'Courier New', monospace; font-size: 0.7rem;
               letter-spacing: 1.5px; text-transform: uppercase;
               color: #2a9d8f;
               border-left: 3px solid #2a9d8f; padding-left: 10px; }
@@ -229,18 +229,18 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
 .card { background: var(--surface); border: 1px solid var(--border);
          border-radius: 10px; padding: 24px 28px 22px;
          margin-bottom: 10px; }
-.card-top { display: flex; align-items: center; gap: 7px;
-             margin-bottom: 12px; flex-wrap: wrap; }
-.prio { font-family: 'DM Mono', monospace; font-size: 10px;
+.card-top { margin-bottom: 12px; }
+.card-top > * { display: inline-block; vertical-align: middle; margin-right: 7px; }
+.prio { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
          font-weight: 400; letter-spacing: .3px; }
 .prio.h { color: #e05252; }
 .prio.m { color: #d4921a; }
 .prio.l { color: #2a9d7a; }
-.card-date { font-family: 'DM Mono', monospace; font-size: 10px;
+.card-date { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
               color: var(--text5); }
 
 /* Catégories */
-.cat { font-family: 'DM Mono', monospace; font-size: 11px;
+.cat { font-family: 'DM Mono', 'Courier New', monospace; font-size: 11px;
         letter-spacing: .5px; text-transform: uppercase;
         padding: 3px 9px; border-radius: 3px; font-weight: 500; }
 .cat-therapeutique    { background: rgba(147,51,234,.08);  color: #9333ea;
@@ -250,7 +250,7 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
 .cat-exercice         { background: rgba(74,158,187,.08);  color: #4a9ebb;
                          border: 0.5px solid rgba(74,158,187,.25); }
 
-.card-title { font-family: 'Instrument Serif', Georgia, serif;
+.card-title { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
                font-size: 19px; font-weight: 400; color: var(--text);
                line-height: 1.35; margin-bottom: 10px; }
 .card-resume { font-size: 13px; font-weight: 300; color: var(--text3);
@@ -267,7 +267,7 @@ body { background: var(--bg); font-family: 'Outfit', sans-serif;
 
 /* Footer */
 .footer { padding: 24px 0 8px; text-align: center; }
-.footer p { font-family: 'DM Mono', monospace; font-size: 10px;
+.footer p { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
              color: var(--text5); letter-spacing: .4px; line-height: 2; }
 .footer a { color: var(--text5); }
 """
@@ -499,6 +499,7 @@ def build_newsletter(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>{_he(sujet)}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&display=swap">
 <style>{_CSS}</style>
 </head>
 <body>

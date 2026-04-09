@@ -713,6 +713,7 @@ class PreferencesUpdate(BaseModel):
     notif_newsletter: Optional[bool] = None
     notif_urgent: Optional[bool] = None
     newsletter_frequency: Optional[str] = None
+    is_unsubscribed: Optional[bool] = None
 
 
 @router.patch("/me/preferences")
@@ -728,6 +729,9 @@ def update_preferences(payload: PreferencesUpdate, user_id: str = Depends(_get_c
     if payload.newsletter_frequency is not None:
         fields.append("newsletter_frequency = %s")
         values.append(payload.newsletter_frequency)
+    if payload.is_unsubscribed is not None:
+        fields.append("is_unsubscribed = %s")
+        values.append(payload.is_unsubscribed)
     if not fields:
         return {"status": "no changes"}
     values.append(user_id)

@@ -23,6 +23,10 @@ import logging
 import threading
 from typing import Any, Optional
 
+# Guard against concurrent /run-background calls
+_bg_lock = threading.Lock()
+_bg_running = False
+
 import psycopg
 from psycopg.types.json import Json
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Query
@@ -362,14 +366,25 @@ def run_background(request: Request, body: _RunBackgroundBody = _RunBackgroundBo
     """
     Lance le traitement LLM dans un thread séparé — retourne immédiatement.
     Le traitement continue côté serveur, requête non-bloquante.
+    Un seul thread à la fois : si un traitement est déjà en cours, retourne 409.
     Consulte /admin/llm/stats pour suivre la progression.
     Body JSON : { "max_candidates": 200, "batch_size": 20 }
     """
+    global _bg_running
     _require_admin(request)
     max_candidates = max(1, min(body.max_candidates, 10000))
     batch_size = max(1, min(body.batch_size, 100))
 
+    with _bg_lock:
+        if _bg_running:
+            raise HTTPException(
+                status_code=409,
+                detail="Un traitement LLM est déjà en cours. Consultez /admin/llm/stats.",
+            )
+        _bg_running = True
+
     def _bg_process(cap: int):
+        global _bg_running
         try:
             logger.info("run-background : démarrage thread, cap=%d", cap)
             total = 0
@@ -388,6 +403,9 @@ def run_background(request: Request, body: _RunBackgroundBody = _RunBackgroundBo
             logger.info("run-background : arrêt — %d traités (plafond=%d)", total, cap)
         except Exception:
             logger.exception("run-background : ERREUR FATALE dans le thread")
+        finally:
+            with _bg_lock:
+                _bg_running = False
 
     t = threading.Thread(target=_bg_process, args=(max_candidates,), daemon=True)
     t.start()

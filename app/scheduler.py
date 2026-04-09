@@ -576,7 +576,10 @@ def _get_subscribers(specialty_slug: str) -> list[str]:
                 """
                 SELECT u.email_ciphertext
                 FROM users u
-                WHERE u.specialty_id = %s AND u.email_verified_at IS NOT NULL;
+                WHERE u.specialty_id = %s
+                  AND u.email_verified_at IS NOT NULL
+                  AND u.is_unsubscribed = false
+                  AND (u.bounce_status IS NULL OR u.bounce_status != 'permanent');
                 """,
                 (specialty_slug,),
             )
@@ -585,8 +588,8 @@ def _get_subscribers(specialty_slug: str) -> list[str]:
     for (raw,) in rows:
         try:
             emails.append(decrypt_email(raw))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Décryptage email échoué (specialty=%s) : %s", specialty_slug, e)
     return emails
 
 
