@@ -85,18 +85,48 @@ def _newsletter_already_sent(newsletter_type: str, period_label: str) -> bool:
             return cur.fetchone() is not None
 
 
-def _record_newsletter_sent(newsletter_type: str, period_label: str, articles_sent: int = 0) -> None:
-    """Enregistre l'envoi de la newsletter pour cette période."""
+def _claim_newsletter_slot(newsletter_type: str, period_label: str) -> bool:
+    """Atomically claim a newsletter send slot (prevents double sends).
+
+    Inserts a row with articles_sent=0.  If the row already exists (UNIQUE
+    constraint), the INSERT is a no-op and rowcount == 0 → returns False.
+    """
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO newsletter_sends (newsletter_type, period_label, articles_sent)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (newsletter_type, period_label) DO UPDATE
-                  SET sent_at = now(), articles_sent = EXCLUDED.articles_sent;
+                VALUES (%s, %s, 0)
+                ON CONFLICT (newsletter_type, period_label) DO NOTHING;
                 """,
-                (newsletter_type, period_label, articles_sent),
+                (newsletter_type, period_label),
+            )
+            return cur.rowcount == 1
+
+
+def _finalize_newsletter_sent(newsletter_type: str, period_label: str, articles_sent: int) -> None:
+    """Update articles_sent after a successful send."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE newsletter_sends SET sent_at = now(), articles_sent = %s
+                WHERE newsletter_type = %s AND period_label = %s;
+                """,
+                (articles_sent, newsletter_type, period_label),
+            )
+
+
+def _release_newsletter_slot(newsletter_type: str, period_label: str) -> None:
+    """Release a claimed slot when no articles were sent (allows retry next day)."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                DELETE FROM newsletter_sends
+                WHERE newsletter_type = %s AND period_label = %s AND articles_sent = 0;
+                """,
+                (newsletter_type, period_label),
             )
 
 
@@ -365,6 +395,7 @@ def job_try_send_regulation() -> None:
     """
     period = _regulation_period()
 
+    # Fast-path : déjà envoyée ?
     if _newsletter_already_sent("reglementaire", period):
         logger.info("Newsletter réglementation %s déjà envoyée — skip", period)
         return
@@ -377,6 +408,11 @@ def job_try_send_regulation() -> None:
         )
         return
 
+    # Atomic claim — prevents double sends if two threads reach this point
+    if not _claim_newsletter_slot("reglementaire", period):
+        logger.info("Newsletter réglementation %s déjà claim par un autre worker — skip", period)
+        return
+
     logger.info(
         "Newsletter réglementation %s : 0 PENDING — déclenchement de l'envoi", period
     )
@@ -385,12 +421,14 @@ def job_try_send_regulation() -> None:
         days=35,
     )
     if total_sent > 0:
-        _record_newsletter_sent("reglementaire", period, articles_sent=total_sent)
+        _finalize_newsletter_sent("reglementaire", period, articles_sent=total_sent)
         logger.info("Newsletter réglementation envoyée : %d articles au total", total_sent)
     else:
+        # Release slot so it can be retried tomorrow
+        _release_newsletter_slot("reglementaire", period)
         logger.warning(
             "[newsletter réglementation] 0 items approuvés pour la période %s — "
-            "période non verrouillée, nouvelle tentative possible demain",
+            "slot libéré, nouvelle tentative possible demain",
             period,
         )
 
@@ -420,6 +458,11 @@ def job_try_send_recommendations() -> None:
         )
         return
 
+    # Atomic claim — prevents double sends
+    if not _claim_newsletter_slot("recommandation", period):
+        logger.info("Newsletter recommandations %s déjà claim par un autre worker — skip", period)
+        return
+
     logger.info(
         "Newsletter recommandations %s : 0 PENDING — déclenchement de l'envoi", period
     )
@@ -428,12 +471,13 @@ def job_try_send_recommendations() -> None:
         days=7,  # fenêtre = semaine uniquement
     )
     if total_sent > 0:
-        _record_newsletter_sent("recommandation", period, articles_sent=total_sent)
+        _finalize_newsletter_sent("recommandation", period, articles_sent=total_sent)
         logger.info("Newsletter recommandations envoyée : %d articles au total", total_sent)
     else:
+        _release_newsletter_slot("recommandation", period)
         logger.warning(
             "[newsletter recommandations] 0 items approuvés pour la période %s — "
-            "période non verrouillée, nouvelle tentative possible demain",
+            "slot libéré, nouvelle tentative possible demain",
             period,
         )
 

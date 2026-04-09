@@ -25,11 +25,16 @@ import logging
 import os
 import smtplib
 import ssl
+import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import NamedTuple
 
 import httpx
+
+MAX_RETRIES = 3
+# Retryable HTTP status codes (rate-limit, server errors)
+_RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 
 logger = logging.getLogger(__name__)
 
@@ -77,25 +82,34 @@ def _send_sendgrid(
         ],
     }
 
-    try:
-        r = httpx.post(
-            "https://api.sendgrid.com/v3/mail/send",
-            json=payload,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            timeout=30,
-        )
-        if r.status_code in (200, 202):
-            return MailResult(success=True, recipient=to_email)
-        return MailResult(
-            success=False,
-            recipient=to_email,
-            error=f"SendGrid HTTP {r.status_code}: {r.text[:200]}",
-        )
-    except Exception as e:
-        return MailResult(success=False, recipient=to_email, error=str(e))
+    last_error: str = ""
+    for attempt in range(MAX_RETRIES):
+        try:
+            r = httpx.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                timeout=30,
+            )
+            if r.status_code in (200, 202):
+                return MailResult(success=True, recipient=to_email)
+            last_error = f"SendGrid HTTP {r.status_code}: {r.text[:200]}"
+            if r.status_code not in _RETRYABLE_STATUS:
+                break  # permanent error (4xx auth, bad request…)
+        except (httpx.TimeoutException, httpx.ConnectError, OSError) as e:
+            last_error = str(e)
+        except Exception as e:
+            return MailResult(success=False, recipient=to_email, error=str(e))
+
+        if attempt < MAX_RETRIES - 1:
+            delay = 2 ** (attempt + 1)  # 2s, 4s
+            logger.warning("SendGrid retry %d/%d pour %s dans %ds", attempt + 1, MAX_RETRIES, to_email[:2] + "***", delay)
+            time.sleep(delay)
+
+    return MailResult(success=False, recipient=to_email, error=last_error)
 
 
 # ---------------------------------------------------------------------------
@@ -122,18 +136,29 @@ def _send_smtp(
     msg.attach(MIMEText(plain, "plain", "utf-8"))
     msg.attach(MIMEText(html, "html", "utf-8"))
 
-    try:
-        ctx = ssl.create_default_context() if use_tls else None
-        with smtplib.SMTP(host, port, timeout=30) as s:
-            if use_tls:
-                s.ehlo()
-                s.starttls(context=ctx)
-            if user:
-                s.login(user, password)
-            s.sendmail(from_addr, to_email, msg.as_string())
-        return MailResult(success=True, recipient=to_email)
-    except Exception as e:
-        return MailResult(success=False, recipient=to_email, error=str(e))
+    last_error: str = ""
+    for attempt in range(MAX_RETRIES):
+        try:
+            ctx = ssl.create_default_context() if use_tls else None
+            with smtplib.SMTP(host, port, timeout=30) as s:
+                if use_tls:
+                    s.ehlo()
+                    s.starttls(context=ctx)
+                if user:
+                    s.login(user, password)
+                s.sendmail(from_addr, to_email, msg.as_string())
+            return MailResult(success=True, recipient=to_email)
+        except (OSError, smtplib.SMTPServerDisconnected, smtplib.SMTPResponseException) as e:
+            last_error = str(e)
+        except Exception as e:
+            return MailResult(success=False, recipient=to_email, error=str(e))
+
+        if attempt < MAX_RETRIES - 1:
+            delay = 2 ** (attempt + 1)
+            logger.warning("SMTP retry %d/%d pour %s dans %ds", attempt + 1, MAX_RETRIES, to_email[:2] + "***", delay)
+            time.sleep(delay)
+
+    return MailResult(success=False, recipient=to_email, error=last_error)
 
 
 # ---------------------------------------------------------------------------

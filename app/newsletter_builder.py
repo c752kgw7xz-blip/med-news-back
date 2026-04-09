@@ -18,6 +18,7 @@ import os
 from datetime import date
 from html import escape as _he
 from typing import Any
+from urllib.parse import urlparse
 
 # ---------------------------------------------------------------------------
 # Noms affichés des spécialités
@@ -75,6 +76,16 @@ SPECIALTY_LABELS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _safe_url(url: str) -> str:
+    """Sanitize a URL: reject non-http(s) schemes (e.g. javascript:) and HTML-escape."""
+    if not url or url == "#":
+        return "#"
+    parsed = urlparse(url)
+    if parsed.scheme and parsed.scheme not in ("http", "https"):
+        return "#"
+    return _he(url, quote=True)
+
 
 MOIS_FR = {
     1: "jan.", 2: "fév.", 3: "mars", 4: "avr.", 5: "mai", 6: "juin",
@@ -278,7 +289,7 @@ def _render_article(item: dict[str, Any]) -> str:
     titre = tri.get("titre_court") or item.get("title_raw") or ""
     resume = tri.get("resume") or ""
     impact = tri.get("impact_pratique") or ""
-    url = item.get("official_url") or "#"
+    url = _safe_url(item.get("official_url") or "#")
 
     cat_html = (
         f'<span class="cat {cat_class}">{_he(cat_label)}</span>'
@@ -527,7 +538,7 @@ def build_newsletter(
   <!-- CTA PORTAL -->
   <div class="portal-strip">
     <p>Retrouvez tous vos articles,<br>archives et favoris sur votre espace</p>
-    <a class="portal-btn" href="{portal_url}">Accéder à mon espace →</a>
+    <a class="portal-btn" href="{_safe_url(portal_url)}">Accéder à mon espace →</a>
   </div>
 
   <!-- ARTICLES SPÉCIALITÉ -->
@@ -541,8 +552,8 @@ def build_newsletter(
   <div class="footer">
     <p>
       Abonné à MedNews ·
-      <a href="{unsubscribe_url}">Se désabonner</a> ·
-      <a href="{archive_url}">Voir en ligne</a><br>
+      <a href="{_safe_url(unsubscribe_url)}">Se désabonner</a> ·
+      <a href="{_safe_url(archive_url)}">Voir en ligne</a><br>
       MedNews — Veille réglementaire pour médecins libéraux
     </p>
   </div>
