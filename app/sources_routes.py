@@ -300,6 +300,46 @@ def collect_web(request: Request):
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
+@router.post("/collect/innovation")
+def collect_innovation(request: Request, days: int = Query(default=90, ge=1, le=365)):
+    """
+    Collecte les sources innovation : PubMed (JVS, EJVES, JET, Annals of Vascular Surgery)
+    + flux RSS JAMA/NEJM/Lancet/BMJ/Nature Medicine.
+    days=90 par défaut pour l'historique récent au premier run.
+    """
+    _require_admin(request)
+    try:
+        from app.pubmed_collector import collect_all_pubmed
+        from app.rss_collector import collect_feed
+        from app.sources_innovation import ALL_INNOVATION_FEEDS
+
+        pubmed_results = collect_all_pubmed(days=days)
+        rss_results = {}
+        for feed in ALL_INNOVATION_FEEDS:
+            try:
+                rss_results[feed["source"]] = collect_feed(feed, days=days)
+            except Exception as e:
+                rss_results[feed["source"]] = {"error": str(e)}
+
+        total_inserted = sum(
+            r.get("inserted", 0)
+            for r in list(pubmed_results.values()) + list(rss_results.values())
+            if isinstance(r, dict)
+        )
+        return {
+            "ok": True,
+            "days": days,
+            "total_inserted": total_inserted,
+            "pubmed": pubmed_results,
+            "rss_innovation": rss_results,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Erreur collect innovation")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
 @router.post("/collect/all")
 def collect_all(request: Request, days: int = Query(default=35, ge=1, le=365)):
     """Lance la collecte complète de toutes les sources."""
@@ -307,11 +347,13 @@ def collect_all(request: Request, days: int = Query(default=35, ge=1, le=365)):
     try:
         from app.piste_collector import collect_all_piste_fonds
         from app.rss_collector import collect_all_rss
+        from app.pubmed_collector import collect_all_pubmed
         return {
             "ok": True,
             "days": days,
             "piste_extra": collect_all_piste_fonds(days=days),
             "rss": collect_all_rss(days=days),
+            "pubmed": collect_all_pubmed(days=days),
         }
     except HTTPException:
         raise

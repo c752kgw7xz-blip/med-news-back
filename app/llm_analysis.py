@@ -237,6 +237,12 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "cpt_pharmacol":        "innovation",   # pharmacien
     "jdr_dental":           "innovation",   # dentiste / orthodontiste
     "jan_nursing":          "innovation",   # infirmiers
+
+    # ── PubMed — chirurgie vasculaire (Elsevier RSS 410 Gone → fallback NCBI) ──
+    "pubmed_jvs":           "innovation",   # Journal of Vascular Surgery
+    "pubmed_ejves":         "innovation",   # European Journal of Vascular and Endovascular Surgery
+    "pubmed_jet":           "innovation",   # Journal of Endovascular Therapy
+    "pubmed_ann_vasc_surg": "innovation",   # Annals of Vascular Surgery
 }
 
 
