@@ -1919,6 +1919,21 @@ function loadDemoData() {
   });
 }
 
+// ── Failsafe : force la fin du spinner après 25s quoi qu'il arrive ──────────
+const _loadingFailsafe = setTimeout(() => {
+  const l = document.getElementById('loading');
+  const c = document.getElementById('content');
+  if (l && l.style.display !== 'none') {
+    console.warn('[MedNews] failsafe triggered — spinner forcé à disparaître');
+    l.style.display = 'none';
+    if (c) c.style.display = 'block';
+    const cont = document.getElementById('articles-container');
+    if (cont && !cont.innerHTML.trim()) {
+      cont.innerHTML = '<div class="empty" style="color:var(--text3);">Délai de chargement dépassé.<br><a href="" onclick="location.reload();return false;" style="color:var(--green);text-decoration:underline;">Recharger la page</a></div>';
+    }
+  }
+}, 25000);
+
 // ── Init ──────────────────────────────────────────────────────
 (async () => {
   if (DEMO_MODE) { loadDemoData(); return; }
@@ -1929,16 +1944,23 @@ function loadDemoData() {
   const _sub = document.getElementById('portal-month-subtitle');
   if (_sub) _sub.textContent = `${MONTHS[_now.getMonth()]} ${_now.getFullYear()}`;
   try {
+    console.log('[MedNews] init start');
     await loadProfile();
+    console.log('[MedNews] loadProfile done');
     await loadFavorites();
+    console.log('[MedNews] loadFavorites done');
     await Promise.all([loadSpecialties(), loadCounts()]);
+    console.log('[MedNews] specialties+counts done');
     buildSidebar();
+    console.log('[MedNews] buildSidebar done');
     await loadArticles(1);
+    console.log('[MedNews] loadArticles done');
   } catch (e) {
-    console.error('Init error:', e);
+    console.error('[MedNews] Init error:', e);
     document.getElementById('articles-container').innerHTML =
       `<div class="empty" style="color:var(--red);">Erreur inattendue : ${e.message}<br>Rechargez la page.</div>`;
   } finally {
+    clearTimeout(_loadingFailsafe);
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
     if (window.lucide) lucide.createIcons();
