@@ -68,6 +68,7 @@ INSERT INTO items (
     categorie,
     type_praticien,
     source_type,
+    evidence_json,
     llm_raw,
     llm_model,
     review_status
@@ -82,6 +83,7 @@ VALUES (
     %(categorie)s,
     %(type_praticien)s,
     %(source_type)s,
+    %(evidence_json)s,
     %(llm_raw)s,
     %(llm_model)s,
     'PENDING'
@@ -211,6 +213,7 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
             for slug in slugs_to_insert:
                 # Score modulé : spécifique si disponible, global sinon
                 item_score = score_par_specialite.get(slug, global_score) if slug else global_score
+                ev = result.get("evidence_json")
                 params = {
                     "candidate_id": cid,
                     "audience": audience,
@@ -221,6 +224,7 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
                     "categorie": result.get("categorie", None),
                     "type_praticien": type_praticien,
                     "source_type": source_type,
+                    "evidence_json": Json(ev) if ev else None,
                     "llm_raw": llm_raw_text,
                     "llm_model": result.get("llm_model", LLM_MODEL),
                 }

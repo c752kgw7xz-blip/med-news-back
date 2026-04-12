@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 # LLM backend config — Claude Haiku (async, 20 concurrent)
 # ---------------------------------------------------------------------------
 ANTHROPIC_MODEL      = "claude-haiku-4-5-20251001"
-ANTHROPIC_MAX_TOKENS = 1200
+ANTHROPIC_MAX_TOKENS = 1600   # augmenté : evidence_json ajoute ~200-300 tokens pour sources innovation
 
 LLM_MODEL = ANTHROPIC_MODEL
 
@@ -316,6 +316,132 @@ avant recommandation officielle).
 méta-analyses, études observationnelles de grande envergure). \
 "RECOMMANDATION" reste réservé aux guidelines, consensus et revues systématiques \
 ayant valeur de recommandation explicite (grade de recommandation mentionné).
+
+SOURCE INNOVATION — BLOC evidence_json OBLIGATOIRE pour tout article de journal scientifique :
+Quand la SOURCE est un journal médical international (JAMA, NEJM, Lancet, BMJ, JVS, EJVES, \
+JET, Annals of Vascular Surgery, etc.), tu dois remplir un champ "evidence_json" \
+dans ta réponse JSON. Ce bloc est la clé pour distinguer un RCT pivot \
+(qui va changer les guidelines dans 2 ans) d'une confirmation sans intérêt.
+
+Champs de evidence_json :
+
+"study_design" — design méthodologique (obligatoire) :
+  "RCT"                  → essai randomisé contrôlé
+  "meta-analysis"        → méta-analyse ou revue systématique
+  "registry"             → registre national ou international (VASCUNET, SVS-VQI, etc.)
+  "prospective-cohort"   → cohorte prospective non randomisée
+  "retrospective-cohort" → série rétrospective, étude de base de données
+  "case-series"          → série de cas < 100 patients
+  "guideline"            → guideline ou consensus de société savante
+  "regulatory-decision"  → décision AMM, CE mark, remboursement
+  "technique-paper"      → description ou modification de technique chirurgicale/endovasculaire
+  "review"               → revue narrative (sans méta-analyse)
+  "editorial"            → éditorial, lettre, commentaire
+
+"phase" — phase de l'essai si RCT : "1"|"2"|"3"|"4"|null
+
+"n_patients" — effectif total de l'étude (entier) ou null si non applicable
+
+"multicentre" — true si multicentrique, false si monocentrique, null si non précisé
+
+"follow_up_months" — durée de suivi en mois (entier) ou null
+
+"primary_endpoint" — type d'endpoint principal :
+  "mortality"         → mortalité toutes causes
+  "patency"           → perméabilité primaire/secondaire (vasculaire)
+  "limb-salvage"      → sauvetage de membre (CLTI, ischémie aiguë)
+  "stroke-TIA"        → AVC/AIT (carotide, aortique)
+  "reintervention"    → liberté de réintervention
+  "composite-MALE"    → composite d'événements membres (MALE) ou cardiovasculaires (MACE)
+  "technical-success" → succès technique ou anatomique
+  "quality-of-life"   → qualité de vie, symptômes fonctionnels
+  "other"             → autre endpoint
+  null                → non applicable (guideline, éditorial)
+
+"primary_endpoint_met" — true si l'endpoint primaire est atteint, false si non atteint, \
+null si non déterminable depuis le résumé. \
+ATTENTION : un essai négatif (false) peut être aussi important qu'un essai positif.
+
+"vascular_domain" — domaine vasculaire concerné :
+  "aorte-abdominale"           → AAA, EVAR, chirurgie ouverte aorte sous-rénale
+  "aorte-thoracique"           → TEVAR, dissection, anévrisme thoracique isolé
+  "aorte-thoraco-abdominale"   → FEVAR, BEVAR, Crawford type I-IV
+  "carotide-TSA"               → sténose carotide (CEA, CAS, TCAR), artères sous-clavières
+  "AOMI-femoro-poplite"        → artère fémorale superficielle et poplitée, TASC A-D
+  "AOMI-sous-poplite"          → artères de jambe, ischémie chronique menaçante (CLTI)
+  "ischemie-aigue-membre"      → thrombose aiguë, embolie, thrombectomie chirurgicale
+  "veineux-TVP-EP"             → thrombose veineuse profonde, embolie pulmonaire
+  "veineux-varices"            → insuffisance veineuse chronique, ablation (EVLA/RFA/MOCA)
+  "acces-vasculaire-dialyse"   → fistule artério-veineuse, prothèse dialyse, cathéter tunnelisé
+  "renovasculaire"             → sténose artère rénale, ischémie mésentérique
+  "traumatique"                → plaies vasculaires, damage control vascular
+  "multi-domaine"              → article couvrant plusieurs territoires
+  "non-vasculaire"             → si l'article ne porte pas sur la chirurgie vasculaire
+
+"intervention_type" — type d'intervention principale :
+  Endovasculaire : "EVAR"|"TEVAR"|"FEVAR-BEVAR"|"CAS"|"TCAR"|"PTA-stent"|"DCB"|
+                   "atherectomie"|"thrombectomie-mecanique"|"thrombolyse-CDT"|
+                   "ablation-thermique"|"ablation-non-thermique"
+  Chirurgical    : "pontage"|"endarterectomie"|"reparation-ouverte"|"hybride"
+  Pharmacologique: "anticoagulation"|"antiplatelet"|"traitement-medical"
+  Autre          : "strategie-diagnostique"|"surveillance"|"multi-modalite"|"autre"
+
+"comparator_type" — comparateur de l'étude :
+  "vs-chirurgie-ouverte"|"vs-endovasculaire-autre"|"vs-traitement-medical"|
+  "vs-placebo"|"vs-standard-of-care"|"aucun"|null
+
+"clinical_maturity" — maturité clinique de la preuve (champ le plus important) :
+  "exploratory"      → phase 1-2, n<100, génère une hypothèse — ne change pas la pratique
+  "preliminary"      → signal prometteur mais insuffisant, attendre confirmation
+  "pivotal"          → RCT phase 3 bien conduit, endpoint dur, multicentrique, grande taille — \
+va nourrir la prochaine révision des guidelines (ESVS, ESC, HAS) dans 1-5 ans
+  "confirmatory"     → méta-analyse ou registre confirmant ce qui est déjà établi — \
+utile mais pas nouvelle information pour un praticien averti
+  "practice-defining"→ mise à jour guideline avec grade IA ou IB — change le standard de soins maintenant
+  "regulatory-event" → CE mark, AMM, remboursement HAS/CNAM — peut être utilisé ou prescrit légalement
+
+"actionability_horizon" — horizon d'applicabilité pratique :
+  "immediate"    → change le standard of care aujourd'hui (guideline grade IA, regulatory-event)
+  "1-3y"         → résultat pivot qui alimentera la prochaine révision ESVS/ESC (cycle 4-6 ans)
+  "3-5y"         → résultats préliminaires, confirmation nécessaire avant toute recommandation
+  "exploratory"  → ne changera pas la pratique sans plusieurs études supplémentaires de grande envergure
+
+"regulatory_milestone" — jalon réglementaire si applicable :
+  null|"CE_mark"|"AMM_europe"|"FDA_approval"|"remboursement_HAS"|"CNAM_accord"|
+  "guideline_update"|"autorisation_temporaire"
+
+"guideline_body" — organisme émetteur du guideline :
+  null|"ESVS"|"ESC"|"HAS"|"AHA-ACC"|"SFCV"|"SFMV"|"autre"
+
+"guideline_grade" — grade de recommandation si précisé dans l'article :
+  null|"IA"|"IB"|"IIaA"|"IIaB"|"IIbA"|"IIbB"|"III"
+
+"paradigm_shift" — VRAI uniquement si le résultat contredit un guideline établi.
+Standards actuels de référence pour détecter un paradigm shift en chirurgie vasculaire :
+  • AAA : EVAR first-line si anatomie favorable (collet ≥15mm, angle <60°) — ESVS 2019/2024
+  • CLTI : endovasculaire first-line si lésions simples (GVG-GLASS grade 1-2) ; \
+bypass si complexe (grade 3+) ou anatomie défavorable — BEST-CLI/BASIL-2 2023
+  • Carotide symptomatique : CEA first-line si sténose >50% NASCET, délai <2 semaines — ESVS 2023
+  • Carotide asymptomatique : bénéfice intervention incertain sous traitement médical optimal — ACST-2
+  • AOMI femoro-poplitée : DCB supérieur PTA seul pour lésions <25cm — guideline ESVS 2023
+  • TVP ilio-fémorale : DOAC first-line ; CDT seulement si massive + faible risque hémorragique
+  → Un RCT qui invalide l'un de ces standards = paradigm_shift:true
+
+"negative_result" — true si l'endpoint primaire N'EST PAS atteint (important à signaler \
+même si les auteurs minimisent). Ne mets pas false par défaut sans vérifier.
+
+"safety_signal" — true si l'article identifie un nouveau risque de sécurité inattendu \
+(signal pharmacovigilance, complication grave sous-estimée, device failure). \
+Ce champ doit toujours être surfacé quel que soit le score.
+
+Règles de cohérence evidence_json :
+- study_design="editorial"|"review" → clinical_maturity="exploratory", actionability_horizon="exploratory"
+- study_design="guideline" → clinical_maturity="practice-defining", actionability_horizon="immediate"
+- study_design="regulatory-decision" → clinical_maturity="regulatory-event", actionability_horizon="immediate"
+- phase="1"|"2" → clinical_maturity="exploratory"|"preliminary" au maximum
+- n_patients<50 → clinical_maturity ne peut pas être "pivotal"
+- paradigm_shift=true → score_density doit être ≥8 (surpasse le score calculé)
+- safety_signal=true → score_density doit être ≥8
 
 Ta mission :
 
@@ -606,21 +732,62 @@ sans explication autour.
 # Prompt utilisateur
 # ---------------------------------------------------------------------------
 
+# Sources pour lesquelles on extrait evidence_json (source_type=innovation)
+_INNOVATION_SOURCES: frozenset[str] = frozenset({
+    "jama", "jama_cardiology", "jama_dermatology", "jama_internal_med",
+    "jama_neurology", "jama_oncology", "jama_ophthalmology",
+    "jama_otolaryngology", "jama_pediatrics", "jama_psychiatry",
+    "jama_surgery", "jama_network_open",
+    "nejm", "lancet", "bmj", "nature_medicine",
+    "clinical_chemistry", "ptj_kine", "bjog", "cpt_pharmacol",
+    "jdr_dental", "jan_nursing",
+    # PubMed sources
+    "pubmed_jvs", "pubmed_ejves", "pubmed_jet", "pubmed_ann_vasc_surg",
+    # EMA nouvelles AMM
+    "ema_new_medicines",
+})
+
+
 def _build_user_prompt(
     title: str,
     content: str | None,
     date_pub: str,
     source_hint: str | None = None,
+    is_innovation: bool = False,
 ) -> str:
     """
-    source_hint : indication sur la provenance (ex: "ANSM alerte sécurité",
-    "HAS recommandation", "JORF décret") pour aider Claude à contextualiser.
+    source_hint   : indication sur la provenance pour contextualiser Claude.
+    is_innovation : True → ajoute le bloc evidence_json dans le template JSON.
     """
     source_line = f"\nSOURCE : {source_hint}" if source_hint else ""
     content_section = ""
     if content and len(content.strip()) > 50:
         excerpt = content.strip()[:3000]
         content_section = f"\n\nEXTRAIT :\n{excerpt}"
+
+    evidence_block = ""
+    if is_innovation:
+        evidence_block = """,
+  "evidence_json": {{
+    "study_design": "<RCT|meta-analysis|registry|prospective-cohort|retrospective-cohort|case-series|guideline|regulatory-decision|technique-paper|review|editorial>",
+    "phase": <"1"|"2"|"3"|"4"|null>,
+    "n_patients": <int|null>,
+    "multicentre": <true|false|null>,
+    "follow_up_months": <int|null>,
+    "primary_endpoint": "<mortality|patency|limb-salvage|stroke-TIA|reintervention|composite-MALE|technical-success|quality-of-life|other|null>",
+    "primary_endpoint_met": <true|false|null>,
+    "vascular_domain": "<aorte-abdominale|aorte-thoracique|aorte-thoraco-abdominale|carotide-TSA|AOMI-femoro-poplite|AOMI-sous-poplite|ischemie-aigue-membre|veineux-TVP-EP|veineux-varices|acces-vasculaire-dialyse|renovasculaire|traumatique|multi-domaine|non-vasculaire>",
+    "intervention_type": "<EVAR|TEVAR|FEVAR-BEVAR|CAS|TCAR|PTA-stent|DCB|atherectomie|thrombectomie-mecanique|thrombolyse-CDT|ablation-thermique|ablation-non-thermique|pontage|endarterectomie|reparation-ouverte|hybride|anticoagulation|antiplatelet|traitement-medical|strategie-diagnostique|surveillance|multi-modalite|autre>",
+    "comparator_type": "<vs-chirurgie-ouverte|vs-endovasculaire-autre|vs-traitement-medical|vs-placebo|vs-standard-of-care|aucun|null>",
+    "clinical_maturity": "<exploratory|preliminary|pivotal|confirmatory|practice-defining|regulatory-event>",
+    "actionability_horizon": "<immediate|1-3y|3-5y|exploratory>",
+    "regulatory_milestone": <"CE_mark"|"AMM_europe"|"FDA_approval"|"remboursement_HAS"|"CNAM_accord"|"guideline_update"|"autorisation_temporaire"|null>,
+    "guideline_body": <"ESVS"|"ESC"|"HAS"|"AHA-ACC"|"SFCV"|"SFMV"|"autre"|null>,
+    "guideline_grade": <"IA"|"IB"|"IIaA"|"IIaB"|"IIbA"|"IIbB"|"III"|null>,
+    "paradigm_shift": <bool>,
+    "negative_result": <bool>,
+    "safety_signal": <bool>
+  }}"""
 
     return f"""\
 Analyse ce texte et retourne UNIQUEMENT le JSON demandé.
@@ -650,7 +817,7 @@ JSON attendu (strict, pas de markdown) :
     "points_cles": ["<bullet 1>", "..."],
     "texte_long": "<~150 mots>",
     "references": ["<NOR, ref légale, numéro AMM...>"]
-  }}
+  }}{evidence_block}
 }}
 """
 
@@ -760,6 +927,11 @@ SOURCE_HINTS: dict[str, str] = {
     "cpt_pharmacol":      "Clinical Pharmacology & Therapeutics (ASCPT) — Article de recherche en pharmacologie clinique (pharmacocinétique, interactions, nouvelles molécules)",
     "jdr_dental":         "Journal of Dental Research (IADR) — Essai clinique ou étude en chirurgie dentaire, parodontologie, implantologie, orthodontie",
     "jan_nursing":        "Journal of Advanced Nursing (JAN) — Essai clinique ou étude en sciences infirmières et pratiques de soins",
+    # ── PubMed — chirurgie vasculaire ────────────────────────────────────────
+    "pubmed_jvs":           "Journal of Vascular Surgery (JVS) — Essai clinique, registre ou méta-analyse en chirurgie vasculaire ouverte et endovasculaire (AAA, AOMI, carotide, CLTI)",
+    "pubmed_ejves":         "European Journal of Vascular and Endovascular Surgery (EJVES/ESVS) — Guidelines ESVS et essais cliniques en chirurgie vasculaire européenne",
+    "pubmed_jet":           "Journal of Endovascular Therapy (JET) — Techniques endovasculaires : EVAR, TEVAR, FEVAR, drug-coated balloons, stenting carotide (CAS/TCAR)",
+    "pubmed_ann_vasc_surg": "Annals of Vascular Surgery — Chirurgie vasculaire francophone : techniques opératoires, résultats, complications",
 }
 
 # ---------------------------------------------------------------------------
@@ -775,7 +947,8 @@ async def call_claude_async(
 ) -> dict[str, Any]:
     """Appel Anthropic async avec retry exponentiel sur 429/timeout."""
     source_hint = SOURCE_HINTS.get(source or "", None)
-    user_prompt = _build_user_prompt(title, content, date_pub, source_hint)
+    is_innovation = (source or "") in _INNOVATION_SOURCES
+    user_prompt = _build_user_prompt(title, content, date_pub, source_hint, is_innovation=is_innovation)
     client = _get_anthropic_client()
 
     last_error: Exception | None = None
@@ -978,6 +1151,12 @@ SOURCE_CONFIG: dict[str, dict] = {
     **{src: {"require_whitelist": False, "min_llm_score": 6} for src in [
         "clinical_chemistry", "ptj_kine", "bjog",
         "cpt_pharmacol", "jdr_dental", "jan_nursing",
+    ]},
+    # ── Sources PubMed — chirurgie vasculaire ─────────────────────────────
+    # JVS/EJVES : volume ~200-300/an, ratio signal/bruit moyen → seuil 5
+    # (evidence_json dérivera le vrai score depuis clinical_maturity×actionability_horizon)
+    **{src: {"require_whitelist": False, "min_llm_score": 5} for src in [
+        "pubmed_jvs", "pubmed_ejves", "pubmed_jet", "pubmed_ann_vasc_surg",
     ]},
     # ── EMA — section Innovation ───────────────────────────────────────────
     # ema_new_medicines : ~200 AMM/an dont ~150 génériques/biosimilaires → bruit.
@@ -1351,6 +1530,157 @@ def _extract_json_block(text: str) -> str:
     raise ValueError("JSON non fermé")
 
 
+# ---------------------------------------------------------------------------
+# Evidence JSON — valeurs valides
+# ---------------------------------------------------------------------------
+
+_VALID_STUDY_DESIGN = {
+    "RCT", "meta-analysis", "registry", "prospective-cohort",
+    "retrospective-cohort", "case-series", "guideline",
+    "regulatory-decision", "technique-paper", "review", "editorial",
+}
+_VALID_PRIMARY_ENDPOINT = {
+    "mortality", "patency", "limb-salvage", "stroke-TIA",
+    "reintervention", "composite-MALE", "technical-success",
+    "quality-of-life", "other",
+}
+_VALID_VASCULAR_DOMAIN = {
+    "aorte-abdominale", "aorte-thoracique", "aorte-thoraco-abdominale",
+    "carotide-TSA", "AOMI-femoro-poplite", "AOMI-sous-poplite",
+    "ischemie-aigue-membre", "veineux-TVP-EP", "veineux-varices",
+    "acces-vasculaire-dialyse", "renovasculaire", "traumatique",
+    "multi-domaine", "non-vasculaire",
+}
+_VALID_INTERVENTION_TYPE = {
+    "EVAR", "TEVAR", "FEVAR-BEVAR", "CAS", "TCAR", "PTA-stent", "DCB",
+    "atherectomie", "thrombectomie-mecanique", "thrombolyse-CDT",
+    "ablation-thermique", "ablation-non-thermique",
+    "pontage", "endarterectomie", "reparation-ouverte", "hybride",
+    "anticoagulation", "antiplatelet", "traitement-medical",
+    "strategie-diagnostique", "surveillance", "multi-modalite", "autre",
+}
+_VALID_COMPARATOR = {
+    "vs-chirurgie-ouverte", "vs-endovasculaire-autre", "vs-traitement-medical",
+    "vs-placebo", "vs-standard-of-care", "aucun",
+}
+_VALID_CLINICAL_MATURITY = {
+    "exploratory", "preliminary", "pivotal", "confirmatory",
+    "practice-defining", "regulatory-event",
+}
+_VALID_ACTIONABILITY = {"immediate", "1-3y", "3-5y", "exploratory"}
+_VALID_REGULATORY_MILESTONE = {
+    "CE_mark", "AMM_europe", "FDA_approval", "remboursement_HAS",
+    "CNAM_accord", "guideline_update", "autorisation_temporaire",
+}
+_VALID_GUIDELINE_BODY = {"ESVS", "ESC", "HAS", "AHA-ACC", "SFCV", "SFMV", "autre"}
+_VALID_GUIDELINE_GRADE = {"IA", "IB", "IIaA", "IIaB", "IIbA", "IIbB", "III"}
+
+# Matrice clinical_maturity × actionability_horizon → score de base
+# Remplace le score LLM pour les sources innovation (plus fiable)
+_MATURITY_SCORE: dict[tuple[str, str], int] = {
+    ("practice-defining",  "immediate"):   9,
+    ("regulatory-event",   "immediate"):   9,
+    ("pivotal",            "immediate"):   8,   # rare : RCT adopté immédiatement
+    ("practice-defining",  "1-3y"):        7,
+    ("pivotal",            "1-3y"):        6,
+    ("confirmatory",       "immediate"):   5,
+    ("pivotal",            "3-5y"):        5,
+    ("confirmatory",       "1-3y"):        4,
+    ("preliminary",        "1-3y"):        4,
+    ("preliminary",        "3-5y"):        3,
+    ("confirmatory",       "3-5y"):        3,
+    ("exploratory",        "immediate"):   4,
+    ("exploratory",        "1-3y"):        3,
+    ("exploratory",        "3-5y"):        2,
+    ("exploratory",        "exploratory"): 2,
+    ("preliminary",        "exploratory"): 2,
+    ("confirmatory",       "exploratory"): 3,
+}
+
+
+def _derive_evidence_score(ev: dict) -> int | None:
+    """
+    Calcule un score_density fiable depuis evidence_json.
+    Retourne None si les champs nécessaires sont absents.
+    safety_signal et paradigm_shift forcent le score à 8 minimum.
+    """
+    maturity = ev.get("clinical_maturity")
+    horizon  = ev.get("actionability_horizon")
+    if not maturity or not horizon:
+        return None
+
+    score = _MATURITY_SCORE.get((maturity, horizon))
+    if score is None:
+        # Fallback : maturity seule
+        _maturity_base = {
+            "practice-defining": 8, "regulatory-event": 8,
+            "pivotal": 6, "confirmatory": 4,
+            "preliminary": 3, "exploratory": 2,
+        }
+        score = _maturity_base.get(maturity, 4)
+
+    # Signaux critiques — toujours ≥ 8
+    if ev.get("paradigm_shift") or ev.get("safety_signal"):
+        score = max(score, 8)
+
+    # Résultat négatif important → maintenir score si pivotal, sinon +1
+    if ev.get("negative_result") and maturity == "pivotal":
+        score = max(score, 6)
+
+    return max(1, min(10, score))
+
+
+def _validate_evidence_json(raw: Any) -> dict:
+    """Valide et nettoie evidence_json. Retourne {} si invalide."""
+    if not isinstance(raw, dict):
+        return {}
+    ev: dict = {}
+
+    # Champs enum
+    sd = raw.get("study_design")
+    if sd in _VALID_STUDY_DESIGN:
+        ev["study_design"] = sd
+
+    for field, valid_set in [
+        ("primary_endpoint", _VALID_PRIMARY_ENDPOINT),
+        ("vascular_domain", _VALID_VASCULAR_DOMAIN),
+        ("intervention_type", _VALID_INTERVENTION_TYPE),
+        ("comparator_type", _VALID_COMPARATOR),
+        ("clinical_maturity", _VALID_CLINICAL_MATURITY),
+        ("actionability_horizon", _VALID_ACTIONABILITY),
+        ("guideline_body", _VALID_GUIDELINE_BODY),
+        ("guideline_grade", _VALID_GUIDELINE_GRADE),
+    ]:
+        val = raw.get(field)
+        if val in valid_set:
+            ev[field] = val
+        elif val is not None and val != "null":
+            ev[field] = None  # valeur invalide → null explicite
+
+    rm = raw.get("regulatory_milestone")
+    ev["regulatory_milestone"] = rm if rm in _VALID_REGULATORY_MILESTONE else None
+
+    # Champs numériques
+    for field in ("n_patients", "follow_up_months"):
+        val = raw.get(field)
+        if isinstance(val, (int, float)) and val > 0:
+            ev[field] = int(val)
+        else:
+            ev[field] = None
+
+    # Phase
+    phase = raw.get("phase")
+    ev["phase"] = str(phase) if str(phase) in {"1", "2", "3", "4"} else None
+
+    # Booléens
+    for field in ("multicentre", "primary_endpoint_met",
+                  "paradigm_shift", "negative_result", "safety_signal"):
+        val = raw.get(field)
+        ev[field] = bool(val) if isinstance(val, bool) else None
+
+    return ev
+
+
 def _parse_llm_output(raw: str) -> dict[str, Any]:
     cleaned = re.sub(r"```(?:json)?", "", raw).strip()
     json_str = _extract_json_block(cleaned)
@@ -1413,6 +1743,18 @@ def _parse_llm_output(raw: str) -> dict[str, Any]:
         data["tri_json"] = {}
     if not isinstance(data.get("lecture_json"), dict):
         data["lecture_json"] = {}
+
+    # evidence_json — présent uniquement pour les sources innovation
+    raw_ev = data.get("evidence_json")
+    if raw_ev is not None:
+        ev = _validate_evidence_json(raw_ev)
+        data["evidence_json"] = ev if ev else None
+        # Dériver le score depuis la matrice maturity×horizon — plus fiable que le LLM
+        derived = _derive_evidence_score(ev) if ev else None
+        if derived is not None:
+            data["score_density"] = derived
+    else:
+        data["evidence_json"] = None
 
     return data
 
