@@ -756,8 +756,7 @@ function mobileNavClick(section) {
 
   if (section === 'specialite') {
     closeDrawer();
-    const el = document.getElementById('sidebar-item-mine');
-    if (el) el.click();
+    selectMySpec(null);
   } else if (section === 'transversal') {
     // Chargement direct des articles transversaux, sans drawer
     closeDrawer();
@@ -1597,10 +1596,15 @@ async function resetAndLoad() {
   document.getElementById('loading').style.display = '';
   document.getElementById('content').style.display = 'none';
 
-  await loadArticles(1);
-
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('content').style.display = 'block';
+  try {
+    await loadArticles(1);
+  } catch (e) {
+    const container = document.getElementById('articles-container');
+    container.innerHTML = `<div class="empty" style="color:var(--red);">Erreur de chargement : ${e.message}<br>Rechargez la page.</div>`;
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  }
 }
 
 // ── Data loading ──────────────────────────────────────────────
@@ -1621,7 +1625,9 @@ async function loadProfile() {
 async function loadSpecialties() {
   try {
     const res = await _fetchWithTimeout(`${API}/specialties`);
+    if (!res.ok) return;
     allSpecialties = await res.json();
+    if (!Array.isArray(allSpecialties)) allSpecialties = [];
   } catch {}
 }
 
