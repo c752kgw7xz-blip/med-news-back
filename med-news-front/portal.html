@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" async></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [data-theme="light"] {
@@ -930,18 +930,24 @@ function getCsrfToken() {
   return m ? decodeURIComponent(m[1]) : '';
 }
 
+function _fetchWithTimeout(url, opts = {}, ms = 15000) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...opts, signal: ctrl.signal }).finally(() => clearTimeout(id));
+}
+
 async function authFetch(url, opts = {}) {
   if (DEMO_MODE) return null; // jamais d'appel API en démo
   const token = getToken();
   if (!token) { window.location.href = '/login'; return; }
   opts.headers = { ...opts.headers, 'Authorization': `Bearer ${token}` };
   opts.credentials = 'include';
-  let res = await fetch(url, opts);
+  let res = await _fetchWithTimeout(url, opts);
   if (res.status === 401) {
     const refreshed = await tryRefresh();
     if (refreshed) {
       opts.headers['Authorization'] = `Bearer ${getToken()}`;
-      res = await fetch(url, opts);
+      res = await _fetchWithTimeout(url, opts);
     } else {
       sessionStorage.removeItem('access_token');
       window.location.href = '/login';
@@ -954,7 +960,7 @@ async function authFetch(url, opts = {}) {
 async function tryRefresh() {
   try {
     const csrf = getCsrfToken();
-    const res = await fetch(`${API}/auth/refresh`, {
+    const res = await _fetchWithTimeout(`${API}/auth/refresh`, {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
     });
@@ -1614,7 +1620,7 @@ async function loadProfile() {
 
 async function loadSpecialties() {
   try {
-    const res = await fetch(`${API}/specialties`);
+    const res = await _fetchWithTimeout(`${API}/specialties`);
     allSpecialties = await res.json();
   } catch {}
 }

@@ -746,6 +746,43 @@ def stop_scheduler() -> None:
         logger.info("Scheduler arrêté")
 
 
+def _startup_catchup() -> None:
+    """Rattrapage au démarrage : si le service Render a dormi et raté un job
+    APScheduler, on détecte l'absence de candidats pour la période en cours
+    et on lance la collecte immédiatement."""
+    today = date.today()
+    month_start = today.replace(day=1)
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            # Vérifier si des candidats existent pour le mois en cours
+            cur.execute(
+                "SELECT COUNT(*) FROM candidates WHERE created_at >= %s;",
+                (month_start,),
+            )
+            month_candidates = cur.fetchone()[0]
+
+    if month_candidates == 0:
+        logger.warning(
+            "RATTRAPAGE : 0 candidats collectés depuis %s — "
+            "lancement immédiat de la collecte réglementation + recommandations",
+            month_start.isoformat(),
+        )
+        try:
+            job_collect_regulation()
+        except Exception as e:
+            logger.error("Rattrapage collecte réglementation échoué : %s", e)
+        try:
+            job_collect_recommendations()
+        except Exception as e:
+            logger.error("Rattrapage collecte recommandations échoué : %s", e)
+    else:
+        logger.info(
+            "Rattrapage : %d candidats déjà collectés ce mois-ci — rien à faire",
+            month_candidates,
+        )
+
+
 @asynccontextmanager
 async def lifespan(app: Any):
     # Auto-apply pending SQL migrations on startup
@@ -762,6 +799,11 @@ async def lifespan(app: Any):
     enabled = os.environ.get("SCHEDULER_ENABLED", "false").lower() == "true"
     if enabled:
         start_scheduler()
+        # Rattrapage des collectes manquées (Render free tier dort et rate les crons)
+        # Lancé dans un thread pour ne PAS bloquer le lifespan (yield doit arriver vite
+        # sinon FastAPI ne sert aucune requête).
+        import threading
+        threading.Thread(target=_startup_catchup, daemon=True, name="startup-catchup").start()
     else:
         logger.info("Scheduler désactivé (SCHEDULER_ENABLED=false)")
     yield

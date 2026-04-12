@@ -48,6 +48,19 @@ app = FastAPI(lifespan=lifespan)
 
 _IFRAME_ALLOWED_PATHS = {"/newsletter-demo", "/portal-demo"}
 
+# CSP commune : autorise Google Fonts + Lucide CDN (utilisés par toutes les pages front)
+_CSP_SCRIPT = "script-src 'self' 'unsafe-inline' https://unpkg.com"
+_CSP_STYLE  = "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com"
+_CSP_FONT   = "font-src 'self' data: https://fonts.gstatic.com"
+_CSP_COMMON = (
+    f"default-src 'self'; "
+    f"{_CSP_SCRIPT}; "
+    f"{_CSP_STYLE}; "
+    "img-src 'self' data: https:; "
+    f"{_CSP_FONT}; "
+    "connect-src 'self'"
+)
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: StarletteRequest, call_next):
         response = await call_next(request)
@@ -57,26 +70,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         if request.url.path in _IFRAME_ALLOWED_PATHS:
-            # Allow these pages to be embedded in iframes from the same origin
             response.headers["Content-Security-Policy"] = (
-                "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; "
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-                "img-src 'self' data: https:; "
-                "font-src 'self' data: https://fonts.gstatic.com; "
-                "connect-src 'self'; "
-                "frame-ancestors 'self';"
+                f"{_CSP_COMMON}; frame-ancestors 'self';"
             )
         else:
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["Content-Security-Policy"] = (
-                "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline'; "
-                "style-src 'self' 'unsafe-inline'; "
-                "img-src 'self' data: https:; "
-                "font-src 'self' data:; "
-                "connect-src 'self'; "
-                "frame-ancestors 'none';"
+                f"{_CSP_COMMON}; frame-ancestors 'none';"
             )
         return response
 
