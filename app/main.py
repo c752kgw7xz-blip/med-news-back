@@ -158,6 +158,10 @@ def serve_archives():
 def serve_users():
     return FileResponse(os.path.join(_FRONT_DIR, "users.html"), media_type="text/html", headers=_NO_CACHE)
 
+@app.get("/newsletter")
+def serve_newsletter_admin():
+    return FileResponse(os.path.join(_FRONT_DIR, "newsletter.html"), media_type="text/html", headers=_NO_CACHE)
+
 @app.get("/settings")
 def serve_settings():
     return FileResponse(os.path.join(_FRONT_DIR, "settings.html"), media_type="text/html", headers=_NO_CACHE)

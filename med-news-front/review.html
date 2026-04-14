@@ -49,34 +49,6 @@
     }
   }
 
-  [data-theme="light"] {
-    --bg: #f9fafb;
-    --surface: #ffffff;
-    --surface2: #f3f4f6;
-    --border: #e5e7eb;
-    --border-strong: #d1d5db;
-    --text: #111827;
-    --text2: #6b7280;
-    --text3: #9ca3af;
-    --green-dark: #d1fae5;
-    --red-dark: #fee2e2;
-    --amber-dark: #fef3c7;
-  }
-
-  [data-theme="dark"] {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --surface2: #0f172a;
-    --border: #1e293b;
-    --border-strong: #334155;
-    --text: #f1f5f9;
-    --text2: #94a3b8;
-    --text3: #64748b;
-    --green-dark: #064e3b;
-    --red-dark: #450a0a;
-    --amber-dark: #451a03;
-  }
-
   body {
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg);
@@ -86,115 +58,57 @@
     overflow-x: hidden;
   }
 
-  /* ── Header ──────────────────────────────── */
+  /* ── Header ── */
   header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    height: 48px;
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 24px; height: 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
   }
 
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
 
   .header-logo {
     font-family: 'Instrument Serif', Georgia, serif;
-    font-size: 1.25rem;
-    font-weight: 400;
-    color: var(--text);
-    letter-spacing: -0.2px;
-    line-height: 1;
+    font-size: 1.25rem; font-weight: 400; color: var(--text);
+    letter-spacing: -0.2px; line-height: 1;
   }
-
   .header-logo em { font-style: italic; }
 
   .header-sep {
-    color: var(--border-strong);
-    font-weight: 300;
-    font-size: 1rem;
-    line-height: 1;
-    user-select: none;
+    color: var(--border-strong); font-weight: 300;
+    font-size: 1rem; line-height: 1; user-select: none;
   }
 
   .header-admin-chip {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    color: var(--text3);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 2px 8px;
-    border-radius: 100px;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
+    font-size: 0.6875rem; font-weight: 600; color: var(--text3);
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 2px 8px; border-radius: 100px;
+    letter-spacing: 0.3px; text-transform: uppercase;
   }
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+  .header-right { display: flex; align-items: center; gap: 4px; }
 
   .header-nav-link {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--text2);
-    text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 5px;
+    font-size: 0.8125rem; font-weight: 500; color: var(--text2);
+    text-decoration: none; padding: 5px 10px; border-radius: 5px;
     transition: background 0.12s, color 0.12s;
   }
+  .header-nav-link:hover { background: var(--surface2); color: var(--text); }
+  .header-nav-link.active { color: var(--text); background: var(--surface2); }
 
-  .header-nav-link:hover {
-    background: var(--surface2);
-    color: var(--text);
-  }
+  .header-divider { width: 1px; height: 18px; background: var(--border); margin: 0 6px; }
 
-  .header-nav-link.active {
-    color: var(--text);
-    background: var(--surface2);
-  }
-
-  .header-divider {
-    width: 1px;
-    height: 18px;
-    background: var(--border);
-    margin: 0 6px;
-  }
-
-  .header-email {
-    font-size: 0.75rem;
-    color: var(--text3);
-    padding: 0 6px;
-  }
+  .header-email { font-size: 0.75rem; color: var(--text3); padding: 0 6px; }
 
   .btn-logout {
-    padding: 4px 12px;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text2);
-    border-radius: 5px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.12s, border-color 0.12s, color 0.12s;
-    height: 30px;
+    padding: 4px 12px; background: transparent;
+    border: 1px solid var(--border); color: var(--text2);
+    border-radius: 5px; font-size: 0.8125rem; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.12s, border-color 0.12s, color 0.12s; height: 30px;
   }
-
-  .btn-logout:hover {
-    background: var(--surface2);
-    border-color: var(--border-strong);
-    color: var(--text);
-  }
+  .btn-logout:hover { background: var(--surface2); border-color: var(--border-strong); color: var(--text); }
 
   /* ── App layout ───────────────────────────── */
   .app-wrapper {
@@ -226,85 +140,6 @@
     max-width: 200px;
   }
   .spec-select:focus { border-color: var(--border-strong); }
-
-  /* ── Newsletter strip ─────────────────────── */
-  .nl-strip {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 8px 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .nl-strip-label {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text3);
-    white-space: nowrap;
-  }
-
-  .nl-strip select,
-  .nl-strip input[type="email"] {
-    padding: 5px 8px;
-    border-radius: 5px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    font-size: 0.8125rem;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.12s;
-  }
-
-  .nl-strip select { width: 180px; }
-  .nl-strip input[type="email"] { width: 200px; }
-
-  .nl-strip select:focus,
-  .nl-strip input[type="email"]:focus { border-color: var(--green); }
-
-  .nl-strip input[type="email"]::placeholder { color: var(--text3); }
-
-  .btn-nl {
-    padding: 5px 12px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text2);
-    border-radius: 5px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.12s, border-color 0.12s, color 0.12s;
-    white-space: nowrap;
-  }
-
-  .btn-nl:hover {
-    background: var(--surface2);
-    border-color: var(--border-strong);
-    color: var(--text);
-  }
-
-  .btn-nl.primary {
-    background: var(--green);
-    border-color: var(--green);
-    color: #fff;
-  }
-
-  .btn-nl.primary:hover { opacity: 0.85; }
-
-  .newsletter-result {
-    font-size: 0.75rem;
-    color: var(--text2);
-    padding: 4px 8px;
-    background: var(--surface2);
-    border-radius: 5px;
-    display: none;
-    line-height: 1.4;
-  }
 
   /* ── Status tab bar ───────────────────────── */
   .status-tab-bar {
@@ -428,7 +263,7 @@
   .article-card[data-status="REJECTED"] { --card-opacity: 0.45; }
 
   .article-card:hover { background: #fafafa; z-index: 1; }
-  [data-theme="dark"] .article-card:hover { background: #243044; }
+  @media (prefers-color-scheme: dark) { .article-card:hover { background: #243044; } }
 
   .article-card.prio-high { border-left-color: var(--red); }
   .article-card.prio-mid  { border-left-color: var(--amber); }
@@ -767,57 +602,9 @@
   .toast.success { background: var(--green); }
   .toast.error   { background: var(--red); }
 
-  /* ── Preview modal ────────────────────────── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 200;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-  }
-
-  .modal-overlay.active { display: flex; }
-
-  .modal-content {
-    background: var(--surface);
-    border-radius: 10px;
-    max-width: 700px;
-    width: 100%;
-    max-height: 90vh;
-    overflow: auto;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-  }
-
-  .modal-close {
-    position: sticky;
-    top: 0;
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px 14px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .modal-close button {
-    padding: 5px 14px;
-    background: var(--text2);
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.8125rem;
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  .modal-body { padding: 0; }
-  .modal-body iframe { width: 100%; height: 70vh; border: none; }
 
   /* ── Responsive ───────────────────────────── */
   @media (max-width: 768px) {
-    .sidebar { display: none; }
     .detail-grid { grid-template-columns: 1fr; }
     header { padding: 0 14px; }
     .header-email { display: none; }
@@ -846,6 +633,7 @@
     <div class="header-right">
       <a href="/review" class="header-nav-link active">Review</a>
       <a href="/users" class="header-nav-link">Comptes</a>
+      <a href="/newsletter" class="header-nav-link">Newsletter</a>
       <div class="header-divider"></div>
       <span class="header-email" id="user-email"></span>
       <button class="btn-logout" onclick="logout()">D&#233;connexion</button>
@@ -876,18 +664,6 @@
         <span id="count-all" style="display:none"></span>
       </div>
 
-      <!-- Newsletter strip -->
-      <div class="nl-strip">
-        <span class="nl-strip-label">Newsletter</span>
-        <select id="nl-specialty">
-          <option value="">Toutes spécialités</option>
-        </select>
-        <input type="email" id="nl-test-email" placeholder="Email test">
-        <button class="btn-nl" onclick="previewNewsletter()">Aperçu HTML</button>
-        <button class="btn-nl primary" onclick="sendTestNewsletter()">Envoyer test</button>
-        <div class="newsletter-result" id="nl-result"></div>
-      </div>
-
       <!-- Layout -->
       <div class="layout">
 
@@ -905,14 +681,6 @@
       </div>
     </div><!-- main-content -->
   </div><!-- app-wrapper -->
-
-  <!-- Newsletter preview modal -->
-  <div class="modal-overlay" id="preview-modal">
-    <div class="modal-content">
-      <div class="modal-close"><button onclick="closePreview()">Fermer</button></div>
-      <div class="modal-body"><iframe id="preview-iframe"></iframe></div>
-    </div>
-  </div>
 
 <script>
 const API = window.location.origin;
@@ -1266,51 +1034,6 @@ async function reviewItem(itemId, decision, btn) {
   }
 }
 
-// ── Newsletter ────────────────────────────────────────────────
-async function previewNewsletter() {
-  const spec = document.getElementById('nl-specialty').value;
-  const url = `${API}/admin/llm/newsletter/preview${spec ? '?specialty=' + encodeURIComponent(spec) : ''}`;
-  const res = await authFetch(url, { method: 'POST' });
-  if (!res) return;
-  const data = await res.json();
-  if (data.ok) {
-    const iframe = document.getElementById('preview-iframe');
-    iframe.srcdoc = data.html;
-    document.getElementById('preview-modal').classList.add('active');
-    const result = document.getElementById('nl-result');
-    result.textContent = `Aper\u00e7u g\u00e9n\u00e9r\u00e9 : ${data.article_count} article(s) \u2014 "${data.subject}"`;
-    result.style.display = 'block';
-  } else {
-    toast('Erreur g\u00e9n\u00e9ration aper\u00e7u', 'error');
-  }
-}
-
-function closePreview() {
-  document.getElementById('preview-modal').classList.remove('active');
-  document.getElementById('preview-iframe').srcdoc = '';
-}
-
-async function sendTestNewsletter() {
-  const spec = document.getElementById('nl-specialty').value;
-  const email = document.getElementById('nl-test-email').value.trim();
-  if (!email) { toast('Entrez un email', 'error'); return; }
-  const params = new URLSearchParams({ email });
-  if (spec) params.set('specialty', spec);
-  const res = await authFetch(`${API}/admin/llm/newsletter/send-test?${params}`, { method: 'POST' });
-  if (!res) return;
-  const data = await res.json();
-  const result = document.getElementById('nl-result');
-  if (data.ok) {
-    result.textContent = `\u2713 Email test envoy\u00e9 \u00e0 ${email} (${data.article_count} articles)`;
-    result.style.display = 'block';
-    toast('Email test envoy\u00e9');
-  } else {
-    result.textContent = `\u2717 Erreur : ${data.error || 'unknown'}`;
-    result.style.display = 'block';
-    toast('Erreur envoi', 'error');
-  }
-}
-
 // ── Data loading ──────────────────────────────────────────────
 async function loadProfile() {
   const res = await authFetch(`${API}/me`);
@@ -1336,14 +1059,7 @@ async function loadSpecialties() {
   try {
     const res = await fetch(`${API}/specialties`);
     const specs = await res.json();
-    const nlSel = document.getElementById('nl-specialty');
-    specs.forEach(s => {
-      specialtiesMap[s.slug] = s.name;
-      const opt = document.createElement('option');
-      opt.value = s.slug;
-      opt.textContent = s.name;
-      nlSel.appendChild(opt);
-    });
+    specs.forEach(s => { specialtiesMap[s.slug] = s.name; });
   } catch {}
 }
 

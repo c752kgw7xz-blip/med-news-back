@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedNews — Newsletter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f9fafb;
+      --surface: #ffffff;
+      --surface2: #f3f4f6;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+      --text: #111827;
+      --text2: #6b7280;
+      --text3: #9ca3af;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --radius: 6px;
+      --green-dark: #d1fae5;
+      --red-dark: #fee2e2;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --surface2: #0f172a;
+        --border: #1e293b;
+        --border-strong: #334155;
+        --text: #f1f5f9;
+        --text2: #94a3b8;
+        --text3: #64748b;
+        --green-dark: #064e3b;
+        --red-dark: #450a0a;
+      }
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg); color: var(--text);
+      font-size: 14px; line-height: 1.5; min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 10px; }
+
+    .header-logo {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 1.25rem; font-weight: 400; color: var(--text);
+      letter-spacing: -0.2px; line-height: 1;
+    }
+    .header-logo em { font-style: italic; }
+
+    .header-sep {
+      color: var(--border-strong); font-weight: 300;
+      font-size: 1rem; line-height: 1; user-select: none;
+    }
+
+    .header-admin-chip {
+      font-size: 0.6875rem; font-weight: 600; color: var(--text3);
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 2px 8px; border-radius: 100px;
+      letter-spacing: 0.3px; text-transform: uppercase;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 4px; }
+
+    .header-nav-link {
+      font-size: 0.8125rem; font-weight: 500; color: var(--text2);
+      text-decoration: none; padding: 5px 10px; border-radius: 5px;
+      transition: background 0.12s, color 0.12s;
+    }
+    .header-nav-link:hover { background: var(--surface2); color: var(--text); }
+    .header-nav-link.active { color: var(--text); background: var(--surface2); }
+
+    .header-divider { width: 1px; height: 18px; background: var(--border); margin: 0 6px; }
+
+    .header-email { font-size: 0.75rem; color: var(--text3); padding: 0 6px; }
+
+    .btn-logout {
+      padding: 4px 12px; background: transparent;
+      border: 1px solid var(--border); color: var(--text2);
+      border-radius: 5px; font-size: 0.8125rem; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.12s, border-color 0.12s, color 0.12s; height: 30px;
+    }
+    .btn-logout:hover { background: var(--surface2); border-color: var(--border-strong); color: var(--text); }
+
+    /* ── Page ── */
+    .page { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+
+    .page-title {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 1.5rem; margin-bottom: 4px;
+    }
+    .page-subtitle { color: var(--text3); font-size: 13px; margin-bottom: 24px; }
+
+    /* ── Stats ── */
+    .stats-bar { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+
+    .stat-chip {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 16px;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .stat-chip .stat-val { font-size: 1.375rem; font-weight: 600; line-height: 1; }
+    .stat-chip .stat-lbl { font-size: 11px; color: var(--text3); }
+
+    /* ── Controls card ── */
+    .controls-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+
+    .controls-card-title {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .controls-row {
+      display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
+    }
+
+    .field-group { display: flex; flex-direction: column; gap: 5px; }
+
+    .field-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    .field-select, .field-input {
+      padding: 6px 10px; border-radius: var(--radius);
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text); font-size: 13px; font-family: inherit;
+      outline: none; transition: border-color 0.12s;
+    }
+    .field-select { min-width: 200px; cursor: pointer; }
+    .field-input { width: 220px; }
+    .field-select:focus, .field-input:focus { border-color: var(--border-strong); }
+    .field-input::placeholder { color: var(--text3); }
+
+    .btn {
+      padding: 6px 16px; border-radius: var(--radius);
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text2); font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      height: 33px;
+    }
+    .btn:hover { background: var(--surface2); border-color: var(--border-strong); color: var(--text); }
+    .btn:disabled { opacity: .45; cursor: default; }
+
+    .btn-primary {
+      background: var(--green); border-color: var(--green); color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.88; background: var(--green); border-color: var(--green); color: #fff; }
+
+    .controls-sep {
+      width: 1px; height: 33px; background: var(--border);
+      flex-shrink: 0; align-self: flex-end;
+    }
+
+    /* ── Result message ── */
+    .result-msg {
+      margin-top: 14px; padding: 10px 14px;
+      border-radius: var(--radius); font-size: 13px; display: none;
+    }
+    .result-msg.ok { background: var(--green-dark); color: var(--green); }
+    .result-msg.err { background: var(--red-dark); color: var(--red); }
+
+    /* ── Preview panel ── */
+    .preview-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      display: none;
+    }
+
+    .preview-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .preview-header-title {
+      font-size: 12px; font-weight: 600; color: var(--text2);
+    }
+
+    .preview-header-meta {
+      font-size: 11px; color: var(--text3);
+    }
+
+    .preview-iframe {
+      width: 100%; height: 70vh; border: none; display: block;
+    }
+
+    /* ── Specialty list ── */
+    .spec-section-title {
+      font-size: 11px; font-weight: 600; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .spec-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px; margin-bottom: 28px;
+    }
+
+    .spec-chip {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 14px;
+      cursor: pointer; transition: border-color 0.12s, background 0.12s;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .spec-chip:hover { border-color: var(--border-strong); background: var(--surface2); }
+    .spec-chip.selected { border-color: var(--green); background: var(--green-dark); }
+
+    .spec-chip-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .spec-chip.selected .spec-chip-name { color: var(--green); }
+
+    .spec-chip-count {
+      font-size: 11px; font-weight: 600; color: var(--text3);
+      background: var(--surface2); padding: 1px 6px;
+      border-radius: 100px; flex-shrink: 0;
+    }
+    .spec-chip.selected .spec-chip-count { background: #a7f3d0; color: #065f46; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 9px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      z-index: 300; color: #fff; opacity: 0; pointer-events: none;
+      transition: opacity .2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { background: var(--green); }
+    .toast.error { background: var(--red); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span class="header-logo"><em>Med</em>News</span>
+    <span class="header-sep">|</span>
+    <span class="header-admin-chip">Admin</span>
+  </div>
+  <div class="header-right">
+    <a href="/review" class="header-nav-link">Review</a>
+    <a href="/users" class="header-nav-link">Comptes</a>
+    <a href="/newsletter" class="header-nav-link active">Newsletter</a>
+    <div class="header-divider"></div>
+    <span class="header-email" id="user-email"></span>
+    <button class="btn-logout" onclick="logout()">Déconnexion</button>
+  </div>
+</header>
+
+<div class="page">
+  <div class="page-title">Newsletter</div>
+  <div class="page-subtitle">Prévisualiser et envoyer la newsletter par spécialité.</div>
+
+  <div class="stats-bar">
+    <div class="stat-chip"><div class="stat-val" id="stat-approved">—</div><div class="stat-lbl">Articles approuvés</div></div>
+    <div class="stat-chip"><div class="stat-val" id="stat-specs">—</div><div class="stat-lbl">Spécialités couvertes</div></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-card">
+    <div class="controls-card-title">Générer un aperçu ou envoyer un test</div>
+    <div class="controls-row">
+      <div class="field-group">
+        <span class="field-label">Spécialité</span>
+        <select class="field-select" id="nl-specialty">
+          <option value="">Toutes spécialités</option>
+        </select>
+      </div>
+      <button class="btn" onclick="previewNewsletter()" id="btn-preview">Aperçu HTML</button>
+      <div class="controls-sep"></div>
+      <div class="field-group">
+        <span class="field-label">Email test</span>
+        <input class="field-input" type="email" id="nl-test-email" placeholder="adresse@exemple.com">
+      </div>
+      <button class="btn btn-primary" onclick="sendTest()" id="btn-send">Envoyer test</button>
+    </div>
+    <div class="result-msg" id="result-msg"></div>
+  </div>
+
+  <!-- Preview iframe -->
+  <div class="preview-panel" id="preview-panel">
+    <div class="preview-header">
+      <span class="preview-header-title" id="preview-title">Aperçu</span>
+      <span class="preview-header-meta" id="preview-meta"></span>
+    </div>
+    <iframe class="preview-iframe" id="preview-iframe"></iframe>
+  </div>
+
+  <!-- Specialty grid -->
+  <div id="spec-section" style="display:none">
+    <div class="spec-section-title">Spécialités disponibles</div>
+    <div class="spec-grid" id="spec-grid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = window.location.origin;
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+function getToken() { return sessionStorage.getItem('access_token'); }
+
+function getCsrfToken() {
+  const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+async function tryRefresh() {
+  try {
+    const csrf = getCsrfToken();
+    const res = await fetch(`${API}/auth/refresh`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    sessionStorage.setItem('access_token', data.access_token);
+    return true;
+  } catch { return false; }
+}
+
+async function authFetch(url, opts = {}) {
+  const token = getToken();
+  if (!token) { window.location.href = '/login'; return null; }
+  opts.headers = { ...(opts.headers || {}), Authorization: `Bearer ${token}` };
+  opts.credentials = 'include';
+  let r = await fetch(url, opts);
+  if (r.status === 401) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      opts.headers.Authorization = `Bearer ${getToken()}`;
+      r = await fetch(url, opts);
+    } else {
+      sessionStorage.removeItem('access_token');
+      window.location.href = '/login';
+      return null;
+    }
+  }
+  return r;
+}
+
+async function logout() {
+  try {
+    const csrf = getCsrfToken();
+    await fetch(`${API}/auth/logout`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'x-csrf-token': csrf },
+    });
+  } catch {}
+  sessionStorage.removeItem('access_token');
+  window.location.href = '/login';
+}
+
+function loadUserEmail() {
+  try {
+    const token = getToken();
+    if (!token) return;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (!payload.adm) { window.location.href = '/portal'; return; }
+    document.getElementById('user-email').textContent = payload.email || '';
+  } catch {}
+}
+
+// ── Stats + specialties ───────────────────────────────────────────────────────
+async function loadData() {
+  const [statsRes, specsRes] = await Promise.all([
+    authFetch(`${API}/admin/llm/stats`),
+    fetch(`${API}/specialties`),
+  ]);
+  if (!statsRes) return;
+
+  const stats = await statsRes.json();
+  const approved = stats.items?.APPROVED || 0;
+  const bySpec = stats.items_by_specialty || {};
+  const specCount = Object.keys(bySpec).length;
+
+  document.getElementById('stat-approved').textContent = approved;
+  document.getElementById('stat-specs').textContent = specCount;
+
+  // Build specialty select + grid
+  const specs = specsRes.ok ? await specsRes.json() : [];
+  const specMap = {};
+  specs.forEach(s => { specMap[s.slug] = s.name; });
+
+  const sel = document.getElementById('nl-specialty');
+  const grid = document.getElementById('spec-grid');
+
+  const sorted = Object.entries(bySpec)
+    .sort(([,a],[,b]) => b - a);
+
+  sorted.forEach(([slug, count]) => {
+    const name = specMap[slug] || slug;
+
+    // select option
+    const opt = document.createElement('option');
+    opt.value = slug;
+    opt.textContent = `${name} (${count})`;
+    sel.appendChild(opt);
+
+    // grid chip
+    const chip = document.createElement('div');
+    chip.className = 'spec-chip';
+    chip.dataset.slug = slug;
+    chip.innerHTML = `<span class="spec-chip-name">${esc(name)}</span><span class="spec-chip-count">${count}</span>`;
+    chip.onclick = () => selectChip(chip, slug);
+    grid.appendChild(chip);
+  });
+
+  if (sorted.length > 0) {
+    document.getElementById('spec-section').style.display = '';
+  }
+}
+
+function selectChip(chip, slug) {
+  document.querySelectorAll('.spec-chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  document.getElementById('nl-specialty').value = slug;
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Preview ───────────────────────────────────────────────────────────────────
+async function previewNewsletter() {
+  const spec = document.getElementById('nl-specialty').value;
+  const btn = document.getElementById('btn-preview');
+  btn.disabled = true;
+  btn.textContent = 'Génération…';
+  hideResult();
+
+  const url = `${API}/admin/llm/newsletter/preview${spec ? '?specialty=' + encodeURIComponent(spec) : ''}`;
+  const res = await authFetch(url, { method: 'POST' });
+  btn.disabled = false;
+  btn.textContent = 'Aperçu HTML';
+  if (!res) return;
+
+  const data = await res.json();
+  if (data.ok) {
+    const panel = document.getElementById('preview-panel');
+    document.getElementById('preview-iframe').srcdoc = data.html;
+    document.getElementById('preview-title').textContent = data.subject || 'Aperçu';
+    document.getElementById('preview-meta').textContent = `${data.article_count} article(s)`;
+    panel.style.display = '';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showResult(`Aperçu généré — ${data.article_count} article(s) · "${data.subject}"`, 'ok');
+  } else {
+    showResult(`Erreur : ${data.detail || 'génération impossible'}`, 'err');
+    toast('Erreur génération', 'error');
+  }
+}
+
+// ── Send test ─────────────────────────────────────────────────────────────────
+async function sendTest() {
+  const spec = document.getElementById('nl-specialty').value;
+  const email = document.getElementById('nl-test-email').value.trim();
+  if (!email) { toast('Entrez un email', 'error'); return; }
+  const btn = document.getElementById('btn-send');
+  btn.disabled = true;
+  btn.textContent = 'Envoi…';
+  hideResult();
+
+  const params = new URLSearchParams({ email });
+  if (spec) params.set('specialty', spec);
+  const res = await authFetch(`${API}/admin/llm/newsletter/send-test?${params}`, { method: 'POST' });
+  btn.disabled = false;
+  btn.textContent = 'Envoyer test';
+  if (!res) return;
+
+  const data = await res.json();
+  if (data.ok) {
+    showResult(`✓ Email envoyé à ${email} — ${data.article_count} article(s)`, 'ok');
+    toast('Email test envoyé');
+  } else {
+    showResult(`✗ Erreur : ${data.error || 'envoi impossible'}`, 'err');
+    toast('Erreur envoi', 'error');
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function showResult(msg, type) {
+  const el = document.getElementById('result-msg');
+  el.textContent = msg;
+  el.className = `result-msg ${type}`;
+  el.style.display = '';
+}
+
+function hideResult() {
+  document.getElementById('result-msg').style.display = 'none';
+}
+
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadUserEmail();
+loadData();
+</script>
+</body>
+</html>
