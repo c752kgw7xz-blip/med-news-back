@@ -102,7 +102,7 @@ def login(payload: LoginPayload, request: Request, response: Response):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT id, password_hash, is_admin, email_verified_at FROM users WHERE email_lookup = %s;",
+                "SELECT id, password_hash, is_admin, email_verified_at, is_active FROM users WHERE email_lookup = %s;",
                 (email_lookup,),
             )
             row = cur.fetchone()
@@ -113,13 +113,16 @@ def login(payload: LoginPayload, request: Request, response: Response):
                 verify_password(payload.password, _DUMMY_HASH)
                 raise HTTPException(status_code=401, detail="invalid credentials")
 
-            user_id, password_hash, is_admin, email_verified_at = row
+            user_id, password_hash, is_admin, email_verified_at, is_active = row
 
             if not verify_password(payload.password, password_hash):
                 raise HTTPException(status_code=401, detail="invalid credentials")
 
             if email_verified_at is None:
                 raise HTTPException(status_code=403, detail="email not verified")
+
+            if not is_active:
+                raise HTTPException(status_code=403, detail="account disabled")
 
             # create refresh token row (hashed)
             refresh = new_refresh_token()

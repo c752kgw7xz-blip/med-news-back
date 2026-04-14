@@ -380,10 +380,10 @@
   </header>
 
   <div class="filter-bar" id="filter-bar">
-    <button class="filter-pill active" data-status="all" onclick="setStatusFilter('all', this)">
+    <button class="filter-pill" data-status="all" onclick="setStatusFilter('all', this)">
       Tous <span class="count" id="count-all">0</span>
     </button>
-    <button class="filter-pill" data-status="PENDING" onclick="setStatusFilter('PENDING', this)">
+    <button class="filter-pill active" data-status="PENDING" onclick="setStatusFilter('PENDING', this)">
       <span class="filter-dot" style="background:var(--amber);"></span>En attente <span class="count" id="count-pending">0</span>
     </button>
     <button class="filter-pill" data-status="APPROVED" onclick="setStatusFilter('APPROVED', this)">
@@ -453,7 +453,7 @@
 <script>
 const API = window.location.origin;
 let allItems = [];
-let statusFilter = 'all';
+let statusFilter = 'PENDING';
 let sidebarFilter = '';   // '' | 'PHARMACIENS' | 'spec:slug'
 const specialtiesMap = {};  // slug → name
 

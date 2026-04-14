@@ -254,18 +254,18 @@ EUROPE_SOCIETIES_FEEDS: list[dict] = [
     },
 
     # ── CHIRURGIE VASCULAIRE ──────────────────────────────────────────────
-    # ESVS = THE référence pour la chirurgie vasculaire européenne
-    # Guidelines ESVS : AAA, sténose carotide, AOMI, ischémie aiguë de membre,
-    # traumatismes vasculaires. Actualisées régulièrement.
-    # ✅ RSS vérifié mars 2026 : 10 entrées actives
-    {
-        "url": "https://www.esvs.org/feed",
-        "label": "ESVS — European Society for Vascular Surgery (guidelines vasc.)",
-        "source": "esvs",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "chirurgie-vasculaire",
-    },
+    # ESVS RSS désactivé — avril 2026 : le feed esvs.org/feed ne contient que
+    # du bruit institutionnel (congrès, appels à candidatures, missions Éthiopie).
+    # Les guidelines ESVS sont publiées dans EJVES (journal) et captées via
+    # pubmed_ejves (filtre guideline/consensus/recommendation) dans pubmed_collector.py.
+    # {
+    #     "url": "https://www.esvs.org/feed",
+    #     "label": "ESVS — European Society for Vascular Surgery (guidelines vasc.)",
+    #     "source": "esvs",
+    #     "source_type": "recommandation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "chirurgie-vasculaire",
+    # },
 
     # ── DERMATOLOGIE ──────────────────────────────────────────────────────
     # EADV = THE référence européenne pour dermatologie et vénéréologie

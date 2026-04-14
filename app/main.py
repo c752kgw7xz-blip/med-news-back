@@ -154,6 +154,10 @@ def serve_verify_email():
 def serve_archives():
     return FileResponse(os.path.join(_FRONT_DIR, "archives.html"), media_type="text/html", headers=_NO_CACHE)
 
+@app.get("/users")
+def serve_users():
+    return FileResponse(os.path.join(_FRONT_DIR, "users.html"), media_type="text/html", headers=_NO_CACHE)
+
 @app.get("/settings")
 def serve_settings():
     return FileResponse(os.path.join(_FRONT_DIR, "settings.html"), media_type="text/html", headers=_NO_CACHE)
@@ -197,6 +201,9 @@ CREATE TABLE IF NOT EXISTS users (
 
 ALTER TABLE users
   ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
 
 CREATE INDEX IF NOT EXISTS idx_users_specialty_id ON users (specialty_id);
 
@@ -466,6 +473,72 @@ def admin_verify_email(user_id: str, request: Request):
     if not row:
         raise HTTPException(status_code=404, detail="user not found")
     return {"ok": True, "user_id": user_id}
+
+
+@app.get("/admin/users")
+def admin_list_users(request: Request):
+    """Liste tous les comptes médecins avec email déchiffré, spécialité et statut."""
+    _require_admin(request)
+    from app.security import decrypt_email
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT u.id, u.email_ciphertext, u.specialty_id,
+                       u.email_verified_at, u.created_at, u.is_active, u.is_admin
+                FROM users u
+                ORDER BY u.created_at DESC;
+                """
+            )
+            rows = cur.fetchall()
+    users = []
+    for r in rows:
+        try:
+            email = decrypt_email(bytes(r[1]))
+        except Exception:
+            email = "(chiffrement illisible)"
+        users.append({
+            "id": str(r[0]),
+            "email": email,
+            "specialty_id": r[2],
+            "email_verified": r[3] is not None,
+            "created_at": r[4].isoformat() if r[4] else None,
+            "is_active": r[5],
+            "is_admin": r[6],
+        })
+    return {"ok": True, "count": len(users), "users": users}
+
+
+@app.post("/admin/users/{user_id}/deactivate")
+def admin_deactivate_user(user_id: str, request: Request):
+    """Désactive un compte médecin (ne peut plus se connecter)."""
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET is_active = FALSE WHERE id = %s AND is_admin = FALSE RETURNING id;",
+                (user_id,),
+            )
+            row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="user not found or is admin")
+    return {"ok": True, "user_id": user_id, "is_active": False}
+
+
+@app.post("/admin/users/{user_id}/activate")
+def admin_activate_user(user_id: str, request: Request):
+    """Réactive un compte médecin désactivé."""
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET is_active = TRUE WHERE id = %s RETURNING id;",
+                (user_id,),
+            )
+            row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="user not found")
+    return {"ok": True, "user_id": user_id, "is_active": True}
 
 
 @app.get("/_version")

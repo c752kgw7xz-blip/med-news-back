@@ -551,6 +551,14 @@ sage-femme, biologiste).
    Ce sont des articles utiles à la pratique, même sans urgence réglementaire. \
    Ne les classer en 1-3 que s'ils n'apportent aucune information actionnable.
 
+   RÈGLE ANCIENNETÉ : Si le document est une recommandation (HAS, SOFMER, ANSM, \
+   société savante, guideline) dont la date de publication ORIGINALE est antérieure \
+   à 2020 — même s'il réapparaît dans un flux RSS en 2025-2026 — le contenu est \
+   probablement périmé et remplacé par des versions plus récentes. \
+   Dans ce cas : score ≤ 3 OBLIGATOIREMENT, et ajoute dans le résumé \
+   "(document de [année], vérifier existence d'une version actualisée)". \
+   Si la date originale ne peut pas être déterminée à partir du contenu, score normalement.
+
    Exemples de score 9-10 :
      - Avenant tarifaire UNCAM, modification majeure de la convention médicale
      - Rappel/retrait d'implant orthopédique ou d'instrument chirurgical défectueux
@@ -1153,11 +1161,17 @@ SOURCE_CONFIG: dict[str, dict] = {
         "cpt_pharmacol", "jdr_dental", "jan_nursing",
     ]},
     # ── Sources PubMed — chirurgie vasculaire ─────────────────────────────
-    # JVS/EJVES : volume ~200-300/an, ratio signal/bruit moyen → seuil 5
+    # JVS/EJVES/JET : volume ~200-300/an, ratio signal/bruit moyen → seuil 5
     # (evidence_json dérivera le vrai score depuis clinical_maturity×actionability_horizon)
     **{src: {"require_whitelist": False, "min_llm_score": 5} for src in [
-        "pubmed_jvs", "pubmed_ejves", "pubmed_jet", "pubmed_ann_vasc_surg",
+        "pubmed_jvs", "pubmed_ejves", "pubmed_jet",
     ]},
+    # Ann Vasc Surg : qualité plus variable (registres rétrospectifs, séries courtes)
+    # → seuil relevé à 5 (était 4) pour réduire le bruit.
+    "pubmed_ann_vasc_surg": {"require_whitelist": False, "min_llm_score": 5},
+    # EJVES Guidelines : filtre titre guideline/consensus → article toujours pertinent
+    # → seuil bas à 4 (ne pas rater une guideline ESVS majeure).
+    "pubmed_ejves_guidelines": {"require_whitelist": False, "min_llm_score": 4},
     # JAMA Surgery via PubMed (RSS 403 depuis avril 2026) :
     # requête déjà filtrée sur termes vasculaires → seuil 6 (LLM affine).
     "pubmed_jama_surgery": {

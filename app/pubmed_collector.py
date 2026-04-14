@@ -61,17 +61,36 @@ PUBMED_SOURCES: list[dict] = [
         "min_score_hint": 5,
     },
 
-    # ── European Journal of Vascular and Endovascular Surgery (EJVES) ────
-    # Organe officiel de l'ESVS. Guidelines ESVS (AAA, sténose carotide,
-    # AOMI, ischémie aiguë, anévrisme poplité, traumatismes vasculaires).
-    # Haut ratio recommandation/étude → pertinence pratique élevée.
+    # ── European Journal of Vascular and Endovascular Surgery (EJVES) — Innovation ──
+    # Organe officiel de l'ESVS. Essais cliniques, études de cohortes, méta-analyses,
+    # résultats à long terme (EVAR, TEVAR, carotide, AOMI, CLTI).
     {
         "source": "pubmed_ejves",
         "journal_term": '"Eur J Vasc Endovasc Surg"[Journal]',
-        "label": "European Journal of Vascular and Endovascular Surgery (EJVES/ESVS)",
+        "label": "EJVES — Innovations & essais cliniques",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
         "min_score_hint": 5,
+    },
+
+    # ── EJVES — Guidelines ESVS uniquement (source_type recommandation) ──
+    # Filtre sur les titres contenant : guideline, consensus, recommendation,
+    # clinical practice, position statement → capture les grandes guidelines ESVS
+    # (AAA 2019, CLTI 2019, carotide 2023, AOMI 2024…) sans le bruit des articles.
+    # Source distincte de pubmed_ejves pour ne pas mélanger innovation et reco.
+    {
+        "source": "pubmed_ejves_guidelines",
+        "journal_term": (
+            '"Eur J Vasc Endovasc Surg"[Journal] AND ('
+            'guideline[Title] OR consensus[Title] OR recommendation[Title] OR '
+            '"clinical practice"[Title] OR "position statement"[Title] OR '
+            '"management of"[Title] OR "European Society"[Title]'
+            ')'
+        ),
+        "label": "EJVES — Guidelines ESVS",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-vasculaire",
+        "min_score_hint": 4,
     },
 
     # ── Journal of Endovascular Therapy (JET) ─────────────────────────────

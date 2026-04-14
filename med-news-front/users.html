@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedNews — Gestion des comptes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f6f5f2; --surface: #ffffff; --surface2: #f0ede8;
+      --border: #e4e0d8; --border-strong: #cac4bb;
+      --text: #1a1814; --text2: #4a4540; --text3: #7a7268;
+      --text4: #9a9288; --text5: #bcb6ac;
+      --green: #1f9478; --red: #cc3232; --amber: #b56808;
+      --green-dark: #e5f5f0; --red-dark: #fde8e8;
+      --radius: 10px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1117; --surface: #13151f; --surface2: #1a1c2a;
+        --border: #1e2030; --border-strong: #2a2d45;
+        --text: #f0f0f5; --text2: #c8c8d4; --text3: #8b8fa8;
+        --text4: #6b6f88; --text5: #4a4e68;
+        --green-dark: #0d2a20; --red-dark: #2a0d0d;
+      }
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg); color: var(--text);
+      font-size: 14px; line-height: 1.6; min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-brand {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 1.25rem; color: var(--text);
+      text-decoration: none;
+    }
+    .header-nav { display: flex; gap: 8px; }
+    .nav-link {
+      padding: 6px 12px; border-radius: 6px; font-size: 13px;
+      color: var(--text3); text-decoration: none; transition: background .15s;
+    }
+    .nav-link:hover { background: var(--surface2); color: var(--text); }
+    .nav-link.active { background: var(--surface2); color: var(--text); font-weight: 500; }
+
+    /* ── Layout ── */
+    .page { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+
+    .page-title {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 1.5rem; margin-bottom: 4px;
+    }
+    .page-subtitle { color: var(--text3); font-size: 13px; margin-bottom: 24px; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 16px;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .stat-chip .stat-val { font-size: 1.4rem; font-weight: 600; line-height: 1; }
+    .stat-chip .stat-lbl { font-size: 11px; color: var(--text3); }
+
+    /* ── Search + filters ── */
+    .toolbar {
+      display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1; min-width: 200px; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface); color: var(--text); font-size: 13px;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--border-strong); }
+    .filter-pill {
+      padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text2); font-size: 12px;
+      cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .filter-pill.active {
+      background: var(--text); color: var(--bg);
+      border-color: var(--text);
+    }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left; font-size: 11px; font-weight: 600;
+      color: var(--text3); text-transform: uppercase; letter-spacing: .5px;
+      padding: 10px 16px; background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody tr.inactive { opacity: .5; }
+    td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500;
+    }
+    .badge-active { background: var(--green-dark); color: var(--green); }
+    .badge-inactive { background: var(--red-dark); color: var(--red); }
+    .badge-verified { background: var(--green-dark); color: var(--green); }
+    .badge-unverified { background: var(--surface2); color: var(--text3); }
+    .badge-admin { background: #e8e0f8; color: #5030a0; font-size: 10px; }
+
+    .email-cell { font-family: monospace; font-size: 12px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .date-cell { color: var(--text3); font-size: 12px; white-space: nowrap; }
+    .spec-cell { color: var(--text2); font-size: 12px; }
+
+    /* ── Actions ── */
+    .btn-action {
+      padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+      font-size: 12px; cursor: pointer; background: var(--surface);
+      color: var(--text2); transition: all .15s;
+    }
+    .btn-action:hover { border-color: var(--border-strong); color: var(--text); }
+    .btn-deactivate:hover { border-color: var(--red); color: var(--red); background: var(--red-dark); }
+    .btn-activate:hover { border-color: var(--green); color: var(--green); background: var(--green-dark); }
+    .btn-action:disabled { opacity: .4; cursor: default; }
+
+    /* ── Empty / loading ── */
+    .empty-state {
+      text-align: center; padding: 48px; color: var(--text3); font-size: 14px;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--text); color: var(--bg);
+      padding: 10px 18px; border-radius: 8px; font-size: 13px;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="header-brand" href="/review">MedNews Admin</a>
+  <nav class="header-nav">
+    <a class="nav-link" href="/review">Review</a>
+    <a class="nav-link active" href="/users">Comptes</a>
+  </nav>
+</header>
+
+<div class="page">
+  <div class="page-title">Gestion des comptes</div>
+  <div class="page-subtitle">Médecins inscrits — voir email, spécialité, statut. Désactiver/réactiver un compte.</div>
+
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-chip"><div class="stat-val" id="stat-total">—</div><div class="stat-lbl">Comptes</div></div>
+    <div class="stat-chip"><div class="stat-val" id="stat-active">—</div><div class="stat-lbl">Actifs</div></div>
+    <div class="stat-chip"><div class="stat-val" id="stat-verified">—</div><div class="stat-lbl">Email vérifié</div></div>
+    <div class="stat-chip"><div class="stat-val" id="stat-inactive">—</div><div class="stat-lbl">Désactivés</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input class="search-input" type="search" id="search" placeholder="Rechercher email ou spécialité…" oninput="render()">
+    <button class="filter-pill active" data-filter="all" onclick="setFilter('all',this)">Tous</button>
+    <button class="filter-pill" data-filter="active" onclick="setFilter('active',this)">Actifs</button>
+    <button class="filter-pill" data-filter="inactive" onclick="setFilter('inactive',this)">Désactivés</button>
+    <button class="filter-pill" data-filter="unverified" onclick="setFilter('unverified',this)">Non vérifiés</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Spécialité</th>
+          <th>Inscrit le</th>
+          <th>Email</th>
+          <th>Statut</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="6"><div class="empty-state">Chargement…</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = window.location.origin;
+let allUsers = [];
+let activeFilter = 'all';
+
+// ── Auth helpers (même pattern que review.html) ──────────────────────────────
+function getTokens() {
+  try { return JSON.parse(localStorage.getItem('mednews_tokens') || '{}'); } catch { return {}; }
+}
+function setTokens(t) { localStorage.setItem('mednews_tokens', JSON.stringify(t)); }
+
+async function refreshAccessToken() {
+  const { refresh_token } = getTokens();
+  if (!refresh_token) return null;
+  const r = await fetch(`${API}/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token }),
+  });
+  if (!r.ok) return null;
+  const d = await r.json();
+  setTokens({ access_token: d.access_token, refresh_token: d.refresh_token || refresh_token });
+  return d.access_token;
+}
+
+async function authFetch(url, opts = {}) {
+  let { access_token } = getTokens();
+  opts.headers = { ...(opts.headers || {}), Authorization: `Bearer ${access_token}` };
+  let r = await fetch(url, opts);
+  if (r.status === 401) {
+    access_token = await refreshAccessToken();
+    if (!access_token) { window.location.href = '/portal'; return null; }
+    opts.headers.Authorization = `Bearer ${access_token}`;
+    r = await fetch(url, opts);
+  }
+  return r;
+}
+
+// ── Load ─────────────────────────────────────────────────────────────────────
+async function load() {
+  const r = await authFetch(`${API}/admin/users`);
+  if (!r || !r.ok) { document.getElementById('tbody').innerHTML = '<tr><td colspan="6"><div class="empty-state">Erreur de chargement — êtes-vous connecté ?</div></td></tr>'; return; }
+  const d = await r.json();
+  allUsers = d.users || [];
+  updateStats();
+  render();
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = allUsers.length;
+  document.getElementById('stat-active').textContent = allUsers.filter(u => u.is_active).length;
+  document.getElementById('stat-verified').textContent = allUsers.filter(u => u.email_verified).length;
+  document.getElementById('stat-inactive').textContent = allUsers.filter(u => !u.is_active).length;
+}
+
+// ── Filter / Render ───────────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let users = allUsers.filter(u => {
+    if (activeFilter === 'active' && !u.is_active) return false;
+    if (activeFilter === 'inactive' && u.is_active) return false;
+    if (activeFilter === 'unverified' && u.email_verified) return false;
+    if (q && !u.email.toLowerCase().includes(q) && !(u.specialty_id || '').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('tbody');
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">Aucun compte trouvé.</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = users.map(u => {
+    const statusBadge = u.is_active
+      ? `<span class="badge badge-active">Actif</span>`
+      : `<span class="badge badge-inactive">Désactivé</span>`;
+    const verifiedBadge = u.email_verified
+      ? `<span class="badge badge-verified">Vérifié</span>`
+      : `<span class="badge badge-unverified">Non vérifié</span>`;
+    const adminBadge = u.is_admin ? `<span class="badge badge-admin">Admin</span>` : '';
+    const date = u.created_at ? u.created_at.slice(0, 10) : '—';
+    const spec = u.specialty_id || '<span style="color:var(--text4)">—</span>';
+    const actionBtn = u.is_admin ? '<span style="color:var(--text4);font-size:12px">—</span>'
+      : u.is_active
+        ? `<button class="btn-action btn-deactivate" onclick="setActive('${u.id}', false, this)">Désactiver</button>`
+        : `<button class="btn-action btn-activate" onclick="setActive('${u.id}', true, this)">Réactiver</button>`;
+
+    return `<tr class="${u.is_active ? '' : 'inactive'}">
+      <td><span class="email-cell" title="${u.email}">${u.email}</span>${adminBadge ? ' ' + adminBadge : ''}</td>
+      <td class="spec-cell">${spec}</td>
+      <td class="date-cell">${date}</td>
+      <td>${verifiedBadge}</td>
+      <td>${statusBadge}</td>
+      <td>${actionBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+async function setActive(userId, activate, btn) {
+  btn.disabled = true;
+  const endpoint = activate ? 'activate' : 'deactivate';
+  const r = await authFetch(`${API}/admin/users/${userId}/${endpoint}`, { method: 'POST' });
+  if (!r || !r.ok) { toast('Erreur'); btn.disabled = false; return; }
+  const user = allUsers.find(u => u.id === userId);
+  if (user) user.is_active = activate;
+  updateStats();
+  render();
+  toast(activate ? 'Compte réactivé' : 'Compte désactivé');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+load();
+</script>
+</body>
+</html>
