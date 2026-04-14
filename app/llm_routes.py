@@ -432,6 +432,9 @@ def retrofit_approved(request: Request):
         global _bg_running
         with _bg_lock:
             _bg_running = True
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        from app.llm_analysis import call_claude
+
         updated = 0
         errors = 0
         try:
@@ -451,20 +454,19 @@ def retrofit_approved(request: Request):
 
             logger.info("retrofit-approved : %d items APPROVED à ré-analyser", len(rows))
 
-            for item_id, title_raw, content_raw, official_date, source in rows:
+            def process_one(row):
+                item_id, title_raw, content_raw, official_date, source = row
                 try:
-                    from app.llm_analysis import call_claude, _parse_llm_output
                     result = call_claude(
                         title_raw or "",
                         content_raw,
                         official_date or "2026-01-01",
                         source=source,
                     )
-                    tri   = result.get("tri_json") or {}
-                    lect  = result.get("lecture_json") or {}
+                    tri  = result.get("tri_json") or {}
+                    lect = result.get("lecture_json") or {}
                     if not tri and not lect:
-                        errors += 1
-                        continue
+                        return "error"
                     with get_conn() as conn2:
                         with conn2.cursor() as cur2:
                             cur2.execute(
@@ -477,11 +479,19 @@ def retrofit_approved(request: Request):
                                 {"tri": Json(tri), "lect": Json(lect), "id": item_id},
                             )
                         conn2.commit()
-                    updated += 1
                     logger.debug("retrofit item %s OK", item_id)
+                    return "ok"
                 except Exception as e:
-                    errors += 1
                     logger.warning("retrofit item %s ERREUR : %s", item_id, e)
+                    return "error"
+
+            with ThreadPoolExecutor(max_workers=15) as pool:
+                futures = {pool.submit(process_one, row): row[0] for row in rows}
+                for future in as_completed(futures):
+                    if future.result() == "ok":
+                        updated += 1
+                    else:
+                        errors += 1
 
         finally:
             with _bg_lock:
@@ -652,7 +662,10 @@ def run_llm_all(
     """
     _require_admin(request)
 
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
     total_done = total_failed = total_not_pertinent = total_processed = total_pre_filtered = 0
+    workers = min(batch_size, 15)
 
     while True:
         with get_conn() as conn:
@@ -662,19 +675,21 @@ def run_llm_all(
         if not candidates:
             break
 
-        for candidate in candidates:
-            total_processed += 1
-            logger.info("LLM-ALL [%d] %s", total_processed, candidate["title_raw"][:60])
-            report = _process_one_candidate(candidate)
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {pool.submit(_process_one_candidate, c): c for c in candidates}
+            for future in as_completed(futures):
+                total_processed += 1
+                report = future.result()
+                logger.info("LLM-ALL [%d] %s", total_processed, futures[future]["title_raw"][:60])
 
-            if report["status"] == "PRE_FILTERED":
-                total_pre_filtered += 1
-            elif report["status"] == "LLM_DONE":
-                total_done += 1
-            elif report["status"] == "LLM_DONE_NOT_PERTINENT":
-                total_not_pertinent += 1
-            else:
-                total_failed += 1
+                if report["status"] == "PRE_FILTERED":
+                    total_pre_filtered += 1
+                elif report["status"] == "LLM_DONE":
+                    total_done += 1
+                elif report["status"] == "LLM_DONE_NOT_PERTINENT":
+                    total_not_pertinent += 1
+                else:
+                    total_failed += 1
 
     return {
         "ok": True,
