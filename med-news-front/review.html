@@ -982,17 +982,12 @@
         <button class="filter-pill active" data-status="PENDING" onclick="setStatusFilter('PENDING', this)">
           En attente <span class="count" id="count-pending">0</span>
         </button>
-        <button class="filter-pill" data-status="APPROVED" onclick="setStatusFilter('APPROVED', this)">
-          Valid&#233;s <span class="count" id="count-approved">0</span>
-        </button>
-        <button class="filter-pill" data-status="REJECTED" onclick="setStatusFilter('REJECTED', this)">
-          Rejet&#233;s <span class="count" id="count-rejected">0</span>
-        </button>
-        <button class="filter-pill" data-status="all" onclick="setStatusFilter('all', this)">
-          Tous <span class="count" id="count-all">0</span>
-        </button>
         <div class="filter-bar-spacer"></div>
         <span class="filter-bar-info" id="filter-bar-info"></span>
+        <!-- IDs requis par le JS — éléments cachés -->
+        <span id="count-approved" style="display:none"></span>
+        <span id="count-rejected" style="display:none"></span>
+        <span id="count-all" style="display:none"></span>
       </div>
 
       <!-- Layout -->
@@ -1331,8 +1326,9 @@ function updateCounters() {
   document.getElementById('count-pending').textContent = counts.PENDING || 0;
   document.getElementById('count-approved').textContent = counts.APPROVED || 0;
   document.getElementById('count-rejected').textContent = counts.REJECTED || 0;
+  const totalItems = (counts.PENDING||0) + (counts.APPROVED||0) + (counts.REJECTED||0);
   document.getElementById('filter-bar-info').textContent =
-    `${counts.PENDING || 0} en attente \u00b7 ${counts.APPROVED || 0} valid\u00e9s \u00b7 ${counts.REJECTED || 0} rejet\u00e9s`;
+    totalItems ? `${totalItems} article${totalItems > 1 ? 's' : ''} \u00b7 ${counts.APPROVED||0} valid\u00e9s` : '';
 
   // Sidebar PENDING badges : recompte global (indicateur de volume par spé, pas filtré)
   let pharmaciensPending = 0;
