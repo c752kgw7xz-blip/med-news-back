@@ -211,37 +211,58 @@ const API = window.location.origin;
 let allUsers = [];
 let activeFilter = 'all';
 
-// ── Auth helpers (même pattern que review.html) ──────────────────────────────
-function getTokens() {
-  try { return JSON.parse(localStorage.getItem('mednews_tokens') || '{}'); } catch { return {}; }
-}
-function setTokens(t) { localStorage.setItem('mednews_tokens', JSON.stringify(t)); }
+// ── Auth (même pattern que review.html) ──────────────────────────────────────
+function getToken() { return sessionStorage.getItem('access_token'); }
 
-async function refreshAccessToken() {
-  const { refresh_token } = getTokens();
-  if (!refresh_token) return null;
-  const r = await fetch(`${API}/auth/refresh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh_token }),
-  });
-  if (!r.ok) return null;
-  const d = await r.json();
-  setTokens({ access_token: d.access_token, refresh_token: d.refresh_token || refresh_token });
-  return d.access_token;
+function getCsrfToken() {
+  const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+async function tryRefresh() {
+  try {
+    const csrf = getCsrfToken();
+    const res = await fetch(`${API}/auth/refresh`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    sessionStorage.setItem('access_token', data.access_token);
+    return true;
+  } catch { return false; }
 }
 
 async function authFetch(url, opts = {}) {
-  let { access_token } = getTokens();
-  opts.headers = { ...(opts.headers || {}), Authorization: `Bearer ${access_token}` };
+  const token = getToken();
+  if (!token) { window.location.href = '/login'; return null; }
+  opts.headers = { ...(opts.headers || {}), Authorization: `Bearer ${token}` };
+  opts.credentials = 'include';
   let r = await fetch(url, opts);
   if (r.status === 401) {
-    access_token = await refreshAccessToken();
-    if (!access_token) { window.location.href = '/portal'; return null; }
-    opts.headers.Authorization = `Bearer ${access_token}`;
-    r = await fetch(url, opts);
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      opts.headers.Authorization = `Bearer ${getToken()}`;
+      r = await fetch(url, opts);
+    } else {
+      sessionStorage.removeItem('access_token');
+      window.location.href = '/login';
+      return null;
+    }
   }
   return r;
+}
+
+async function logout() {
+  try {
+    const csrf = getCsrfToken();
+    await fetch(`${API}/auth/logout`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'x-csrf-token': csrf },
+    });
+  } catch {}
+  sessionStorage.removeItem('access_token');
+  window.location.href = '/login';
 }
 
 // ── Load ─────────────────────────────────────────────────────────────────────
