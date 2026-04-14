@@ -201,9 +201,14 @@ def refresh(request: Request, response: Response):
                 (new_id, old_id),
             )
 
-            # fetch is_admin for access token
-            cur.execute("SELECT is_admin FROM users WHERE id = %s;", (user_id,))
-            is_admin = bool(cur.fetchone()[0])
+            # fetch is_admin + is_active for access token
+            cur.execute("SELECT is_admin, is_active FROM users WHERE id = %s;", (user_id,))
+            admin_row = cur.fetchone()
+            is_admin   = bool(admin_row[0])
+            is_active  = bool(admin_row[1])
+
+        if not is_active:
+            raise HTTPException(status_code=403, detail="account disabled")
 
     access = create_access_token(user_id=str(user_id), is_admin=is_admin)
     csrf = new_csrf_token()
