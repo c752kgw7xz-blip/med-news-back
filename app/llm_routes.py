@@ -411,6 +411,92 @@ def reset_pending_pipeline(request: Request):
     }
 
 
+@router.post("/retrofit-approved")
+def retrofit_approved(request: Request):
+    """
+    Re-génère tri_json et lecture_json pour tous les items APPROVED avec le
+    prompt actuel, sans toucher au score, à la catégorie ni aux spécialités.
+    Utile après une modification du ton/rédaction du prompt LLM.
+    Lance le traitement en background — retourne immédiatement avec un job_id.
+    """
+    _require_admin(request)
+
+    with _bg_lock:
+        if _bg_running:
+            raise HTTPException(
+                status_code=409,
+                detail="Un traitement LLM est déjà en cours.",
+            )
+
+    def _run():
+        global _bg_running
+        with _bg_lock:
+            _bg_running = True
+        updated = 0
+        errors = 0
+        try:
+            with get_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        SELECT i.id, c.title_raw, c.content_raw,
+                               c.official_date::text, c.source
+                        FROM items i
+                        JOIN candidates c ON c.id = i.candidate_id
+                        WHERE i.review_status = 'APPROVED'
+                        ORDER BY i.id;
+                        """
+                    )
+                    rows = cur.fetchall()
+
+            logger.info("retrofit-approved : %d items APPROVED à ré-analyser", len(rows))
+
+            for item_id, title_raw, content_raw, official_date, source in rows:
+                try:
+                    from app.llm_analysis import call_claude, _parse_llm_output
+                    result = call_claude(
+                        title_raw or "",
+                        content_raw,
+                        official_date or "2026-01-01",
+                        source=source,
+                    )
+                    tri   = result.get("tri_json") or {}
+                    lect  = result.get("lecture_json") or {}
+                    if not tri and not lect:
+                        errors += 1
+                        continue
+                    with get_conn() as conn2:
+                        with conn2.cursor() as cur2:
+                            cur2.execute(
+                                """
+                                UPDATE items
+                                SET tri_json    = %(tri)s,
+                                    lecture_json = %(lect)s
+                                WHERE id = %(id)s;
+                                """,
+                                {"tri": Json(tri), "lect": Json(lect), "id": item_id},
+                            )
+                        conn2.commit()
+                    updated += 1
+                    logger.debug("retrofit item %s OK", item_id)
+                except Exception as e:
+                    errors += 1
+                    logger.warning("retrofit item %s ERREUR : %s", item_id, e)
+
+        finally:
+            with _bg_lock:
+                _bg_running = False
+            logger.info("retrofit-approved terminé : %d OK, %d erreurs", updated, errors)
+
+    import threading as _th
+    _th.Thread(target=_run, daemon=True).start()
+
+    return {
+        "ok": True,
+        "message": "Retrofit lancé en background. Consultez les logs pour la progression.",
+    }
+
+
 class _RunBackgroundBody(BaseModel):
     max_candidates: int = 200
     batch_size: int = 20

@@ -199,166 +199,86 @@
   /* ── App layout ───────────────────────────── */
   .app-wrapper {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     min-height: calc(100vh - 48px);
   }
 
-  /* ── Sidebar ──────────────────────────────── */
-  .sidebar {
-    width: 200px;
-    min-width: 200px;
-    flex-shrink: 0;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    position: sticky;
-    top: 48px;
-    height: calc(100vh - 48px);
-    overflow-y: auto;
+  /* ── Main content ─────────────────────────── */
+  .main-content {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
   }
 
-  .sidebar::-webkit-scrollbar { width: 3px; }
-  .sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+  /* ── Spec filter select ───────────────────── */
+  .spec-select {
+    padding: 5px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.12s;
+    max-width: 200px;
+  }
+  .spec-select:focus { border-color: var(--border-strong); }
 
-  .sidebar-nav {
-    flex: 1;
-    padding: 6px 0;
+  /* ── Newsletter strip ─────────────────────── */
+  .nl-strip {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
-  .sidebar-sep {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 12px;
-  }
-
-  .sidebar-section-label {
-    padding: 8px 12px 3px;
+  .nl-strip-label {
     font-size: 0.6875rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.7px;
+    letter-spacing: 0.6px;
     color: var(--text3);
-  }
-
-  .sidebar-nav-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 5px 12px;
-    border: none;
-    background: transparent;
-    color: var(--text2);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.12s, color 0.12s;
-    text-align: left;
-    border-left: 2px solid transparent;
-    line-height: 1.4;
-  }
-
-  .sidebar-nav-item:hover {
-    background: var(--surface2);
-    color: var(--text);
-  }
-
-  .sidebar-nav-item.active {
-    background: var(--surface2);
-    color: var(--text);
-    border-left-color: var(--green);
-  }
-
-  .sidebar-nav-item[data-filter="PHARMACIENS"].active {
-    border-left-color: var(--purple);
-    color: var(--purple);
-  }
-
-  .sidebar-item-label {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .sidebar-item-count {
-    flex-shrink: 0;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    padding: 1px 5px;
-    border-radius: 100px;
-    background: var(--surface2);
-    color: var(--text3);
-    margin-left: 4px;
-    min-width: 18px;
-    text-align: center;
-  }
-
-  .sidebar-nav-item.active .sidebar-item-count {
-    background: var(--border);
-    color: var(--text2);
-  }
-
-  /* Newsletter panel — sidebar bottom */
-  .sidebar-newsletter {
-    border-top: 1px solid var(--border);
-    padding: 12px;
-  }
-
-  .sidebar-newsletter-header {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
-    color: var(--text3);
-    margin-bottom: 8px;
-  }
-
-  .sidebar-newsletter select,
-  .sidebar-newsletter input[type="email"] {
-    width: 100%;
+  .nl-strip select,
+  .nl-strip input[type="email"] {
     padding: 5px 8px;
     border-radius: 5px;
-    font-size: 0.8125rem;
-    background: var(--surface2);
     border: 1px solid var(--border);
+    background: var(--surface2);
     color: var(--text);
+    font-size: 0.8125rem;
     font-family: inherit;
     outline: none;
-    margin-bottom: 6px;
     transition: border-color 0.12s;
   }
 
-  .sidebar-newsletter select:focus,
-  .sidebar-newsletter input[type="email"]:focus {
-    border-color: var(--green);
-  }
+  .nl-strip select { width: 180px; }
+  .nl-strip input[type="email"] { width: 200px; }
 
-  .sidebar-newsletter input[type="email"]::placeholder {
-    color: var(--text3);
-  }
+  .nl-strip select:focus,
+  .nl-strip input[type="email"]:focus { border-color: var(--green); }
 
-  .sidebar-nl-actions {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 6px;
-  }
+  .nl-strip input[type="email"]::placeholder { color: var(--text3); }
 
   .btn-nl {
-    flex: 1;
-    padding: 5px 6px;
+    padding: 5px 12px;
     border: 1px solid var(--border);
     background: transparent;
     color: var(--text2);
     border-radius: 5px;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     cursor: pointer;
     font-family: inherit;
     transition: background 0.12s, border-color 0.12s, color 0.12s;
-    text-align: center;
     white-space: nowrap;
   }
 
@@ -377,22 +297,13 @@
   .btn-nl.primary:hover { opacity: 0.85; }
 
   .newsletter-result {
-    margin-top: 6px;
     font-size: 0.75rem;
     color: var(--text2);
-    padding: 6px 8px;
+    padding: 4px 8px;
     background: var(--surface2);
     border-radius: 5px;
     display: none;
     line-height: 1.4;
-  }
-
-  /* ── Main content ─────────────────────────── */
-  .main-content {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
   }
 
   /* ── Status tab bar ───────────────────────── */
@@ -943,51 +854,38 @@
 
   <!-- App layout -->
   <div class="app-wrapper">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <nav class="sidebar-nav">
-        <button class="sidebar-nav-item active" data-filter="" onclick="setSidebarFilter('', this)">
-          <span class="sidebar-item-label">Tous</span>
-        </button>
-        <div class="sidebar-sep"></div>
-        <div class="sidebar-section-label">Sp&#233;cialit&#233;s</div>
-        <button class="sidebar-nav-item" data-filter="PHARMACIENS" onclick="setSidebarFilter('PHARMACIENS', this)">
-          <span class="sidebar-item-label">Pharmaciens</span>
-          <span class="sidebar-item-count" id="count-pharmaciens">0</span>
-        </button>
-        <div id="sidebar-specs"></div>
-      </nav>
-
-      <!-- Newsletter panel -->
-      <div class="sidebar-newsletter">
-        <div class="sidebar-newsletter-header">Newsletter</div>
-        <select id="nl-specialty">
-          <option value="">Toutes sp&#233;cialit&#233;s</option>
-        </select>
-        <div class="sidebar-nl-actions">
-          <button class="btn-nl" onclick="previewNewsletter()">Aper&#231;u HTML</button>
-          <button class="btn-nl primary" onclick="sendTestNewsletter()">Envoyer test</button>
-        </div>
-        <input type="email" id="nl-test-email" placeholder="Email test">
-        <div class="newsletter-result" id="nl-result"></div>
-      </div>
-    </aside>
-
-    <!-- Main content -->
     <div class="main-content">
 
-      <!-- Status tab bar -->
+      <!-- Status + specialty filter bar -->
       <div class="status-tab-bar" id="filter-bar">
         <button class="filter-pill active" data-status="PENDING" onclick="setStatusFilter('PENDING', this)">
           En attente <span class="count" id="count-pending">0</span>
         </button>
+        <div style="width:12px;flex-shrink:0;"></div>
+        <select class="spec-select" id="spec-filter" onchange="setSidebarFilter(this.value)">
+          <option value="">Toutes spécialités</option>
+          <option value="PHARMACIENS">Pharmaciens</option>
+        </select>
+        <!-- éléments requis par le JS -->
+        <span id="count-pharmaciens" style="display:none">0</span>
+        <div id="sidebar-specs" style="display:none"></div>
         <div class="filter-bar-spacer"></div>
         <span class="filter-bar-info" id="filter-bar-info"></span>
-        <!-- IDs requis par le JS — éléments cachés -->
         <span id="count-approved" style="display:none"></span>
         <span id="count-rejected" style="display:none"></span>
         <span id="count-all" style="display:none"></span>
+      </div>
+
+      <!-- Newsletter strip -->
+      <div class="nl-strip">
+        <span class="nl-strip-label">Newsletter</span>
+        <select id="nl-specialty">
+          <option value="">Toutes spécialités</option>
+        </select>
+        <input type="email" id="nl-test-email" placeholder="Email test">
+        <button class="btn-nl" onclick="previewNewsletter()">Aperçu HTML</button>
+        <button class="btn-nl primary" onclick="sendTestNewsletter()">Envoyer test</button>
+        <div class="newsletter-result" id="nl-result"></div>
       </div>
 
       <!-- Layout -->
@@ -1006,7 +904,6 @@
 
       </div>
     </div><!-- main-content -->
-
   </div><!-- app-wrapper -->
 
   <!-- Newsletter preview modal -->
@@ -1271,10 +1168,10 @@ function setStatusFilter(status, btn) {
   applyFilters();
 }
 
-function setSidebarFilter(filter, btn) {
+function setSidebarFilter(filter) {
   sidebarFilter = filter;
-  document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  const sel = document.getElementById('spec-filter');
+  if (sel && sel.value !== filter) sel.value = filter;
   applyFilters();
   updateCounters();
 }
@@ -1330,23 +1227,6 @@ function updateCounters() {
   document.getElementById('filter-bar-info').textContent =
     totalItems ? `${totalItems} article${totalItems > 1 ? 's' : ''} \u00b7 ${counts.APPROVED||0} valid\u00e9s` : '';
 
-  // Sidebar PENDING badges : recompte global (indicateur de volume par spé, pas filtré)
-  let pharmaciensPending = 0;
-  const specPending = {};
-  allItems.forEach(a => {
-    if (a.review_status !== 'PENDING') return;
-    if (a.audience === 'PHARMACIENS') pharmaciensPending++;
-    else if (a.audience === 'SPECIALITE' && a.specialty_slug)
-      specPending[a.specialty_slug] = (specPending[a.specialty_slug] || 0) + 1;
-  });
-  document.getElementById('count-pharmaciens').textContent = pharmaciensPending;
-  document.querySelectorAll('#sidebar-specs .sidebar-nav-item').forEach(btn => {
-    const f = btn.dataset.filter;
-    if (f && f.startsWith('spec:')) {
-      const countEl = btn.querySelector('.sidebar-item-count');
-      if (countEl) countEl.textContent = specPending[f.slice(5)] || 0;
-    }
-  });
 }
 
 // ── Review action ─────────────────────────────────────────────
@@ -1468,32 +1348,23 @@ async function loadSpecialties() {
 }
 
 function populateSidebar() {
-  // Collecte les stats par spécialité (total items présents, PENDING count)
-  const specStats = {};
+  // Collecte les slugs présents dans les items
+  const slugsSeen = new Set();
   allItems.forEach(a => {
-    if (a.audience !== 'SPECIALITE' || !a.specialty_slug) return;
-    if (!specStats[a.specialty_slug]) specStats[a.specialty_slug] = 0;
-    if (a.review_status === 'PENDING') specStats[a.specialty_slug]++;
+    if (a.audience === 'SPECIALITE' && a.specialty_slug) slugsSeen.add(a.specialty_slug);
   });
 
-  const container = document.getElementById('sidebar-specs');
-  container.innerHTML = '';
+  const sel = document.getElementById('spec-filter');
+  // Conserver les deux premières options fixes (Toutes / Pharmaciens), reconstruire le reste
+  while (sel.options.length > 2) sel.remove(2);
 
-  Object.entries(specStats)
-    .sort(([slugA], [slugB]) => {
-      const nameA = specialtiesMap[slugA] || slugA;
-      const nameB = specialtiesMap[slugB] || slugB;
-      return nameA.localeCompare(nameB, 'fr');
-    })
-    .forEach(([slug, pending]) => {
-      const name = specialtiesMap[slug] || slug;
-      const isActive = sidebarFilter === `spec:${slug}`;
-      const btn = document.createElement('button');
-      btn.className = 'sidebar-nav-item' + (isActive ? ' active' : '');
-      btn.dataset.filter = `spec:${slug}`;
-      btn.innerHTML = `<span class="sidebar-item-label">${esc(name)}</span><span class="sidebar-item-count">${pending}</span>`;
-      btn.onclick = () => setSidebarFilter(`spec:${slug}`, btn);
-      container.appendChild(btn);
+  Array.from(slugsSeen)
+    .sort((a, b) => (specialtiesMap[a] || a).localeCompare(specialtiesMap[b] || b, 'fr'))
+    .forEach(slug => {
+      const opt = document.createElement('option');
+      opt.value = `spec:${slug}`;
+      opt.textContent = specialtiesMap[slug] || slug;
+      sel.appendChild(opt);
     });
 }
 
