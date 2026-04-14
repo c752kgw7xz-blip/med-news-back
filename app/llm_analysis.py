@@ -306,11 +306,13 @@ lettres, errata, résultats préliminaires de phase 1-2 sans implication cliniqu
 (ex. nouvelle thérapie supérieure au standard, abandon d'un traitement établi) ;
   8+  : réservé aux ruptures majeures de pratique (rare pour des publications RSS \
 avant recommandation officielle).
-→ RÉDACTION pour articles de recherche :
-  resume : "[Thérapie/technique/biomarqueur] montre [résultat clé] chez [population] \
-([type d'essai], N=[effectif]). [Ce que ça change ou confirme vs pratique actuelle]."
-  impact_pratique : "[À retenir / À suivre si confirmé par des recommandations] : \
-[implication clinique concrète pour le professionnel]."
+→ RÉDACTION pour articles de recherche (ton confraternel, pas directif) :
+  resume : "[Thérapie/technique/biomarqueur] — résultat principal de [type d'essai] \
+(N=[effectif]) chez [population] : [résultat chiffré si disponible]. \
+[Ce que ça confirme, nuance ou remet en question vs pratique actuelle]."
+  impact_pratique : "À retenir : [implication clinique en langage naturel — \
+ce que le médecin gagne à savoir, sans injonction]. \
+Si résultats préliminaires : noter 'À suivre avant d'intégrer en pratique'."
   date_entree_en_vigueur : date de publication de l'article (pas de date d'application).
 → NATURE : utilise "ETUDE" pour les articles de recherche originaux (essais cliniques, \
 méta-analyses, études observationnelles de grande envergure). \
@@ -609,30 +611,41 @@ sage-femme, biologiste).
        "chirurgie-plastique": 3
      }}
 
-5. RÉDACTION — Résumé clair et direct pour un professionnel pressé. \
-   Pas de jargon juridique, phrases courtes, impact concret en premier.
+5. RÉDACTION — Ton : confraternel et informatif, comme si un médecin résumait \
+   à un collègue ce qu'il faut savoir. Pas de ton directif ni d'injonctions. \
+   Phrases courtes, information concrète d'abord.
+
+   RÈGLES DE TON :
+   • resume : narrer ce qui se passe (faits + contexte), pas donner des ordres.
+   • impact_pratique : commencer par "En pratique :" — formuler comme une note \
+     clinique entre pairs, jamais comme une instruction règlementaire.
+   • Éviter : "Action requise", "Ne plus prescrire", "Vous devez", "Veiller à".
+   • Préférer : "En pratique :", "À noter :", "À retenir :", "Ce qui change :".
 
    Adapte la rédaction selon la nature du texte :
 
    Texte RÉGLEMENTAIRE (loi, décret, arrêté, circulaire, avenant tarifaire) :
-   → resume : "À compter du [date d'application], [obligation/changement concret]. \
-[Qui est concerné]. [Conséquence ou sanction si pertinente]."
-   → impact_pratique : "Action requise avant le [date] : [verbe d'action précis]."
+   → resume : "[Ce qui change] entre en vigueur le [date]. [Qui est concerné et \
+pourquoi c'est notable]. [Contexte ou enjeu si utile]."
+   → impact_pratique : "En pratique : [conséquence concrète pour l'exercice \
+quotidien, formulée comme une information, pas un ordre]."
    → date_entree_en_vigueur : cherche la date d'application effective dans le texte \
 (souvent différente de la date de publication au JO). \
 Si absente, utilise la date de publication.
 
    Texte CLINIQUE / RECOMMANDATION (HAS, société savante, guideline) :
-   → resume : "[Nouveau traitement/protocole/seuil] recommandé en [situation clinique]. \
-[Population cible si précisée]. [Ce qui change vs pratique antérieure si mentionné]."
-   → impact_pratique : "[Verbe clinique] chez [population] si [critère]. \
-[Niveau de preuve ou grade si disponible dans le texte]."
+   → resume : "[Société savante/HAS] publie [recommandation sur X]. [Ce que ça \
+précise ou modifie]. [Population concernée si pertinente]."
+   → impact_pratique : "À retenir : [point clinique clé en langage médical naturel, \
+avec niveau de preuve si disponible]."
    → date_entree_en_vigueur : date de publication de la recommandation.
 
    Texte ALERTE SÉCURITÉ (ANSM retrait, matériovigilance) :
-   → resume : "[Produit/molécule] concerné(e). [Risque identifié]. \
-[Mesure prise : suspension, retrait, restriction]."
-   → impact_pratique : "Ne plus [prescrire/utiliser] [produit] — [alternative si mentionnée]."
+   → resume : "[Produit/molécule] fait l'objet d'[une suspension / d'un retrait / \
+d'une restriction] en raison de [risque identifié]. [Mesure prise et périmètre]."
+   → impact_pratique : "En pratique : [ce que ça change pour les patients \
+concernés — alternative disponible si mentionnée, ou en attente de nouvelles \
+recommandations]."
    → date_entree_en_vigueur : date de l'alerte (généralement immédiate).
 
 6. CATÉGORIE MÉTIER — Assigne UNE seule valeur parmi :
