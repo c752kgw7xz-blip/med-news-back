@@ -21,11 +21,16 @@ from __future__ import annotations
 import json
 import logging
 import threading
+from datetime import datetime
 from typing import Any, Optional
 
 # Guard against concurrent /run-background calls
 _bg_lock = threading.Lock()
 _bg_running = False
+
+# Guard against concurrent send-all jobs
+_send_lock = threading.Lock()
+_send_job: dict = {"running": False, "results": [], "started_at": None, "finished_at": None}
 
 import psycopg
 from psycopg.types.json import Json
@@ -1062,3 +1067,141 @@ def newsletter_send_test(
         "article_count": len(items),
         "error": result.error,
     }
+
+
+# ---------------------------------------------------------------------------
+# POST /admin/llm/newsletter/send-all — Envoi réel à tous les abonnés
+# ---------------------------------------------------------------------------
+
+@router.post("/newsletter/send-all")
+def newsletter_send_all(
+    request: Request,
+    specialty: Optional[str] = Query(default=None, description="Spécialité cible (toutes si absent)"),
+):
+    """
+    Envoie la newsletter aux médecins abonnés.
+    - Sans specialty : toutes les spécialités
+    - Avec specialty : une seule spécialité
+    Tourne en background. Consulter /newsletter/send-status pour le suivi.
+    """
+    _require_admin(request)
+
+    with _send_lock:
+        if _send_job["running"]:
+            raise HTTPException(status_code=409, detail="Un envoi est déjà en cours.")
+        _send_job.update({"running": True, "results": [], "started_at": datetime.utcnow().isoformat(), "finished_at": None})
+
+    def _run():
+        from app.newsletter_builder import build_newsletter, SPECIALTY_LABELS
+        from app.mailer import send_bulk
+        from app.security import decrypt_email
+        from datetime import date
+
+        try:
+            slugs = [specialty] if specialty else list(SPECIALTY_LABELS.keys())
+
+            for slug in slugs:
+                # Récupérer les articles APPROVED pour cette spécialité (sans filtre de date)
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            """
+                            SELECT i.id, i.audience, i.specialty_slug, i.score_density,
+                                   i.tri_json, i.lecture_json, i.categorie,
+                                   c.title_raw, c.official_url, c.official_date::text
+                            FROM items i
+                            JOIN candidates c ON c.id = i.candidate_id
+                            WHERE i.review_status = 'APPROVED'
+                              AND (i.specialty_slug = %s OR i.audience = 'TRANSVERSAL_LIBERAL')
+                              AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins')
+                            ORDER BY i.score_density DESC, c.official_date DESC
+                            LIMIT 50;
+                            """,
+                            (slug,),
+                        )
+                        rows = cur.fetchall()
+
+                items = [
+                    {"item_id": str(r[0]), "audience": r[1], "specialty_slug": r[2],
+                     "score_density": r[3], "tri_json": r[4], "lecture_json": r[5],
+                     "categorie": r[6], "title_raw": r[7], "official_url": r[8], "official_date": r[9]}
+                    for r in rows
+                ]
+
+                # Récupérer les abonnés actifs vérifiés pour cette spécialité
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            """
+                            SELECT u.email_ciphertext
+                            FROM users u
+                            JOIN specialties s ON s.id = u.specialty_id
+                            WHERE s.slug = %s
+                              AND u.email_verified_at IS NOT NULL
+                              AND u.is_active = TRUE
+                              AND u.is_unsubscribed = FALSE
+                              AND (u.bounce_status IS NULL OR u.bounce_status != 'permanent');
+                            """,
+                            (slug,),
+                        )
+                        sub_rows = cur.fetchall()
+
+                subscribers = []
+                for (raw,) in sub_rows:
+                    try:
+                        subscribers.append(decrypt_email(raw))
+                    except Exception:
+                        pass
+
+                if not items:
+                    _send_job["results"].append({"specialty": slug, "status": "skip", "reason": "no_items", "sent": 0, "failed": 0, "articles": 0, "subscribers": len(subscribers)})
+                    continue
+                if not subscribers:
+                    _send_job["results"].append({"specialty": slug, "status": "skip", "reason": "no_subscribers", "sent": 0, "failed": 0, "articles": len(items), "subscribers": 0})
+                    continue
+
+                subject, html, plain = build_newsletter(specialty_slug=slug, items=items, emission_date=date.today())
+                result = send_bulk(subscribers, subject, html, plain)
+
+                # Marquer les items comme publiés
+                item_ids = [i["item_id"] for i in items]
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "UPDATE items SET published_at = now() WHERE id = ANY(%s) AND published_at IS NULL;",
+                            (item_ids,),
+                        )
+                    conn.commit()
+
+                _send_job["results"].append({
+                    "specialty": slug,
+                    "status": "sent",
+                    "articles": len(items),
+                    "subscribers": len(subscribers),
+                    "sent": result["sent"],
+                    "failed": result["failed"],
+                })
+                logger.info("send-all %s : %d articles → %d/%d abonnés", slug, len(items), result["sent"], len(subscribers))
+
+        except Exception as e:
+            logger.error("send-all erreur globale : %s", e)
+            _send_job["results"].append({"specialty": "global", "status": "error", "reason": str(e), "sent": 0, "failed": 0})
+        finally:
+            with _send_lock:
+                _send_job["running"] = False
+                _send_job["finished_at"] = datetime.utcnow().isoformat()
+
+    import threading as _th
+    _th.Thread(target=_run, daemon=True).start()
+    return {"ok": True, "message": "Envoi lancé en background."}
+
+
+# ---------------------------------------------------------------------------
+# GET /admin/llm/newsletter/send-status — Statut du dernier envoi
+# ---------------------------------------------------------------------------
+
+@router.get("/newsletter/send-status")
+def newsletter_send_status(request: Request):
+    """Retourne le statut du dernier envoi (en cours ou terminé)."""
+    _require_admin(request)
+    return {"ok": True, **_send_job}

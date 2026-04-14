@@ -236,6 +236,83 @@
     }
     .spec-chip.selected .spec-chip-count { background: #a7f3d0; color: #065f46; }
 
+    /* ── Deploy card ── */
+    .deploy-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+
+    .deploy-card-title {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      margin-bottom: 4px;
+    }
+    .deploy-card-desc {
+      font-size: 12px; color: var(--text3); margin-bottom: 16px;
+    }
+
+    .deploy-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+
+    .btn-danger {
+      background: var(--red); border-color: var(--red); color: #fff;
+      padding: 6px 16px; border-radius: var(--radius);
+      border: 1px solid; font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+      transition: opacity 0.12s; height: 33px;
+    }
+    .btn-danger:hover { opacity: 0.88; }
+    .btn-danger:disabled { opacity: .45; cursor: default; }
+
+    /* ── Confirm modal ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 200; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-backdrop.hidden { display: none; }
+
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 24px; max-width: 420px; width: 100%;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+    }
+    .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .modal-body { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
+    .modal-body strong { color: var(--text); }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .modal-actions .btn { min-width: 80px; }
+
+    /* ── Deploy results ── */
+    .deploy-result {
+      margin-top: 16px; display: none;
+    }
+    .deploy-result-title {
+      font-size: 11px; font-weight: 600; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px;
+    }
+    .spec-result-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .spec-result-row:last-child { border-bottom: none; }
+    .spec-result-name { flex: 1; color: var(--text); }
+    .spec-result-badge {
+      font-size: 11px; font-weight: 600; padding: 2px 8px;
+      border-radius: 100px;
+    }
+    .badge-sent { background: var(--green-dark); color: var(--green); }
+    .badge-skip { background: var(--surface2); color: var(--text3); }
+    .badge-error { background: var(--red-dark); color: var(--red); }
+    .spec-result-detail { font-size: 12px; color: var(--text3); }
+
+    .deploy-spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid var(--border); border-top-color: var(--text2);
+      border-radius: 50%; animation: spin .6s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* ── Toast ── */
     .toast {
       position: fixed; bottom: 24px; right: 24px;
@@ -292,6 +369,40 @@
       <button class="btn btn-primary" onclick="sendTest()" id="btn-send">Envoyer test</button>
     </div>
     <div class="result-msg" id="result-msg"></div>
+  </div>
+
+  <!-- Deploy card -->
+  <div class="deploy-card">
+    <div class="deploy-card-title">Déployer la newsletter</div>
+    <div class="deploy-card-desc">Envoie la newsletter aux médecins abonnés vérifiés. Cette action est irréversible.</div>
+    <div class="deploy-row">
+      <div class="field-group">
+        <span class="field-label">Périmètre</span>
+        <select class="field-select" id="deploy-specialty">
+          <option value="">Toutes les spécialités</option>
+        </select>
+      </div>
+      <button class="btn-danger" onclick="confirmDeploy()" id="btn-deploy">Déployer</button>
+    </div>
+    <div class="deploy-result" id="deploy-result">
+      <div class="deploy-result-title" id="deploy-result-title">Résultats</div>
+      <div id="deploy-result-rows"></div>
+    </div>
+  </div>
+
+  <!-- Confirm modal -->
+  <div class="modal-backdrop hidden" id="modal-backdrop">
+    <div class="modal">
+      <div class="modal-title">Confirmer le déploiement</div>
+      <div class="modal-body" id="modal-body">
+        Vous êtes sur le point d'envoyer la newsletter à tous les médecins abonnés.
+        Cette action ne peut pas être annulée.
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal()">Annuler</button>
+        <button class="btn-danger" onclick="executeDeploy()" id="btn-confirm-deploy">Envoyer</button>
+      </div>
+    </div>
   </div>
 
   <!-- Preview iframe -->
@@ -369,14 +480,13 @@ async function logout() {
   window.location.href = '/login';
 }
 
-function loadUserEmail() {
+function checkAdmin() {
   try {
     const token = getToken();
-    if (!token) return;
+    if (!token) { window.location.href = '/login'; return; }
     const payload = JSON.parse(atob(token.split('.')[1]));
     if (!payload.adm) { window.location.href = '/portal'; return; }
-    document.getElementById('user-email').textContent = payload.email || '';
-  } catch {}
+  } catch { window.location.href = '/login'; }
 }
 
 // ── Stats + specialties ───────────────────────────────────────────────────────
@@ -409,11 +519,17 @@ async function loadData() {
   sorted.forEach(([slug, count]) => {
     const name = specMap[slug] || slug;
 
-    // select option
+    // select option (preview)
     const opt = document.createElement('option');
     opt.value = slug;
     opt.textContent = `${name} (${count})`;
     sel.appendChild(opt);
+
+    // select option (deploy)
+    const opt2 = document.createElement('option');
+    opt2.value = slug;
+    opt2.textContent = name;
+    document.getElementById('deploy-specialty').appendChild(opt2);
 
     // grid chip
     const chip = document.createElement('div');
@@ -495,6 +611,107 @@ async function sendTest() {
   }
 }
 
+// ── Deploy ────────────────────────────────────────────────────────────────────
+let _pollInterval = null;
+
+function confirmDeploy() {
+  const spec = document.getElementById('deploy-specialty').value;
+  const specLabel = spec
+    ? document.getElementById('deploy-specialty').selectedOptions[0].text
+    : 'toutes les spécialités';
+  document.getElementById('modal-body').innerHTML =
+    `Vous êtes sur le point d'envoyer la newsletter pour <strong>${esc(specLabel)}</strong> ` +
+    `à tous les médecins abonnés vérifiés.<br><br>Cette action ne peut pas être annulée.`;
+  document.getElementById('modal-backdrop').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.add('hidden');
+}
+
+async function executeDeploy() {
+  closeModal();
+  const spec = document.getElementById('deploy-specialty').value;
+  const btn = document.getElementById('btn-deploy');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="deploy-spinner"></span>Envoi en cours…';
+
+  const params = spec ? `?specialty=${encodeURIComponent(spec)}` : '';
+  const res = await authFetch(`${API}/admin/llm/newsletter/send-all${params}`, { method: 'POST' });
+  if (!res) { btn.disabled = false; btn.textContent = 'Déployer'; return; }
+
+  const data = await res.json();
+  if (!data.ok) {
+    toast(data.detail || 'Erreur déploiement', 'error');
+    btn.disabled = false; btn.textContent = 'Déployer';
+    return;
+  }
+
+  // Show results panel and start polling
+  const panel = document.getElementById('deploy-result');
+  panel.style.display = '';
+  document.getElementById('deploy-result-title').innerHTML =
+    '<span class="deploy-spinner"></span>Envoi en cours…';
+  document.getElementById('deploy-result-rows').innerHTML = '';
+
+  _pollInterval = setInterval(pollDeployStatus, 2000);
+}
+
+async function pollDeployStatus() {
+  const res = await authFetch(`${API}/admin/llm/newsletter/send-status`);
+  if (!res) return;
+  const data = await res.json();
+
+  renderDeployResults(data.results || [], data.running);
+
+  if (!data.running) {
+    clearInterval(_pollInterval);
+    _pollInterval = null;
+    const btn = document.getElementById('btn-deploy');
+    btn.disabled = false;
+    btn.textContent = 'Déployer';
+
+    const total = (data.results || []).reduce((s, r) => s + (r.sent || 0), 0);
+    document.getElementById('deploy-result-title').textContent =
+      `Terminé — ${total} email(s) envoyé(s)`;
+    toast(`Déploiement terminé — ${total} envoi(s)`);
+  }
+}
+
+function renderDeployResults(results, running) {
+  const SPEC_NAMES = {};
+  document.querySelectorAll('#deploy-specialty option').forEach(o => {
+    if (o.value) SPEC_NAMES[o.value] = o.textContent;
+  });
+
+  const container = document.getElementById('deploy-result-rows');
+  container.innerHTML = results.map(r => {
+    const name = esc(SPEC_NAMES[r.specialty] || r.specialty);
+    let badge, detail;
+    if (r.status === 'sent') {
+      badge = `<span class="spec-result-badge badge-sent">${r.sent} envoyé(s)</span>`;
+      detail = `${r.articles} article(s) · ${r.subscribers} abonné(s)${r.failed ? ` · ${r.failed} échec(s)` : ''}`;
+    } else if (r.status === 'skip') {
+      const reason = r.reason === 'no_subscribers' ? 'aucun abonné' : 'aucun article';
+      badge = `<span class="spec-result-badge badge-skip">Ignoré</span>`;
+      detail = reason;
+    } else {
+      badge = `<span class="spec-result-badge badge-error">Erreur</span>`;
+      detail = esc(r.reason || '');
+    }
+    return `<div class="spec-result-row">
+      <span class="spec-result-name">${name}</span>
+      ${badge}
+      <span class="spec-result-detail">${detail}</span>
+    </div>`;
+  }).join('');
+
+  if (running) {
+    document.getElementById('deploy-result-title').innerHTML =
+      '<span class="deploy-spinner"></span>Envoi en cours…';
+  }
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function showResult(msg, type) {
   const el = document.getElementById('result-msg');
@@ -515,7 +732,7 @@ function toast(msg, type = 'success') {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-loadUserEmail();
+checkAdmin();
 loadData();
 </script>
 </body>
