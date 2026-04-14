@@ -575,7 +575,7 @@ async function previewNewsletter() {
     document.getElementById('preview-iframe').srcdoc = data.html;
     document.getElementById('preview-title').textContent = data.subject || 'Aperçu';
     document.getElementById('preview-meta').textContent = `${data.article_count} article(s)`;
-    panel.style.display = '';
+    panel.style.display = 'block';
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     showResult(`Aperçu généré — ${data.article_count} article(s) · "${data.subject}"`, 'ok');
   } else {
@@ -649,7 +649,7 @@ async function executeDeploy() {
 
   // Show results panel and start polling
   const panel = document.getElementById('deploy-result');
-  panel.style.display = '';
+  panel.style.display = 'block';
   document.getElementById('deploy-result-title').innerHTML =
     '<span class="deploy-spinner"></span>Envoi en cours…';
   document.getElementById('deploy-result-rows').innerHTML = '';
@@ -717,7 +717,7 @@ function showResult(msg, type) {
   const el = document.getElementById('result-msg');
   el.textContent = msg;
   el.className = `result-msg ${type}`;
-  el.style.display = '';
+  el.style.display = 'block';
 }
 
 function hideResult() {
