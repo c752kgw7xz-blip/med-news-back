@@ -147,15 +147,16 @@ JAMA_FEEDS: list[dict] = [
         "specialty_hint": "psychiatrie",
     },
 
-    # JAMA Surgery
-    {
-        "url": "https://jamanetwork.com/rss/site_3/76.xml",
-        "label": "JAMA Surgery",
-        "source": "jama_surgery",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",  # chirurgie générale → LLM roote vers sous-spécialité
-    },
+    # JAMA Surgery — RSS 403 depuis avril 2026, remplacé par collecteur PubMed
+    # Voir pubmed_collector.py : source "pubmed_jama_surgery"
+    # {
+    #     "url": "https://jamanetwork.com/rss/site_3/76.xml",
+    #     "label": "JAMA Surgery",
+    #     "source": "jama_surgery",
+    #     "source_type": "innovation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "tous",
+    # },
 
     # JAMA Network Open — multi-spécialité (accès libre intégral)
     # Volume élevé (~100/mois) → filtre LLM strict (min_score=7)

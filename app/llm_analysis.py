@@ -1158,6 +1158,12 @@ SOURCE_CONFIG: dict[str, dict] = {
     **{src: {"require_whitelist": False, "min_llm_score": 5} for src in [
         "pubmed_jvs", "pubmed_ejves", "pubmed_jet", "pubmed_ann_vasc_surg",
     ]},
+    # JAMA Surgery via PubMed (RSS 403 depuis avril 2026) :
+    # requête déjà filtrée sur termes vasculaires → seuil 6 (LLM affine).
+    "pubmed_jama_surgery": {
+        "require_whitelist": False,
+        "min_llm_score": 6,
+    },
     # ── EMA — section Innovation ───────────────────────────────────────────
     # ema_new_medicines : ~200 AMM/an dont ~150 génériques/biosimilaires → bruit.
     # Seuil 8 : seule l'innovation truly breakthrough passe (first-in-class,

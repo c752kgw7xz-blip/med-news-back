@@ -2,11 +2,11 @@
 """
 Collecteur PubMed via NCBI E-utilities.
 
-Utilisé pour les journaux dont le RSS Elsevier/SAGE a été supprimé (410 Gone),
-notamment en chirurgie vasculaire : JVS, EJVES, JET, Annals of Vascular Surgery.
+Utilisé pour les journaux dont le RSS éditeur est mort (Elsevier 410 Gone,
+JAMA Surgery 403 depuis avril 2026), notamment en chirurgie vasculaire.
 
 API : https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
-  - esearch.fcgi : recherche par journal + date → liste de PMIDs
+  - esearch.fcgi : recherche par journal + filtre thématique + date → liste PMIDs
   - efetch.fcgi  : récupération détails XML par lot de PMIDs (titres, abstracts, dates)
 
 Rate limit NCBI :
@@ -19,6 +19,7 @@ Sources configurées (voir PUBMED_SOURCES) :
   pubmed_ejves         : European Journal of Vascular and Endovascular Surgery
   pubmed_jet           : Journal of Endovascular Therapy
   pubmed_ann_vasc_surg : Annals of Vascular Surgery
+  pubmed_jama_surgery  : JAMA Surgery (RSS 403 depuis avril 2026) — filtré chirurgie vasculaire
 """
 
 from __future__ import annotations
@@ -97,6 +98,35 @@ PUBMED_SOURCES: list[dict] = [
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
         "min_score_hint": 4,
+    },
+
+    # ── JAMA Surgery — remplace le RSS 403 depuis avril 2026 ──────────────
+    # JAMA Surgery couvre toute la chirurgie générale et sous-spécialités.
+    # Filtre thématique obligatoire : sans lui, on collecte hernie, bariatrique,
+    # thyroïde, oncologie digestive — sans rapport avec un chir vasc.
+    # Requête restreinte aux pathologies vasculaires directement opérées :
+    # AAA, sténose carotide, AOMI/CLTI, ischémie de membre, accès vasculaires.
+    # Volume attendu : 5-10 articles/mois → min_score_hint=6 (LLM filtre le reste).
+    {
+        "source": "pubmed_jama_surgery",
+        "journal_term": (
+            '"JAMA Surg"[Journal] AND ('
+            '"vascular surgery"[Title/Abstract] OR '
+            '"aortic aneurysm"[Title/Abstract] OR '
+            '"carotid endarterectomy"[Title/Abstract] OR '
+            '"carotid stenosis"[Title/Abstract] OR '
+            '"peripheral arterial"[Title/Abstract] OR '
+            '"limb ischemia"[Title/Abstract] OR '
+            '"endovascular repair"[Title/Abstract] OR '
+            '"revascularization"[Title/Abstract] OR '
+            '"hemodialysis access"[Title/Abstract] OR '
+            '"aortic dissection"[Title/Abstract]'
+            ')'
+        ),
+        "label": "JAMA Surgery — chirurgie vasculaire",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-vasculaire",
+        "min_score_hint": 6,
     },
 ]
 
