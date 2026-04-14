@@ -138,22 +138,13 @@ WEB_SCRAPER_SOURCES: list[dict] = [
         "exclude_pattern": r"(?i)/(agenda|annuaire|adhesion|contacts|congres|assemblee-generale|hommage|disparition|election|jeunes-ophtalmos|comptes-annuels|mediatheque)(/|$)",
     },
 
-    # ── SOFMER — Société Française de Médecine Physique et de Réadaptation ─
-    # Page recommandations professionnelles.
-    # ⚠️  Le site utilise un routage ?pageID= qui peut être client-side (JS).
-    #     Si le HTML retourné par httpx est un shell vide (0 liens trouvés),
-    #     le scraper échoue silencieusement avec seen=0 — sans impact.
-    #     Dans ce cas, envisager un flux RSS alternatif ou une page de presse.
-    {
-        "url": "https://www.sofmer.com/?pageID=sf23_sofmer_collab",
-        "source": "sofmer",
-        "label": "SOFMER — Recommandations médecine physique et réadaptation",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "medecine-physique",
-        "link_pattern": r"sofmer\.com",
-        "exclude_pattern": r"(?i)(pageID=sf23_(annuaire|adhesion|bureau|congres|agenda|bourses|formation|contact|decouvrir|conseil|comite|newsletter|membre))",
-    },
+    # ── SOFMER désactivé — avril 2026 ────────────────────────────────────────
+    # La page sofmer.com/?pageID=sf23_sofmer_collab est une archive statique
+    # de PDFs anciens (coiffe des rotateurs, ménisques, etc. datant de 2012-2016).
+    # Le scraper les collecte avec la date du jour → la règle ancienneté ne
+    # se déclenche pas → pollue la file de review avec du contenu obsolète.
+    # Le RSS SOFMER est également désactivé (404 depuis mars 2026).
+    # À réactiver uniquement si SOFMER ouvre une page d'actualités datées.
 
     # ── SFPédiatrie ───────────────────────────────────────────────────────
     # Page des recommandations/mises au point de la SFP.
