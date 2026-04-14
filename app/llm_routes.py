@@ -360,6 +360,57 @@ def reset_all_pipeline(request: Request):
     }
 
 
+@router.post("/reset-pending")
+def reset_pending_pipeline(request: Request):
+    """
+    Réinitialise uniquement les items PENDING (pas les APPROVED ni REJECTED).
+    → Remet les candidats correspondants en NEW pour ré-analyse avec le prompt actuel.
+    Utile après une modification du prompt LLM pour re-générer les textes.
+    """
+    _require_admin(request)
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            # Récupérer les candidate_id des items PENDING
+            cur.execute(
+                "SELECT DISTINCT candidate_id FROM items WHERE review_status = 'PENDING';"
+            )
+            candidate_ids = [r[0] for r in cur.fetchall()]
+
+            # Supprimer les items PENDING
+            cur.execute("DELETE FROM items WHERE review_status = 'PENDING';")
+            items_deleted = cur.rowcount
+
+            # Remettre les candidats correspondants en NEW
+            if candidate_ids:
+                cur.execute(
+                    "UPDATE candidates SET status = 'NEW', llm_error = NULL "
+                    "WHERE id = ANY(%s);",
+                    (candidate_ids,),
+                )
+                reset_count = cur.rowcount
+            else:
+                reset_count = 0
+
+        conn.commit()
+
+    logger.info(
+        "reset-pending : %d items PENDING supprimés, %d candidats remis en NEW",
+        items_deleted, reset_count,
+    )
+
+    return {
+        "ok": True,
+        "pending_items_deleted": items_deleted,
+        "candidates_reset_to_new": reset_count,
+        "message": (
+            f"{items_deleted} items PENDING supprimés (APPROVED/REJECTED conservés). "
+            f"{reset_count} candidats remis en NEW. "
+            "Lance /admin/llm/run-all pour ré-analyser."
+        ),
+    }
+
+
 class _RunBackgroundBody(BaseModel):
     max_candidates: int = 200
     batch_size: int = 20
