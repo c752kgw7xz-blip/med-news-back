@@ -15,7 +15,7 @@ import hashlib
 import logging
 import os
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -188,7 +188,9 @@ def list_articles(
         )
         extra_params.extend([pattern, pattern, pattern])
 
-    # Date range filter — from_date/to_date take priority over month
+    # Date range filter — from_date/to_date take priority over month.
+    # Par défaut (aucun filtre explicite) : fenêtre mois courant + mois précédent,
+    # alignée sur la logique newsletter (édition mensuelle).
     if from_date:
         extra_clauses.append("c.official_date >= %s")
         extra_params.append(from_date)
@@ -207,6 +209,15 @@ def list_articles(
             extra_params.extend([start, end])
         except (ValueError, IndexError):
             pass
+    else:
+        # Fenêtre par défaut : 1er du mois précédent → aujourd'hui
+        today = date.today()
+        if today.month == 1:
+            default_from = date(today.year - 1, 12, 1)
+        else:
+            default_from = date(today.year, today.month - 1, 1)
+        extra_clauses.append("c.official_date >= %s")
+        extra_params.append(default_from.isoformat())
 
     extra_where = (" AND " + " AND ".join(extra_clauses)) if extra_clauses else ""
     all_params = (*aud_params, *extra_params)
@@ -289,9 +300,18 @@ def article_counts(
     if from_date:
         date_clause += " AND c.official_date >= %s"
         date_params.append(from_date)
-    if to_date:
-        date_clause += " AND c.official_date <= %s"
-        date_params.append(to_date)
+        if to_date:
+            date_clause += " AND c.official_date <= %s"
+            date_params.append(to_date)
+    else:
+        # Fenêtre par défaut : 1er du mois précédent → aujourd'hui
+        today = date.today()
+        if today.month == 1:
+            default_from = date(today.year - 1, 12, 1)
+        else:
+            default_from = date(today.year, today.month - 1, 1)
+        date_clause += " AND c.official_date >= %s"
+        date_params.append(default_from.isoformat())
 
     with get_conn() as conn:
         with conn.cursor() as cur:
