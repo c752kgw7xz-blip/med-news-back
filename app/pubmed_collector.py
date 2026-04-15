@@ -45,39 +45,48 @@ NCBI_API_KEY = os.getenv("NCBI_API_KEY", "")
 # Sources PubMed — journaux dont le RSS éditeur est mort (Elsevier 410 Gone)
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Filtre publication type — élimine les séries rétrospectives et case reports
+# N'autorise que les types qui peuvent déplacer la pratique :
+#   RCT, méta-analyse, revue systématique, guideline, essai phase III, étude multicentrique
+# ---------------------------------------------------------------------------
+_PT_FILTER = (
+    '(("Randomized Controlled Trial"[pt] OR "Meta-Analysis"[pt] OR '
+    '"Systematic Review"[pt] OR "Practice Guideline"[pt] OR '
+    '"Clinical Trial, Phase III"[pt] OR "Multicenter Study"[pt]) '
+    'NOT ("Letter"[pt] OR "Editorial"[pt] OR "Case Reports"[pt] OR "Comment"[pt]))'
+)
+
 PUBMED_SOURCES: list[dict] = [
 
     # ── Journal of Vascular Surgery (JVS) ────────────────────────────────
-    # THE référence en chirurgie vasculaire ouverte + endovasculaire.
-    # Essais cliniques (EVAR vs ouvert, stenting carotide, AOMI, AAA),
-    # résultats à long terme, nouvelles techniques (FEVAR, TEVAR hybride).
-    # PubMed : ~250 articles/an. Filtre LLM min_score=5 recommandé.
+    # Filtré sur types de publication uniquement — élimine les séries rétrospectives
+    # (80 % du journal). Ne remontent que RCTs, méta-analyses, guidelines, études multicentriques.
+    # Volume attendu : ~5-10 articles/mois au lieu de ~20.
     {
         "source": "pubmed_jvs",
-        "journal_term": '"J Vasc Surg"[Journal]',
-        "label": "Journal of Vascular Surgery (JVS)",
+        "journal_term": f'"J Vasc Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Vascular Surgery (JVS) — RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
-        "min_score_hint": 5,
+        "min_score_hint": 6,
     },
 
     # ── European Journal of Vascular and Endovascular Surgery (EJVES) — Innovation ──
-    # Organe officiel de l'ESVS. Essais cliniques, études de cohortes, méta-analyses,
-    # résultats à long terme (EVAR, TEVAR, carotide, AOMI, CLTI).
+    # Même filtre publication type. EJVES publie les grandes études multicentriques
+    # européennes (EVAR trials, ACST, carotide) — exactement ce qu'on cherche.
     {
         "source": "pubmed_ejves",
-        "journal_term": '"Eur J Vasc Endovasc Surg"[Journal]',
-        "label": "EJVES — Innovations & essais cliniques",
+        "journal_term": f'"Eur J Vasc Endovasc Surg"[Journal] AND {_PT_FILTER}',
+        "label": "EJVES — RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
-        "min_score_hint": 5,
+        "min_score_hint": 6,
     },
 
     # ── EJVES — Guidelines ESVS uniquement (source_type recommandation) ──
-    # Filtre sur les titres contenant : guideline, consensus, recommendation,
-    # clinical practice, position statement → capture les grandes guidelines ESVS
-    # (AAA 2019, CLTI 2019, carotide 2023, AOMI 2024…) sans le bruit des articles.
-    # Source distincte de pubmed_ejves pour ne pas mélanger innovation et reco.
+    # Filtre titre (guideline, consensus, recommendation…) — pas de filtre pt
+    # car les guidelines ESVS sont parfois taguées "Review" ou "Article" sur PubMed.
     {
         "source": "pubmed_ejves_guidelines",
         "journal_term": (
@@ -94,38 +103,32 @@ PUBMED_SOURCES: list[dict] = [
     },
 
     # ── Journal of Endovascular Therapy (JET) ─────────────────────────────
-    # Spécialisé techniques endovasculaires : EVAR, TEVAR, FEVAR,
-    # chimney/sandwich, drug-coated balloons, stenting carotide (CAS/TCAR).
-    # Couvre aussi les accès vasculaires et la dialyse.
+    # Spécialisé techniques endovasculaires. Filtré sur types de publication :
+    # élimine les case series et registres monocentriques qui dominent le journal.
     {
         "source": "pubmed_jet",
-        "journal_term": '"J Endovasc Ther"[Journal]',
-        "label": "Journal of Endovascular Therapy (JET)",
+        "journal_term": f'"J Endovasc Ther"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Endovascular Therapy (JET) — RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
-        "min_score_hint": 5,
+        "min_score_hint": 6,
     },
 
     # ── Annals of Vascular Surgery ────────────────────────────────────────
-    # Fondé à Paris (Annales de Chirurgie Vasculaire) — forte présence
-    # chirurgie française et européenne. Techniques opératoires, complications,
-    # résultats à moyen terme. Utile pour pratique quotidienne.
+    # Journal à dominante rétrospective. Volume élevé même avec filtre PT :
+    # seuil relevé à 7 pour ne retenir que les études avec impact clinique réel.
     {
         "source": "pubmed_ann_vasc_surg",
-        "journal_term": '"Ann Vasc Surg"[Journal]',
-        "label": "Annals of Vascular Surgery",
+        "journal_term": f'"Ann Vasc Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Annals of Vascular Surgery — RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
-        "min_score_hint": 4,
+        "min_score_hint": 7,
     },
 
     # ── JAMA Surgery — remplace le RSS 403 depuis avril 2026 ──────────────
-    # JAMA Surgery couvre toute la chirurgie générale et sous-spécialités.
-    # Filtre thématique obligatoire : sans lui, on collecte hernie, bariatrique,
-    # thyroïde, oncologie digestive — sans rapport avec un chir vasc.
-    # Requête restreinte aux pathologies vasculaires directement opérées :
-    # AAA, sténose carotide, AOMI/CLTI, ischémie de membre, accès vasculaires.
-    # Volume attendu : 5-10 articles/mois → min_score_hint=6 (LLM filtre le reste).
+    # Double filtre : thématique vasculaire + type de publication.
+    # Élimine les études observationnelles chirurgie générale qui n'ont rien à voir.
     {
         "source": "pubmed_jama_surgery",
         "journal_term": (
@@ -140,12 +143,12 @@ PUBMED_SOURCES: list[dict] = [
             '"revascularization"[Title/Abstract] OR '
             '"hemodialysis access"[Title/Abstract] OR '
             '"aortic dissection"[Title/Abstract]'
-            ')'
+            f') AND {_PT_FILTER}'
         ),
-        "label": "JAMA Surgery — chirurgie vasculaire",
+        "label": "JAMA Surgery — vasculaire, RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
-        "min_score_hint": 6,
+        "min_score_hint": 7,
     },
 ]
 
@@ -419,3 +422,84 @@ def collect_all_pubmed(days: int = 90) -> dict[str, dict]:
             logger.error("[pubmed/%s] erreur: %s", src, e)
             results[src] = {"error": str(e)}
     return results
+
+
+# ---------------------------------------------------------------------------
+# Enrichissement — re-fetch des abstracts manquants
+# ---------------------------------------------------------------------------
+
+def enrich_empty_abstracts() -> dict[str, int]:
+    """
+    Re-fetche les abstracts PubMed pour les candidats sans content_raw.
+
+    Cas ciblé : articles collectés (pubmed_*) où l'abstract était absent
+    lors du premier passage — souvent dû à un rate-limit NCBI ou un timeout.
+    Les articles sans abstract sur PubMed (lettres, errata) restent vides :
+    c'est voulu, le LLM travaillera sur le titre seul.
+
+    Returns:
+        {"checked": N, "enriched": N, "still_empty": N, "errors": N}
+    """
+    stats: dict[str, int] = {"checked": 0, "enriched": 0, "still_empty": 0, "errors": 0}
+
+    # 1. Candidats PubMed sans abstract, pas encore traités par le LLM
+    #    Le PMID est stocké dans raw_json->>'pmid' (colonne JSONB)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, raw_json->>'pmid' AS pmid
+                FROM candidates
+                WHERE source LIKE 'pubmed\\_%%'
+                  AND (content_raw IS NULL OR TRIM(content_raw) = '')
+                  AND status NOT IN ('LLM_DONE', 'APPROVED', 'REJECTED')
+                  AND raw_json->>'pmid' IS NOT NULL
+            """)
+            rows = cur.fetchall()
+
+    if not rows:
+        logger.info("[pubmed/enrich] aucun candidat sans abstract")
+        return stats
+
+    stats["checked"] = len(rows)
+    pmid_to_db_id: dict[str, Any] = {row[1]: row[0] for row in rows}
+    pmids = list(pmid_to_db_id.keys())
+
+    logger.info("[pubmed/enrich] %d candidats sans abstract à enrichir", len(pmids))
+
+    # 2. Récupération des abstracts via NCBI efetch
+    with httpx.Client(follow_redirects=True) as client:
+        articles = _fetch_articles(pmids, client=client)
+
+    # 3. Mise à jour en base
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            for art in articles:
+                pmid = art.get("pmid")
+                abstract = art.get("abstract") or ""
+                db_id = pmid_to_db_id.get(pmid)
+                if not db_id:
+                    continue
+                if not abstract.strip():
+                    stats["still_empty"] += 1
+                    continue
+                try:
+                    cur.execute(
+                        """
+                        UPDATE candidates
+                        SET content_raw = %s
+                        WHERE id = %s
+                          AND (content_raw IS NULL OR TRIM(content_raw) = '')
+                        """,
+                        (abstract, db_id),
+                    )
+                    if cur.rowcount > 0:
+                        stats["enriched"] += 1
+                    else:
+                        stats["still_empty"] += 1
+                except Exception as e:
+                    logger.warning("[pubmed/enrich] update error pmid=%s: %s", pmid, e)
+                    stats["errors"] += 1
+        conn.commit()
+
+    logger.info("[pubmed/enrich] done — %s", stats)
+    return stats

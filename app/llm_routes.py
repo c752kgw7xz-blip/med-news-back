@@ -98,8 +98,15 @@ RETURNING id;
 """
 
 
-def _fetch_candidates_to_analyse(cur, candidate_id: str | None, limit: int) -> list[dict]:
-    """Retourne les candidats NEW à analyser."""
+def _fetch_candidates_to_analyse(
+    cur,
+    candidate_id: str | None,
+    limit: int,
+    sources: list[str] | None = None,
+) -> list[dict]:
+    """Retourne les candidats NEW à analyser.
+    Si sources est fourni, filtre uniquement les candidats de ces sources.
+    """
     if candidate_id:
         cur.execute(
             """
@@ -109,6 +116,19 @@ def _fetch_candidates_to_analyse(cur, candidate_id: str | None, limit: int) -> l
             LIMIT 1;
             """,
             (candidate_id,),
+        )
+    elif sources:
+        placeholders = ",".join(["%s"] * len(sources))
+        cur.execute(
+            f"""
+            SELECT id, title_raw, content_raw, official_date::text, source
+            FROM candidates
+            WHERE status IN ('NEW', 'LLM_FAILED')
+              AND source IN ({placeholders})
+            ORDER BY official_date DESC
+            LIMIT %s;
+            """,
+            (*sources, limit),
         )
     else:
         cur.execute(
@@ -262,24 +282,41 @@ def run_llm_analysis(
     request: Request,
     candidate_id: Optional[str] = Query(default=None, description="Analyser un seul candidat"),
     limit: int = Query(default=20, ge=1, le=200, description="Nombre max de candidats à traiter"),
+    sources: Optional[str] = Query(default=None, description="Sources séparées par virgule (ex: pubmed_jvs,pubmed_ejves)"),
 ):
     """
     Lance l'analyse LLM sur les candidats NEW.
     - Sans paramètre : traite les `limit` plus récents candidats NEW
     - Avec candidate_id : traite uniquement ce candidat
+    - Avec sources : filtre par source(s)
     Protégé par x-admin-secret.
     """
     _require_admin(request)
 
+    source_list = [s.strip() for s in sources.split(",")] if sources else None
+
+    # Enrichissement Unpaywall avant analyse : tente de remplacer les abstracts courts
+    # par le full text open access pour les candidats PubMed avec DOI.
+    # Silencieux en cas d'erreur — ne bloque pas le pipeline LLM.
+    unpaywall_stats: dict = {}
+    if not candidate_id:  # inutile sur un seul candidat ciblé
+        try:
+            from app.unpaywall_client import enrich_with_unpaywall
+            unpaywall_stats = enrich_with_unpaywall(limit=limit, sources=source_list)
+            logger.info("[llm/run] Unpaywall enrichissement : %s", unpaywall_stats)
+        except Exception as _uw_err:
+            logger.warning("[llm/run] Unpaywall ignoré : %s", _uw_err)
+
     with get_conn() as conn:
         with conn.cursor() as cur:
-            candidates = _fetch_candidates_to_analyse(cur, candidate_id, limit)
+            candidates = _fetch_candidates_to_analyse(cur, candidate_id, limit, sources=source_list)
 
     if not candidates:
         return {
             "ok": True,
             "message": "Aucun candidat NEW à analyser",
             "processed": 0,
+            "unpaywall": unpaywall_stats,
             "reports": [],
         }
 
@@ -308,6 +345,7 @@ def run_llm_analysis(
         "not_pertinent": not_pertinent,
         "failed": failed,
         "llm_calls": done + not_pertinent + failed,
+        "unpaywall": unpaywall_stats,
         "reports": reports,
     }
 
@@ -660,14 +698,18 @@ def run_pre_filter(request: Request):
 def run_llm_all(
     request: Request,
     batch_size: int = Query(default=10, ge=1, le=50, description="Taille de chaque lot"),
+    sources: Optional[str] = Query(default=None, description="Sources séparées par virgule (ex: pubmed_jvs,pubmed_ejves)"),
 ):
     """
     Traite TOUS les candidats NEW + LLM_FAILED par lots.
     Retourne le résumé global sans timeout.
+    Si sources est fourni, ne traite que les candidats de ces sources.
     """
     _require_admin(request)
 
     from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    source_list = [s.strip() for s in sources.split(",")] if sources else None
 
     total_done = total_failed = total_not_pertinent = total_processed = total_pre_filtered = 0
     workers = min(batch_size, 15)
@@ -675,7 +717,7 @@ def run_llm_all(
     while True:
         with get_conn() as conn:
             with conn.cursor() as cur:
-                candidates = _fetch_candidates_to_analyse(cur, None, batch_size)
+                candidates = _fetch_candidates_to_analyse(cur, None, batch_size, sources=source_list)
 
         if not candidates:
             break
@@ -979,7 +1021,7 @@ def newsletter_preview(
                 SELECT i.id, i.audience, i.specialty_slug, i.score_density,
                        i.tri_json, i.lecture_json, i.published_at,
                        c.title_raw, c.official_url, c.official_date::text,
-                       i.categorie
+                       i.categorie, i.source_type, c.source
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE {where}
@@ -1001,6 +1043,8 @@ def newsletter_preview(
             "official_url": r[8],
             "official_date": r[9],
             "categorie": r[10],
+            "source_type": r[11],
+            "source": r[12],
         }
         for r in rows
     ]
@@ -1039,7 +1083,8 @@ def newsletter_send_test(
                 f"""
                 SELECT i.id, i.audience, i.specialty_slug, i.score_density,
                        i.tri_json, i.lecture_json, i.published_at,
-                       c.title_raw, c.official_url, c.official_date::text
+                       c.title_raw, c.official_url, c.official_date::text,
+                       i.categorie, i.source_type, c.source
                 FROM items i JOIN candidates c ON c.id = i.candidate_id
                 WHERE {where}
                 ORDER BY i.score_density DESC
@@ -1054,6 +1099,7 @@ def newsletter_send_test(
             "audience": r[1], "specialty_slug": r[2], "score_density": r[3],
             "tri_json": r[4], "lecture_json": r[5], "title_raw": r[7],
             "official_url": r[8], "official_date": r[9],
+            "categorie": r[10], "source_type": r[11], "source": r[12],
         }
         for r in rows
     ]
@@ -1108,7 +1154,9 @@ def newsletter_send_all(
                             """
                             SELECT i.id, i.audience, i.specialty_slug, i.score_density,
                                    i.tri_json, i.lecture_json, i.categorie,
-                                   c.title_raw, c.official_url, c.official_date::text
+                                   i.source_type,
+                                   c.title_raw, c.official_url, c.official_date::text,
+                                   c.source
                             FROM items i
                             JOIN candidates c ON c.id = i.candidate_id
                             WHERE i.review_status = 'APPROVED'
@@ -1124,7 +1172,9 @@ def newsletter_send_all(
                 items = [
                     {"item_id": str(r[0]), "audience": r[1], "specialty_slug": r[2],
                      "score_density": r[3], "tri_json": r[4], "lecture_json": r[5],
-                     "categorie": r[6], "title_raw": r[7], "official_url": r[8], "official_date": r[9]}
+                     "categorie": r[6], "source_type": r[7],
+                     "title_raw": r[8], "official_url": r[9], "official_date": r[10],
+                     "source": r[11]}
                     for r in rows
                 ]
 

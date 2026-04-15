@@ -159,7 +159,7 @@ SOURCE_TO_TYPE: dict[str, str] = {
     # Nouvelles sources institutionnelles — audit mars 2026
     "has_ct":  "recommandation",  # HAS CT — avis médicaments ✅ RSS p_3081449
     "spf_beh": "reglementaire",  # SPF — articles (BEH inclus) ✅
-    "cnom":    "reglementaire",  # CNOM — déontologie ✅ RSS /rss.xml
+    "cnom":    "reglementaire",  # CNOM — déontologie, exercice médical ✅ RSS actif
     # Retirées après audit : inca (pas de RSS), andpc (pas de RSS), ameli_pro (login)
     # ── Sources européennes (RSS) ──────────────────────────────────────────────
     # EMA — European Medicines Agency
@@ -238,11 +238,22 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "jdr_dental":           "innovation",   # dentiste / orthodontiste
     "jan_nursing":          "innovation",   # infirmiers
 
+    # ── Presse spécialisée endovasculaire ────────────────────────────────
+    "endovascular_today":   "innovation",   # Endovascular Today — périph. & endovasc.
+    # ── Congrès vasculaires — désactivés (couvert via TCTMD + Vascular News) ──
+    # "linc_highlights": domaine NXDOMAIN ; "evc_highlights": hors cible
     # ── PubMed — chirurgie vasculaire (Elsevier RSS 410 Gone → fallback NCBI) ──
     "pubmed_jvs":           "innovation",   # Journal of Vascular Surgery
     "pubmed_ejves":         "innovation",   # European Journal of Vascular and Endovascular Surgery
     "pubmed_jet":           "innovation",   # Journal of Endovascular Therapy
     "pubmed_ann_vasc_surg": "innovation",   # Annals of Vascular Surgery
+    # ── Presse médicale professionnelle ─────────────────────────────────────
+    # Journalistes médicaux — curation déjà faite, filtre LLM très strict
+    "vascular_specialist":  "innovation",   # SVS official newspaper (en anglais)
+    "vascular_news":        "innovation",   # Vascular News (UK/international)
+    "tctmd":                "innovation",   # TCTMD — interventionnel vasculaire + cardio
+    "quotidien_medecin":    "innovation",   # Le Quotidien du Médecin (FR, généraliste)
+    "egora":                "innovation",   # Egora (FR, libéral, bruit élevé)
 }
 
 
@@ -445,6 +456,50 @@ Règles de cohérence evidence_json :
 - paradigm_shift=true → score_density doit être ≥8 (surpasse le score calculé)
 - safety_signal=true → score_density doit être ≥8
 
+SOURCE PRESSE MÉDICALE PROFESSIONNELLE — Si la SOURCE indique un journal de presse \
+médicale (Vascular Specialist, Vascular News, TCTMD, Le Quotidien du Médecin, Egora) :
+
+→ NATURE DU CONTENU : ce n'est pas un article de recherche primaire. C'est un article \
+de journalisme médical : le journaliste a lu les études, assisté au congrès, interviewé \
+les chirurgiens, et écrit pour un praticien. Il n'y a pas de design d'étude à extraire.
+
+→ PERTINENCE : critère unique — "Un spécialiste concerné va-t-il changer quelque chose \
+dans sa pratique ou sa planification s'il lit ça ?" \
+RETENIR : \
+  • Nouveau dispositif médical approuvé (CE mark, FDA) ou résultats cliniques présentés \
+au congrès (ESVS, SVS, LINC, CIRSE, VEITH) ; \
+  • Mise à jour de guideline ou recommandation de société savante (ESVS, SVS, HAS, ESC...) ; \
+  • Résultats d'essai pivot (même présentés au congrès avant publication) ; \
+  • Alerte sécurité ou rappel de dispositif relayé depuis ANSM, FDA, EMA ; \
+  • Changement de remboursement ou d'autorisation ayant un impact direct sur la pratique. \
+REJETER sans hésiter : \
+  • Nominations, portraits, brèves RH, conflits syndicaux, politique de santé générale ; \
+  • Annonces de congrès sans contenu clinique ("save the date", programme) ; \
+  • Articles sur l'IA médicale, la gestion hospitalière, les déserts médicaux \
+sans implication clinique directe ; \
+  • Statistiques de remboursement, campagnes grand public, sujets de médecine générale \
+sans rapport avec la spécialité ciblée.
+
+→ CATÉGORIE selon le contenu (pas la source) : \
+  • Nouveau dispositif, alerte matériovigilance → "therapeutique" \
+  • Guideline ou recommandation clinique → "clinique" \
+  • Changement de cotation, remboursement, réglementation exercice → "exercice"
+
+→ SCORE : calibrer selon l'impact clinique direct : \
+  4-5 : bonne nouvelle à connaître, ne change pas immédiatement la pratique ; \
+  6-7 : nouvelle technique ou dispositif avec résultats cliniques solides — \
+à intégrer dans la réflexion opératoire ; \
+  8-9 : alerte sécurité sur un dispositif implanté, guideline majeure mise à jour \
+(grade IA ou IB), nouveau standard de soins confirmé.
+
+→ PAS d'evidence_json pour les sources presse : laisser ce champ absent.
+
+→ RÉDACTION pour les articles de presse médicale (même ton confraternel) : \
+  resume : "[Dispositif/technique/guideline] — [résultat ou décision principale] \
+présenté(e) [au congrès / dans le numéro X]. [Ce que ça signifie pour la pratique]." \
+  impact_pratique : "En pratique : [implication clinique concrète — ou 'À confirmer \
+en guideline officielle' si résultats de congrès pas encore publiés]."
+
 Ta mission :
 
 1. PERTINENCE — Ce texte change-t-il quelque chose de concret pour un professionnel \
@@ -611,16 +666,34 @@ sage-femme, biologiste).
        "chirurgie-plastique": 3
      }}
 
-5. RÉDACTION — Ton : confraternel et informatif, comme si un médecin résumait \
-   à un collègue ce qu'il faut savoir. Pas de ton directif ni d'injonctions. \
-   Phrases courtes, information concrète d'abord.
+5. RÉDACTION — Ton : journal médical professionnel (EJVES, JVS, Lancet, JAMA Surgery, \
+   Le Quotidien du Médecin). Le lecteur est un spécialiste confirmé — aucun terme \
+   médical n'a besoin d'être défini. Phrases directes, donnée quantitative en premier.
+
+   PRINCIPES DE RÉDACTION :
+   • Quantitatif en premier : OR, HR, IC95%, p-value, effectif (n=), taux (%) \
+     avant tout commentaire narratif. Ex. : "mortalité à 30 j : 1,4 % vs 3,9 % \
+     (OR 0,35 ; IC95% 0,14–0,88)" — pas "les résultats sont meilleurs".
+   • Nommer la source : essai clinique ("Dans BEST-CLI, N=1 830"), congrès \
+     ("présenté à ESVS 2025"), journal ("JAMA Surgery, jan. 2026") — \
+     jamais "une étude récente" ou "des chercheurs ont montré".
+   • Comparatif explicite : nommer systématiquement le comparateur \
+     ("vs bypass", "vs PTA seule", "vs placebo"). Sans comparateur, pas de conclusion.
+   • Incertitude signalée : "données à 1 an uniquement", "analyse de sous-groupe \
+     non pré-spécifiée", "essai monocentrique", "à confirmer en guideline officielle".
+   • Jamais de redondance : resume ≠ paraphrase du titre — apporter un contenu nouveau \
+     (chiffres, population, comparateur, limite principale).
 
    RÈGLES DE TON :
-   • resume : narrer ce qui se passe (faits + contexte), pas donner des ordres.
-   • impact_pratique : commencer par "En pratique :" — formuler comme une note \
-     clinique entre pairs, jamais comme une instruction règlementaire.
-   • Éviter : "Action requise", "Ne plus prescrire", "Vous devez", "Veiller à".
-   • Préférer : "En pratique :", "À noter :", "À retenir :", "Ce qui change :".
+   • Éviter absolument : "l'étude montre que", "les résultats indiquent que", \
+     "il est important de noter", "il semblerait que", "les auteurs concluent". \
+     Aussi : "Action requise", "Vous devez", "Veiller à", "Ne plus prescrire".
+   • Préférer : constructions actives directes ("TCAR réduisait de 64 % la \
+     survenue d'AVC"), données brutes entre parenthèses, formulations cliniques \
+     précises sans jargon administratif.
+   • impact_pratique : UNE seule phrase cliniquement actionnelle — commence par \
+     "En pratique :" ou "À retenir :". Ce n'est PAS un résumé de l'étude. \
+     C'est l'implication concrète pour le praticien dans sa pratique quotidienne.
 
    Adapte la rédaction selon la nature du texte :
 
@@ -754,6 +827,7 @@ sans explication autour.
 # ---------------------------------------------------------------------------
 
 # Sources pour lesquelles on extrait evidence_json (source_type=innovation)
+# NB : les sources "presse médicale" (_PRESS_SOURCES) sont exclues — pas de design d'étude à extraire
 _INNOVATION_SOURCES: frozenset[str] = frozenset({
     "jama", "jama_cardiology", "jama_dermatology", "jama_internal_med",
     "jama_neurology", "jama_oncology", "jama_ophthalmology",
@@ -768,6 +842,18 @@ _INNOVATION_SOURCES: frozenset[str] = frozenset({
     "ema_new_medicines",
 })
 
+# Sources presse médicale professionnelle — traitement différent des journaux académiques :
+#   • Pas d'evidence_json (journaliste, pas chercheur)
+#   • Filtre "est-ce que ça change la pratique ?" plutôt que "phase 3 seulement"
+#   • Peut signaler innovation, réglementation OU recommandation selon le contenu
+_PRESS_SOURCES: frozenset[str] = frozenset({
+    "vascular_specialist", "vascular_news", "tctmd",
+    "endovascular_today",
+    "quotidien_medecin", "egora",
+    # Congrès vasculaires — highlights (couverts via TCTMD + Vascular News)
+    # linc_highlights et evc_highlights désactivés (domaines NXDOMAIN)
+})
+
 
 def _build_user_prompt(
     title: str,
@@ -775,10 +861,12 @@ def _build_user_prompt(
     date_pub: str,
     source_hint: str | None = None,
     is_innovation: bool = False,
+    is_press: bool = False,
 ) -> str:
     """
     source_hint   : indication sur la provenance pour contextualiser Claude.
     is_innovation : True → ajoute le bloc evidence_json dans le template JSON.
+    is_press      : True → source presse médicale (pas d'evidence_json, filtre différent).
     """
     source_line = f"\nSOURCE : {source_hint}" if source_hint else ""
     content_section = ""
@@ -787,7 +875,8 @@ def _build_user_prompt(
         content_section = f"\n\nEXTRAIT :\n{excerpt}"
 
     evidence_block = ""
-    if is_innovation:
+    # is_press sources : pas de evidence_json — le journaliste ne fournit pas de design d'étude
+    if is_innovation and not is_press:
         evidence_block = """,
   "evidence_json": {{
     "study_design": "<RCT|meta-analysis|registry|prospective-cohort|retrospective-cohort|case-series|guideline|regulatory-decision|technique-paper|review|editorial>",
@@ -953,7 +1042,147 @@ SOURCE_HINTS: dict[str, str] = {
     "pubmed_ejves":         "European Journal of Vascular and Endovascular Surgery (EJVES/ESVS) — Guidelines ESVS et essais cliniques en chirurgie vasculaire européenne",
     "pubmed_jet":           "Journal of Endovascular Therapy (JET) — Techniques endovasculaires : EVAR, TEVAR, FEVAR, drug-coated balloons, stenting carotide (CAS/TCAR)",
     "pubmed_ann_vasc_surg": "Annals of Vascular Surgery — Chirurgie vasculaire francophone : techniques opératoires, résultats, complications",
+    # ── Presse médicale professionnelle ─────────────────────────────────────
+    "vascular_specialist": "Vascular Specialist (SVS official newspaper) — Presse médicale chirurgie vasculaire : nouveaux dispositifs, résultats d'essais pivots, congrès SVS/ESVS/VEITH. Journaliste médical spécialisé, pas chercheur.",
+    "vascular_news":       "Vascular News — Presse médicale vasculaire internationale : résultats d'études, approbations CE/FDA dispositifs endovasculaires, congrès ESVS/CIRSE/LINC. Peut couvrir alertes réglementaires ou changements de guideline.",
+    "tctmd":               "TCTMD (Cardiovascular Research Foundation) — Presse médicale interventionnelle : vasculaire périphérique (stenting iliaque, CLTI, carotide, AOMI), plus cardiologie interventionnelle. Filtrer sévèrement ce qui ne concerne pas le chirurgien vasculaire.",
+    "quotidien_medecin":   "Le Quotidien du Médecin — Presse médicale française généraliste : peut couvrir alertes ANSM, nouvelles recommandations HAS, changements de remboursement. Bruit élevé (politique santé, RH médicales) → ne retenir que les news cliniquement actionnables.",
+    "egora":               "Egora — Presse médicale libérale française : orientation médecine générale, parfois alertes réglementaires ou nouveaux remboursements. Bruit très élevé → seuil maximal.",
 }
+
+# ---------------------------------------------------------------------------
+# Mapping source → spécialité principale (pour sélection du prompt dédié)
+# Seules les sources mono-spécialité ont une entrée ici.
+# Les sources multi-spécialités (JORF, HAS, JAMA…) n'ont PAS d'entrée →
+# le prompt générique est utilisé, la spécialité est déterminée par le LLM.
+# ---------------------------------------------------------------------------
+SOURCE_SPECIALTY_HINTS: dict[str, str] = {
+    # Chirurgie vasculaire
+    "pubmed_jvs":              "chirurgie-vasculaire",
+    "pubmed_ejves":            "chirurgie-vasculaire",
+    "pubmed_ejves_guidelines": "chirurgie-vasculaire",
+    "pubmed_jet":              "chirurgie-vasculaire",
+    "pubmed_ann_vasc_surg":    "chirurgie-vasculaire",
+    "pubmed_jama_surgery":     "chirurgie-vasculaire",  # filtré sur termes vasculaires
+    "vascular_specialist":     "chirurgie-vasculaire",
+    "vascular_news":           "chirurgie-vasculaire",
+    "tctmd":                   "chirurgie-vasculaire",
+    "endovascular_today":      "chirurgie-vasculaire",
+    # linc_highlights / evc_highlights désactivés (domaines NXDOMAIN)
+    "esvs":                    "chirurgie-vasculaire",
+    "sfcv":                    "chirurgie-vasculaire",
+    "sfmv":                    "chirurgie-vasculaire",
+    # Cardiologie (à activer quand le prompt cardiologie sera implémenté)
+    # "jama_cardiology":      "cardiologie",
+    # "sfc_recommandations":  "cardiologie",
+    # "sfhta":                "cardiologie",
+    # Oncologie
+    # "jama_oncology":        "oncologie",
+    # "esmo":                 "oncologie",
+    # Pneumologie
+    # "splf":                 "pneumologie",
+    # "ers":                  "pneumologie",
+    # … (ajouter au fur et à mesure des prompts spécialité implémentés)
+}
+
+# ---------------------------------------------------------------------------
+# Addendum spécialité — injecté à la fin du SYSTEM_PROMPT pour les sources
+# mono-spécialité. Chaque addendum affine : contexte clinique, terminologie,
+# exemples de rédaction dans le style de la presse de la spécialité.
+# ---------------------------------------------------------------------------
+
+_SPECIALTY_ADDENDUM_VASCULAIRE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — CHIRURGIE VASCULAIRE ET ENDOVASCULAIRE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : chirurgien vasculaire (CHU / clinique privée, France / Europe), \
+maîtrisant chirurgie ouverte ET techniques endovasculaires (EVAR, TEVAR, FEVAR, \
+CAS, CEA, TCAR, pontage, endarterectomie, DCB/DES infrainguinal). \
+Référentiels actuels : ESVS guidelines 2023-2024, ESC/ESVS joint guidelines, \
+recommandations SFCV/SFMV, HAS. \
+Essais pivots récents de référence : BEST-CLI, BASIL-2, ACST-2, ACST-3, \
+ROADSTER-3, TRITON, IN.PACT SFA 5 ans, CALCIFIED, ZILVER PTX 10 ans.
+
+CRITÈRE DE PERTINENCE VASCULAIRE :
+"Ce résultat va-t-il modifier une décision chirurgicale, le choix d'un dispositif, \
+ou la stratégie de prise en charge dans les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : résultats confirmatoires d'une pratique \
+déjà établie sans gain de précision, population non représentative de la pratique \
+FR/EU (ex. cohorte mono-centrique asiatique sans équivalent anatomique), \
+sous-groupe non pré-spécifié sur petits effectifs.
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+AAA / anévrisme de l'aorte abdominale, EVAR, TEVAR, FEVAR, BEVAR, \
+chimney / snorkel, zone d'étanchéité (ZE), collet proximal, endofuite type I/II/III/IV, \
+CLTI (Chronic Limb-Threatening Ischaemia), AOMI, Rutherford 4/5/6, IPS (ABI), \
+GLASS (Global Anatomic Staging System), TASC, CEA, CAS, TCAR (nFlow), ICA/ECA, \
+patency primaire / secondaire / assistée, MALE (Major Adverse Limb Events), \
+MACE, TLR (Target Lesion Revascularisation), TVP iliaque / fémorale, \
+FAV (fistule artério-veineuse), cathéter tunnelisé, DCB (Drug-Coated Balloon), \
+DES (Drug-Eluting Stent), PTA, atherectomie orbitale / rotatoire / laser, \
+thrombolyse CDT, EKOS, pontage infrainguinal, veine grande saphène (VGS), \
+prothèse PTFE / Dacron, endarterectomie carotide / rénale.
+
+EXEMPLES DE RÉDACTION (style EJVES / JVS / Vascular Specialist — format cible) :
+
+Essai clinique (innovation, presse ou académique) :
+  titre_court : "DCB vs PTA pour lésions FP : CHALLENGER DCB 12 mois"
+  resume : "CHALLENGER DCB (N=437, occlusions fémorales 5–25 cm, suivi 12 mois) : \
+perméabilité primaire 78,3 % (DCB) vs 61,2 % (PTA seule) — p < 0,001. \
+TLR à 12 mois : 8,4 % vs 19,6 % (HR 0,40 ; IC95% 0,27–0,59). \
+Population comparable aux cohortes IN.PACT SFA et THUNDER. \
+Absence d'excès de mortalité tardive (signal paclitaxel non confirmé à 1 an)."
+  impact_pratique : "En pratique : consolide l'indication DCB pour les lésions FP \
+≤ 25 cm ; données à 5 ans attendues pour statuer sur la sécurité long terme."
+
+Nouveau dispositif (presse médicale) :
+  titre_court : "Gore EXCLUDER Conformable : CE mark AAA col court/angulé"
+  resume : "Gore EXCLUDER Conformable avec ACTIVE CONTROL System (CE mark jan. 2026) : \
+conçu pour les AAA à col proximal court (8–15 mm) ou angulé (> 60°). \
+CONFORMABLE-EVAR (n=186, suivi 2 ans) : succès technique 98,4 %, absence \
+d'endofuite type I/III 97,2 %, réintervention pour endofuite 3,2 %. \
+Anatomie cible précédemment dévolue à la chirurgie ouverte ou aux fenestrations."
+  impact_pratique : "En pratique : alternative endovasculaire pour les AAA complexes \
+sans accès à un programme FEVAR/BEVAR — vérification IFU anatomique indispensable."
+
+Guideline update :
+  titre_court : "ESVS 2024 CLTI : bypass first-line pour lésions GLASS grade 3"
+  resume : "ESVS Guidelines AOMI 2024 (EJVES suppl.) : révision majeure du chapitre CLTI. \
+Bypass avec VGS recommandé en 1re intention pour lésions GLASS grade 3 infrainguinales \
+(recommandation IA). Endovasculaire conservé pour grade 1-2 (IA). \
+Basé sur BEST-CLI (N=1 830) : MALE-free survival à 4 ans +7,9 points avec bypass \
+chez les patients candidats au VGS (p=0,004)."
+  impact_pratique : "À retenir : classification GLASS systématique en RCP devient \
+opposable — grade 3 = orientation bypass de 1re intention."
+
+Alerte sécurité dispositif :
+  titre_court : "ANSM : suspension endoprothèses Endologix AFX2 lot xxxx"
+  resume : "ANSM (décision 14 jan. 2026) : suspension d'implantation des endoprothèses \
+Endologix AFX2 (lot xxxx) après 7 cas de migration proximale précoce en matériovigilance \
+(délai médian 18 mois post-implant). Environ 340 prothèses implantées en France depuis 2023. \
+Mesure conservatoire — surveillance renforcée des patients porteurs."
+  impact_pratique : "En pratique : identifier les patients porteurs d'un AFX2 du lot \
+concerné et planifier un scanner de contrôle sans attendre le suivi annuel."
+"""
+
+_SPECIALTY_ADDENDA: dict[str, str] = {
+    "chirurgie-vasculaire": _SPECIALTY_ADDENDUM_VASCULAIRE,
+    # À implémenter : "cardiologie", "oncologie", "pneumologie", "neurologie", etc.
+}
+
+
+def build_system_prompt(specialty_hint: str | None = None) -> str:
+    """Construit le system prompt adapté à la spécialité de la source.
+
+    - specialty_hint présent et connu → SYSTEM_PROMPT + addendum spécialité
+    - specialty_hint absent ou inconnu → SYSTEM_PROMPT générique seul
+    """
+    addendum = _SPECIALTY_ADDENDA.get(specialty_hint or "", "")
+    if addendum:
+        return SYSTEM_PROMPT + "\n\n" + addendum
+    return SYSTEM_PROMPT
+
 
 # ---------------------------------------------------------------------------
 # Appel Claude async (Anthropic SDK — utilisé par le batch script)
@@ -967,9 +1196,16 @@ async def call_claude_async(
     max_retries: int = 3,
 ) -> dict[str, Any]:
     """Appel Anthropic async avec retry exponentiel sur 429/timeout."""
-    source_hint = SOURCE_HINTS.get(source or "", None)
-    is_innovation = (source or "") in _INNOVATION_SOURCES
-    user_prompt = _build_user_prompt(title, content, date_pub, source_hint, is_innovation=is_innovation)
+    source_hint      = SOURCE_HINTS.get(source or "", None)
+    specialty_hint   = SOURCE_SPECIALTY_HINTS.get(source or "", None)
+    is_press         = (source or "") in _PRESS_SOURCES
+    is_innovation    = (source or "") in _INNOVATION_SOURCES
+    system_prompt    = build_system_prompt(specialty_hint)
+    user_prompt = _build_user_prompt(
+        title, content, date_pub, source_hint,
+        is_innovation=is_innovation,
+        is_press=is_press,
+    )
     client = _get_anthropic_client()
 
     last_error: Exception | None = None
@@ -978,7 +1214,7 @@ async def call_claude_async(
             response = await client.messages.create(
                 model=ANTHROPIC_MODEL,
                 max_tokens=ANTHROPIC_MAX_TOKENS,
-                system=SYSTEM_PROMPT,
+                system=system_prompt,
                 messages=[{"role": "user", "content": user_prompt}],
             )
             raw_text = response.content[0].text
@@ -1185,6 +1421,13 @@ SOURCE_CONFIG: dict[str, dict] = {
     # EJVES Guidelines : filtre titre guideline/consensus → article toujours pertinent
     # → seuil bas à 4 (ne pas rater une guideline ESVS majeure).
     "pubmed_ejves_guidelines": {"require_whitelist": False, "min_llm_score": 4},
+    # ── Presse médicale professionnelle ───────────────────────────────────────
+    # Seuils alignés sur les min_score_hint définis dans sources_presse_medicale.py
+    "vascular_specialist": {"require_whitelist": False, "min_llm_score": 7},
+    "vascular_news":       {"require_whitelist": False, "min_llm_score": 7},
+    "tctmd":               {"require_whitelist": False, "min_llm_score": 8},
+    "quotidien_medecin":   {"require_whitelist": False, "min_llm_score": 8},
+    "egora":               {"require_whitelist": False, "min_llm_score": 9},
     # JAMA Surgery via PubMed (RSS 403 depuis avril 2026) :
     # requête déjà filtrée sur termes vasculaires → seuil 6 (LLM affine).
     "pubmed_jama_surgery": {
@@ -1236,6 +1479,11 @@ _JORF_WHITELIST_PATTERNS = [
     r"(?i)\bassurance.maladie\b", r"(?i)\bsécurité sociale\b",
     r"(?i)\bconvention médicale\b", r"(?i)\bUNCAM\b",
     r"(?i)\bprescription\b", r"(?i)\bordonnance\b",
+    # LPP — liste des produits et prestations (implants, dispositifs remboursés)
+    r"(?i)\bLPP\b", r"(?i)\bliste\s+des\s+produits?\s+et\s+prestations?\b",
+    r"(?i)\bproduits?\s+et\s+prestations?\s+remboursables?\b",
+    r"(?i)\bprothèse\b", r"(?i)\bendoprothèse\b", r"(?i)\bimplant\b",
+    r"(?i)\bDMI\b",   # Dispositif Médical Implantable (registre, nomenclature)
     # Système de santé
     r"(?i)\bsanté publique\b", r"(?i)\bétablissement de santé\b",
     r"(?i)\bhospitalier\b", r"(?i)\bclinique\b",
@@ -1468,7 +1716,7 @@ _ANSM_DM_LIBERAL_EXCLUDE_PATTERNS = [
     r"(?i)\blithotriteur\b",
     r"(?i)\bmonitorage hémodynamique\b",
     r"(?i)\bsystème de monitorage\b",
-    r"(?i)\blit médicalisé\b",
+    r"(?i)\blit m[eé]dic(?:al|alis[eé])\b",   # "lit médical" et "lit médicalisé"
     r"(?i)\bmatelas\b",
     r"(?i)\bfauteuil roulant\b",
     r"(?i)\bdéambulateur\b",

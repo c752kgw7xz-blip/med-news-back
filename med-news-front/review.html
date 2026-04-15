@@ -846,7 +846,8 @@ function renderArticle(a, idx) {
   const stype = a.source_type || 'reglementaire';
   const status = a.review_status || 'PENDING';
 
-  const points = (lecture.points_cles || []).filter(p => p && p.trim());
+  const _pc = lecture.points_cles;
+  const points = (Array.isArray(_pc) ? _pc : (_pc ? [String(_pc)] : [])).filter(p => p && String(p).trim());
   const texteLong = (lecture.texte_long && lecture.texte_long !== 'null' && lecture.texte_long !== 'None') ? lecture.texte_long : '';
   const delay = Math.min(idx * 20, 400);
 

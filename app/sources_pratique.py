@@ -99,6 +99,30 @@ ACADEMIE_FEEDS: list[dict] = [
 ]
 
 # ---------------------------------------------------------------------------
+# CNOM — Conseil National de l'Ordre des Médecins ✅
+# ---------------------------------------------------------------------------
+# Déontologie médicale, réglementation ordinale, protection juridique,
+# exercice libéral, télémédecine, responsabilité professionnelle.
+# RSS vérifié actif (avril 2026) : 10 items frais.
+# Pertinence pour chir vasc : réglementation exercice en clinique privée,
+# publicité médicale, responsabilité civile, conditions d'installation,
+# garde et permanence des soins chirurgicaux.
+# min_score=7 : bruit élevé (tribunes d'opinion, rapports institutionnels)
+# — ne retenir que ce qui change directement les conditions d'exercice.
+
+CNOM_FEEDS: list[dict] = [
+    {
+        "url": "https://www.conseil-national.medecin.fr/rss.xml",
+        "label": "CNOM — Conseil National de l'Ordre des Médecins (déontologie, exercice)",
+        "source": "cnom",
+        "source_type": "reglementaire",
+        "audience": ["medecins"],
+        "specialty_hint": "tous",
+        "min_score_hint": 7,
+    },
+]
+
+# ---------------------------------------------------------------------------
 # Sociétés savantes — 15 sources avec RSS valide (scan mars 2026)
 # ---------------------------------------------------------------------------
 
@@ -316,13 +340,20 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
     },
 
     # ── Chirurgie vasculaire ───────────────────────────────────────────────
+    # Bulletin mensuel officiel de la SCVE (Société de Chirurgie Vasculaire et
+    # Endovasculaire de langue française). RSS vérifié actif (avril 2026).
+    # Contenu : bulletins d'information clinique, recommandations de la société,
+    # actualités réglementaires et conventionnelles pour chirurgiens vasculaires.
+    # Volume : ~4-6 items/mois. min_score=6 : la sélection éditoriale fait déjà
+    # une partie du travail.
     {
         "url": "https://www.vasculaire.com/rss.xml",
-        "label": "SCVE — Société de Chirurgie Vasculaire et Endovasculaire",
+        "label": "SCVE — Société de Chirurgie Vasculaire et Endovasculaire (bulletin officiel)",
         "source": "sfcv",
         "source_type": "recommandation",
         "audience": ["medecins"],
         "specialty_hint": "chirurgie-vasculaire",
+        "min_score_hint": 6,
     },
 
     # ❌ SOFCPRE (sofcpre.fr/feed/) — 404 mars 2026
@@ -452,6 +483,7 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
 ALL_PRATIQUE_FEEDS: list[dict] = (
     HAS_FEEDS
     + ACADEMIE_FEEDS
+    + CNOM_FEEDS
     + INCA_FEEDS
     + ANDPC_FEEDS
     + SOCIETES_SAVANTES_FEEDS

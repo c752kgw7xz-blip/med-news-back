@@ -90,6 +90,34 @@ _HEADERS = {
 # Configuration des sources à scraper
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Sources de congrès vasculaires — highlights & late-breaking data
+# ---------------------------------------------------------------------------
+# Ces sources publient les résultats de congrès avant les journaux académiques.
+# Volume : 10-30 highlights par édition (1-2x/an). Scrape mensuel suffit.
+# min_score_hint=7 : on ne retient que les vraies nouvelles cliniques
+# (nouveau dispositif, RCT pivot, changement de guideline).
+
+VASCULAR_CONGRESS_SOURCES: list[dict] = [
+    # ── Congrès vasculaires — scraping désactivé (voir note ci-dessous) ───
+    #
+    # LINC Leipzig (linc-society.com) : domaine NXDOMAIN depuis avril 2026.
+    #   → couvert en temps réel par TCTMD (tctmd.com/feed) et Vascular News.
+    #
+    # CIRSE (cirse.org) : RSS vide, site JS-rendered. Library (library.cirse.org)
+    #   requiert authentification. Highlights couverts par TCTMD.
+    #
+    # ESVS (esvs.org) : RSS actif mais uniquement contenu administratif
+    #   (appels à candidatures, comités). Guidelines = via pubmed_ejves.
+    #
+    # EVC (escardio.org/EVC) : hors cible chirurgie vasculaire.
+    #
+    # Solution retenue : TCTMD + Vascular News + Endovascular Today couvrent
+    # tous les congrès majeurs (LINC, CIRSE, VEITH, VAM, ESVS AM) en temps réel.
+    # Ce bloc est conservé comme placeholder pour une réactivation future si
+    # un domaine LINC devient stable.
+]
+
 WEB_SCRAPER_SOURCES: list[dict] = [
 
     # ── SFH — Société Française d'Hématologie ────────────────────────────
@@ -327,10 +355,13 @@ def scrape_source(config: dict) -> dict[str, int]:
 def scrape_all_web(sources: list[dict] | None = None) -> dict[str, Any]:
     """
     Lance le scraping de toutes les sources HTML configurées (ou un sous-ensemble).
-    Couvre : sources FR (WEB_SCRAPER_SOURCES) + sources européennes sans RSS (EUROPE_WEB_SOURCES).
+    Couvre :
+      - Sources FR  (WEB_SCRAPER_SOURCES)       : SFH, SFR, SFO, SFPédiatrie, SOFCOT
+      - Sources EUR (EUROPE_WEB_SOURCES)         : ESC, EULAR, EAU, ESCMID, EAN…
+      - Congrès vasc. (VASCULAR_CONGRESS_SOURCES): LINC, EVC
     Volume faible → pas de parallélisme nécessaire.
     """
-    targets = sources or (WEB_SCRAPER_SOURCES + EUROPE_WEB_SOURCES)
+    targets = sources or (WEB_SCRAPER_SOURCES + EUROPE_WEB_SOURCES + VASCULAR_CONGRESS_SOURCES)
     results: dict[str, Any] = {}
     for config in targets:
         try:

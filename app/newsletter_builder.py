@@ -121,6 +121,22 @@ CAT_STYLES: dict[str, tuple[str, str]] = {
     "therapeutique": ("Médicaments & Dispositifs", "cat-therapeutique"),
     "clinique":      ("Clinique",                  "cat-clinique"),
     "exercice":      ("Exercice & Admin",           "cat-exercice"),
+    "innovation":    ("Innovation",                "cat-therapeutique"),
+    "recommandation":("Recommandation",            "cat-clinique"),
+    "reglementation":("Réglementation",            "cat-exercice"),
+}
+
+# CTA text selon le type de source
+_SOURCE_TYPE_CTA: dict[str, str] = {
+    "journal":        "Lire l'article →",
+    "press":          "Lire l'article →",
+    "presse":         "Lire l'article →",
+    "innovation":     "Voir l'étude →",
+    "guideline":      "Lire la recommandation →",
+    "regulatory":     "Lire le texte officiel →",
+    "reglementation": "Lire le texte officiel →",
+    "congress":       "Voir le highlight →",
+    "device":         "Voir le dispositif →",
 }
 
 # ---------------------------------------------------------------------------
@@ -265,6 +281,23 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
               padding: 6px 16px; border-radius: 6px;
               display: inline-block; }
 
+/* Card featured (article principal) */
+.card-featured { background: var(--surface); border: 1px solid var(--border2);
+                  border-radius: 12px; padding: 28px 32px 26px;
+                  margin-bottom: 14px;
+                  border-left: 3px solid #2a9d8f; }
+.card-featured .card-title { font-size: 22px; line-height: 1.3; margin-bottom: 14px; }
+.card-featured .card-resume { font-size: 14px; }
+.featured-badge { font-family: 'DM Mono', 'Courier New', monospace;
+                   font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+                   color: #2a9d8f; display: block; margin-bottom: 14px; }
+
+/* Section "À lire aussi" */
+.aalire-label { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
+                 letter-spacing: 2px; text-transform: uppercase;
+                 color: var(--text4); border-top: 1px solid var(--border);
+                 padding-top: 20px; margin: 14px 0 12px; }
+
 /* Footer */
 .footer { padding: 24px 0 8px; text-align: center; }
 .footer p { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
@@ -276,20 +309,28 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
 # Rendu d'un article
 # ---------------------------------------------------------------------------
 
-def _render_article(item: dict[str, Any]) -> str:
+def _render_article(item: dict[str, Any], featured: bool = False) -> str:
     tri = item.get("tri_json") or {}
     score = item.get("score_density") or 5
     prio_label, prio_class = _priority_label(score)
 
     date_str = _format_date(item.get("official_date") or "")
 
+    # Catégorie : on remonte source_type en priorité pour les articles innovation/presse
+    source_type = item.get("source_type") or ""
     cat = item.get("categorie") or ""
+    # Mapper source_type → cat si pas de catégorie explicite
+    if not cat and source_type in CAT_STYLES:
+        cat = source_type
     cat_label, cat_class = CAT_STYLES.get(cat, ("", ""))
 
     titre = tri.get("titre_court") or item.get("title_raw") or ""
     resume = tri.get("resume") or ""
     impact = tri.get("impact_pratique") or ""
     url = _safe_url(item.get("official_url") or "#")
+
+    # CTA dynamique selon source_type
+    cta_text = _SOURCE_TYPE_CTA.get(source_type, "Lire l'article →")
 
     cat_html = (
         f'<span class="cat {cat_class}">{_he(cat_label)}</span>'
@@ -301,8 +342,12 @@ def _render_article(item: dict[str, Any]) -> str:
         if impact else ""
     )
 
+    card_class = "card-featured" if featured else "card"
+    badge_html = '<span class="featured-badge">★ À lire en priorité</span>' if featured else ""
+
     return f"""
-<div class="card">
+<div class="{card_class}">
+  {badge_html}
   <div class="card-top">
     <span class="prio {prio_class}">{_he(prio_label)}</span>
     <span class="card-date">{_he(date_str)}</span>
@@ -311,7 +356,7 @@ def _render_article(item: dict[str, Any]) -> str:
   <div class="card-title">{_he(titre)}</div>
   <p class="card-resume">{_he(resume)}</p>
   {impact_html}
-  <a class="card-link" href="{url}">Lire le texte officiel →</a>
+  <a class="card-link" href="{url}">{cta_text}</a>
 </div>
 """
 
@@ -329,12 +374,6 @@ def _generate_edito(
     n_total = len(items_spec) + len(items_transv)
     all_items = items_spec + items_transv
 
-    n_alertes = sum(
-        1 for i in all_items
-        if (i.get("tri_json") or {}).get("nature", "") in ("ALERTE", "RECOMMANDATION")
-    )
-    n_autres = n_total - n_alertes
-
     mois = MOIS_FR_LONG[emission_date.month]
 
     # Trouver l'item le plus urgent pour ancrer l'édito
@@ -344,27 +383,34 @@ def _generate_edito(
     top_impact = (top.get("tri_json") or {}).get("impact_pratique") or "" if top else ""
 
     if top_titre and top_impact:
-        # Édito ancré sur l'essentiel
         intro = f"Ce {mois}, l'essentiel\u00a0: {top_titre.rstrip('.')}."
         detail = f" {top_impact}" if top_impact else ""
         if n_total > 1:
-            suite = f" Puis {n_total - 1} autre{'s' if n_total > 2 else ''} texte{'s' if n_total > 2 else ''} triés par urgence."
+            suite = f" Puis {n_total - 1} autre{'s' if n_total > 2 else ''} sélection{'s' if n_total > 2 else ''} ci-dessous."
         else:
             suite = ""
         return f"{intro}{detail}{suite}"
-    elif n_alertes > 0 and n_autres > 0:
+
+    # Fallback générique
+    n_innov = sum(
+        1 for i in all_items
+        if (i.get("source_type") or "") in ("innovation", "journal", "press", "presse", "congress")
+    )
+    n_reco = n_total - n_innov
+
+    if n_innov > 0 and n_reco > 0:
         contenu = (
-            f"{n_autres} recommandation{'s' if n_autres > 1 else ''} "
-            f"et {n_alertes} alerte{'s' if n_alertes > 1 else ''} de sécurité"
+            f"{n_innov} étude{'s' if n_innov > 1 else ''}/technique{'s' if n_innov > 1 else ''} "
+            f"et {n_reco} recommandation{'s' if n_reco > 1 else ''}"
         )
-    elif n_alertes > 0:
-        contenu = f"{n_alertes} alerte{'s' if n_alertes > 1 else ''} de sécurité"
+    elif n_innov > 0:
+        contenu = f"{n_innov} étude{'s' if n_innov > 1 else ''} ou innovation{'s' if n_innov > 1 else ''}"
     else:
-        contenu = f"{n_autres} texte{'s' if n_autres > 1 else ''} réglementaire{'s' if n_autres > 1 else ''}"
+        contenu = f"{n_reco} recommandation{'s' if n_reco > 1 else ''} ou texte{'s' if n_reco > 1 else ''} réglementaire{'s' if n_reco > 1 else ''}"
 
     return (
-        f"Ce mois de {mois}, {n_total} texte{'s' if n_total > 1 else ''} "
-        f"sélectionnés pour votre pratique de {specialty_name}\u00a0: {contenu}."
+        f"Ce mois de {mois}, {n_total} sélection{'s' if n_total > 1 else ''} "
+        f"pour votre pratique de {specialty_name}\u00a0: {contenu}."
     )
 
 
@@ -397,6 +443,41 @@ def _build_plain(
 # Point d'entrée principal
 # ---------------------------------------------------------------------------
 
+def _source_tags(items: list[dict]) -> str:
+    """Génère les tags de sources à partir des items (ex: PubMed · TCTMD · ESVS)."""
+    seen: list[str] = []
+    _source_map = {
+        "pubmed_jvs":          "JVS",
+        "pubmed_ejves":        "EJVES",
+        "pubmed_jet":          "J Endovasc Ther",
+        "pubmed_ann_vasc_surg":"Ann Vasc Surg",
+        "pubmed_":             "PubMed",
+        "vascular_specialist": "Vascular Specialist",
+        "vascular_news":       "Vascular News",
+        "tctmd":               "TCTMD",
+        "linc_highlights":     "LINC",
+        "cirse_highlights":    "CIRSE",
+        "esvs_highlights":     "ESVS",
+        "quotidien_medecin":   "Quotidien du Médecin",
+        "egora":               "Egora",
+        "has_":                "HAS",
+        "ansm_":               "ANSM",
+        "legifrance":          "JORF",
+        "fda_":                "FDA",
+        "eudamed":             "CE/EUDAMED",
+    }
+    for item in items:
+        src = item.get("source") or ""
+        label = None
+        for prefix, lbl in _source_map.items():
+            if src == prefix or src.startswith(prefix):
+                label = lbl
+                break
+        if label and label not in seen:
+            seen.append(label)
+    return " · ".join(seen[:5]) if seen else "PubMed · Presse médicale"
+
+
 def build_newsletter(
     specialty_slug: str,
     items: list[dict[str, Any]],
@@ -404,17 +485,19 @@ def build_newsletter(
     portal_url: str = "",
     unsubscribe_url: str = "{{unsubscribe_url}}",
     archive_url: str = "{{archive_url}}",
+    max_articles: int = 6,
 ) -> tuple[str, str, str]:
     """
     Construit la newsletter.
 
     Args:
         specialty_slug  : slug de la spécialité
-        items           : liste mixte (spécialité + transversaux)
+        items           : liste d'items APPROVED (spécialité + transversaux)
         emission_date   : date d'émission (défaut: aujourd'hui)
         portal_url      : URL du portal (construit depuis BASE_URL si vide)
         unsubscribe_url : URL de désabonnement
         archive_url     : URL d'archive
+        max_articles    : nombre maximum d'articles dans la newsletter (défaut 6)
 
     Returns:
         (sujet: str, html: str, texte_plain: str)
@@ -430,7 +513,7 @@ def build_newsletter(
     if archive_url == "{{archive_url}}":
         archive_url = f"{base}/portal" if base else "#"
 
-    specialty_name = SPECIALTY_LABELS.get(specialty_slug, specialty_slug) or "Médecine libérale"
+    specialty_name = SPECIALTY_LABELS.get(specialty_slug, specialty_slug) or "Médecine"
     mois_annee = f"{MOIS_FR_LONG[emission_date.month].capitalize()} {emission_date.year}"
 
     # Fenêtre : mois en cours + mois précédent
@@ -450,46 +533,58 @@ def build_newsletter(
 
     items = [i for i in items if _in_window(i)]
 
-    # Séparer articles spécialité / transversaux
-    # IMPORTANT : on filtre par specialites[] (liste LLM) ET specialty_slug (colonne DB),
-    # PAS par audience=="SPECIALITE" seul — sinon des items d'autres spécialités
-    # (ex: chirurgie-vasculaire) passent dans toutes les newsletters SPECIALITE.
+    # Filtrer par spécialité
     items_spec = [
         i for i in items
         if specialty_slug in (i.get("specialites") or [])
         or i.get("specialty_slug") == specialty_slug
     ]
-    n_total = len(items_spec)
-    n_alertes = sum(
-        1 for i in items_spec
-        if (i.get("tri_json") or {}).get("nature", "") in ("ALERTE", "RECOMMANDATION")
-    )
-    n_autres = n_total - n_alertes
 
-    # Sujet : accroche sur l'item le plus urgent (score le plus élevé)
-    all_sorted = sorted(items_spec, key=lambda x: x.get("score_density") or 0, reverse=True)
-    top_item = all_sorted[0] if all_sorted else None
+    # Trier par score descendant, puis garder les N meilleurs
+    items_spec = sorted(items_spec, key=lambda x: x.get("score_density") or 0, reverse=True)
+    items_spec = items_spec[:max_articles]
+
+    n_total = len(items_spec)
+
+    # Comptages pour stats
+    n_innovation = sum(1 for i in items_spec if (i.get("source_type") or "") in ("innovation", "journal", "press", "presse", "congress"))
+    n_reco = sum(1 for i in items_spec if (i.get("source_type") or "") in ("guideline", "regulatory", "reglementation"))
+    n_autres = n_total - n_innovation - n_reco
+
+    # Sujet : accroche sur l'item le plus urgent
+    top_item = items_spec[0] if items_spec else None
     if top_item:
         top_titre = (top_item.get("tri_json") or {}).get("titre_court") or top_item.get("title_raw") or ""
-        # Tronquer à ~50 chars pour éviter coupure client email
         if len(top_titre) > 52:
             top_titre = top_titre[:50].rsplit(" ", 1)[0] + "…"
-        if n_alertes >= 2:
-            sujet = f"[MedNews] {top_titre} · {n_alertes} alertes {specialty_name}"
-        elif n_alertes == 1:
-            sujet = f"[MedNews] {top_titre} · {n_total} texte{'s' if n_total > 1 else ''} {specialty_name}"
-        else:
-            sujet = f"[MedNews] {top_titre} · {n_total} reco{'s' if n_total > 1 else ''} {specialty_name}"
+        sujet = f"[MedNews] {top_titre} · {n_total} sélection{'s' if n_total > 1 else ''} {specialty_name}"
     else:
         sujet = f"[MedNews] {specialty_name} — Veille {MOIS_FR_LONG[emission_date.month]} {emission_date.year}"
 
     edito_text = _generate_edito(items_spec, [], specialty_name, emission_date)
 
-    # Articles spécialité
-    articles_specialite_html = (
-        "".join(_render_article(i) for i in items_spec)
+    # Hiérarchie : 1 article featured (premier) + "À lire aussi" (le reste)
+    source_tags = _source_tags(items_spec)
+
+    if items_spec:
+        featured_html = _render_article(items_spec[0], featured=True)
+        rest = items_spec[1:]
+    else:
+        featured_html = ""
+        rest = []
+
+    if rest:
+        rest_html = (
+            '<div class="aalire-label">À lire aussi</div>'
+            + "".join(_render_article(i, featured=False) for i in rest)
+        )
+    else:
+        rest_html = ""
+
+    articles_html = (
+        featured_html + rest_html
         if items_spec
-        else '<p style="color:var(--text5);font-style:italic;padding:20px 0;">Aucun article ce mois-ci.</p>'
+        else '<p style="color:var(--text5);font-style:italic;padding:20px 0;">Aucun article sélectionné ce mois-ci.</p>'
     )
 
     html = f"""<!DOCTYPE html>
@@ -509,24 +604,24 @@ def build_newsletter(
   <!-- MASTHEAD -->
   <div class="masthead">
     <div class="masthead-name">Med<em>News</em></div>
-    <div class="masthead-sub">Veille réglementaire · Médecine libérale</div>
+    <div class="masthead-sub">Veille clinique · {_he(specialty_name)}</div>
   </div>
 
   <!-- HEADER -->
   <div class="hd">
     <div class="hd-eye">
-      <span class="hd-dot"></span>Veille réglementaire
+      <span class="hd-dot"></span>Sélection éditoriale
     </div>
     <div class="hd-title">
       {_he(specialty_name)}<br><em>{_he(mois_annee)}</em>
     </div>
     <div class="hd-stats">
-      <span class="n">{n_total}</span> texte{'s' if n_total != 1 else ''}
+      <span class="n">{n_total}</span> article{'s' if n_total != 1 else ''}
       <span class="sep">·</span>
-      <span class="n">{n_alertes}</span> alerte{'s' if n_alertes != 1 else ''}
+      <span class="n">{n_innovation}</span> innovation{'s' if n_innovation != 1 else ''}
       <span class="sep">·</span>
-      <span class="n">{n_autres}</span> arrêté{'s' if n_autres != 1 else ''}/reco
-      <span class="sep">·</span>JORF · ANSM · HAS
+      <span class="n">{n_reco}</span> reco{'s' if n_reco != 1 else ''}
+      <span class="sep">·</span>{_he(source_tags)}
     </div>
   </div>
 
@@ -542,12 +637,12 @@ def build_newsletter(
     <a class="portal-btn" href="{_safe_url(portal_url)}">Accéder à mon espace →</a>
   </div>
 
-  <!-- ARTICLES SPÉCIALITÉ -->
+  <!-- ARTICLES -->
   <div class="grp">
     <div class="grp-label">{_he(specialty_name)}</div>
   </div>
 
-  {articles_specialite_html}
+  {articles_html}
 
   <!-- FOOTER -->
   <div class="footer">
@@ -555,7 +650,7 @@ def build_newsletter(
       Abonné à MedNews ·
       <a href="{_safe_url(unsubscribe_url)}">Se désabonner</a> ·
       <a href="{_safe_url(archive_url)}">Voir en ligne</a><br>
-      MedNews — Veille réglementaire pour médecins libéraux
+      MedNews — Veille médicale pour spécialistes
     </p>
   </div>
 

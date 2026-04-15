@@ -303,40 +303,187 @@ def collect_web(request: Request):
 @router.post("/collect/innovation")
 def collect_innovation(request: Request, days: int = Query(default=90, ge=1, le=365)):
     """
-    Collecte les sources innovation : PubMed (JVS, EJVES, JET, Annals of Vascular Surgery)
-    + flux RSS JAMA/NEJM/Lancet/BMJ/Nature Medicine.
+    Collecte les sources innovation + réglementation dispositifs médicaux :
+    - Presse médicale : Vascular Specialist, Vascular News, TCTMD,
+      Le Quotidien du Médecin, Egora
+    - PubMed (JVS, EJVES, JET, Annals — RCTs & méta-analyses uniquement)
+    - Flux RSS journaux : JAMA/NEJM/Lancet/BMJ/Nature Medicine
+    - Approbations FDA (PMA Class III + clearances 510k)
+    - Dispositifs CE EUDAMED (classes III, codes EMDN vasculaires E06/E07)
+    - ANSM sécurité dispositifs médicaux (ansm_securite_dm) — alertes matériovigilance,
+      rappels d'implants vasculaires, DHPC sur dispositifs chirurgicaux
     days=90 par défaut pour l'historique récent au premier run.
     """
     _require_admin(request)
     try:
         from app.pubmed_collector import collect_all_pubmed
-        from app.rss_collector import collect_feed
+        from app.rss_collector import collect_feed, FEEDS
         from app.sources_innovation import ALL_INNOVATION_FEEDS
+        from app.sources_presse_medicale import ALL_PRESSE_MEDICALE_FEEDS
+        from app.fda_collector import collect_all_fda
+        from app.eudamed_collector import collect_eudamed_devices
 
         pubmed_results = collect_all_pubmed(days=days)
-        rss_results = {}
+        fda_results = collect_all_fda(days=days)
+        eudamed_result = {"eudamed": collect_eudamed_devices(days=days)}
+
+        rss_journals: dict = {}
         for feed in ALL_INNOVATION_FEEDS:
             try:
-                rss_results[feed["source"]] = collect_feed(feed, days=days)
+                rss_journals[feed["source"]] = collect_feed(feed, days=days)
             except Exception as e:
-                rss_results[feed["source"]] = {"error": str(e)}
+                rss_journals[feed["source"]] = {"error": str(e)}
+
+        rss_presse: dict = {}
+        for feed in ALL_PRESSE_MEDICALE_FEEDS:
+            try:
+                rss_presse[feed["source"]] = collect_feed(feed, days=days)
+            except Exception as e:
+                rss_presse[feed["source"]] = {"error": str(e)}
+
+        # ANSM sécurité DM — alertes matériovigilance sur implants et dispositifs chirurgicaux
+        # Inclus ici car les alertes sur endoprothèses/stents/ballons sont réglementaires
+        # et doivent apparaître dans la newsletter vasculaire même lors d'un run "innovation".
+        _ANSM_DM_SOURCES = {"ansm_securite_dm", "ansm_securite"}
+        rss_reglementaire: dict = {}
+        for feed in FEEDS:
+            if feed["source"] in _ANSM_DM_SOURCES:
+                try:
+                    rss_reglementaire[feed["source"]] = collect_feed(feed, days=days)
+                except Exception as e:
+                    rss_reglementaire[feed["source"]] = {"error": str(e)}
 
         total_inserted = sum(
             r.get("inserted", 0)
-            for r in list(pubmed_results.values()) + list(rss_results.values())
+            for r in (
+                list(pubmed_results.values())
+                + list(fda_results.values())
+                + list(eudamed_result.values())
+                + list(rss_journals.values())
+                + list(rss_presse.values())
+                + list(rss_reglementaire.values())
+            )
             if isinstance(r, dict)
         )
         return {
             "ok": True,
             "days": days,
             "total_inserted": total_inserted,
+            "presse_medicale": rss_presse,
             "pubmed": pubmed_results,
-            "rss_innovation": rss_results,
+            "fda": fda_results,
+            "eudamed": eudamed_result,
+            "rss_journaux": rss_journals,
+            "reglementaire_dm": rss_reglementaire,
         }
     except HTTPException:
         raise
     except Exception as e:
         logger.exception("Erreur collect innovation")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
+@router.post("/collect/fda")
+def collect_fda(request: Request, days: int = Query(default=90, ge=1, le=365)):
+    """
+    Collecte les approbations FDA de dispositifs vasculaires :
+    - PMA (Class III) : endoprothèses, greffons aortiques, filtres cave
+    - 510(k) (Class II) : cathéters, stents périphériques, systèmes de délivrance
+    Source : open.fda.gov (API publique, pas de clé requise).
+    """
+    _require_admin(request)
+    try:
+        from app.fda_collector import collect_all_fda
+        results = collect_all_fda(days=days)
+        total_inserted = sum(r.get("inserted", 0) for r in results.values() if isinstance(r, dict))
+        return {
+            "ok": True,
+            "days": days,
+            "total_inserted": total_inserted,
+            "results": results,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Erreur collect fda")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
+@router.post("/collect/eudamed")
+def collect_eudamed(request: Request, days: int = Query(default=90, ge=1, le=365)):
+    """
+    Collecte les dispositifs CE marqués dans EUDAMED (base UE).
+    Filtre : Classe III (Im), codes EMDN vasculaires E06/E07 (prothèses vasculaires,
+    stents périphériques), + mots-clés vasculaires côté client.
+    Source : https://ec.europa.eu/tools/eudamed/ (API publique).
+    """
+    _require_admin(request)
+    try:
+        from app.eudamed_collector import collect_eudamed_devices
+        result = collect_eudamed_devices(days=days)
+        return {
+            "ok": True,
+            "days": days,
+            **result,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Erreur collect eudamed")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
+@router.post("/enrich/pubmed-abstracts")
+def enrich_pubmed_abstracts(request: Request):
+    """
+    Re-fetche les abstracts PubMed pour les candidats en DB sans content_raw.
+
+    Cas d'usage : après un run de collecte où NCBI a renvoyé des timeouts ou
+    des rate-limits, certains articles ont été insérés sans abstract.
+    Cette route les retrouve et les enrichit via l'API NCBI efetch.
+
+    Ne touche pas aux candidats déjà traités (LLM_DONE, APPROVED, REJECTED).
+    """
+    _require_admin(request)
+    try:
+        from app.pubmed_collector import enrich_empty_abstracts
+        stats = enrich_empty_abstracts()
+        return {"ok": True, **stats}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Erreur enrich pubmed-abstracts")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
+@router.post("/enrich/unpaywall")
+def enrich_unpaywall(
+    request: Request,
+    limit: int = Query(default=200, ge=1, le=500, description="Nombre max de candidats à enrichir"),
+):
+    """
+    Enrichit le content_raw des candidats PubMed via Unpaywall + Europe PMC.
+
+    Pour chaque candidat pubmed_* avec un DOI mais un abstract court (< 1 200 chars),
+    tente de récupérer le full text en open access :
+      1. Unpaywall (api.unpaywall.org) → URL OA légale
+      2. Europe PMC (fullTextXML) → texte complet parsé depuis JATS XML
+      3. Fallback HTML : page auteur / preprint si disponible
+
+    Content_raw n'est mis à jour que si le full text apporte au moins 2× plus de contenu
+    que l'abstract actuel.
+
+    Typiquement : ~35 % des RCTs sont en open access via PMC (mandats NIH/EU).
+    """
+    _require_admin(request)
+    try:
+        from app.unpaywall_client import enrich_with_unpaywall
+        stats = enrich_with_unpaywall(limit=limit)
+        return {"ok": True, **stats}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Erreur enrich unpaywall")
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
