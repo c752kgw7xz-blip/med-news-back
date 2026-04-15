@@ -1410,14 +1410,15 @@ SOURCE_CONFIG: dict[str, dict] = {
         "cpt_pharmacol", "jdr_dental", "jan_nursing",
     ]},
     # ── Sources PubMed — chirurgie vasculaire ─────────────────────────────
-    # JVS/EJVES/JET : volume ~200-300/an, ratio signal/bruit moyen → seuil 5
-    # (evidence_json dérivera le vrai score depuis clinical_maturity×actionability_horizon)
-    **{src: {"require_whitelist": False, "min_llm_score": 5} for src in [
+    # JVS/EJVES/JET : seuil relevé à 8 (était 5) — les score 7 représentaient
+    # 75% du backlog avec valeur marginale faible pour la newsletter mensuelle.
+    # Seuls les articles vraiment practice-changing (RCTs, NMAs, guidelines) passent.
+    **{src: {"require_whitelist": False, "min_llm_score": 8} for src in [
         "pubmed_jvs", "pubmed_ejves", "pubmed_jet",
     ]},
     # Ann Vasc Surg : qualité plus variable (registres rétrospectifs, séries courtes)
-    # → seuil relevé à 5 (était 4) pour réduire le bruit.
-    "pubmed_ann_vasc_surg": {"require_whitelist": False, "min_llm_score": 5},
+    # → seuil relevé à 8 pour aligner sur JVS/EJVES et réduire le bruit.
+    "pubmed_ann_vasc_surg": {"require_whitelist": False, "min_llm_score": 8},
     # EJVES Guidelines : filtre titre guideline/consensus → article toujours pertinent
     # → seuil bas à 4 (ne pas rater une guideline ESVS majeure).
     "pubmed_ejves_guidelines": {"require_whitelist": False, "min_llm_score": 4},
