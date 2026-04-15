@@ -97,6 +97,12 @@ _DATE_VALID_RE = re.compile(r"(?i)date\s+de\s+validation\s*:\s*(\d{1,2}\s+\w+\s+
 # Patterns spécifiques aux pages CT (Commission de la Transparence)
 _CT_SMR_RE = re.compile(r"(?i)service\s+m[eé]dical\s+rendu|^SMR$|\bSMR\b")
 _CT_ASMR_RE = re.compile(r"(?i)am[eé]lioration\s+du\s+service|^ASMR$|\bASMR\b")
+
+# Patterns spécifiques aux pages DM (avis dispositifs médicaux — CNEDiMTS)
+_DM_SA_RE  = re.compile(r"(?i)service\s+attendu")        # Service Attendu (≈ SMR pour DM)
+_DM_ASA_RE = re.compile(r"(?i)am[eé]lioration\s+du\s+service\s+attendu")  # ASA (≈ ASMR pour DM)
+_DM_INDICATION_RE = re.compile(r"(?i)indication(s?)\s+revendiqu|indication(s?)\s+retenue|destination\s+d.usage")
+_DM_DATE_RE = re.compile(r"(?i)(\d{1,2}\s+\w+\s+\d{4})")
 _CT_INDICATION_RE = re.compile(r"(?i)indication(s)?\s+(th[eé]rapeutique|revendiqu)")
 _CT_POPULATION_RE = re.compile(r"(?i)population\s+cible")
 _CT_CONCLUSION_RE = re.compile(r"(?i)avis\s+de\s+la\s+commission|conclusion\s+de\s+la\s+commission")
@@ -178,11 +184,74 @@ def scrape_has_ct_page(url: str) -> dict[str, Any]:
     return result
 
 
+def scrape_has_dm_page(url: str) -> dict[str, Any]:
+    """
+    Scrape une page HAS CNEDiMTS (avis sur les dispositifs médicaux).
+
+    Structure typique :
+      - Nom + description du dispositif
+      - Indication/destination d'usage retenue
+      - Service Attendu (SA) : "suffisant" / "insuffisant"
+      - Amélioration du Service Attendu (ASA) : niveaux I à V (V = absence d'amélioration)
+      - Date de la décision
+
+    Ces informations permettent de savoir si un DM est admis au remboursement,
+    dans quelle indication, et s'il améliore la prise en charge existante.
+    """
+    result: dict[str, Any] = {
+        "resume": None,
+        "messages_cles": None,
+        "date_validation": None,
+        "type_doc": "HAS — Avis sur les dispositifs médicaux (CNEDiMTS)",
+        "is_scoping_doc": False,
+    }
+
+    html = _fetch_html(url)
+    if not html:
+        return result
+
+    soup = BeautifulSoup(html, "html.parser")
+    main_text = soup.get_text(" ", strip=True)
+
+    # Date de la décision
+    m = _DM_DATE_RE.search(main_text)
+    if m:
+        result["date_validation"] = m.group(1)
+
+    # Indication / destination d'usage
+    indication = _extract_text_block(soup, _DM_INDICATION_RE)
+
+    # Service Attendu (≈ SMR pour les DM)
+    sa = _extract_text_block(soup, _DM_SA_RE)
+
+    # Amélioration du Service Attendu (ASA)
+    asa = _extract_text_block(soup, _DM_ASA_RE)
+
+    parts = []
+    if indication:
+        parts.append(f"Indication retenue : {indication[:400]}")
+    if sa:
+        parts.append(f"Service Attendu : {sa[:300]}")
+    if asa:
+        parts.append(f"ASA : {asa[:300]}")
+
+    if parts:
+        result["resume"] = "\n".join(parts)
+    elif main_text:
+        # Fallback : début du texte de la page (contient titre + indication)
+        result["resume"] = main_text[:1200]
+
+    logger.info("HAS DM scraper OK %s | SA=%s | ASA=%s", url, bool(sa), bool(asa))
+    return result
+
+
 def scrape_has_page(url: str, source: str | None = None) -> dict[str, Any]:
     """
     Scrape une page HAS.
-    Route vers scrape_has_ct_page() pour les avis CT (source='has_ct'),
-    sinon extraction RBP standard (résumé + messages clés).
+    Route vers :
+      - scrape_has_ct_page()  : source='has_ct' ou URL pattern avis médicament
+      - scrape_has_dm_page()  : source='has_dm' (avis dispositifs médicaux, CNEDiMTS)
+      - scraper RBP générique : recommandations de bonne pratique
 
     Retourne un dict :
       {
@@ -193,6 +262,9 @@ def scrape_has_page(url: str, source: str | None = None) -> dict[str, Any]:
         "is_scoping_doc": bool,        # True si Note de cadrage détectée
       }
     """
+    # Route DM : source='has_dm' (avis CNEDiMTS sur les dispositifs médicaux)
+    if source == "has_dm":
+        return scrape_has_dm_page(url)
     # Route CT : source='has_ct' ou URL contenant les patterns d'un avis CT
     if source == "has_ct" or _CT_URL_RE.search(url or ""):
         return scrape_has_ct_page(url)

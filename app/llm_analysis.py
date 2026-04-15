@@ -158,6 +158,7 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "fspf":                 "recommandation",
     # Nouvelles sources institutionnelles — audit mars 2026
     "has_ct":  "recommandation",  # HAS CT — avis médicaments ✅ RSS p_3081449
+    "has_dm":  "reglementaire",  # HAS DM — avis dispositifs médicaux ✅ RSS p_3081446
     "spf_beh": "reglementaire",  # SPF — articles (BEH inclus) ✅
     "cnom":    "reglementaire",  # CNOM — déontologie, exercice médical ✅ RSS actif
     # Retirées après audit : inca (pas de RSS), andpc (pas de RSS), ameli_pro (login)
@@ -1009,6 +1010,7 @@ SOURCE_HINTS: dict[str, str] = {
     "fspf":              "FSPF — Actualités réglementaires pharmaciens d'officine",
     # Nouvelles sources institutionnelles — audit mars 2026
     "has_ct":  "HAS Commission de la Transparence — Avis remboursement médicament (ASMR/SMR)",
+    "has_dm":  "HAS — Avis sur les dispositifs médicaux (admission remboursement, conditions utilisation)",
     "spf_beh": "Santé publique France — Article épidémiologique (BEH, alerte sanitaire, vaccination)",
     "cnom":    "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
     # ── Sources innovation — journaux scientifiques internationaux ────────

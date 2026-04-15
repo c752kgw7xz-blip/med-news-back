@@ -41,7 +41,7 @@ from app.has_scraper import scrape_has_page, build_enriched_content
 # Sources HAS dont on enrichit le contenu par scraping de la page.
 # has_rbp  → résumé clinique + messages clés (RBP finales)
 # has_ct   → SMR/ASMR/indication/population cible (avis médicaments CT)
-_HAS_ENRICHABLE_SOURCES = {"has_rbp", "has_ct"}
+_HAS_ENRICHABLE_SOURCES = {"has_rbp", "has_ct", "has_dm"}
 
 logger = logging.getLogger(__name__)
 

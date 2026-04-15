@@ -119,6 +119,7 @@ def sources_status(request: Request):
         # RSS
         "has_rbp":            {"label": "HAS — Recommandations bonne pratique", "type": "rss",     "legal": "Flux RSS public — Licence Ouverte"},
         "has_ct":             {"label": "HAS — Commission transparence",   "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
+        "has_dm":             {"label": "HAS — Avis dispositifs médicaux", "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
         "has_ap":             {"label": "HAS — Accès précoce",             "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
         "has_cert":           {"label": "HAS — Certification établissements", "type": "rss",       "legal": "Flux RSS public — Licence Ouverte"},
         "ansm_actu":          {"label": "ANSM — Actualités",               "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},

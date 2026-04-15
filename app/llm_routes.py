@@ -218,6 +218,14 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
     type_praticien: str | None = result.get("type_praticien")
     source_type: str = get_source_type(candidate.get("source"))
 
+    # EJVES (pubmed_ejves) : les guidelines ESVS sont publiées dans EJVES mais capturées
+    # via pubmed → source_type='innovation' par défaut. Si le LLM identifie une
+    # RECOMMANDATION, on bascule vers 'recommandation' (newsletter recommandations).
+    if candidate.get("source") == "pubmed_ejves":
+        tri = result.get("tri_json") or {}
+        if tri.get("nature") == "RECOMMANDATION":
+            source_type = "recommandation"
+
     # PHARMACIENS → 1 item avec specialty_slug = 'pharmacien'
     # SPECIALITE  → 1 item par spécialité (medecine-generale si aucune spécialité identifiée)
     if audience == "PHARMACIENS":

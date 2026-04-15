@@ -62,6 +62,21 @@ HAS_FEEDS: list[dict] = [
         "source_type": "therapeutique",
         "audience": ["medecins", "pharmaciens"],
     },
+    # HAS — Avis sur les dispositifs médicaux (CNEDIMTS)
+    # RSS vérifié actif (avril 2026) : ID p_3081446
+    # Contenu : admissions au remboursement, conditions d'utilisation, classes de DM.
+    # Très pertinent pour chirurgie vasculaire (stents, endoprothèses, prothèses vasculaires),
+    # orthopédie (implants), cardiologie (stimulateurs, valves), etc.
+    # source_type → reglementaire (décision administrative formelle sur le remboursement)
+    # ~50-100 avis/an — min_score LLM par défaut (5) : sélection naturelle par pertinence clinique
+    {
+        "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081446",
+        "label": "HAS — Avis sur les dispositifs médicaux (admissibilité au remboursement)",
+        "source": "has_dm",
+        "source_type": "reglementaire",
+        "audience": ["medecins"],
+    },
+
     # ❌ Fiches mémo (p_3081544) et Parcours de soins (p_3081547) :
     #    IDs invalides → retournent <root>Invalid parameter</root>
     #    Ces types de contenu sont inclus dans has_rbp (p_3081452, flux principal RBP)
