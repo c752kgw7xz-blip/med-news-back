@@ -1531,10 +1531,14 @@ function showSpecSplash(accordId) {
   document.getElementById('spec-splash').style.display = 'flex';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'none';
+  const rh = document.getElementById('rubrique-header');
+  if (rh) rh.style.display = 'none';
 }
 
 function hideSpecSplash() {
   document.getElementById('spec-splash').style.display = 'none';
+  const rh = document.getElementById('rubrique-header');
+  if (rh) rh.style.display = '';
 }
 
 function toggleAccord(id) {
