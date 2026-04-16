@@ -1079,7 +1079,7 @@ function populateSidebar() {
 }
 
 async function loadItems() {
-  const res = await authFetch(`${API}/admin/llm/items?limit=1000`);
+  const res = await authFetch(`${API}/admin/llm/items`);
   if (!res) return;
   const data = await res.json();
   allItems = data.items || [];

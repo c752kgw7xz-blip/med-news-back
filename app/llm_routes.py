@@ -937,7 +937,6 @@ def list_items(
     status: Optional[str] = Query(default=None, description="PENDING, APPROVED, REJECTED"),
     specialty: Optional[str] = Query(default=None),
     min_score: int = Query(default=1, ge=1, le=10),
-    limit: int = Query(default=200, ge=1, le=2000),
 ):
     """Liste tous les items, filtrables par status et spécialité."""
     _require_admin(request)
@@ -955,7 +954,6 @@ def list_items(
                 conditions.append("i.specialty_slug = %s")
                 params.append(specialty)
 
-            params.append(limit)
             where = " AND ".join(conditions)
 
             cur.execute(
@@ -971,8 +969,7 @@ def list_items(
                 WHERE {where}
                 ORDER BY
                     CASE i.review_status WHEN 'PENDING' THEN 0 WHEN 'APPROVED' THEN 1 ELSE 2 END,
-                    i.score_density DESC, c.official_date DESC
-                LIMIT %s;
+                    i.score_density DESC, c.official_date DESC;
                 """,
                 params,
             )
