@@ -95,7 +95,7 @@
     #spec-label { display: none !important; }
     .header-left { overflow: hidden; }
     /* Contraindre le grid item au viewport */
-    .content-area { padding: 16px 16px 80px; min-width: 0; overflow-x: hidden; }
+    .content-area { padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)); min-width: 0; overflow-x: hidden; }
     .month-name { font-size: 1.24rem; }
     /* Cards pleine largeur */
     .article-card { width: 100% !important; max-width: 100%; box-sizing: border-box; }
@@ -116,12 +116,16 @@
     /* Badge IMPORTANT + catégorie : pas de chevauchement */
     .card-top { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
     .card-top-right { flex-wrap: wrap; }
+    /* Résumé : 2 lignes sur mobile */
+    .card-summary { -webkit-line-clamp: 2; }
+    /* Onglets : empêche le débordement sur écrans étroits */
+    .filter-pill { overflow: hidden; text-overflow: ellipsis; }
     /* Police fixe sur mobile */
     html, body { font-size: 16px !important; --font-scale: 1 !important; }
   }
   @media (max-width: 480px) {
     header { padding: 0 12px; height: 48px; }
-    .content-area { padding: 12px 12px 80px; }
+    .content-area { padding: 12px 12px calc(80px + env(safe-area-inset-bottom, 0px)); }
     .month-name { font-size: 1.06rem; }
     .article-card { padding: 12px 14px; }
     .group-line { display: none; }
@@ -1225,6 +1229,10 @@ function toggleDetail(e, card) {
   }
   detail.style.display = isOpen ? 'none' : 'block';
   card.classList.toggle('expanded', !isOpen);
+  // Sur mobile : scroller la carte en haut du viewport
+  if (!isOpen && window.innerWidth <= 768) {
+    requestAnimationFrame(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
 }
 
 function collapseCard(btn) {

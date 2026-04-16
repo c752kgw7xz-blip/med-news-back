@@ -84,7 +84,8 @@
     .header-spec { display: none; }
     .header-sep { display: none; }
     /* Contraindre le grid item content-area à la largeur du viewport */
-    .content-area { padding: 16px 16px 80px; min-width: 0; overflow-x: hidden; }
+    /* env() gère la barre d'accueil iOS (safe-area-inset-bottom ≈ 34px sur iPhone récent) */
+    .content-area { padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)); min-width: 0; overflow-x: hidden; }
     #articles-container { grid-template-columns: 1fr !important; min-width: 0; }
     .article-card { width: 100% !important; max-width: 100%; box-sizing: border-box; }
     .rubrique-month { font-size: 1.24rem; }
@@ -111,13 +112,17 @@
     /* Card top : pas de chevauchement badge IMPORTANT + catégorie */
     .card-top { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
     .card-top-right { flex-wrap: wrap; }
+    /* Résumé : 2 lignes sur mobile (plus lisible que 1) */
+    .card-summary { -webkit-line-clamp: 2; }
+    /* Onglets : empêche le texte de déborder sur les écrans étroits */
+    .filter-pill { overflow: hidden; text-overflow: ellipsis; }
     /* Police fixe sur mobile — le réglage taille s'applique uniquement desktop */
     html, body { font-size: 16px !important; --font-scale: 1 !important; }
   }
   @media (max-width: 480px) {
     body { overflow-x: hidden; }
     header { padding: 0 12px; height: 48px; }
-    .content-area { padding: 12px 12px 80px; overflow-x: hidden; max-width: 100vw; }
+    .content-area { padding: 12px 12px calc(80px + env(safe-area-inset-bottom, 0px)); overflow-x: hidden; max-width: 100vw; }
     .article-card { padding: 12px 14px; max-width: 100%; box-sizing: border-box; word-break: break-word; }
     .article-title { font-size: 0.9rem; line-height: 1.35; }
     .card-title { font-size: 0.88rem !important; }
@@ -993,6 +998,9 @@ function openFullPage(section) {
       if (sub && sub.dataset.slug) {
         e.stopPropagation();
         selectSpecType(sub.dataset.slug, sub.dataset.stype, sub.dataset.accordId);
+        // Activer "Ma spécialité" dans la nav (on revient à la lecture d'articles)
+        document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+        document.getElementById('mnav-specialite')?.classList.add('active');
         setTimeout(() => closeFullPage('explorer'), 100);
       }
     };
@@ -1343,6 +1351,10 @@ function toggleDetail(e, card) {
 
   detail.style.display = isOpen ? 'none' : 'block';
   card.classList.toggle('expanded', !isOpen);
+  // Sur mobile : scroller la carte en haut du viewport pour que le détail soit visible
+  if (!isOpen && window.innerWidth <= 768) {
+    requestAnimationFrame(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
 }
 
 function collapseCard(btn) {
