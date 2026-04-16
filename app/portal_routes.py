@@ -347,10 +347,18 @@ def article_counts(
 def article_months(
     specialty: Optional[str] = Query(default=None),
     audience: Optional[str] = Query(default=None),
+    source_type: Optional[str] = Query(default=None),
     user_id: str = Depends(_get_current_user_id),
 ):
     slug = specialty if specialty else _get_user_specialty_slug(user_id)
     aud_clause, aud_params = _build_audience_clause(audience, slug)
+
+    extra_clauses = []
+    extra_params: list = []
+    if source_type and source_type in _VALID_SOURCE_TYPES:
+        extra_clauses.append("COALESCE(i.source_type, 'reglementaire') = %s")
+        extra_params.append(source_type)
+    extra_sql = ("AND " + " AND ".join(extra_clauses)) if extra_clauses else ""
 
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -362,9 +370,10 @@ def article_months(
                   AND COALESCE(i.score_density, 0) >= 3
                   AND c.official_date IS NOT NULL
                   AND {aud_clause}
+                  {extra_sql}
                 GROUP BY month
                 ORDER BY month DESC;
-            """, aud_params)
+            """, aud_params + extra_params)
             rows = cur.fetchall()
 
     return {"months": [{"month": r[0], "count": r[1]} for r in rows]}

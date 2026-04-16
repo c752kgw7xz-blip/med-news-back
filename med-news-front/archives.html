@@ -710,13 +710,6 @@
         <button class="search-clear" id="search-clear" onclick="clearSearch()">&times;</button>
       </div>
 
-      <!-- Source type filters -->
-      <div class="source-pills" id="source-pills">
-        <button class="source-pill active" onclick="filterBySourceType('all', this)">Tous types</button>
-        <button class="source-pill" data-stype="reglementaire" onclick="filterBySourceType('reglementaire', this)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>&nbsp;R&#233;glementation</button>
-        <button class="source-pill" data-stype="recommandation" onclick="filterBySourceType('recommandation', this)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>&nbsp;Recommandation</button>
-        <button class="source-pill" data-stype="innovation" onclick="filterBySourceType('innovation', this)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>&nbsp;Innovation</button>
-      </div>
 
       <!-- Catégorie filters -->
       <div class="filters-row" id="filters-row">
@@ -1195,14 +1188,18 @@ function applyCatFilter() {
 function updateCounters() {
   document.querySelectorAll('.month-section').forEach(section => {
     const monthKey = section.id.replace('month-', '');
-    if (!monthLoaded[monthKey]) return; // mois pas encore chargé, on ne touche pas
+    const countEl = section.querySelector('.month-count');
+    if (!monthLoaded[monthKey]) {
+      // Mois non chargé : si filtre catégorie actif, le total API est surestimé
+      if (activeCatFilter !== 'all' && countEl) countEl.textContent = '\u2014';
+      return;
+    }
     const articlesEl = document.getElementById(`articles-${monthKey}`);
     if (!articlesEl) return;
     let count = 0;
     articlesEl.querySelectorAll('.article-card').forEach(c => {
       if (c.style.display !== 'none') count++;
     });
-    const countEl = section.querySelector('.month-count');
     if (countEl) countEl.textContent = `${count} article${count > 1 ? 's' : ''}`;
   });
 }
