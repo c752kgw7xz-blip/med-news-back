@@ -1068,7 +1068,7 @@ function renderArticle(a, idx) {
   const impact = (tri.impact_pratique && tri.impact_pratique !== 'None' && tri.impact_pratique !== 'null') ? tri.impact_pratique : '';
   const categorie = a.categorie || null;
   const stype = a.source_type || 'reglementaire';
-  const datePub = tri.date_publication || a.official_date || '';
+  const datePub = a.official_date || tri.date_publication || '';
   const score = a.score_density || 5;
   const prio = prioClass(score);
   const points = (lecture.points_cles || []).filter(p => p && p.trim());

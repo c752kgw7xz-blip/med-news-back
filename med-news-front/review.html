@@ -832,7 +832,7 @@ function renderArticle(a, idx) {
   const resume = tri.resume || '';
   const impact = (tri.impact_pratique && tri.impact_pratique !== 'None' && tri.impact_pratique !== 'null') ? tri.impact_pratique : '';
   const nature = tri.nature || '';
-  const datePub = tri.date_publication || a.official_date || '';
+  const datePub = a.official_date || tri.date_publication || '';
   const score = a.score_density || 5;
   const prio = prioClass(score);
   const audience = a.audience || '';
