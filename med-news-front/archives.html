@@ -499,6 +499,7 @@
   .group-header.mid .group-label { color: var(--amber); }
   .group-header.low .group-dot { background: var(--green); }
   .group-header.low .group-label { color: var(--green); }
+  .group-header { display: none; }
 
   /* ── Search results meta ─────────────────── */
   .search-meta { font-size: 0.86rem; color: var(--text4); margin-bottom: 16px; }
@@ -1061,8 +1062,6 @@ function renderArticle(a, idx) {
         <span class="card-title">${esc(titre)}</span>
       </div>
       <div class="card-top-right">
-        ${innovationBadge(stype)}
-        ${categorieBadge(categorie)}
         ${sourceMeta ? `<span class="card-date" style="font-size:0.59rem;color:var(--text3);">${esc(sourceMeta)}</span>` : ''}
         <button class="btn-fav${isFav ? ' active' : ''}" data-item-id="${a.id}"
           title="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}"
@@ -1291,6 +1290,9 @@ async function selectSpecType(slug, stype, accordId) {
   hideSourcePills();
   updateSpecLabel((allSpecialties.find(s => s.slug === slug) || {}).name || slug);
   await reloadArchives();
+  // Auto-sélectionner Méd. & Dispositifs dès l'arrivée
+  const firstTab = document.querySelector('.filter-pill[data-cat="therapeutique"]');
+  if (firstTab) setCatFilter('therapeutique', firstTab);
 }
 
 // ── Sidebar ──────────────────────────────────────────────────
