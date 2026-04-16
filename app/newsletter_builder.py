@@ -118,12 +118,12 @@ def _priority_label(score: int) -> tuple[str, str]:
 
 
 CAT_STYLES: dict[str, tuple[str, str]] = {
-    "therapeutique": ("Médicaments & Dispositifs", "cat-therapeutique"),
-    "clinique":      ("Clinique",                  "cat-clinique"),
-    "exercice":      ("Exercice & Admin",           "cat-exercice"),
-    "innovation":    ("Innovation",                "cat-therapeutique"),
-    "recommandation":("Recommandation",            "cat-clinique"),
-    "reglementation":("Réglementation",            "cat-exercice"),
+    "therapeutique":  ("Médicaments & Dispositifs", "cat-innovation"),
+    "clinique":       ("Clinique",                  "cat-recommandation"),
+    "exercice":       ("Exercice & Admin",           "cat-reglementation"),
+    "innovation":     ("Innovation",                 "cat-innovation"),
+    "recommandation": ("Recommandation",             "cat-recommandation"),
+    "reglementation": ("Réglementation",             "cat-reglementation"),
 }
 
 # CTA text selon le type de source
@@ -146,39 +146,39 @@ _SOURCE_TYPE_CTA: dict[str, str] = {
 _CSS = """
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg:       #08090e;
-    --surface:  #0d0e16;
-    --surface2: #11121c;
-    --border:   #1c1e30;
-    --border2:  #252840;
-    --text:     #e8e9f4;
-    --text2:    #c8c8d4;
-    --text3:    #8b8fa8;
-    --text4:    #6b6f88;
-    --text5:    #4a4e68;
-    --green:    #1f9478;
-    --strip:    #11121c;
-    --impact:   #11121c;
+    --bg:       #17140C;
+    --surface:  #1E1B12;
+    --surface2: #252219;
+    --border:   #342F24;
+    --border2:  #4A4438;
+    --text:     #EDE7DC;
+    --text2:    #C6BEB4;
+    --text3:    #8A8378;
+    --text4:    #6A6360;
+    --text5:    #504840;
+    --accent:   #9B2335;
+    --strip:    #1E1B12;
+    --impact:   #252219;
   }
 }
 :root {
-  --bg:       #f6f5f2;
-  --surface:  #ffffff;
-  --surface2: #f0ede8;
-  --border:   #e4e0d8;
-  --border2:  #cac4bb;
-  --text:     #1a1814;
-  --text2:    #4a4540;
-  --text3:    #7a7268;
-  --text4:    #9a9288;
-  --text5:    #bcb6ac;
-  --green:    #1f9478;
-  --strip:    #f0ede8;
-  --impact:   #f6f5f2;
+  --bg:       #F5F4EF;
+  --surface:  #FDFCF9;
+  --surface2: #ECEAE2;
+  --border:   #D6D2C8;
+  --border2:  #B4B0A6;
+  --text:     #1A1714;
+  --text2:    #3E3A34;
+  --text3:    #706860;
+  --text4:    #908880;
+  --text5:    #B0A898;
+  --accent:   #9B2335;
+  --strip:    #ECEAE2;
+  --impact:   #F5F4EF;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-       font-weight: 300; margin: 0; padding: 0; color: var(--text); }
+       font-weight: 400; margin: 0; padding: 0; color: var(--text); }
 .bg  { background: var(--bg); padding: 32px 16px; }
 .wrap { max-width: 600px; margin: 0 auto; }
 
@@ -187,122 +187,105 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
             border-bottom: 1px solid var(--border); }
 .masthead-name { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
                   font-size: 24px; font-style: italic; color: var(--text); }
-.masthead-name em { color: var(--green); font-style: italic; }
-.masthead-sub { font-family: 'DM Mono', 'Courier New', monospace; font-size: 9px;
-                letter-spacing: 3px; text-transform: uppercase;
-                color: var(--text5); margin-top: 6px; }
+.masthead-name em { color: var(--accent); font-style: normal; font-weight: 400; }
+.masthead-sub { font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+                color: var(--text4); margin-top: 6px; font-weight: 500; }
 
 /* Header */
-.hd { background: transparent; border: none;
-      border-radius: 0; padding: 32px 40px 28px; }
-.hd-eye { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
-           color: var(--text5); letter-spacing: 2px;
-           text-transform: uppercase; margin-bottom: 14px; }
-.hd-dot { width: 6px; height: 6px; background: var(--green);
+.hd { padding: 32px 40px 24px; }
+.hd-eye { font-size: 10px; color: var(--text4); letter-spacing: 1px;
+           text-transform: uppercase; margin-bottom: 14px; font-weight: 500; }
+.hd-dot { width: 5px; height: 5px; background: var(--accent);
            border-radius: 50%; display: inline-block;
            margin-right: 6px; vertical-align: middle; }
 .hd-title { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
              font-size: 28px; font-weight: 400; color: var(--text);
              line-height: 1.2; margin-bottom: 4px; }
-.hd-title em { font-style: italic; color: var(--green); }
-.hd-stats { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
-             color: var(--text4); letter-spacing: 0.3px; margin-top: 16px; }
-.hd-stats .n   { color: var(--text2); }
+.hd-title em { font-style: italic; color: var(--text2); }
+.hd-stats { font-size: 11px; color: var(--text4); letter-spacing: 0.2px; margin-top: 16px; }
+.hd-stats .n   { color: var(--text2); font-weight: 500; }
 .hd-stats .sep { color: var(--border2); margin: 0 8px; }
 
 /* Édito */
-.edito { background: transparent; border: none;
-          padding: 24px 40px 26px; }
+.edito { padding: 0 40px 26px; }
 .edito p { font-size: 13px; color: var(--text3); line-height: 1.85; }
-.edito-sign { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
-               color: var(--text5); margin-top: 12px;
-               letter-spacing: 1px; text-transform: uppercase; }
+.edito-sign { font-size: 11px; color: var(--text4); margin-top: 12px;
+               letter-spacing: .5px; font-weight: 500; }
 
-/* CTA portal — table layout for Outlook compatibility */
-.portal-strip { background: transparent; border: none;
-                padding: 18px 40px; }
+/* CTA portal */
+.portal-strip { background: var(--strip); border-top: 1px solid var(--border);
+                border-bottom: 1px solid var(--border);
+                padding: 18px 40px; margin-bottom: 8px; }
 .portal-strip p { font-size: 12px; color: var(--text4);
-                  font-family: 'DM Mono', 'Courier New', monospace;
-                  letter-spacing: .3px; line-height: 1.6;
+                  letter-spacing: .2px; line-height: 1.6;
                   display: inline-block; vertical-align: middle;
-                  max-width: 380px; }
-.portal-btn { font-family: 'Outfit', -apple-system, 'Segoe UI', sans-serif; font-size: 12px;
-              font-weight: 500; color: var(--text);
+                  max-width: 340px; }
+.portal-btn { font-size: 12px; font-weight: 500; color: var(--text);
               text-decoration: none; background: var(--surface);
               border: 1px solid var(--border2);
-              padding: 8px 18px; border-radius: 6px;
+              padding: 8px 18px; border-radius: 4px;
               white-space: nowrap; display: inline-block;
               vertical-align: middle; margin-left: 16px; }
 
-/* Séparateurs de section */
-.grp { padding: 26px 0 16px; }
-.grp-label { font-family: 'DM Mono', 'Courier New', monospace; font-size: 0.7rem;
-              letter-spacing: 1.5px; text-transform: uppercase;
-              color: #2a9d8f;
-              border-left: 3px solid #2a9d8f; padding-left: 10px; }
+/* Section headers */
+.grp { padding: 28px 40px 12px; }
+.grp-label { font-size: 11px; font-weight: 500;
+              letter-spacing: .6px; text-transform: uppercase;
+              padding-left: 10px; }
+.grp-reg   { color: #3B52A4; border-left: 3px solid #3B52A4; }
+.grp-reco  { color: #1A6B5C; border-left: 3px solid #1A6B5C; }
+.grp-innov { color: #9B5714; border-left: 3px solid #9B5714; }
 
 /* Cards articles */
 .card { background: var(--surface); border: 1px solid var(--border);
-         border-radius: 10px; padding: 24px 28px 22px;
-         margin-bottom: 10px; }
-.card-top { margin-bottom: 12px; }
+         border-radius: 4px; padding: 22px 28px 20px;
+         margin: 0 40px 8px; }
+.card-top { margin-bottom: 10px; }
 .card-top > * { display: inline-block; vertical-align: middle; margin-right: 7px; }
-.prio { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
-         font-weight: 400; letter-spacing: .3px; }
-.prio.h { color: #e05252; }
-.prio.m { color: #d4921a; }
-.prio.l { color: #2a9d7a; }
-.card-date { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
-              color: var(--text5); }
+.prio { font-size: 11px; font-weight: 500; letter-spacing: .2px; }
+.prio.h { color: #C03030; }
+.prio.m { color: #B07020; }
+.prio.l { color: #1A6B5C; }
+.card-date { font-size: 11px; color: var(--text5); }
 
 /* Catégories */
-.cat { font-family: 'DM Mono', 'Courier New', monospace; font-size: 11px;
-        letter-spacing: .5px; text-transform: uppercase;
-        padding: 3px 9px; border-radius: 3px; font-weight: 500; }
-.cat-therapeutique    { background: rgba(147,51,234,.08);  color: #9333ea;
-                         border: 0.5px solid rgba(147,51,234,.25); }
-.cat-clinique         { background: rgba(107,159,212,.08); color: #6b9fd4;
-                         border: 0.5px solid rgba(107,159,212,.25); }
-.cat-exercice         { background: rgba(74,158,187,.08);  color: #4a9ebb;
-                         border: 0.5px solid rgba(74,158,187,.25); }
+.cat { font-size: 10px; letter-spacing: .3px; text-transform: uppercase;
+        padding: 2px 8px; border-radius: 2px; font-weight: 500; }
+.cat-reglementation { background: rgba(59,82,164,.07); color: #3B52A4;
+                      border: 0.5px solid rgba(59,82,164,.2); }
+.cat-recommandation { background: rgba(26,107,92,.07); color: #1A6B5C;
+                      border: 0.5px solid rgba(26,107,92,.2); }
+.cat-innovation     { background: rgba(155,87,20,.07); color: #9B5714;
+                      border: 0.5px solid rgba(155,87,20,.2); }
 
 .card-title { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-               font-size: 19px; font-weight: 400; color: var(--text);
+               font-size: 18px; font-weight: 400; color: var(--text);
                line-height: 1.35; margin-bottom: 10px; }
-.card-resume { font-size: 13px; font-weight: 300; color: var(--text3);
+.card-resume { font-size: 13px; font-weight: 400; color: var(--text3);
                 line-height: 1.7; margin-bottom: 12px; }
 .card-impact { font-size: 12px; color: var(--text3); line-height: 1.65;
                 padding: 10px 14px; margin-bottom: 14px;
                 background: var(--impact); border-radius: 4px;
-                font-weight: 300; border: 1px solid var(--border); }
-.card-link { font-family: 'Outfit', sans-serif; font-size: 12px;
-              font-weight: 500; color: var(--text2);
+                font-weight: 400; border: 1px solid var(--border); }
+.card-link { font-size: 12px; font-weight: 500; color: var(--text2);
               text-decoration: none; border: 1px solid var(--border2);
-              padding: 6px 16px; border-radius: 6px;
+              padding: 6px 16px; border-radius: 4px;
               display: inline-block; }
 
-/* Card featured (article principal) */
+/* Card featured */
 .card-featured { background: var(--surface); border: 1px solid var(--border2);
-                  border-radius: 12px; padding: 28px 32px 26px;
-                  margin-bottom: 14px;
-                  border-left: 3px solid #2a9d8f; }
-.card-featured .card-title { font-size: 22px; line-height: 1.3; margin-bottom: 14px; }
-.card-featured .card-resume { font-size: 14px; }
-.featured-badge { font-family: 'DM Mono', 'Courier New', monospace;
-                   font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
-                   color: #2a9d8f; display: block; margin-bottom: 14px; }
-
-/* Section "À lire aussi" */
-.aalire-label { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
-                 letter-spacing: 2px; text-transform: uppercase;
-                 color: var(--text4); border-top: 1px solid var(--border);
-                 padding-top: 20px; margin: 14px 0 12px; }
+                  border-radius: 4px; padding: 24px 28px 22px;
+                  margin: 0 40px 8px; }
+.card-featured .card-title { font-size: 21px; }
+.card-featured .card-resume { font-size: 13.5px; }
+.featured-badge { font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+                   color: var(--accent); display: block; margin-bottom: 14px;
+                   font-weight: 500; }
 
 /* Footer */
 .footer { padding: 24px 0 8px; text-align: center; }
-.footer p { font-family: 'DM Mono', 'Courier New', monospace; font-size: 10px;
-             color: var(--text5); letter-spacing: .4px; line-height: 2; }
-.footer a { color: var(--text5); }
+.footer p { font-size: 11px; color: var(--text5); letter-spacing: .2px; line-height: 2; }
+.footer a { color: var(--text4); text-decoration: none; }
 """
 
 # ---------------------------------------------------------------------------
@@ -478,6 +461,28 @@ def _source_tags(items: list[dict]) -> str:
     return " · ".join(seen[:5]) if seen else "PubMed · Presse médicale"
 
 
+def _classify_section(item: dict) -> str:
+    """Classifie un article dans l'une des 3 dimensions éditoriales."""
+    cat = (item.get("categorie") or "").lower()
+    source_type = (item.get("source_type") or "").lower()
+    source = (item.get("source") or "").lower()
+
+    if cat in ("reglementation", "exercice") or source_type in ("regulatory", "reglementation"):
+        return "reglementation"
+    if cat in ("recommandation", "clinique") or source_type in ("guideline", "recommandation"):
+        return "recommandations"
+    if cat in ("therapeutique", "innovation") or source_type in (
+        "innovation", "journal", "press", "presse", "congress", "device"
+    ):
+        return "innovation"
+    # Fallback par source
+    if source.startswith("legifrance") or source.startswith("ansm_"):
+        return "reglementation"
+    if source.startswith("has_"):
+        return "recommandations"
+    return "innovation"
+
+
 def build_newsletter(
     specialty_slug: str,
     items: list[dict[str, Any]],
@@ -546,10 +551,16 @@ def build_newsletter(
 
     n_total = len(items_spec)
 
-    # Comptages pour stats
-    n_innovation = sum(1 for i in items_spec if (i.get("source_type") or "") in ("innovation", "journal", "press", "presse", "congress"))
-    n_reco = sum(1 for i in items_spec if (i.get("source_type") or "") in ("guideline", "regulatory", "reglementation"))
-    n_autres = n_total - n_innovation - n_reco
+    # Classer en 3 sections
+    items_reg   = sorted([i for i in items_spec if _classify_section(i) == "reglementation"],
+                         key=lambda x: x.get("score_density") or 0, reverse=True)
+    items_reco  = sorted([i for i in items_spec if _classify_section(i) == "recommandations"],
+                         key=lambda x: x.get("score_density") or 0, reverse=True)
+    items_innov = sorted([i for i in items_spec if _classify_section(i) == "innovation"],
+                         key=lambda x: x.get("score_density") or 0, reverse=True)
+    n_reg   = len(items_reg)
+    n_reco  = len(items_reco)
+    n_innov = len(items_innov)
 
     # Sujet : accroche sur l'item le plus urgent
     top_item = items_spec[0] if items_spec else None
@@ -563,29 +574,21 @@ def build_newsletter(
 
     edito_text = _generate_edito(items_spec, [], specialty_name, emission_date)
 
-    # Hiérarchie : 1 article featured (premier) + "À lire aussi" (le reste)
     source_tags = _source_tags(items_spec)
 
-    if items_spec:
-        featured_html = _render_article(items_spec[0], featured=True)
-        rest = items_spec[1:]
-    else:
-        featured_html = ""
-        rest = []
-
-    if rest:
-        rest_html = (
-            '<div class="aalire-label">À lire aussi</div>'
-            + "".join(_render_article(i, featured=False) for i in rest)
-        )
-    else:
-        rest_html = ""
+    def _section_html(label: str, css: str, items: list) -> str:
+        if not items:
+            return ""
+        cards = "".join(_render_article(i) for i in items)
+        return f'<div class="grp"><div class="grp-label {css}">{_he(label)}</div></div>\n{cards}'
 
     articles_html = (
-        featured_html + rest_html
-        if items_spec
-        else '<p style="color:var(--text5);font-style:italic;padding:20px 0;">Aucun article sélectionné ce mois-ci.</p>'
+        _section_html("Réglementation", "grp-reg", items_reg)
+        + _section_html("Recommandations cliniques", "grp-reco", items_reco)
+        + _section_html("Innovation", "grp-innov", items_innov)
     )
+    if not articles_html.strip():
+        articles_html = '<p style="color:var(--text5);font-style:italic;padding:20px 40px;">Aucun article sélectionné cette semaine.</p>'
 
     html = f"""<!DOCTYPE html>
 <html lang="fr">
@@ -594,7 +597,7 @@ def build_newsletter(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>{_he(sujet)}</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
 <style>{_CSS}</style>
 </head>
 <body>
@@ -604,7 +607,7 @@ def build_newsletter(
   <!-- MASTHEAD -->
   <div class="masthead">
     <div class="masthead-name">Med<em>News</em></div>
-    <div class="masthead-sub">Veille clinique · {_he(specialty_name)}</div>
+    <div class="masthead-sub">La revue médicale · {_he(specialty_name)}</div>
   </div>
 
   <!-- HEADER -->
@@ -616,11 +619,11 @@ def build_newsletter(
       {_he(specialty_name)}<br><em>{_he(mois_annee)}</em>
     </div>
     <div class="hd-stats">
-      <span class="n">{n_total}</span> article{'s' if n_total != 1 else ''}
+      <span class="n">{n_reg}</span> réglementaire{'s' if n_reg != 1 else ''}
       <span class="sep">·</span>
-      <span class="n">{n_innovation}</span> innovation{'s' if n_innovation != 1 else ''}
+      <span class="n">{n_reco}</span> recommandation{'s' if n_reco != 1 else ''}
       <span class="sep">·</span>
-      <span class="n">{n_reco}</span> reco{'s' if n_reco != 1 else ''}
+      <span class="n">{n_innov}</span> innovation{'s' if n_innov != 1 else ''}
       <span class="sep">·</span>{_he(source_tags)}
     </div>
   </div>
@@ -638,10 +641,6 @@ def build_newsletter(
   </div>
 
   <!-- ARTICLES -->
-  <div class="grp">
-    <div class="grp-label">{_he(specialty_name)}</div>
-  </div>
-
   {articles_html}
 
   <!-- FOOTER -->
