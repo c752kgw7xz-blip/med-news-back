@@ -244,13 +244,13 @@ def list_articles(
                 SELECT id, audience, specialty_slug, score_density,
                        tri_json, lecture_json, published_at,
                        title_raw, official_url, official_date,
-                       categorie, source_type
+                       categorie, source_type, source
                 FROM (
                     SELECT DISTINCT ON (i.candidate_id)
                            i.id, i.audience, i.specialty_slug, i.score_density,
                            i.tri_json, i.lecture_json, i.published_at,
                            c.title_raw, c.official_url, c.official_date::text,
-                           i.categorie, i.source_type
+                           i.categorie, i.source_type, c.source
                     FROM items i
                     JOIN candidates c ON c.id = i.candidate_id
                     WHERE i.review_status = 'APPROVED'
@@ -278,6 +278,7 @@ def list_articles(
             "official_date": r[9],
             "categorie": r[10],
             "source_type": r[11] or "reglementaire",
+            "source": r[12] or "",
         })
 
     return {
