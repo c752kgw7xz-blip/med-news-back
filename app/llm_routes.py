@@ -937,7 +937,7 @@ def list_items(
     status: Optional[str] = Query(default=None, description="PENDING, APPROVED, REJECTED"),
     specialty: Optional[str] = Query(default=None),
     min_score: int = Query(default=1, ge=1, le=10),
-    limit: int = Query(default=200, ge=1, le=500),
+    limit: int = Query(default=200, ge=1, le=2000),
 ):
     """Liste tous les items, filtrables par status et spécialité."""
     _require_admin(request)
