@@ -747,18 +747,13 @@ function toast(msg, type = 'success') {
 }
 
 // ── Rendering ─────────────────────────────────────────────────
-const CATEGORY_ORDER = ['therapeutique','clinique','exercice'];
+const CATEGORY_ORDER = ['innovation','recommandation','reglementaire'];
 const CATEGORY_META = {
-  therapeutique: { icon: 'pill',     label: 'M\u00e9d. \u0026 Dispositifs' },
-  clinique:      { icon: 'activity', label: 'Pratique clinique' },
-  exercice:      { icon: 'scale',    label: 'Exercice \u0026 Admin' },
+  innovation:     { icon: 'activity', label: 'Innovation' },
+  recommandation: { icon: 'clipboard-list', label: 'Recommandation' },
+  reglementaire:  { icon: 'scale',    label: 'R\u00e9glementaire' },
 };
-// Remap anciennes catégories vers les 3 nouvelles
-function normalizeCategorie(cat) {
-  if (cat === 'medicament' || cat === 'dispositifs_medicaux') return 'therapeutique';
-  if (cat === 'facturation' || cat === 'administratif' || cat === 'sante_publique') return 'exercice';
-  return cat; // 'therapeutique','clinique','exercice' passent tels quels
-}
+function normalizeCategorie(cat) { return cat; }
 const CATEGORY_SVG_PATHS = {
   'pill': '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
   'activity': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
@@ -793,7 +788,7 @@ function sourceTypeBadge(stype) {
 function catSeparator(categorie) {
   const cat = normalizeCategorie(categorie);
   const m = CATEGORY_META[cat] || { icon: null, label: cat || 'Non class\u00e9' };
-  const s = CATEGORIE_STYLE[cat] || { color: '#777' };
+  const s = SOURCE_TYPE_STYLE[cat] || { color: '#777' };
   const icon = m.icon ? catIconHtml(m.icon, s.color) : '<span style="font-size:0.65rem;">\u2022</span>';
   return `<div class="cat-separator">
     <span class="cat-sep-line"></span>
@@ -854,10 +849,6 @@ function renderArticle(a, idx) {
   const statusClass = status.toLowerCase();
   const statusLabel = status === 'PENDING' ? 'En attente' : status === 'APPROVED' ? 'Valid\u00e9' : 'Rejet\u00e9';
 
-  const normCat = normalizeCategorie(categorie);
-  const catStyle = normCat ? (CATEGORIE_STYLE[normCat] || { bg: 'var(--surface2)', color: 'var(--text3)', label: normCat })
-                           : { bg: 'var(--surface2)', color: 'var(--text4)', label: '?' };
-  const catBadge = `<span class="nature-badge" style="background:${catStyle.bg};color:${catStyle.color};${catStyle.border ? `border:${catStyle.border};` : ''}">${esc(catStyle.label)}</span>`;
   const stypeBadge = sourceTypeBadge(stype);
   // Source metadata : "Nature · date"
   const sourceMeta = [nature, _fmtDate(datePub)].filter(Boolean).join(' · ');
@@ -890,7 +881,6 @@ function renderArticle(a, idx) {
       </div>
       <div class="card-top-right">
         ${stypeBadge}
-        ${catBadge}
         ${sourceMeta ? `<span class="card-date" style="font-size:0.59rem;color:var(--text3);">${esc(sourceMeta)}</span>` : ''}
         <div class="spec-badges">${specDisplay}</div>
         <span class="status-badge ${statusClass}">${statusLabel}</span>
@@ -1088,18 +1078,18 @@ async function loadItems() {
   if (allItems.length === 0) {
     container.innerHTML = '<div class="empty">Aucun article dans le pipeline.<br>Lancez une collecte JORF + analyse LLM.</div>';
   } else {
-    // Tri : 1) ordre catégorie, 2) score décroissant à catégorie égale
+    // Tri : 1) ordre source_type, 2) score décroissant à source_type égal
     const catIdx = cat => { const i = CATEGORY_ORDER.indexOf(cat); return i >= 0 ? i : 99; };
     const sorted = [...allItems].sort((a, b) => {
-      const diff = catIdx(a.categorie) - catIdx(b.categorie);
+      const diff = catIdx(a.source_type) - catIdx(b.source_type);
       if (diff !== 0) return diff;
       return (b.score_density || 5) - (a.score_density || 5);
     });
 
-    // Grouper par catégorie et insérer séparateurs
+    // Grouper par source_type et insérer séparateurs
     const groups = new Map();
     sorted.forEach(a => {
-      const cat = a.categorie || '__none__';
+      const cat = a.source_type || '__none__';
       if (!groups.has(cat)) groups.set(cat, []);
       groups.get(cat).push(a);
     });
