@@ -190,6 +190,67 @@
   /* ── Content area ──────────────────────── */
   .content-area { padding: 28px 40px; min-width: 0; overflow-x: hidden; }
 
+  /* ── Specialty splash ──────────────────── */
+  #spec-splash {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 62vh;
+    text-align: center;
+    padding: 48px 32px;
+  }
+  #spec-splash-name {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 3rem;
+    font-weight: 400;
+    color: var(--text);
+    margin: 0 0 10px;
+    line-height: 1.1;
+    font-style: italic;
+    letter-spacing: -.5px;
+  }
+  .spec-splash-hint {
+    color: var(--text5);
+    font-size: 0.9rem;
+    margin: 0 0 36px;
+  }
+  .spec-splash-cats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .spec-splash-cat-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 28px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text3);
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: border-color .15s, background .15s, color .15s;
+    min-width: 128px;
+  }
+  .spec-splash-cat-btn:hover { color: var(--text); background: rgba(16,185,129,.05); }
+  .spec-splash-cat-btn .splash-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .spec-splash-cat-btn.stype-reg   { --dot: #6366f1; }
+  .spec-splash-cat-btn.stype-reco  { --dot: #0891b2; }
+  .spec-splash-cat-btn.stype-innov { --dot: #ea7d29; }
+  .spec-splash-cat-btn:hover       { border-color: var(--dot, var(--green)); }
+  .spec-splash-cat-btn .splash-count { color: var(--dot, var(--green)); }
+
   /* ── Page title (Archives) ──────────────── */
   .arch-page-title { margin-bottom: 20px; }
   .arch-page-title h2 {
@@ -675,6 +736,13 @@
           </button>
         </div>
       </div>
+
+      <!-- Splash spécialité -->
+      <div id="spec-splash">
+        <h1 id="spec-splash-name"></h1>
+        <p class="spec-splash-hint">Sélectionnez une catégorie dans le menu de gauche</p>
+        <div class="spec-splash-cats" id="spec-splash-cats"></div>
+      </div>
     </div>
   </div>
 
@@ -764,6 +832,31 @@ let activeCatFilter = 'all';
 let activeSourceType = 'all';
 let _activeAccordId = null;
 let _activeSubId   = null;
+const _accordSpecMap = {};
+
+function showSpecSplash(accordId) {
+  const spec   = _accordSpecMap[accordId] || {};
+  const counts = spec.counts || {};
+  const cats = [
+    { stype: 'reglementaire', cls: 'stype-reg',  label: 'Réglementation', count: counts.reglementaire || 0 },
+    { stype: 'recommandation', cls: 'stype-reco', label: 'Recommandation', count: counts.recommandation || 0 },
+    { stype: 'innovation',     cls: 'stype-innov',label: 'Innovation',      count: counts.innovation     || 0 },
+  ];
+  document.getElementById('spec-splash-name').textContent = spec.name || '';
+  document.getElementById('spec-splash-cats').innerHTML = cats.map(c => `
+    <button class="spec-splash-cat-btn ${c.cls}"
+            onclick="selectSpecType('${spec.slug}','${c.stype}','${accordId}')">
+      <span class="splash-count">${c.count}</span>
+      <span>${c.label}</span>
+    </button>`).join('');
+  document.getElementById('spec-splash').style.display = 'flex';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'none';
+}
+
+function hideSpecSplash() {
+  document.getElementById('spec-splash').style.display = 'none';
+}
 
 // Mois exclus des archives (couverts par le portail)
 let portalMonths = new Set();
@@ -1121,6 +1214,7 @@ function hideSourcePills() {
 
 // ── Sidebar accordion helpers (identiques portal) ─────────────
 function _accordHtml(slug, name, counts, id) {
+  _accordSpecMap[id] = { slug, name, counts };
   const reg   = counts ? (counts.reglementaire || 0) : 0;
   const reco  = counts ? (counts.recommandation || 0) : 0;
   const innov = counts ? (counts.innovation || 0) : 0;
@@ -1158,12 +1252,18 @@ function toggleAccord(id) {
     subitems.style.display = '';
     header.classList.add('open');
     _activeAccordId = id;
+    document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
+    _activeSubId = null;
+    showSpecSplash(id);
   } else {
     _activeAccordId = null;
+    hideSpecSplash();
   }
 }
 
 async function selectSpecType(slug, stype, accordId) {
+  hideSpecSplash();
   document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
   const subKey = stype === 'reglementaire' ? 'reg' : stype === 'innovation' ? 'innov' : 'reco';
@@ -1192,6 +1292,7 @@ function buildSidebar() {
   if (mySubitems) mySubitems.style.display = '';
   if (myHeader)   myHeader.classList.add('open');
   _activeAccordId = 'mine';
+  showSpecSplash('mine');
 
   // 2. Explorer — autres spécialités avec accordion + recherche
   const exploreEl       = document.getElementById('sidebar-explore');
@@ -1762,8 +1863,7 @@ function filterDrawerSpecs(query) {
   buildSidebar();
   await loadMonths();
   document.getElementById('loading').style.display = 'none';
-  document.getElementById('content').style.display = 'block';
-  renderMonthsView();
+  // Splash déjà affiché par buildSidebar — pas de renderMonthsView au démarrage
   setupSearch();
   if (window.lucide) lucide.createIcons(); // static icons (sidebar, filter pills)
 })();
