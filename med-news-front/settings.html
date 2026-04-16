@@ -7,30 +7,30 @@
 <script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [data-theme="light"] {
-    --bg: #f6f5f2; --surface: #ffffff; --surface2: #f0ede8;
-    --border: #e4e0d8; --border-strong: #cac4bb;
-    --text: #1a1814; --text2: #4a4540; --text3: #7a7268;
-    --text4: #9a9288; --text5: #bcb6ac; --white: #1a1814;
-    --green-dark: #e5f5f0; --red-dark: #fde8e8;
+    --bg: #F5F4EF; --surface: #FDFCF9; --surface2: #ECEAE2;
+    --border: #D6D2C8; --border-strong: #B4B0A6;
+    --text: #1A1714; --text2: #3E3A34; --text3: #706860;
+    --text4: #908880; --text5: #B4AEA6; --white: #1A1714;
+    --green-dark: #F3ECE8; --red-dark: #F2E8E8;
   }
   [data-theme="dark"] {
-    --bg: #0f1117; --surface: #13151f; --surface2: #1a1c2a;
-    --border: #1e2030; --border-strong: #2a2d45;
-    --text: #f0f0f5; --text2: #c8c8d4; --text3: #8b8fa8;
-    --text4: #6b6f88; --text5: #4a4e68; --white: #f0f0f5;
-    --green-dark: #0d2a20; --red-dark: #2a0d0d;
+    --bg: #17140C; --surface: #1E1B12; --surface2: #252219;
+    --border: #342F24; --border-strong: #4A4438;
+    --text: #EDE7DC; --text2: #C6BEB4; --text3: #8A8378;
+    --text4: #6A6360; --text5: #4A4440; --white: #EDE7DC;
+    --green-dark: #2A1A16; --red-dark: #2A1212;
   }
   :root {
-    --green: #1f9478; --red: #cc3232; --amber: #b56808; --radius: 10px;
+    --green: #9B2335; --red: #cc3232; --amber: #b56808; --radius: 4px;
   }
 
   body {
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Outfit', sans-serif;
     background: var(--bg); color: var(--text);
     font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
     overflow-x: hidden;
@@ -44,7 +44,7 @@
   }
   .header-left { display: flex; align-items: baseline; gap: 12px; }
   .header-left h1 {
-    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.43rem; font-weight: 400;
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.18rem; font-weight: 400;
     color: var(--text); letter-spacing: -.3px;
   }
   .header-left h1 em { font-style: italic; }
@@ -59,7 +59,7 @@
   .header-right .email { font-size: 0.86rem; color: var(--text2); }
   .btn-logout {
     padding: 5px 12px; background: transparent; border: 1px solid var(--border-strong);
-    color: var(--text3); border-radius: 6px; font-size: 0.79rem; font-weight: 500;
+    color: var(--text3); border-radius: 3px; font-size: 0.65rem; font-weight: 400;
     cursor: pointer; transition: all .2s; font-family: inherit;
   }
   .btn-logout:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
@@ -120,15 +120,15 @@
     overflow-y: auto;
   }
   .sidebar-label {
-    font-family: 'DM Mono', monospace; font-size:0.59rem; font-weight: 400;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    color: #4a4e68; padding: 6px 20px 4px; margin-bottom: 2px;
+    font-family: 'Outfit', sans-serif; font-size:0.65rem; font-weight: 500;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--text3); padding: 6px 20px 4px; margin-bottom: 2px;
   }
   .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 10px 16px; }
   .sidebar-item {
     display: flex; align-items: center; justify-content: space-between;
     padding: 7px 16px 7px 20px; cursor: pointer; transition: all .12s;
-    color: var(--text3); font-size:0.82rem; font-weight: 300; font-family: 'Outfit', sans-serif;
+    color: var(--text3); font-size:0.82rem; font-weight: 400; font-family: 'Outfit', sans-serif;
     border-left: 2px solid transparent;
   }
   .sidebar-item:hover { color: var(--text2); background: rgba(0,0,0,.04); }
@@ -149,11 +149,11 @@
   /* ── Section ────────────────────────────── */
   .settings-section {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; margin-bottom: 20px; overflow: hidden;
+    border-radius: var(--radius); margin-bottom: 20px; overflow: hidden;
   }
   .section-title {
-    font-size: 0.86rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
-    color: var(--text4); padding: 14px 20px 12px;
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
+    color: var(--text3); padding: 14px 20px 12px;
     border-bottom: 1px solid var(--border);
   }
 
@@ -172,7 +172,7 @@
   /* ── Option buttons (thème / police) ────── */
   .option-group { display: flex; gap: 6px; flex-shrink: 0; }
   .option-btn {
-    padding: 6px 14px; border-radius: 20px; font-size: 0.86rem; font-weight: 500;
+    padding: 6px 14px; border-radius: var(--radius); font-size: 0.86rem; font-weight: 500;
     cursor: pointer; border: 1px solid var(--border-strong); background: transparent;
     color: var(--text3); transition: all .15s; font-family: inherit; white-space: nowrap;
   }
@@ -184,7 +184,7 @@
   /* ── Select ─────────────────────────────── */
   .settings-select {
     padding: 8px 32px 8px 12px; border: 1px solid var(--border-strong);
-    border-radius: 8px; background: var(--surface2); color: var(--text);
+    border-radius: var(--radius); background: var(--surface2); color: var(--text);
     font-size: 0.93rem; font-family: inherit; outline: none; cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6f88' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
@@ -196,7 +196,7 @@
   /* ── Bouton save ────────────────────────── */
   .btn-save {
     padding: 7px 18px; background: var(--green); color: #fff; border: none;
-    border-radius: 8px; font-size: 0.93rem; font-weight: 600; cursor: pointer;
+    border-radius: var(--radius); font-size: 0.93rem; font-weight: 600; cursor: pointer;
     font-family: inherit; transition: opacity .2s;
   }
   .btn-save:hover { opacity: .88; }
@@ -221,7 +221,7 @@
   .toast {
     position: fixed; bottom: 24px; right: 24px; z-index: 1000;
     background: var(--text); color: var(--bg);
-    padding: 10px 18px; border-radius: 8px; font-size: 0.93rem; font-weight: 500;
+    padding: 10px 18px; border-radius: var(--radius); font-size: 0.93rem; font-weight: 500;
     opacity: 0; transform: translateY(8px); pointer-events: none;
     transition: opacity .25s, transform .25s;
   }
@@ -230,7 +230,7 @@
   /* ── Compte row ─────────────────────────── */
   .btn-danger {
     padding: 7px 16px; background: transparent; color: var(--red);
-    border: 1px solid #e8c0c0; border-radius: 8px; font-size: 0.93rem; font-weight: 500;
+    border: 1px solid #e8c0c0; border-radius: var(--radius); font-size: 0.93rem; font-weight: 500;
     cursor: pointer; font-family: inherit; transition: all .2s;
   }
   .btn-danger:hover { background: var(--red-dark); }

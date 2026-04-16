@@ -969,8 +969,11 @@ function closeDrawer() {
 
 function filterDrawerSpecs(query) {
   const q = query.toLowerCase().trim();
-  document.querySelectorAll('#drawer-spec-list .sidebar-item').forEach(item => {
-    item.style.display = (!q || item.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  document.querySelectorAll('#drawer-spec-list .sidebar-accord').forEach(btn => {
+    const matches = !q || btn.textContent.toLowerCase().includes(q);
+    btn.style.display = matches ? '' : 'none';
+    const sub = btn.nextElementSibling;
+    if (sub && sub.classList.contains('sidebar-subitems') && !matches) sub.style.display = 'none';
   });
 }
 
@@ -1042,8 +1045,11 @@ function closeFullPage(section) {
 
 function filterFpSpecs(query) {
   const q = query.toLowerCase().trim();
-  document.querySelectorAll('#fp-spec-list .sidebar-item').forEach(item => {
-    item.style.display = (!q || item.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  document.querySelectorAll('#fp-spec-list .sidebar-accord').forEach(btn => {
+    const matches = !q || btn.textContent.toLowerCase().includes(q);
+    btn.style.display = matches ? '' : 'none';
+    const sub = btn.nextElementSibling;
+    if (sub && sub.classList.contains('sidebar-subitems') && !matches) sub.style.display = 'none';
   });
 }
 
