@@ -1531,12 +1531,8 @@ async function loadSpecialties() {
 
 async function loadCounts() {
   try {
-    // Exclure le mois affiché dans le portail (mois courant uniquement)
-    const pm = portalWindowMonths();
-    const keys = [...pm].sort();
-    const toDate = keys.length ? keys[0] + '-01' : '';
-    const qs = toDate ? `?to_date=${toDate}` : '';
-    const res = await authFetch(`${API}/articles/counts${qs}`);
+    // Pas de filtre de date : on veut le total historique complet (tous mois confondus)
+    const res = await authFetch(`${API}/articles/counts?from_date=2000-01-01`);
     if (!res) return;
     const data = await res.json();
     const raw = data.per_specialty || {};
