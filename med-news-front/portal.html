@@ -527,6 +527,15 @@
   .group-header.low .group-label { color: var(--green); }
   .group-header { display: none; }
 
+  /* ── Groupes organisme (portal) ─────────── */
+  .org-group { margin-bottom: 14px; }
+  .org-group-label {
+    font-family: 'Outfit', sans-serif; font-size: 0.72rem; font-weight: 600;
+    color: var(--text3); padding: 4px 0 6px;
+    border-bottom: 1px solid var(--border); margin-bottom: 6px;
+    letter-spacing: .2px;
+  }
+
   /* ── Cat articles wrapper (accordion) ──────── */
   .cat-articles {
     overflow: hidden;
@@ -1104,6 +1113,39 @@ const CATEGORIE_STYLE = {
   exercice:      { bg: 'rgba(8,145,178,.08)',  color: '#0891b2', border: '0.5px solid rgba(8,145,178,.25)',  label: 'Exercice & Admin' },
 };
 
+// ── Mapping source → label organisme ──────────────────────────
+const SOURCE_LABELS = {
+  has_dm:               'HAS — Dispositifs',
+  has_reco:             'HAS — Recommandations',
+  has_avis:             'HAS — Avis',
+  ansm_securite:        'ANSM — Sécurité',
+  ansm_decisions:       'ANSM',
+  jorf:                 'JORF / Légifrance',
+  jorf_arrete:          'JORF / Légifrance',
+  jorf_decret:          'JORF / Légifrance',
+  pubmed_ejves:         'EJVES',
+  pubmed_jvs:           'JVS',
+  pubmed_ann_vasc_surg: 'Ann. Vasc. Surg.',
+  pubmed_eur_heart_j:   'Eur. Heart J.',
+  pubmed_lancet:        'The Lancet',
+  pubmed_nejm:          'NEJM',
+  pubmed_bmj:           'BMJ',
+  pubmed_circulation:   'Circulation',
+  pubmed_jacc:          'JACC',
+  vascular_news:        'Vascular News',
+  vascular_specialist:  'Vascular Specialist',
+  tctmd:                'TCTMD',
+  esc_guidelines:       'ESC',
+  acc_aha:              'ACC/AHA',
+  svs:                  'SVS',
+};
+
+function sourceLabel(src) {
+  if (!src) return 'Autre';
+  if (SOURCE_LABELS[src]) return SOURCE_LABELS[src];
+  return src.replace(/^pubmed_/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 // Badge source_type — affiché uniquement pour Innovation (réglementaire/recommandation = défaut implicite)
 function innovationBadge(stype) {
   if (stype !== 'innovation') return '';
@@ -1225,35 +1267,31 @@ function categoryHeader(categorie, count) {
 function renderGroupedArticles() {
   const container = document.getElementById('articles-container');
 
-  // Tri : 1) ordre catégorie, 2) score décroissant à catégorie égale
-  const catIdx = cat => { const i = CATEGORY_ORDER.indexOf(cat); return i >= 0 ? i : 99; };
-  const sorted = [...allLoadedArticles].sort((a, b) => {
-    const diff = catIdx(a.categorie) - catIdx(b.categorie);
-    if (diff !== 0) return diff;
-    return (b.score_density || 5) - (a.score_density || 5);
-  });
+  // Tri : score décroissant puis date
+  const sorted = [...allLoadedArticles].sort((a, b) =>
+    (b.score_density || 5) - (a.score_density || 5) ||
+    (b.official_date || '').localeCompare(a.official_date || '')
+  );
 
-  // Grouper par catégorie en gardant l'ordre de CATEGORY_ORDER
-  const groups = new Map();
+  // Grouper par organisme
+  const orgMap = new Map();
   sorted.forEach(a => {
-    const cat = a.categorie || '__none__';
-    if (!groups.has(cat)) groups.set(cat, []);
-    groups.get(cat).push(a);
+    const org = sourceLabel(a.source || '');
+    if (!orgMap.has(org)) orgMap.set(org, []);
+    orgMap.get(org).push(a);
   });
 
   let html = '';
   let idx = 0;
-  groups.forEach((items, cat) => {
-    html += categoryHeader(cat === '__none__' ? null : cat, items.length);
-    html += `<div class="cat-articles" data-cat-articles="${cat}">`;
+  orgMap.forEach((items, org) => {
+    html += `<div class="org-group">
+      <div class="org-group-label">${esc(org)}</div>`;
     items.forEach(a => { html += renderArticle(a, idx++); });
     html += `</div>`;
   });
+
   container.innerHTML = html;
   if (window.lucide) lucide.createIcons();
-  applyAccordionState();
-
-  // Re-apply all active filters (cat + source_type)
   applyFilters();
 }
 
@@ -1325,28 +1363,10 @@ function applyFilters() {
     const typeMatch = activeSourceType === 'all' || card.dataset.sourceType  === activeSourceType;
     card.style.display = (catMatch && typeMatch) ? '' : 'none';
   });
-  // Masquer les group-headers sans cartes visibles + mettre à jour le compteur
-  document.querySelectorAll('.group-header').forEach(gh => {
-    const wrapper = gh.nextElementSibling;
-    let visCount = 0;
-    if (wrapper && wrapper.classList.contains('cat-articles')) {
-      // DOM wrappé (accordéon)
-      wrapper.querySelectorAll('.article-card').forEach(c => {
-        if (c.style.display !== 'none') visCount++;
-      });
-      gh.style.display = visCount > 0 ? '' : 'none';
-      wrapper.style.display = visCount > 0 ? '' : 'none';
-    } else {
-      // Fallback DOM plat (legacy)
-      let next = gh.nextElementSibling;
-      while (next && !next.classList.contains('group-header')) {
-        if (next.classList.contains('article-card') && next.style.display !== 'none') visCount++;
-        next = next.nextElementSibling;
-      }
-      gh.style.display = visCount > 0 ? '' : 'none';
-    }
-    const countEl = gh.querySelector('.group-count');
-    if (countEl) countEl.textContent = `${visCount}\u00a0article${visCount > 1 ? 's' : ''}`;
+  // Masquer les groupes organisme vides
+  document.querySelectorAll('.org-group').forEach(g => {
+    const vis = g.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])').length;
+    g.style.display = vis > 0 ? '' : 'none';
   });
   updateCounters();
   updateCatEmpty();
