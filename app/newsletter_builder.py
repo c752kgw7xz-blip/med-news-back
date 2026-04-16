@@ -242,10 +242,6 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
          margin: 0 40px 8px; }
 .card-top { margin-bottom: 10px; }
 .card-top > * { display: inline-block; vertical-align: middle; margin-right: 7px; }
-.prio { font-size: 11px; font-weight: 500; letter-spacing: .2px; }
-.prio.h { color: #C03030; }
-.prio.m { color: #B07020; }
-.prio.l { color: #1A6B5C; }
 .card-date { font-size: 11px; color: var(--text5); }
 
 /* Catégories */
@@ -258,29 +254,17 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
 .cat-innovation     { background: rgba(155,87,20,.07); color: #9B5714;
                       border: 0.5px solid rgba(155,87,20,.2); }
 
-.card-title { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-               font-size: 18px; font-weight: 400; color: var(--text);
-               line-height: 1.35; margin-bottom: 10px; }
+.card-title { font-size: 0.95rem; font-weight: 500; color: var(--text);
+               line-height: 1.45; margin-bottom: 10px; }
 .card-resume { font-size: 13px; font-weight: 400; color: var(--text3);
                 line-height: 1.7; margin-bottom: 12px; }
 .card-impact { font-size: 12px; color: var(--text3); line-height: 1.65;
                 padding: 10px 14px; margin-bottom: 14px;
                 background: var(--impact); border-radius: 4px;
                 font-weight: 400; border: 1px solid var(--border); }
-.card-link { font-size: 12px; font-weight: 500; color: var(--text2);
-              text-decoration: none; border: 1px solid var(--border2);
-              padding: 6px 16px; border-radius: 4px;
+.card-link { font-size: 12px; font-weight: 500; color: var(--accent);
+              text-decoration: none;
               display: inline-block; }
-
-/* Card featured */
-.card-featured { background: var(--surface); border: 1px solid var(--border2);
-                  border-radius: 4px; padding: 24px 28px 22px;
-                  margin: 0 40px 8px; }
-.card-featured .card-title { font-size: 21px; }
-.card-featured .card-resume { font-size: 13.5px; }
-.featured-badge { font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
-                   color: var(--accent); display: block; margin-bottom: 14px;
-                   font-weight: 500; }
 
 /* Footer */
 .footer { padding: 24px 0 8px; text-align: center; }
@@ -325,14 +309,9 @@ def _render_article(item: dict[str, Any], featured: bool = False) -> str:
         if impact else ""
     )
 
-    card_class = "card-featured" if featured else "card"
-    badge_html = '<span class="featured-badge">★ À lire en priorité</span>' if featured else ""
-
     return f"""
-<div class="{card_class}">
-  {badge_html}
+<div class="card">
   <div class="card-top">
-    <span class="prio {prio_class}">{_he(prio_label)}</span>
     <span class="card-date">{_he(date_str)}</span>
     {cat_html}
   </div>
@@ -355,45 +334,15 @@ def _generate_edito(
     emission_date: date,
 ) -> str:
     n_total = len(items_spec) + len(items_transv)
-    all_items = items_spec + items_transv
-
     mois = MOIS_FR_LONG[emission_date.month]
 
-    # Trouver l'item le plus urgent pour ancrer l'édito
-    all_items_sorted = sorted(all_items, key=lambda x: x.get("score_density") or 0, reverse=True)
-    top = all_items_sorted[0] if all_items_sorted else None
-    top_titre = (top.get("tri_json") or {}).get("titre_court") or "" if top else ""
-    top_impact = (top.get("tri_json") or {}).get("impact_pratique") or "" if top else ""
-
-    if top_titre and top_impact:
-        intro = f"Ce {mois}, l'essentiel\u00a0: {top_titre.rstrip('.')}."
-        detail = f" {top_impact}" if top_impact else ""
-        if n_total > 1:
-            suite = f" Puis {n_total - 1} autre{'s' if n_total > 2 else ''} sélection{'s' if n_total > 2 else ''} ci-dessous."
-        else:
-            suite = ""
-        return f"{intro}{detail}{suite}"
-
-    # Fallback générique
-    n_innov = sum(
-        1 for i in all_items
-        if (i.get("source_type") or "") in ("innovation", "journal", "press", "presse", "congress")
-    )
-    n_reco = n_total - n_innov
-
-    if n_innov > 0 and n_reco > 0:
-        contenu = (
-            f"{n_innov} étude{'s' if n_innov > 1 else ''}/technique{'s' if n_innov > 1 else ''} "
-            f"et {n_reco} recommandation{'s' if n_reco > 1 else ''}"
-        )
-    elif n_innov > 0:
-        contenu = f"{n_innov} étude{'s' if n_innov > 1 else ''} ou innovation{'s' if n_innov > 1 else ''}"
-    else:
-        contenu = f"{n_reco} recommandation{'s' if n_reco > 1 else ''} ou texte{'s' if n_reco > 1 else ''} réglementaire{'s' if n_reco > 1 else ''}"
-
     return (
-        f"Ce mois de {mois}, {n_total} sélection{'s' if n_total > 1 else ''} "
-        f"pour votre pratique de {specialty_name}\u00a0: {contenu}."
+        f"Réglementation, recommandations cliniques, innovation\u00a0: "
+        f"chaque semaine, MedNews sélectionne pour votre spécialité "
+        f"les publications à fort impact pratique. "
+        f"Cette édition regroupe {n_total}\u00a0article{'s' if n_total > 1 else ''} "
+        f"issus des parutions de {mois}\u00a0{emission_date.year} et du mois précédent, "
+        f"classés par dimension et par pertinence clinique."
     )
 
 
@@ -408,7 +357,7 @@ def _build_plain(
     portal_url: str,
 ) -> str:
     lines = [
-        f"MedNews — Veille réglementaire {specialty_name}",
+        f"MedNews — La revue médicale · {specialty_name}",
         "=" * 50,
         "",
     ]
