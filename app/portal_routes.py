@@ -382,9 +382,16 @@ def article_months(
                   AND c.official_date IS NOT NULL
                   AND {aud_clause}
                   {extra_sql}
+                  AND CASE
+                    WHEN i.specialty_slug = ANY(%s) THEN
+                      (i.type_praticien IS NULL OR i.type_praticien != 'prescripteur' OR i.score_density >= 9)
+                    WHEN i.specialty_slug = ANY(%s) THEN
+                      (i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')
+                    ELSE TRUE
+                  END
                 GROUP BY month
                 ORDER BY month DESC;
-            """, list(aud_params) + extra_params)
+            """, list(aud_params) + extra_params + [list(_INTERVENTIONAL_SLUGS), list(_PRESCRIPTEUR_SLUGS)])
             rows = cur.fetchall()
 
     return {"months": [{"month": r[0], "count": r[1]} for r in rows]}
