@@ -373,7 +373,7 @@ def article_months(
                   {extra_sql}
                 GROUP BY month
                 ORDER BY month DESC;
-            """, aud_params + extra_params)
+            """, list(aud_params) + extra_params)
             rows = cur.fetchall()
 
     return {"months": [{"month": r[0], "count": r[1]} for r in rows]}
