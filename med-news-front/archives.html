@@ -353,6 +353,13 @@
   .month-articles { display: none; padding: 0 0 12px; }
   .month-articles.open { display: block; }
   .month-loading { text-align: center; padding: 20px 0; color: var(--text5); font-size: 0.86rem; }
+  .month-show-more {
+    display: block; width: 100%; padding: 10px 0; margin-top: 4px;
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text4); font-family: 'Outfit', sans-serif; font-size: 0.82rem;
+    cursor: pointer; transition: border-color .15s, color .15s;
+  }
+  .month-show-more:hover { border-color: var(--green); color: var(--text); }
 
 
 
@@ -1136,8 +1143,8 @@ function renderGroupedArticles(articles, container) {
   });
   container.innerHTML = html;
   if (window.lucide) lucide.createIcons();
-  // Re-apply all active filters (cat + source_type) après chaque rendu
-  applyCatFilter();
+  // Re-apply all active filters (cat + source_type) + limite par mois
+  applyMonthLimit();
 }
 
 function toggleDetail(e, card) {
@@ -1183,6 +1190,57 @@ function setCatFilter(cat, btnEl) {
     if (btnEl) btnEl.classList.add('active');
   }
   applyCatFilter();
+}
+
+const MONTH_PREVIEW = 5; // articles visibles par défaut par mois
+
+function applyMonthLimit() {
+  document.querySelectorAll('.month-articles').forEach(monthEl => {
+    // Retirer l'ancien bouton "voir plus" s'il existe
+    const old = monthEl.querySelector('.month-show-more');
+    if (old) old.remove();
+
+    const monthKey = monthEl.id.replace('articles-', '');
+    const cards = [...monthEl.querySelectorAll('.article-card')]
+      .filter(c => c.style.display !== 'none');
+
+    // Ré-afficher toutes les cartes visibles d'abord
+    monthEl.querySelectorAll('.article-card.month-hidden').forEach(c => {
+      c.classList.remove('month-hidden');
+      c.style.display = '';
+    });
+    // Re-applique le filtre catégorie
+    monthEl.querySelectorAll('.article-card').forEach(c => {
+      const typeMatch = activeSourceType === 'all' || c.dataset.sourceType === activeSourceType;
+      const catMatch  = activeCatFilter   === 'all' || c.dataset.categorie  === activeCatFilter;
+      c.style.display = (typeMatch && catMatch) ? '' : 'none';
+    });
+
+    const visible = [...monthEl.querySelectorAll('.article-card')]
+      .filter(c => c.style.display !== 'none');
+    if (visible.length <= MONTH_PREVIEW) return;
+
+    // Masquer les cartes au-delà de MONTH_PREVIEW
+    visible.slice(MONTH_PREVIEW).forEach(c => {
+      c.classList.add('month-hidden');
+      c.style.display = 'none';
+    });
+    const remaining = visible.length - MONTH_PREVIEW;
+    const btn = document.createElement('button');
+    btn.className = 'month-show-more';
+    btn.textContent = `Voir ${remaining} article${remaining > 1 ? 's' : ''} de plus`;
+    btn.onclick = () => {
+      monthEl.querySelectorAll('.article-card.month-hidden').forEach(c => {
+        c.classList.remove('month-hidden');
+        c.style.display = '';
+      });
+      btn.remove();
+      updateCounters();
+    };
+    monthEl.appendChild(btn);
+  });
+  updateCounters();
+  updateCatEmpty();
 }
 
 const CAT_LABELS = {
@@ -1233,8 +1291,7 @@ function applyCatFilter() {
     const countEl = gh.querySelector('.group-count');
     if (countEl) countEl.textContent = `${visCount}\u00a0article${visCount > 1 ? 's' : ''}`;
   });
-  updateCounters();
-  updateCatEmpty();
+  applyMonthLimit();
 }
 
 // ── Compteurs mois (après filtre catégorie) ───────────────────
