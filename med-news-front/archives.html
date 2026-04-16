@@ -361,20 +361,7 @@
   }
   .month-show-more:hover { border-color: var(--green); color: var(--text); }
 
-  /* ── Groupes priorité + organisme ──────── */
-  .prio-group { margin: 18px 0 6px; }
-  .prio-group-header {
-    display: flex; align-items: center; gap: 8px;
-    font-family: 'DM Mono', monospace; font-size: 0.63rem;
-    text-transform: uppercase; letter-spacing: .6px;
-    color: var(--text4); margin-bottom: 8px;
-  }
-  .prio-group-header::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
-  .prio-group-header.prio-high { color: var(--red); }
-  .prio-group-header.prio-mid  { color: var(--amber); }
-  .prio-group-header.prio-low  { color: var(--text4); }
+  /* ── Groupes organisme ──────────────────── */
   .org-group { margin-bottom: 14px; }
   .org-group-label {
     font-family: 'Outfit', sans-serif; font-size: 0.72rem; font-weight: 600;
@@ -1179,47 +1166,28 @@ function categoryHeader(categorie, count) {
 }
 
 function renderGroupedArticles(articles, container) {
-  // Tri : score décroissant (priorité), puis date
+  // Tri : score décroissant puis date
   const sorted = [...articles].sort((a, b) =>
     (b.score_density || 5) - (a.score_density || 5) ||
     (b.official_date || '').localeCompare(a.official_date || '')
   );
 
-  // Grouper par niveau de priorité
-  const PRIO_GROUPS = [
-    { key: 'high', label: 'Essentiel',     cls: 'prio-high', test: s => s >= 9 },
-    { key: 'mid',  label: 'Important',     cls: 'prio-mid',  test: s => s >= 6 && s < 9 },
-    { key: 'low',  label: 'À consulter',   cls: 'prio-low',  test: s => s < 6 },
-  ];
+  // Grouper directement par organisme
+  const orgMap = new Map();
+  sorted.forEach(a => {
+    const org = sourceLabel(a.source || '');
+    if (!orgMap.has(org)) orgMap.set(org, []);
+    orgMap.get(org).push(a);
+  });
 
   let html = '';
   let idx = 0;
-  let anyRendered = false;
 
-  PRIO_GROUPS.forEach(pg => {
-    const prioItems = sorted.filter(a => pg.test(a.score_density || 5));
-    if (prioItems.length === 0) return;
-
-    html += `<div class="prio-group">
-      <div class="prio-group-header ${pg.cls}">${pg.label}</div>`;
-
-    // Sous-grouper par organisme (c.source)
-    const orgMap = new Map();
-    prioItems.forEach(a => {
-      const org = sourceLabel(a.source || '');
-      if (!orgMap.has(org)) orgMap.set(org, []);
-      orgMap.get(org).push(a);
-    });
-
-    orgMap.forEach((items, org) => {
-      html += `<div class="org-group">
-        <div class="org-group-label">${esc(org)}</div>`;
-      items.forEach(a => { html += renderArticle(a, idx++); });
-      html += `</div>`;
-    });
-
+  orgMap.forEach((items, org) => {
+    html += `<div class="org-group">
+      <div class="org-group-label">${esc(org)}</div>`;
+    items.forEach(a => { html += renderArticle(a, idx++); });
     html += `</div>`;
-    anyRendered = true;
   });
 
   container.innerHTML = html || '<div class="empty" style="padding:20px 0;">Aucun article pour ce mois.</div>';
@@ -1319,12 +1287,8 @@ function applyMonthLimit() {
     };
     monthEl.appendChild(btn);
   });
-  // Masquer les groupes org/prio vides après filtrage
+  // Masquer les groupes organisme vides après filtrage
   document.querySelectorAll('.org-group').forEach(g => {
-    const vis = g.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])').length;
-    g.style.display = vis > 0 ? '' : 'none';
-  });
-  document.querySelectorAll('.prio-group').forEach(g => {
     const vis = g.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])').length;
     g.style.display = vis > 0 ? '' : 'none';
   });
