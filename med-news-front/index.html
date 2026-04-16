@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MedNews — Veille réglementaire pour médecins libéraux</title>
-<meta name="description" content="Chaque mois, MedNews analyse le JORF, la HAS et l'ANSM pour vous livrer uniquement les textes qui impactent votre spécialité.">
+<title>MedNews — La revue médicale par spécialité</title>
+<meta name="description" content="Réglementation, recommandations cliniques, innovations thérapeutiques — MedNews couvre l'intégralité du spectre médical avec la précision d'une revue spécialisée. Pour 36 disciplines.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
@@ -21,6 +21,9 @@
   --text3:#706860;
   --text4:#908880;
   --accent:#9B2335;
+  --reg:#3B52A4;
+  --reco:#1A6B5C;
+  --innov:#9B5714;
   --serif:'Instrument Serif',Georgia,serif;
   --sans:'Outfit',sans-serif;
 }
@@ -40,11 +43,11 @@ nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px sol
 /* ── HERO ── */
 .hero{min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 32px;border-bottom:1px solid var(--border)}
 .hero-eyebrow{font-size:0.72rem;font-weight:500;color:var(--accent);letter-spacing:.8px;text-transform:uppercase;margin-bottom:28px}
-h1{font-family:var(--serif);font-size:clamp(40px,5.5vw,70px);color:var(--text);line-height:1.1;letter-spacing:-.5px;max-width:780px;margin-bottom:20px}
+h1{font-family:var(--serif);font-size:clamp(40px,5.5vw,70px);color:var(--text);line-height:1.1;letter-spacing:-.5px;max-width:820px;margin-bottom:20px}
 h1 em{font-style:italic;color:var(--text2)}
 .h1-line1{display:block}
 .h1-line2{display:block}
-.hero-sub{font-size:0.97rem;color:var(--text3);max-width:500px;line-height:1.75;margin-bottom:44px}
+.hero-sub{font-size:0.97rem;color:var(--text3);max-width:560px;line-height:1.75;margin-bottom:44px}
 .hero-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center}
 .btn-primary{font-size:0.86rem;font-weight:500;color:#fff;background:var(--accent);padding:12px 28px;border-radius:4px;text-decoration:none;transition:opacity .2s}
 .btn-primary:hover{opacity:.88}
@@ -77,6 +80,14 @@ h1 em{font-style:italic;color:var(--text2)}
 .section-title em{font-style:italic}
 .section-sub{font-size:0.93rem;color:var(--text3);max-width:460px;line-height:1.75;margin-bottom:52px}
 
+/* ── PILLARS ── */
+.pillar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.pillar-card{background:var(--surface);padding:32px 28px}
+.pillar-accent{width:28px;height:3px;border-radius:2px;margin-bottom:20px}
+.pillar-name{font-size:0.79rem;font-weight:500;color:var(--text);margin-bottom:8px}
+.pillar-desc{font-size:0.82rem;color:var(--text3);line-height:1.65;margin-bottom:16px}
+.pillar-sources{font-size:0.68rem;color:var(--text4);letter-spacing:.1px}
+
 /* ── HOW ── */
 .how-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:4px;overflow:hidden}
 .how-card{background:var(--surface);padding:32px 28px;border-right:1px solid var(--border)}
@@ -85,6 +96,20 @@ h1 em{font-style:italic;color:var(--text2)}
 .how-title{font-size:0.93rem;font-weight:500;color:var(--text);margin-bottom:8px}
 .how-desc{font-size:0.82rem;color:var(--text3);line-height:1.65}
 .how-tag{display:inline-flex;align-items:center;gap:5px;font-size:0.65rem;color:var(--text4);margin-top:16px}
+
+/* ── COMPARE TABLE ── */
+.compare-wrap{overflow-x:auto;margin-top:0}
+.compare-table{width:100%;border:1px solid var(--border);border-radius:4px;border-collapse:separate;border-spacing:0;overflow:hidden;font-size:0.82rem}
+.compare-table th{background:var(--surface2);padding:12px 16px;text-align:left;font-weight:500;color:var(--text2);border-bottom:1px solid var(--border);font-size:0.72rem;text-transform:uppercase;letter-spacing:.3px}
+.compare-table th:not(:first-child){text-align:center}
+.compare-table td{padding:13px 16px;border-bottom:1px solid var(--border);color:var(--text3);vertical-align:middle}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-table td:not(:first-child){text-align:center}
+.compare-table td:first-child{font-weight:400;color:var(--text2)}
+.col-mednews{background:rgba(155,35,53,.03)}
+.col-mednews-head{background:rgba(155,35,53,.07);color:var(--accent)!important}
+.check-yes{color:var(--reco)}
+.check-no{color:var(--border-strong)}
 
 /* ── VALUE ── */
 .value-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden}
@@ -152,7 +177,7 @@ h1 em{font-style:italic;color:var(--text2)}
 
 /* ── CTA ── */
 .cta-section{padding:112px 40px;text-align:center;background:var(--surface);border-top:1px solid var(--border)}
-.cta-title{font-family:var(--serif);font-size:clamp(28px,4vw,52px);color:var(--text);line-height:1.1;letter-spacing:-.3px;max-width:620px;margin:0 auto 20px}
+.cta-title{font-family:var(--serif);font-size:clamp(28px,4vw,52px);color:var(--text);line-height:1.1;letter-spacing:-.3px;max-width:640px;margin:0 auto 20px}
 .cta-title em{font-style:italic;color:var(--text2)}
 .cta-sub{font-size:0.93rem;color:var(--text3);margin-bottom:36px}
 .cta-note{font-size:0.72rem;color:var(--text4);margin-top:14px}
@@ -177,6 +202,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
   .stat-item:nth-child(odd){border-right:1px solid var(--border)}
   .stat-item:nth-last-child(-n+2){border-bottom:none}
   .section{padding:60px 20px}
+  .pillar-grid{grid-template-columns:1fr}
   .how-grid{grid-template-columns:1fr}
   .how-card{border-right:none;border-bottom:1px solid var(--border)}
   .how-card:last-child{border-bottom:none}
@@ -194,6 +220,8 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
   .section-title{font-size:1.6rem}
   .portal-preview-wrap{padding:0}
   #portal-section{padding-left:0!important;padding-right:0!important}
+  .compare-table{font-size:0.75rem}
+  .compare-table th,.compare-table td{padding:10px 12px}
 }
 @media(max-width:480px){
   nav{padding:0 16px}
@@ -215,44 +243,74 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 <nav>
   <a href="/" class="nav-logo"><em>Med</em><b>News</b></a>
   <div class="nav-links">
-    <a href="#comment" class="nav-link">Comment ça marche</a>
+    <a href="#dimensions" class="nav-link">Dimensions</a>
+    <a href="#comment" class="nav-link">Fonctionnement</a>
     <a href="#specialites" class="nav-link">Spécialités</a>
-    <a href="#tarifs" class="nav-link">Tarifs</a>
+    <a href="#tarifs" class="nav-link">Accès</a>
     <a href="/login" class="nav-link">Connexion</a>
     <a href="/signup" class="nav-cta">S'inscrire</a>
   </div>
 </nav>
 
 <section class="hero">
-  <div class="hero-eyebrow">Veille réglementaire médicale</div>
+  <div class="hero-eyebrow">La revue médicale par spécialité</div>
   <h1>
-    <span class="h1-line1">L'actualité réglementaire</span>
-    <em class="h1-line2">filtrée pour votre pratique</em>
+    <span class="h1-line1">L'information médicale</span>
+    <em class="h1-line2">à la précision de votre discipline</em>
   </h1>
-  <p class="hero-sub">Chaque mois, MedNews analyse des centaines de textes officiels et vous livre uniquement ce qui impacte concrètement votre exercice libéral.</p>
+  <p class="hero-sub">Réglementation française et européenne, guidelines des sociétés savantes, publications PubMed, NEJM, Lancet, JAMA — MedNews agrège l'intégralité du spectre médical avec la rigueur d'une revue spécialisée, pour chacune des 36 disciplines couvertes.</p>
   <div class="hero-actions">
-    <a href="/signup" class="btn-primary">Commencer gratuitement</a>
-    <a href="#comment" class="btn-secondary">
-      Voir comment ça marche
+    <a href="/signup" class="btn-primary">Accéder à MedNews</a>
+    <a href="#dimensions" class="btn-secondary">
+      Découvrir les 3 dimensions
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </a>
   </div>
   <div class="hero-stats">
     <div class="stat-item">
-      <div class="stat-n" data-count="4" data-suffix="">4</div>
-      <div class="stat-l">Sources officielles</div>
+      <div class="stat-n" data-count="3" data-suffix="">3</div>
+      <div class="stat-l">Dimensions couvertes</div>
     </div>
     <div class="stat-item">
       <div class="stat-n" data-count="36" data-suffix="">36</div>
-      <div class="stat-l">Spécialités couvertes</div>
+      <div class="stat-l">Spécialités médicales</div>
     </div>
     <div class="stat-item">
-      <div class="stat-n" data-count="200" data-prefix="~">~200</div>
-      <div class="stat-l">Articles analysés / mois</div>
+      <div class="stat-n" data-count="500" data-prefix="+" >+500</div>
+      <div class="stat-l">Sources analysées / mois</div>
     </div>
     <div class="stat-item">
-      <div class="stat-n">1<span style="font-size:18px;font-family:var(--sans);color:var(--text2)">er</span></div>
-      <div class="stat-l">Du mois, dans votre boîte mail</div>
+      <div class="stat-n">1<span style="font-size:18px;font-family:var(--sans);color:var(--text2)">×</span></div>
+      <div class="stat-l">Par semaine, dans votre boîte</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
+<!-- 3 DIMENSIONS -->
+<section class="section" id="dimensions">
+  <span class="section-tag reveal">Les 3 dimensions</span>
+  <div class="section-title reveal reveal-delay-1">Toute la médecine,<br><em>dans un seul portail</em></div>
+  <p class="section-sub reveal reveal-delay-2">MedNews surveille en continu des dizaines de revues spécialisées françaises, européennes et américaines. L'ensemble condensé, qualifié et filtré pour chaque discipline — sans angle mort.</p>
+  <div class="pillar-grid reveal reveal-delay-3">
+    <div class="pillar-card">
+      <div class="pillar-accent" style="background:var(--reg)"></div>
+      <div class="pillar-name" style="color:var(--reg)">Réglementation</div>
+      <div class="pillar-desc">Textes officiels, décrets et circulaires qui impactent votre droit d'exercer, vos obligations légales et les conditions de votre cabinet.</div>
+      <div class="pillar-sources">JORF · HAS · ANSM · BO Social · EUR-Lex · directives CE · Conseil de l'Ordre</div>
+    </div>
+    <div class="pillar-card" style="border-left:1px solid var(--border);border-right:1px solid var(--border)">
+      <div class="pillar-accent" style="background:var(--reco)"></div>
+      <div class="pillar-name" style="color:var(--reco)">Recommandations cliniques</div>
+      <div class="pillar-desc">Guidelines, référentiels et mises à jour des bonnes pratiques issus des sociétés savantes, de la HAS et des instances internationales.</div>
+      <div class="pillar-sources">HAS · Sociétés savantes · ESC · ACC · AHA · CPRE · PubMed · NEJM · Lancet · JAMA · BMJ</div>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-accent" style="background:var(--innov)"></div>
+      <div class="pillar-name" style="color:var(--innov)">Innovation</div>
+      <div class="pillar-desc">Nouvelles thérapeutiques, dispositifs médicaux, résultats d'essais majeurs et avancées de la recherche clinique à fort impact pratique.</div>
+      <div class="pillar-sources">PubMed · NEJM · Lancet · Nature Medicine · JAMA · Annals · EMA · FDA · essais de phase III</div>
     </div>
   </div>
 </section>
@@ -262,8 +320,8 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 <!-- PORTAL PREVIEW -->
 <section class="section section-center" id="portal-section" style="padding:80px 32px">
   <span class="section-tag reveal">Le portail</span>
-  <div class="section-title reveal reveal-delay-1">Votre veille en un coup d'œil</div>
-  <p class="section-sub reveal reveal-delay-2" style="margin-left:auto;margin-right:auto">Filtrage par spécialité, niveaux de priorité, résumés actionnables — classé et prêt à lire le 1<sup>er</sup> du mois.</p>
+  <div class="section-title reveal reveal-delay-1">Votre revue en un coup d'œil</div>
+  <p class="section-sub reveal reveal-delay-2" style="margin-left:auto;margin-right:auto">Trois rubriques, un filtrage par spécialité, des résumés sourcés. Mis à jour toutes les 48 à 72h pour une couverture exhaustive.</p>
   <div class="portal-preview-wrap reveal reveal-delay-3">
     <div class="browser-frame">
       <div class="browser-bar">
@@ -281,34 +339,34 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 
 <section class="section" id="comment">
   <span class="section-tag reveal">Fonctionnement</span>
-  <div class="section-title reveal reveal-delay-1">Trois étapes,<br>zéro friction</div>
-  <p class="section-sub reveal reveal-delay-2">Du Journal Officiel à votre boîte mail, en passant par une analyse rigoureuse.</p>
+  <div class="section-title reveal reveal-delay-1">De la source<br><em>à votre portail</em></div>
+  <p class="section-sub reveal reveal-delay-2">Du Journal Officiel aux publications indexées, chaque document est collecté, qualifié par spécialité et rendu lisible en trois étapes.</p>
   <div class="how-grid">
     <div class="how-card reveal reveal-delay-1">
       <div class="how-n">01</div>
-      <div class="how-title">Collecte automatique</div>
-      <div class="how-desc">Chaque mois, MedNews scrute le JORF, la HAS, l'ANSM et le BO Social — des centaines de textes réglementaires en quelques minutes.</div>
+      <div class="how-title">Collecte multi-sources</div>
+      <div class="how-desc">MedNews agrège en continu les textes officiels, les guidelines des sociétés savantes et les publications d'une trentaine de revues spécialisées françaises, européennes et américaines — NEJM, Lancet, JAMA, BMJ, Nature Medicine, et leurs équivalents par discipline.</div>
       <div class="how-tag">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        JORF · HAS · ANSM · BO Social
+        JORF · HAS · ANSM · EUR-Lex · PubMed · NEJM · Lancet · JAMA · BMJ · sociétés savantes
       </div>
     </div>
     <div class="how-card reveal reveal-delay-2">
       <div class="how-n">02</div>
-      <div class="how-title">Analyse &amp; filtrage</div>
-      <div class="how-desc">Chaque texte est évalué : pertinence pour votre spécialité, niveau de priorité, points clés actionnables. Seul ce qui vous concerne passe le filtre.</div>
+      <div class="how-title">Analyse par dimension &amp; spécialité</div>
+      <div class="how-desc">Chaque document est qualifié selon sa dimension (réglementaire, clinique, innovation) et scoré par spécialité. Seul ce qui vous concerne atteint votre portail.</div>
       <div class="how-tag">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-        Priorité · Spécialité · Catégorie
+        Dimension · Spécialité · Priorité · Résumé actionnable
       </div>
     </div>
     <div class="how-card reveal reveal-delay-3">
       <div class="how-n">03</div>
       <div class="how-title">Livraison personnalisée</div>
-      <div class="how-desc">Le 1er de chaque mois, vous recevez une newsletter et accédez à votre portail — uniquement les textes qui concernent votre exercice.</div>
+      <div class="how-desc">Toutes les 48 à 72h, votre portail intègre les nouvelles publications. Chaque semaine, une newsletter récapitule les entrées pour votre spécialité — une couverture continue, sans rupture.</div>
       <div class="how-tag">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Newsletter · Portail · Archives
+        Newsletter · Portail · Archives consultables
       </div>
     </div>
   </div>
@@ -320,8 +378,8 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 <div class="newsletter-full">
   <div class="newsletter-full-text reveal">
     <span class="section-tag" style="margin-bottom:16px">La newsletter</span>
-    <div class="section-title" style="margin-bottom:16px">Votre veille,<br><em>dans votre boîte mail</em></div>
-    <p style="font-size:0.88rem;color:var(--text3);line-height:1.75;margin-bottom:0">Le 1<sup>er</sup> de chaque mois, un email rédigé spécifiquement pour votre spécialité : vos articles classés par priorité, chaque texte résumé en 3 lignes actionnables.</p>
+    <div class="section-title" style="margin-bottom:16px">Votre revue,<br><em>dans votre boîte mail</em></div>
+    <p style="font-size:0.88rem;color:var(--text3);line-height:1.75;margin-bottom:0">Chaque semaine, un email structuré en trois rubriques — réglementation, recommandations, innovation — rédigé pour votre spécialité. Chaque article résumé en trois lignes, avec l'impact concret sur votre exercice et le lien vers la source primaire.</p>
     <div class="newsletter-perks reveal reveal-delay-1">
       <div class="newsletter-perk">
         <div class="newsletter-perk-icon">
@@ -329,7 +387,16 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
         </div>
         <div>
           <div class="newsletter-perk-title">Résumés actionnables</div>
-          <div class="newsletter-perk-desc">Chaque texte en 3 lignes — avec l'action concrète à prendre, sans jargon inutile.</div>
+          <div class="newsletter-perk-desc">Chaque texte en 3 lignes — avec l'impact concret sur votre pratique, sans jargon inutile.</div>
+        </div>
+      </div>
+      <div class="newsletter-perk">
+        <div class="newsletter-perk-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div>
+          <div class="newsletter-perk-title">Structurée en 3 rubriques</div>
+          <div class="newsletter-perk-desc">Réglementation, recommandations, innovation — chacune à sa place, aucune confusion.</div>
         </div>
       </div>
       <div class="newsletter-perk">
@@ -337,8 +404,8 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         </div>
         <div>
-          <div class="newsletter-perk-title">Classée par priorité</div>
-          <div class="newsletter-perk-desc">Ce qui change votre pratique aujourd'hui est en tête. Le reste suit.</div>
+          <div class="newsletter-perk-title">Classée par niveau de priorité</div>
+          <div class="newsletter-perk-desc">Ce qui change votre pratique est en tête. Le reste suit, par ordre de pertinence clinique.</div>
         </div>
       </div>
       <div class="newsletter-perk">
@@ -346,17 +413,8 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         </div>
         <div>
-          <div class="newsletter-perk-title">Lien vers le texte officiel</div>
-          <div class="newsletter-perk-desc">Chaque article renvoie directement au JORF, à la HAS ou à l'ANSM — toujours vérifiable.</div>
-        </div>
-      </div>
-      <div class="newsletter-perk">
-        <div class="newsletter-perk-icon">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        </div>
-        <div>
-          <div class="newsletter-perk-title">Filtrée pour votre spécialité</div>
-          <div class="newsletter-perk-desc">Pas de bruit. Uniquement les textes qui impactent votre exercice libéral.</div>
+          <div class="newsletter-perk-title">Source primaire toujours vérifiable</div>
+          <div class="newsletter-perk-desc">Chaque article renvoie au texte original — JORF, HAS, publication indexée.</div>
         </div>
       </div>
     </div>
@@ -376,39 +434,74 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 
 <div class="divider-line"></div>
 
+<!-- COMPARE -->
 <section class="section">
-  <span class="section-tag reveal">Pourquoi MedNews</span>
-  <div class="section-title reveal reveal-delay-1">Ce que vous ne<br>trouvez nulle part ailleurs</div>
-  <p class="section-sub reveal reveal-delay-2">Conçu pour les médecins libéraux qui n'ont pas le temps de lire le Journal Officiel.</p>
-  <div class="value-grid">
-    <div class="value-card reveal reveal-delay-1">
-      <div class="value-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-      </div>
-      <div class="value-title">Filtré par spécialité</div>
-      <div class="value-desc">Un cardiologue ne voit pas les mêmes textes qu'un pédiatre. La pertinence est calculée spécialité par spécialité, pas en masse.</div>
-    </div>
-    <div class="value-card reveal reveal-delay-2">
-      <div class="value-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      </div>
-      <div class="value-title">Niveau de priorité clair</div>
-      <div class="value-desc">Chaque article est classé : À lire absolument, Important ou Informatif. Vous savez en un coup d'œil ce qui change votre pratique.</div>
-    </div>
-    <div class="value-card reveal reveal-delay-1">
-      <div class="value-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      </div>
-      <div class="value-title">Sources officielles uniquement</div>
-      <div class="value-desc">JORF, HAS, ANSM, BO Social — aucune interprétation non sourcée. Chaque article est lié au texte officiel original.</div>
-    </div>
-    <div class="value-card reveal reveal-delay-2">
-      <div class="value-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 0 .5-4.5"/></svg>
-      </div>
-      <div class="value-title">Archives consultables</div>
-      <div class="value-desc">Retrouvez n'importe quel texte depuis janvier 2026. Recherche full-text, filtres par catégorie, classement par mois.</div>
-    </div>
+  <span class="section-tag reveal">Positionnement</span>
+  <div class="section-title reveal reveal-delay-1">Une couverture<br><em>sans équivalent</em></div>
+  <p class="section-sub reveal reveal-delay-2">Prescrire se concentre sur la pharmacologie. JIM reste généraliste. Les revues spécialisées couvrent une seule discipline. MedNews agrège des dizaines de revues françaises, européennes et américaines — et les croise pour chacune des 36 spécialités.</p>
+  <div class="compare-wrap reveal reveal-delay-3">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Critère</th>
+          <th>Prescrire</th>
+          <th>JIM · Le Monde Médical</th>
+          <th>Revue spécialisée</th>
+          <th class="col-mednews-head">MedNews</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Réglementation &amp; droit d'exercice</td>
+          <td class="check-no">—</td>
+          <td class="check-no">Partiel</td>
+          <td class="check-no">—</td>
+          <td class="col-mednews check-yes">✓</td>
+        </tr>
+        <tr>
+          <td>Recommandations cliniques</td>
+          <td class="check-yes">✓</td>
+          <td class="check-yes">✓</td>
+          <td class="check-yes">✓</td>
+          <td class="col-mednews check-yes">✓</td>
+        </tr>
+        <tr>
+          <td>Innovation thérapeutique</td>
+          <td class="check-yes">✓</td>
+          <td class="check-yes">Partiel</td>
+          <td class="check-yes">✓</td>
+          <td class="col-mednews check-yes">✓</td>
+        </tr>
+        <tr>
+          <td>Filtré par votre spécialité</td>
+          <td class="check-no">—</td>
+          <td class="check-no">—</td>
+          <td class="check-yes">✓ (1 seule)</td>
+          <td class="col-mednews check-yes">✓ (36 disciplines)</td>
+        </tr>
+        <tr>
+          <td>Résumés actionnables</td>
+          <td class="check-no">—</td>
+          <td class="check-no">—</td>
+          <td class="check-no">—</td>
+          <td class="col-mednews check-yes">✓</td>
+        </tr>
+        <tr>
+          <td>Revues surveillées (FR + EU + US)</td>
+          <td class="check-no">1</td>
+          <td class="check-no">—</td>
+          <td class="check-no">1</td>
+          <td class="col-mednews check-yes">~30</td>
+        </tr>
+        <tr>
+          <td>Sources primaires liées</td>
+          <td class="check-yes">✓</td>
+          <td class="check-no">Partiel</td>
+          <td class="check-yes">✓</td>
+          <td class="col-mednews check-yes">✓</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
@@ -419,15 +512,15 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
   <div class="mobile-section-text reveal">
     <span class="section-tag" style="margin-bottom:16px">Mobile</span>
     <div class="section-title" style="margin-bottom:16px">Entre deux<br>consultations</div>
-    <p style="font-size:0.88rem;color:var(--text3);max-width:400px;line-height:1.75;margin-bottom:0">Votre portail est entièrement pensé pour mobile. D'un glissement, filtrez votre spécialité, consultez vos favoris, retrouvez un texte en archives.</p>
+    <p style="font-size:0.88rem;color:var(--text3);max-width:400px;line-height:1.75;margin-bottom:0">Votre portail est entièrement pensé pour mobile. D'un glissement, filtrez votre spécialité, naviguez entre les trois rubriques, retrouvez un texte en archives.</p>
     <div class="mobile-bullets reveal reveal-delay-1">
       <div class="mobile-bullet">
         <div class="mobile-bullet-icon">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
         </div>
         <div>
-          <div class="mobile-bullet-title">Votre spécialité en avant</div>
-          <div class="mobile-bullet-desc">Filtre automatique dès l'ouverture — vous voyez ce qui vous concerne.</div>
+          <div class="mobile-bullet-title">3 rubriques accessibles</div>
+          <div class="mobile-bullet-desc">Réglementation, recommandations, innovation — un tap pour basculer.</div>
         </div>
       </div>
       <div class="mobile-bullet">
@@ -436,7 +529,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
         </div>
         <div>
           <div class="mobile-bullet-title">Favoris d'un tap</div>
-          <div class="mobile-bullet-desc">Sauvegardez les textes importants pour les relire plus tard.</div>
+          <div class="mobile-bullet-desc">Sauvegardez les textes importants pour les relire en consultation.</div>
         </div>
       </div>
       <div class="mobile-bullet">
@@ -445,7 +538,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
         </div>
         <div>
           <div class="mobile-bullet-title">Recherche dans les archives</div>
-          <div class="mobile-bullet-desc">Full-text, filtrable par catégorie et par mois depuis janvier 2026.</div>
+          <div class="mobile-bullet-desc">Full-text, filtrable par rubrique, catégorie et date depuis le lancement.</div>
         </div>
       </div>
     </div>
@@ -462,8 +555,9 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 <section class="spec-section" id="specialites">
   <div class="spec-inner">
     <span class="section-tag reveal">Couverture</span>
-    <div class="section-title reveal reveal-delay-1">36 spécialités médicales<br>et paramédicales</div>
-    <div class="spec-scroll reveal reveal-delay-2">
+    <div class="section-title reveal reveal-delay-1">36 spécialités médicales<br><em>et paramédicales</em></div>
+    <p style="font-size:0.88rem;color:var(--text3);line-height:1.75;margin-top:8px;margin-bottom:0" class="reveal reveal-delay-2">De l'anesthésiologie à l'urologie — chaque discipline reçoit une analyse calibrée sur son référentiel propre, ses sources et ses sociétés savantes.</p>
+    <div class="spec-scroll reveal reveal-delay-3">
       <div class="spec-pill">Anesthésiologie</div>
       <div class="spec-pill">Biologie médicale</div>
       <div class="spec-pill">Cardiologie</div>
@@ -514,9 +608,9 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
       <div class="pricing-price">0<span>€</span></div>
       <div class="pricing-period">/ toujours gratuit</div>
       <div class="pricing-features">
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Accès au portail mensuel</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Portail mensuel complet</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>3 rubriques (réglementaire, clinique, innovation)</div>
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Filtre par spécialité</div>
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Résumés et points clés</div>
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span style="color:var(--text4)">Newsletter email</span></div>
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span style="color:var(--text4)">Archives complètes</span></div>
       </div>
@@ -529,8 +623,8 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
       <div class="pricing-period">/ gratuit · 50 premiers inscrits</div>
       <div class="pricing-features">
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Tout le plan Découverte</div>
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Newsletter email mensuelle</div>
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Archives depuis janvier 2026</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Newsletter hebdomadaire par spécialité</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Archives complètes depuis le lancement</div>
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Alertes urgentes par email</div>
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Favoris et recherche avancée</div>
       </div>
@@ -540,9 +634,9 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 </section>
 
 <section class="cta-section">
-  <div class="cta-title reveal">Votre veille réglementaire,<br><em>enfin sans effort</em></div>
-  <p class="cta-sub reveal reveal-delay-1">Rejoignez les praticiens qui lisent MedNews chaque mois.</p>
-  <a href="/signup" class="btn-primary reveal reveal-delay-2" style="display:inline-block">Créer mon compte gratuitement</a>
+  <div class="cta-title reveal">L'information médicale<br><em>à la hauteur de votre pratique</em></div>
+  <p class="cta-sub reveal reveal-delay-1">Rejoignez les praticiens qui lisent MedNews.</p>
+  <a href="/signup" class="btn-primary reveal reveal-delay-2" style="display:inline-block">Accéder à MedNews gratuitement</a>
   <div class="cta-note reveal reveal-delay-3">Aucune carte bancaire requise · Accès immédiat</div>
 </section>
 
