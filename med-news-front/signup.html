@@ -7,78 +7,80 @@
 <script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [data-theme="light"] {
-    --bg: #f6f5f2; --surface: #ffffff; --surface2: #f0ede8;
-    --border: #e4e0d8; --border-strong: #cac4bb;
-    --text: #1a1814; --text2: #4a4540; --text3: #7a7268;
-    --green-dark: #e5f5f0; --red-dark: #fde8e8;
+    --bg: #F5F4EF; --surface: #FDFCF9; --surface2: #ECEAE2;
+    --border: #D6D2C8; --border-strong: #B4B0A6;
+    --text: #1A1714; --text2: #3E3A34; --text3: #706860; --text4: #908880;
+    --green-dark: #F3ECE8; --red-dark: #F2E8E8;
   }
   [data-theme="dark"] {
-    --bg: #0f1117; --surface: #13151f; --surface2: #1a1c2a;
-    --border: #1e2030; --border-strong: #2a2d45;
-    --text: #f0f0f5; --text2: #c8c8d4; --text3: #8b8fa8;
-    --green-dark: #0d2a20; --red-dark: #2a0d0d;
+    --bg: #17140C; --surface: #1E1B12; --surface2: #252219;
+    --border: #342F24; --border-strong: #4A4438;
+    --text: #EDE7DC; --text2: #C6BEB4; --text3: #8A8378; --text4: #6A6360;
+    --green-dark: #2A1A16; --red-dark: #2A1212;
   }
-  :root {
-    --green: #1f9478; --red: #cc3232; --radius: 10px;
-  }
+  :root { --green: #9B2335; --red: #cc3232; --radius: 4px; }
   body {
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg); color: var(--text); font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
-    display: flex; align-items: center; justify-content: center; min-height: 100vh;
-    overflow-x: hidden;
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg); color: var(--text);
+    font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; overflow-x: hidden;
   }
   .card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 44px 40px; width: 100%; max-width: 420px; margin: 24px;
   }
   .logo {
-    font-family: 'Instrument Serif', Georgia, serif; font-size:1.65rem; font-weight: 400;
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.4rem; font-weight: 400;
     color: var(--text); text-align: center; margin-bottom: 4px; letter-spacing: -.3px;
   }
   .logo em { font-style: italic; }
   .logo b { font-weight: 700; font-style: normal; }
-  .subtitle { text-align: center; color: var(--text3); font-size:0.76rem; margin-bottom: 32px; }
-  label { display: block; font-weight: 500; font-size:0.71rem; margin-bottom: 6px; color: var(--text2); }
+  .subtitle { text-align: center; color: var(--text3); font-size: 0.82rem; margin-bottom: 32px; }
+  label { display: block; font-weight: 500; font-size: 0.79rem; margin-bottom: 6px; color: var(--text2); }
   input, select {
-    width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius);
-    font-size:0.82rem; margin-bottom: 18px; outline: none; transition: border-color .2s;
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius); font-size: 0.86rem; margin-bottom: 16px;
+    outline: none; transition: border-color .2s;
     background: var(--surface2); color: var(--text); font-family: inherit;
     -webkit-appearance: none; appearance: none;
   }
   select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23555552' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23706860' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 14px center; background-size: 12px;
     padding-right: 36px; cursor: pointer;
   }
   select option { background: var(--surface); color: var(--text); }
   input::placeholder { color: var(--text3); }
   input:focus, select:focus { border-color: var(--green); }
+  .field-hint { color: var(--text4); font-size: 0.72rem; margin-top: -10px; margin-bottom: 14px; display: block; }
   .btn {
-    width: 100%; padding: 12px; background: var(--green); color: #fff; border: none;
-    border-radius: var(--radius); font-size:0.88rem; font-weight: 600; cursor: pointer;
-    transition: all .2s; font-family: inherit; margin-top: 4px;
+    width: 100%; padding: 11px; background: var(--green); color: #fff; border: none;
+    border-radius: var(--radius); font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; transition: opacity .2s; font-family: inherit; margin-top: 4px;
   }
-  .btn:hover { opacity: .9; }
+  .btn:hover { opacity: .88; }
   .btn:disabled { opacity: .4; cursor: not-allowed; }
   .error {
-    background: var(--red-dark); color: var(--red); padding: 10px 14px; border-radius: var(--radius);
-    font-size:0.76rem; margin-bottom: 16px; display: none; border: 1px solid #e8c0c0;
+    background: var(--red-dark); color: var(--red); padding: 10px 12px;
+    border-radius: var(--radius); font-size: 0.79rem; margin-bottom: 16px;
+    display: none; border: 1px solid #e8c0c0;
   }
   .success {
-    background: var(--green-dark); color: var(--green); padding: 18px; border-radius: var(--radius);
-    font-size:0.82rem; text-align: center; display: none; border: 1px solid #a8e0cc;
+    background: var(--green-dark); color: var(--text2); padding: 18px;
+    border-radius: var(--radius); font-size: 0.82rem; text-align: center;
+    display: none; border: 1px solid rgba(155,35,53,.15);
   }
-  .success strong { display: block; margin-bottom: 4px; }
-  .link { text-align: center; margin-top: 24px; font-size:0.76rem; color: var(--text3); }
+  .success strong { display: block; margin-bottom: 4px; color: var(--green); }
+  .link { text-align: center; margin-top: 20px; font-size: 0.79rem; color: var(--text3); }
   .link a { color: var(--green); text-decoration: none; font-weight: 500; }
   .link a:hover { text-decoration: underline; }
-  @media (max-width: 480px) {
-    .card { padding: 32px 20px; margin: 16px; }
-  }
+  @media (max-width: 480px) { .card { padding: 32px 20px; margin: 16px; } }
 </style>
 </head>
 <body>
@@ -95,11 +97,11 @@
       <input type="email" id="email" required autocomplete="email" placeholder="vous@exemple.fr">
       <label for="password">Mot de passe</label>
       <input type="password" id="password" required minlength="8" autocomplete="new-password">
-      <small style="color:#888;font-size:12px;margin-top:-8px;display:block;">8 caract&#232;res minimum, avec au moins 1 majuscule et 1 chiffre</small>
+      <span class="field-hint">8 caract&#232;res minimum, avec au moins 1 majuscule et 1 chiffre</span>
       <label for="password2">Confirmer le mot de passe</label>
       <input type="password" id="password2" required minlength="8" autocomplete="new-password">
       <label for="specialty">Sp&#233;cialit&#233;</label>
-      <select id="specialty"><option value="">Chargement...</option></select>
+      <select id="specialty"><option value="">Chargement&#8230;</option></select>
       <button class="btn" type="submit" id="submit-btn">Cr&#233;er mon compte</button>
     </form>
     <div class="link">D&#233;j&#224; inscrit ? <a href="/login">Connexion</a></div>
@@ -119,7 +121,6 @@ function showError(msg) {
   successEl.style.display = 'none';
 }
 
-// Load specialties with retry
 async function loadSpecialties(attempt = 1) {
   try {
     const res = await fetch(`${API}/specialties`);
@@ -132,7 +133,7 @@ async function loadSpecialties(attempt = 1) {
     if (attempt < 3) {
       setTimeout(() => loadSpecialties(attempt + 1), 1500 * attempt);
     } else {
-      specialtySelect.innerHTML = '<option value="">Erreur de chargement — rechargez la page</option>';
+      specialtySelect.innerHTML = '<option value="">Erreur de chargement \u2014 rechargez la page</option>';
     }
   }
 }
@@ -153,7 +154,7 @@ form.addEventListener('submit', async (e) => {
   if (!slug) { showError('Veuillez choisir une sp\u00e9cialit\u00e9'); return; }
 
   btn.disabled = true;
-  btn.textContent = 'Cr\u00e9ation...';
+  btn.textContent = 'Cr\u00e9ation\u2026';
 
   try {
     const res = await fetch(`${API}/users`, {
@@ -176,13 +177,13 @@ form.addEventListener('submit', async (e) => {
 
     form.style.display = 'none';
     successEl.innerHTML = `
-      <strong>✓ Compte créé avec succès !</strong>
+      <strong>\u2713 Compte cr\u00e9\u00e9 avec succ\u00e8s&nbsp;!</strong>
       <span style="display:block;margin-top:8px;line-height:1.6;">
-        Un email de validation vient de vous être envoyé.<br>
+        Un email de validation vient de vous \u00eatre envoy\u00e9.<br>
         <strong>Cliquez sur le lien dans cet email pour activer votre compte.</strong><br>
-        <span style="color:#d4a017;font-weight:500;">⚠ Pensez à vérifier vos spams si vous ne le trouvez pas dans votre boîte principale.</span>
+        <span style="color:var(--amber,#b56808);font-weight:500;">Pensez \u00e0 v\u00e9rifier vos spams si n\u00e9cessaire.</span>
       </span>
-      <a href="/login" style="display:inline-block;margin-top:14px;padding:8px 20px;background:var(--green);color:#fff;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82rem;">Aller à la connexion →</a>
+      <a href="/login" style="display:inline-block;margin-top:14px;padding:8px 20px;background:var(--green);color:#fff;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.82rem;">Aller \u00e0 la connexion \u2192</a>
     `;
     successEl.style.display = 'block';
   } catch (err) {
