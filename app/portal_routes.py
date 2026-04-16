@@ -117,6 +117,9 @@ def get_profile(user_id: str = Depends(_get_current_user_id)):
 # GET /articles — Articles APPROVED paginés
 # ---------------------------------------------------------------------------
 
+_VALID_SOURCE_TYPES = {"reglementaire", "recommandation", "innovation"}
+
+
 def _build_audience_clause(audience: str | None, slug: str | None):
     """Return (where_clause, params_tuple) for audience filtering."""
     if slug == "pharmacien":
