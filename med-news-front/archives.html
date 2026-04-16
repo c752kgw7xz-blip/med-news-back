@@ -722,7 +722,7 @@
 
 
       <!-- Catégorie filters -->
-      <div class="filters-row" id="filters-row">
+      <div class="filters-row" id="filters-row" style="display:none;">
         <button class="filter-pill" data-cat="therapeutique" onclick="setCatFilter('therapeutique', this)">Méd. &amp; Dispositifs</button>
         <button class="filter-pill" data-cat="clinique" onclick="setCatFilter('clinique', this)">Clinique</button>
         <button class="filter-pill" data-cat="exercice" onclick="setCatFilter('exercice', this)">Exercice &amp; Admin</button>
@@ -846,6 +846,15 @@ let _activeAccordId = null;
 let _activeSubId   = null;
 const _accordSpecMap = {};
 
+function showFiltersRow() {
+  const el = document.getElementById('filters-row');
+  if (el) el.style.display = '';
+}
+function hideFiltersRow() {
+  const el = document.getElementById('filters-row');
+  if (el) el.style.display = 'none';
+}
+
 function showSpecSplash(accordId) {
   const spec   = _accordSpecMap[accordId] || {};
   const counts = spec.counts || {};
@@ -864,10 +873,12 @@ function showSpecSplash(accordId) {
   document.getElementById('spec-splash').style.display = 'flex';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'none';
+  hideFiltersRow();
 }
 
 function hideSpecSplash() {
   document.getElementById('spec-splash').style.display = 'none';
+  showFiltersRow();
 }
 
 // Mois exclus des archives (couverts par le portail)
