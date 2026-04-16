@@ -838,8 +838,12 @@
 
   <!-- Full-page overlay — Compte archives (nav visible) -->
   <div class="fp-overlay compte-mode" id="fp-compte">
-    <div class="fp-overlay-header" style="justify-content:center;">
-      <span class="fp-overlay-title" style="padding-right:0;">Compte</span>
+    <div class="fp-overlay-header">
+      <button class="fp-overlay-back" onclick="closeFullPage('compte')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Retour
+      </button>
+      <span class="fp-overlay-title">Compte</span>
     </div>
     <div class="fp-overlay-content">
       <div class="sidebar-item" onclick="closeFullPage('compte');showFavorites();" style="display:flex;padding:14px 20px;">
@@ -1588,6 +1592,10 @@ function showFavorites() {
   favoritesMode = true;
   closeDrawer();
   closeFullPage('compte');
+  // Mobile : si le splash est affiché (aucun mois chargé), on le masque et on montre le contenu
+  document.getElementById('spec-splash').style.display = 'none';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
   // Show only favorited cards, hide month headers without matches
   document.querySelectorAll('.article-card').forEach(card => {
     card.style.display = favoritesSet.has(card.dataset.itemId) ? '' : 'none';
