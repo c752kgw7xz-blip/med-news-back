@@ -87,7 +87,9 @@
     /* env() gère la barre d'accueil iOS (safe-area-inset-bottom ≈ 34px sur iPhone récent) */
     .content-area { padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)); min-width: 0; overflow-x: hidden; }
     #articles-container { grid-template-columns: 1fr !important; min-width: 0; }
-    .article-card { width: 100% !important; max-width: 100%; box-sizing: border-box; }
+    /* Grid items : min-width:0 empêche le track 1fr d'être élargi par white-space:nowrap */
+    .org-group { min-width: 0; overflow: hidden; }
+    .article-card { width: 100% !important; max-width: 100%; box-sizing: border-box; overflow: hidden; }
     .rubrique-month { font-size: 1.24rem; }
     /* Filter pills : tabs pleine largeur, pas de scroll */
     .rubrique-filters {
@@ -118,6 +120,14 @@
     .filter-pill { overflow: hidden; text-overflow: ellipsis; }
     /* Police fixe sur mobile — le réglage taille s'applique uniquement desktop */
     html, body { font-size: 16px !important; --font-scale: 1 !important; }
+    /* Badge type actif (mobile) */
+    #mobile-type-ctx.visible {
+      display: flex; align-items: center; gap: 7px;
+      margin-top: -8px; margin-bottom: 10px;
+    }
+    .ctx-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--ctx-color, var(--green)); }
+    .ctx-type-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: .6px; text-transform: uppercase; color: var(--ctx-color, var(--text2)); font-weight: 500; }
+    .ctx-back-btn { margin-left: auto; background: none; border: none; padding: 0; font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: .3px; text-transform: uppercase; color: var(--text4); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
   }
   @media (max-width: 480px) {
     body { overflow-x: hidden; }
@@ -304,6 +314,7 @@
     font-weight: 400; color: var(--text); margin-bottom: 2px; font-style: italic; letter-spacing: -.3px;
   }
   .rubrique-meta { font-family: 'DM Mono', monospace; font-size:0.65rem; color: var(--text3); letter-spacing: .3px; margin-bottom: 14px; }
+  #mobile-type-ctx { display: none; } /* mobile-only — rendu visible via .visible en 768px */
   /* Pills wrapper avec indicateur de scroll */
   .pills-wrap { position: relative; }
   .pills-wrap::after {
@@ -730,6 +741,8 @@
       <!-- Rubrique header -->
       <div class="rubrique-header" id="rubrique-header">
         <div class="rubrique-meta" id="rubrique-meta"></div>
+        <!-- Badge mobile : indique le type actif (réglementation / recommandation / innovation) -->
+        <div id="mobile-type-ctx"></div>
 
         <div class="pills-wrap">
         <!-- Source type pills — filtre orthogonal aux catégories -->
@@ -1476,6 +1489,30 @@ function updateRubrique() {
   const label = spec ? spec.name : userSpecName;
   document.getElementById('rubrique-meta').textContent = label;
   document.getElementById('spec-label').textContent = label;
+  updateMobileTypeCtx();
+}
+
+// Badge mobile : affiche le type actif avec sa couleur + lien "Changer"
+function updateMobileTypeCtx() {
+  const ctxEl = document.getElementById('mobile-type-ctx');
+  if (!ctxEl) return;
+  const TYPE_META = {
+    reglementaire: { label: 'Réglementation', color: '#6366f1' },
+    recommandation: { label: 'Recommandation', color: '#0891b2' },
+    innovation:     { label: 'Innovation',     color: '#ea7d29' }
+  };
+  const t = TYPE_META[activeSourceType];
+  if (t) {
+    ctxEl.style.setProperty('--ctx-color', t.color);
+    ctxEl.innerHTML = `<span class="ctx-dot"></span><span class="ctx-type-label">${t.label}</span><button class="ctx-back-btn" onclick="backToSplash()">← Changer</button>`;
+    ctxEl.classList.add('visible');
+  } else {
+    ctxEl.classList.remove('visible');
+  }
+}
+
+function backToSplash() {
+  showSpecSplash(_activeAccordId || 'mine');
 }
 
 // ── Compteur visible (après filtre catégorie) ─────────────────
@@ -1679,6 +1716,7 @@ function toggleAccord(id) {
 }
 
 async function selectSpecType(slug, stype, accordId) {
+  _activeAccordId = accordId;
   hideSpecSplash();
   // Clear all active sub-items
   document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));

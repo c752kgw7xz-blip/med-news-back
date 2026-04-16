@@ -98,9 +98,18 @@
     .content-area { padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)); min-width: 0; overflow-x: hidden; }
     .month-name { font-size: 1.24rem; }
     /* Cards pleine largeur */
-    .article-card { width: 100% !important; max-width: 100%; box-sizing: border-box; }
+    .org-group { min-width: 0; overflow: hidden; }
+    .article-card { width: 100% !important; max-width: 100%; box-sizing: border-box; overflow: hidden; }
     /* Filter pills : tabs pleine largeur, pas de scroll */
     .filters-row { flex-wrap: nowrap !important; }
+    /* Badge type actif (mobile) */
+    #mobile-type-ctx.visible {
+      display: flex; align-items: center; gap: 7px;
+      margin-bottom: 10px;
+    }
+    .ctx-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--ctx-color, var(--green)); }
+    .ctx-type-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: .6px; text-transform: uppercase; color: var(--ctx-color, var(--text2)); font-weight: 500; }
+    .ctx-back-btn { margin-left: auto; background: none; border: none; padding: 0; font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: .3px; text-transform: uppercase; color: var(--text4); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
     /* ── Splash mobile ── */
     #spec-splash { padding: 24px 16px 28px; min-height: 55vh; }
     #spec-splash-name { font-size: 1.9rem; }
@@ -265,6 +274,8 @@
   .spec-splash-cat-btn.stype-innov { --dot: #ea7d29; }
   .spec-splash-cat-btn:hover       { border-color: var(--dot, var(--green)); }
   .spec-splash-cat-btn .splash-count { color: var(--dot, var(--green)); }
+
+  #mobile-type-ctx { display: none; } /* mobile-only */
 
   /* ── Page title (Archives) ──────────────── */
   .arch-page-title { margin-bottom: 20px; }
@@ -761,6 +772,9 @@
       </div>
 
 
+      <!-- Badge mobile : indique le type actif (réglementation / recommandation / innovation) -->
+      <div id="mobile-type-ctx"></div>
+
       <!-- Catégorie filters -->
       <div class="filters-row" id="filters-row" style="display:none;">
         <button class="filter-pill" data-cat="therapeutique" onclick="setCatFilter('therapeutique', this)">Méd. &amp; Dispositifs</button>
@@ -918,6 +932,8 @@ function showSpecSplash(accordId) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'none';
   hideFiltersRow();
+  const _ctxEl = document.getElementById('mobile-type-ctx');
+  if (_ctxEl) _ctxEl.classList.remove('visible');
 }
 
 function hideSpecSplash() {
@@ -1466,6 +1482,7 @@ function toggleAccord(id) {
 }
 
 async function selectSpecType(slug, stype, accordId) {
+  _activeAccordId = accordId;
   hideSpecSplash();
   document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
@@ -1481,10 +1498,34 @@ async function selectSpecType(slug, stype, accordId) {
   favoritesMode    = false;
   hideSourcePills();
   updateSpecLabel((allSpecialties.find(s => s.slug === slug) || {}).name || slug);
+  updateMobileTypeCtx();
   await reloadArchives();
   // Auto-sélectionner Méd. & Dispositifs dès l'arrivée
   const firstTab = document.querySelector('.filter-pill[data-cat="therapeutique"]');
   if (firstTab) setCatFilter('therapeutique', firstTab);
+}
+
+// Badge mobile type actif ──────────────────────────────────────
+function updateMobileTypeCtx() {
+  const ctxEl = document.getElementById('mobile-type-ctx');
+  if (!ctxEl) return;
+  const TYPE_META = {
+    reglementaire: { label: 'Réglementation', color: '#6366f1' },
+    recommandation: { label: 'Recommandation', color: '#0891b2' },
+    innovation:     { label: 'Innovation',     color: '#ea7d29' }
+  };
+  const t = TYPE_META[activeSourceType];
+  if (t) {
+    ctxEl.style.setProperty('--ctx-color', t.color);
+    ctxEl.innerHTML = `<span class="ctx-dot"></span><span class="ctx-type-label">${t.label}</span><button class="ctx-back-btn" onclick="backToSplash()">← Changer</button>`;
+    ctxEl.classList.add('visible');
+  } else {
+    ctxEl.classList.remove('visible');
+  }
+}
+
+function backToSplash() {
+  showSpecSplash(_activeAccordId || 'mine');
 }
 
 // ── Sidebar ──────────────────────────────────────────────────
