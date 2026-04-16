@@ -319,6 +319,7 @@ def article_counts(
     with get_conn() as conn:
         with conn.cursor() as cur:
             # Count per specialty per source_type, filtered by date range
+            # Applique les mêmes filtres type_praticien que /articles pour cohérence
             cur.execute(f"""
                 SELECT i.specialty_slug, COALESCE(i.source_type, 'reglementaire'), COUNT(*)
                 FROM items i
@@ -327,8 +328,15 @@ def article_counts(
                   AND COALESCE(i.score_density, 0) >= 3
                   AND i.specialty_slug IS NOT NULL
                   {date_clause}
+                  AND CASE
+                    WHEN i.specialty_slug = ANY(%s) THEN
+                      (i.type_praticien IS NULL OR i.type_praticien != 'prescripteur' OR i.score_density >= 9)
+                    WHEN i.specialty_slug = ANY(%s) THEN
+                      (i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')
+                    ELSE TRUE
+                  END
                 GROUP BY i.specialty_slug, COALESCE(i.source_type, 'reglementaire');
-            """, date_params)
+            """, date_params + [list(_INTERVENTIONAL_SLUGS), list(_PRESCRIPTEUR_SLUGS)])
             per_spec: dict = {}
             for slug, stype, count in cur.fetchall():
                 if slug not in per_spec:
