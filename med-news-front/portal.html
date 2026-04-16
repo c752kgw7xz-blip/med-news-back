@@ -458,7 +458,7 @@
   .btn-collapse:hover { color: var(--text3); }
 
   /* ── Portal page title ──────────────────── */
-  .portal-page-title { margin-bottom: 20px; }
+  .portal-page-title { margin-bottom: 20px; text-align: center; }
   .portal-page-title h2 {
     font-family: 'Instrument Serif', Georgia, serif;
     font-size: 2rem; font-weight: 400; color: var(--text);
@@ -675,7 +675,6 @@
       </div>
       <!-- Rubrique header -->
       <div class="rubrique-header" id="rubrique-header">
-        <div class="rubrique-month" id="rubrique-month"></div>
         <div class="rubrique-meta" id="rubrique-meta"></div>
 
         <div class="pills-wrap">
@@ -1360,8 +1359,6 @@ function applyAccordionState() {
 
 // ── Rubrique header ──────────────────────────────────────────
 function updateRubrique() {
-  document.getElementById('rubrique-month').textContent = portalHeaderLabel();
-
   const spec = allSpecialties.find(s => s.slug === activeSpecSlug);
   const label = spec ? spec.name : userSpecName;
   document.getElementById('rubrique-meta').textContent = `${totalArticles} article${totalArticles > 1 ? 's' : ''} \u00b7 ${label}`;
