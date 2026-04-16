@@ -537,6 +537,16 @@
 
   /* ── Empty ──────────────────────────────── */
   .empty { text-align: center; padding: 80px 20px; color: var(--text4); font-size: 1rem; line-height: 1.7; }
+  .cat-empty-state { text-align: center; padding: 48px 24px; }
+  .cat-empty-state p { margin: 0 0 14px; font-size: 0.9rem; color: var(--text4); }
+  .cat-sugg-btn {
+    display: inline-block; padding: 7px 18px; margin: 4px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text3); cursor: pointer;
+    font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 500;
+    transition: border-color .15s, color .15s;
+  }
+  .cat-sugg-btn:hover { border-color: var(--green); color: var(--text); }
 
   /* ── Mobile bottom nav (5 tabs) ────────── */
   .mobile-bottom-nav {
@@ -707,6 +717,7 @@
       </div>
       <div id="content" style="display:none;">
         <div id="articles-container"></div>
+        <div id="cat-empty" class="cat-empty-state" style="display:none;"></div>
         <button class="load-more" id="load-more" style="display:none;" onclick="loadMore()">
           Charger plus d'articles
         </button>
@@ -1280,6 +1291,34 @@ function collapseCard(btn) {
 }
 
 // ── Logique de filtrage commune (AND : catégorie × source_type) ───────────
+const CAT_LABELS = {
+  therapeutique: 'Méd. & Dispositifs',
+  clinique: 'Clinique',
+  exercice: 'Exercice & Admin',
+};
+
+function selectCatFilter(cat) {
+  filterArticles(cat, document.querySelector(`.filter-pill[data-cat="${cat}"]`));
+}
+
+function updateCatEmpty() {
+  const el = document.getElementById('cat-empty');
+  if (!el) return;
+  if (activeFilter === 'all') { el.style.display = 'none'; return; }
+  const visible = [...document.querySelectorAll('#articles-container .article-card')]
+    .filter(c => c.style.display !== 'none').length;
+  if (visible === 0) {
+    const others = ['therapeutique', 'clinique', 'exercice']
+      .filter(c => c !== activeFilter)
+      .map(c => `<button class="cat-sugg-btn" onclick="selectCatFilter('${c}')">${CAT_LABELS[c]}</button>`)
+      .join('');
+    el.innerHTML = `<p>Aucun article dans cette catégorie</p><p>${others}</p>`;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
 function applyFilters() {
   document.querySelectorAll('.article-card').forEach(card => {
     const catMatch  = activeFilter     === 'all' || card.dataset.categorie   === activeFilter;
@@ -1310,6 +1349,7 @@ function applyFilters() {
     if (countEl) countEl.textContent = `${visCount}\u00a0article${visCount > 1 ? 's' : ''}`;
   });
   updateCounters();
+  updateCatEmpty();
 }
 
 // ── Filtre catégorie métier ────────────────────────────────────
