@@ -659,6 +659,14 @@
     flex: 1; text-align: center; font-size: 1rem; font-weight: 500;
     color: var(--text); padding-right: 60px;
   }
+  .fp-drag-area {
+    flex-shrink: 0; display: flex; justify-content: center;
+    padding: 10px 0 2px; cursor: grab; touch-action: none;
+  }
+  .fp-drag-handle {
+    width: 36px; height: 4px; border-radius: 2px;
+    background: var(--border-strong, #d0d0d0);
+  }
   .fp-overlay-content {
     flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 0 16px;
   }
@@ -2154,6 +2162,75 @@ const _loadingFailsafe = setTimeout(() => {
   }
 }, 25000);
 
+// ── Swipe-to-dismiss overlays ─────────────────────────────────
+function setupSwipeToDismiss(section) {
+  const overlay = document.getElementById('fp-' + section);
+  if (!overlay) return;
+
+  // Drag handle visuel inséré en tête d'overlay
+  const dragArea = document.createElement('div');
+  dragArea.className = 'fp-drag-area';
+  dragArea.innerHTML = '<span class="fp-drag-handle"></span>';
+  overlay.insertBefore(dragArea, overlay.firstChild);
+
+  const header = overlay.querySelector('.fp-overlay-header');
+  const triggers = [dragArea, header].filter(Boolean);
+
+  let startY = 0, deltaY = 0, dragging = false;
+
+  const onStart = e => {
+    if (!overlay.classList.contains('open') || e.touches.length > 1) return;
+    startY = e.touches[0].clientY;
+    deltaY = 0;
+    dragging = true;
+    overlay.style.transition = 'none';
+  };
+
+  const onMove = e => {
+    if (!dragging) return;
+    deltaY = Math.max(0, e.touches[0].clientY - startY);
+    overlay.style.transform = `translateY(${deltaY}px)`;
+  };
+
+  const onEnd = () => {
+    if (!dragging) return;
+    dragging = false;
+    overlay.style.transition = '';
+
+    if (deltaY > 90) {
+      // Seuil atteint → fermeture animée
+      overlay.style.transition = 'transform 0.22s ease';
+      overlay.style.transform = 'translateY(110%)';
+      overlay.addEventListener('transitionend', () => {
+        overlay.classList.remove('open');
+        overlay.style.display = 'none';
+        overlay.style.transition = '';
+        overlay.style.transform = '';
+        if (section === 'compte') {
+          document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+          const tab = typeof _prevNavSection !== 'undefined' ? _prevNavSection : 'specialite';
+          document.getElementById('mnav-' + tab)?.classList.add('active');
+        }
+      }, { once: true });
+    } else {
+      // Retour élastique
+      overlay.style.transition = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
+      overlay.style.transform = 'translateY(0)';
+      overlay.addEventListener('transitionend', () => {
+        overlay.style.transition = '';
+        overlay.style.transform = '';
+      }, { once: true });
+    }
+  };
+
+  triggers.forEach(el => {
+    el.addEventListener('touchstart', onStart, { passive: true });
+    el.addEventListener('touchmove', onMove, { passive: true });
+    el.addEventListener('touchend', onEnd);
+    el.addEventListener('touchcancel', onEnd);
+  });
+}
+
 // ── Init ──────────────────────────────────────────────────────
 (async () => {
   if (DEMO_MODE) { loadDemoData(); return; }
@@ -2183,6 +2260,8 @@ const _loadingFailsafe = setTimeout(() => {
     document.getElementById('loading').style.display = 'none';
     // content reste masqué — showSpecSplash gère l'affichage
     if (window.lucide) lucide.createIcons();
+    setupSwipeToDismiss('compte');
+    setupSwipeToDismiss('explorer');
     if (location.hash === '#compte') {
       history.replaceState(null, '', location.pathname);
       mobileNavClick('compte');
