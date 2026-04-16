@@ -75,18 +75,44 @@ def _extract_text_block(soup: BeautifulSoup, heading_re: re.Pattern) -> str:
     """
     Trouve une section par son titre (h2/h3/h4 correspondant à heading_re),
     puis collecte tout le texte jusqu'au prochain heading de même niveau.
+    Gère deux structures HTML :
+      - Standard : <h3>Titre</h3> suivi de <p>Content</p> siblings
+      - HAS DM   : <p><span><h3>Titre</h3></span>Content...</p> (h3 imbriqué dans p)
     """
     for heading in soup.find_all(["h2", "h3", "h4"]):
-        if heading_re.search(heading.get_text()):
-            parts: list[str] = []
-            for sibling in heading.find_next_siblings():
-                if sibling.name in ("h2", "h3", "h4"):
+        if not heading_re.search(heading.get_text()):
+            continue
+
+        # Cas HAS DM : le heading est imbriqué dans un <p>
+        # Structure : <p><span class="texte-couleur"><h3>SA</h3></span>Suffisant …</p>
+        parent_p = heading.find_parent("p")
+        if parent_p:
+            heading_text = heading.get_text(strip=True)
+            full_text = parent_p.get_text(" ", strip=True)
+            # Retire le libellé du heading du début du texte
+            content = full_text[len(heading_text):].strip(" :")
+            parts = [content] if len(content) > 10 else []
+            # Collecte les <p> suivants jusqu'au prochain qui contient un heading
+            for sib in parent_p.find_next_siblings("p"):
+                if sib.find(["h2", "h3", "h4"]):
                     break
-                text = sibling.get_text(" ", strip=True)
-                if text:
-                    parts.append(text)
+                txt = sib.get_text(" ", strip=True)
+                if txt:
+                    parts.append(txt)
             if parts:
                 return " ".join(parts)[:3000]
+
+        # Cas standard : heading au même niveau que son contenu
+        parts = []
+        for sibling in heading.find_next_siblings():
+            if sibling.name in ("h2", "h3", "h4"):
+                break
+            text = sibling.get_text(" ", strip=True)
+            if text:
+                parts.append(text)
+        if parts:
+            return " ".join(parts)[:3000]
+
     return ""
 
 
@@ -237,9 +263,23 @@ def scrape_has_dm_page(url: str) -> dict[str, Any]:
 
     if parts:
         result["resume"] = "\n".join(parts)
-    elif main_text:
-        # Fallback : début du texte de la page (contient titre + indication)
-        result["resume"] = main_text[:1200]
+    else:
+        # Fallback : extraire les métadonnées utiles de la page
+        # (date CNEDiMTS, référence document) sans retourner le HTML de navigation
+        meta_parts = []
+        for el in soup.find_all(["div", "p", "span"]):
+            txt = el.get_text(" ", strip=True)
+            if re.search(r"avis\s+de\s+la\s+CNEDiMTS\s+du|17\s+\w+\s+\d{4}", txt, re.I):
+                if 20 < len(txt) < 200:
+                    meta_parts.append(txt)
+                    break
+        # Cherche aussi un PDF lié dans le titre de page
+        title_el = soup.find("title")
+        page_title = title_el.get_text(strip=True) if title_el else ""
+        h1_el = soup.find("h1")
+        h1_text = h1_el.get_text(strip=True) if h1_el else ""
+        fallback = f"HAS CNEDiMTS — {h1_text}. " + " ".join(meta_parts)
+        result["resume"] = fallback[:600] if fallback.strip() else None
 
     logger.info("HAS DM scraper OK %s | SA=%s | ASA=%s", url, bool(sa), bool(asa))
     return result

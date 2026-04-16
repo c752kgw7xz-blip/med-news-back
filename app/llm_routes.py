@@ -218,10 +218,16 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
     type_praticien: str | None = result.get("type_praticien")
     source_type: str = get_source_type(candidate.get("source"))
 
-    # EJVES (pubmed_ejves) : les guidelines ESVS sont publiées dans EJVES mais capturées
-    # via pubmed → source_type='innovation' par défaut. Si le LLM identifie une
-    # RECOMMANDATION, on bascule vers 'recommandation' (newsletter recommandations).
-    if candidate.get("source") == "pubmed_ejves":
+    # Presse médicale spécialisée + journaux scientifiques : source_type='innovation'
+    # par défaut. Si le LLM identifie nature=RECOMMANDATION (guideline, consensus),
+    # on bascule vers 'recommandation' pour que la newsletter la range correctement.
+    # Couvre : EJVES (guidelines ESVS), Vascular News, Vascular Specialist, TCTMD,
+    # JVS, JET, Annals (guidelines SVS/AHA-ACC présentées ou publiées dans ces sources).
+    _PRESS_AND_JOURNAL_SOURCES = {
+        "pubmed_ejves", "pubmed_jvs", "pubmed_jet", "pubmed_ann_vasc_surg",
+        "vascular_news", "vascular_specialist", "tctmd", "endovascular_today",
+    }
+    if candidate.get("source") in _PRESS_AND_JOURNAL_SOURCES:
         tri = result.get("tri_json") or {}
         if tri.get("nature") == "RECOMMANDATION":
             source_type = "recommandation"
@@ -963,7 +969,9 @@ def list_items(
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE {where}
-                ORDER BY i.review_status ASC, i.score_density DESC, c.official_date DESC
+                ORDER BY
+                    CASE i.review_status WHEN 'PENDING' THEN 0 WHEN 'APPROVED' THEN 1 ELSE 2 END,
+                    i.score_density DESC, c.official_date DESC
                 LIMIT %s;
                 """,
                 params,

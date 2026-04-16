@@ -501,6 +501,41 @@ présenté(e) [au congrès / dans le numéro X]. [Ce que ça signifie pour la pr
   impact_pratique : "En pratique : [implication clinique concrète — ou 'À confirmer \
 en guideline officielle' si résultats de congrès pas encore publiés]."
 
+SOURCE HAS DM — Si la SOURCE indique "HAS — Avis sur les dispositifs médicaux \
+(admission remboursement, conditions utilisation)" (code source : has_dm) :
+
+→ NATURE DU CONTENU : avis de la CNEDiMTS (Commission Nationale d'Évaluation \
+des Dispositifs Médicaux et des Technologies de Santé) sur l'admission d'un dispositif \
+médical au remboursement. Ce n'est ni un article de recherche, ni un arrêté légal, mais \
+une décision réglementaire d'accès au marché français avec évaluation clinique.
+
+→ PERTINENCE : retenir si le dispositif médical a un impact direct sur la pratique \
+d'une spécialité (chirurgie, cardiologie interventionnelle, etc.). \
+REJETER : dispositifs de soins courants sans enjeu clinique (pansements banaux, \
+lentilles de contact), accessoires de confort sans bénéfice clinique démontré.
+
+→ SCORE :
+  6-7 : dispositif admis ou réévalué, conditions de remboursement précisées, \
+         impact organisationnel (prothèse amputé, pansement chronique) ;
+  8-9 : dispositif majeur pour la spécialité — endoprothèse aortique, système \
+         de boucle fermée insuline, valvuloplastie transcathéter, neurostimulateur, \
+         micro-stent trabéculaire — avec SA/ASA impactant directement la sélection \
+         des patients et les conditions d'implantation.
+
+→ RÉDACTION (ton éditorial de journal vasculaire / médical spécialisé) :
+  resume : "[Dispositif] (fabricant) — La CNEDiMTS évalue le Service Attendu \
+[suffisant/insuffisant] dans l'indication : [indication retenue en 1-2 phrases]. \
+ASA [niveau I-V] par rapport à [comparateur nommé]. [Condition-clé de prise en \
+charge si mentionnée : critère anatomique, niveau de centre, restriction d'indication]."
+  impact_pratique : "En pratique : [ce qui change concrètement — accès au \
+remboursement, conditions anatomiques à respecter, centres habilités, ou restriction \
+d'indication par rapport à la version précédente]."
+  nature : "AVIS_CNEDiMTS" pour tous les avis dispositifs médicaux.
+  date_entree_en_vigueur : date de l'avis (l'inscription LPP suit généralement \
+  sous 13 jours, mais la date de l'avis fait foi pour le praticien).
+
+→ PAS d'evidence_json pour les avis CNEDiMTS : laisser ce champ absent.
+
 Ta mission :
 
 1. PERTINENCE — Ce texte change-t-il quelque chose de concret pour un professionnel \
