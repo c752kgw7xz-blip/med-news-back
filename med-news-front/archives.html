@@ -99,13 +99,20 @@
     .month-name { font-size: 1.24rem; }
     /* Cards pleine largeur */
     .article-card { width: 100% !important; max-width: 100%; box-sizing: border-box; }
-    /* Filter pills : 1 ligne scrollable */
-    .filters-row {
-      flex-wrap: nowrap !important; overflow-x: auto !important;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none;
-      padding-bottom: 2px;
+    /* Filter pills : tabs pleine largeur, pas de scroll */
+    .filters-row { flex-wrap: nowrap !important; }
+    /* ── Splash mobile ── */
+    #spec-splash { padding: 24px 16px 28px; min-height: 55vh; }
+    #spec-splash-name { font-size: 1.9rem; }
+    .spec-splash-hint { font-size: 0.82rem; margin-bottom: 20px; }
+    .spec-splash-cats { flex-direction: column; gap: 8px; width: 100%; }
+    .spec-splash-cat-btn {
+      width: 100%; min-width: 0;
+      flex-direction: row; justify-content: space-between; align-items: center;
+      padding: 14px 18px; gap: 10px;
     }
-    .filters-row::-webkit-scrollbar { display: none; }
+    .spec-splash-cat-btn .splash-count { font-size: 1.4rem; order: 2; flex-shrink: 0; }
+    .spec-splash-cat-btn > span:not(.splash-count) { order: 1; flex: 1; text-align: left; }
     /* Badge IMPORTANT + catégorie : pas de chevauchement */
     .card-top { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
     .card-top-right { flex-wrap: wrap; }
@@ -125,6 +132,10 @@
     .card-date { display: none; }
     .filter-pill { padding: 4px 9px; font-size: 0.65rem; }
     .search-input { padding: 10px 14px 10px 36px; }
+    #spec-splash { padding: 18px 14px 22px; min-height: 50vh; }
+    #spec-splash-name { font-size: 1.5rem; }
+    .spec-splash-cat-btn { padding: 12px 14px; }
+    .spec-splash-cat-btn .splash-count { font-size: 1.2rem; }
   }
 
   /* ── Sidebar ────────────────────────────── */
@@ -769,7 +780,7 @@
       <!-- Splash spécialité -->
       <div id="spec-splash">
         <h1 id="spec-splash-name"></h1>
-        <p class="spec-splash-hint">Sélectionnez une catégorie dans le menu de gauche</p>
+        <p class="spec-splash-hint">Sélectionnez une catégorie pour commencer</p>
         <div class="spec-splash-cats" id="spec-splash-cats"></div>
       </div>
     </div>
