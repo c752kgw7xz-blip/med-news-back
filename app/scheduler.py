@@ -456,6 +456,99 @@ def job_collect_innovation() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Collecte innovation par spécialité (cœur de la Routine)
+# ---------------------------------------------------------------------------
+
+def collect_innovation_by_specialty(specialty_slug: str, days: int = 10) -> dict[str, Any]:
+    """
+    Collecte uniquement les sources innovation dont le specialty_hint correspond
+    à la spécialité demandée (ou "tous" — sources transversales incluses).
+
+    Flux :
+      1. PubMed  → filtré par specialty_hint
+      2. RSS presse médicale → filtré par specialty_hint
+      3. RSS journaux généraux → sources "tous" seulement (NEJM, JAMA, BMJ…)
+      4. Analyse LLM sur tous les candidats NEW résultants
+
+    Le LLM utilise le prompt dédié à la spécialité grâce à SOURCE_SPECIALTY_HINTS
+    et _SPECIALTY_ADDENDA — le scoring est donc bien spé-spécifique.
+    """
+    logger.info("=" * 60)
+    logger.info(
+        "COLLECTE INNOVATION [%s] démarrée — %s",
+        specialty_slug, date.today().isoformat(),
+    )
+    logger.info("=" * 60)
+
+    def _matches(hint: str) -> bool:
+        return hint == specialty_slug or hint == "tous"
+
+    report: dict[str, Any] = {"specialty": specialty_slug, "days": days}
+
+    # ── 1. PubMed ──────────────────────────────────────────────────
+    try:
+        from app.pubmed_collector import PUBMED_SOURCES, collect_pubmed_source
+        pubmed_results: dict = {}
+        for src in PUBMED_SOURCES:
+            if _matches(src.get("specialty_hint", "")):
+                try:
+                    pubmed_results[src["source"]] = collect_pubmed_source(src, days=days)
+                except Exception as e:
+                    pubmed_results[src["source"]] = {"error": str(e)}
+        report["pubmed"] = pubmed_results
+        total_pub = sum(r.get("inserted", 0) for r in pubmed_results.values() if isinstance(r, dict))
+        logger.info("[%s] PubMed : %d sources, %d insérés", specialty_slug, len(pubmed_results), total_pub)
+    except Exception as e:
+        logger.error("[%s] PubMed échoué : %s", specialty_slug, e)
+        report["pubmed"] = {"error": str(e)}
+
+    # ── 2. RSS presse médicale spécialisée ─────────────────────────
+    try:
+        from app.rss_collector import collect_feed
+        from app.sources_presse_medicale import ALL_PRESSE_MEDICALE_FEEDS
+        rss_presse: dict = {}
+        for feed in ALL_PRESSE_MEDICALE_FEEDS:
+            if _matches(feed.get("specialty_hint", "")):
+                try:
+                    rss_presse[feed["source"]] = collect_feed(feed, days=days)
+                except Exception as e:
+                    rss_presse[feed["source"]] = {"error": str(e)}
+        report["rss_presse"] = rss_presse
+        total_presse = sum(r.get("inserted", 0) for r in rss_presse.values() if isinstance(r, dict))
+        logger.info("[%s] RSS presse : %d sources, %d insérés", specialty_slug, len(rss_presse), total_presse)
+    except Exception as e:
+        logger.error("[%s] RSS presse échoué : %s", specialty_slug, e)
+        report["rss_presse"] = {"error": str(e)}
+
+    # ── 3. RSS journaux généraux (NEJM, JAMA, BMJ… — tous) ────────
+    try:
+        from app.rss_collector import collect_feed
+        from app.sources_innovation import ALL_INNOVATION_FEEDS
+        rss_journals: dict = {}
+        for feed in ALL_INNOVATION_FEEDS:
+            if _matches(feed.get("specialty_hint", "")):
+                try:
+                    rss_journals[feed["source"]] = collect_feed(feed, days=days)
+                except Exception as e:
+                    rss_journals[feed["source"]] = {"error": str(e)}
+        report["rss_journals"] = rss_journals
+        total_journals = sum(r.get("inserted", 0) for r in rss_journals.values() if isinstance(r, dict))
+        logger.info("[%s] RSS journaux : %d sources, %d insérés", specialty_slug, len(rss_journals), total_journals)
+    except Exception as e:
+        logger.error("[%s] RSS journaux échoué : %s", specialty_slug, e)
+        report["rss_journals"] = {"error": str(e)}
+
+    # ── 4. Analyse LLM ─────────────────────────────────────────────
+    try:
+        _run_llm_batch()
+    except Exception as e:
+        logger.error("[%s] Analyse LLM échouée : %s", specialty_slug, e)
+
+    logger.info("COLLECTE INNOVATION [%s] terminée", specialty_slug)
+    return report
+
+
+# ---------------------------------------------------------------------------
 # LLM batch (partagé)
 # ---------------------------------------------------------------------------
 
