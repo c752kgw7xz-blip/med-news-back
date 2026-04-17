@@ -1979,146 +1979,158 @@ async function loadMore() {
 const DEMO_ARTICLES = [
   {
     id: 'demo-1',
-    title_raw: 'Alerte ANSM acide tranexamique Tillomed 0,5g',
-    official_url: 'https://ansm.sante.fr',
-    official_date: '2026-02-19',
+    title_raw: 'Décret du 9 avril 2026 : conditions d\'autorisation des activités de chirurgie endovasculaire aortique (EVAR / TEVAR)',
+    official_url: 'https://www.legifrance.gouv.fr',
+    official_date: '2026-04-09',
     score_density: 9,
-    categorie: 'therapeutique',
+    source: 'jorf_decret',
+    source_type: 'reglementaire',
+    categorie: 'exercice',
     tri_json: {
-      titre_court: 'Alerte ANSM acide tranexamique Tillomed 0,5g',
-      resume: "L'ANSM émet une alerte de sécurité sur l'acide tranexamique Tillomed 0,5g/5mL (Medipha Santé). Cette solution injectable utilisée en prévention/traitement des hémorragies fait l'objet d'un rappel de lot.",
-      impact_pratique: "Vérifier vos stocks immédiatement et suspendre l'utilisation des lots concernés. Contacter votre pharmacien.",
-      date_publication: '2026-02-19'
+      titre_court: 'Décret EVAR/TEVAR : seuils d\'activité et garde chirurgicale obligatoires',
+      resume: "Le décret du 9 avril 2026 instaure des seuils d'activité minimaux pour la réalisation des procédures endovasculaires aortiques en France. Les établissements doivent justifier d'un volume annuel d'au moins 30 procédures EVAR et disposer d'une astreinte chirurgicale vasculaire permanente. Délai de mise en conformité : 1er janvier 2027.",
+      impact_pratique: "Vérifier que votre établissement atteint le seuil de 30 procédures EVAR annuelles. Déclaration d'activité à soumettre à l'ARS avant le 30 juin 2026.",
+      date_publication: '2026-04-09'
     },
     lecture_json: {
       points_cles: [
-        'Rappel de lot immédiat — vérifier les numéros de lot en stock',
-        'Risque de contamination particulaire détecté lors des contrôles',
-        "Substitution possible par d'autres spécialités d'acide tranexamique"
+        'Volume minimal de 30 procédures EVAR/an requis par établissement',
+        'Astreinte chirurgicale vasculaire permanente (24h/24) obligatoire',
+        'Déclaration d\'activité à l\'ARS avant le 30 juin 2026 — délai de conformité jan. 2027'
       ],
-      texte_long: "L'ANSM a identifié un problème de qualité sur plusieurs lots d'acide tranexamique Tillomed 0,5g/5mL injectable. Les contrôles ont révélé une contamination particulaire potentielle.",
-      references: ['Décision ANSM du 19/02/2026']
+      texte_long: "Le décret complète les recommandations HAS 2024 sur la chirurgie endovasculaire aortique. Il fixe un seuil d'activité de 30 procédures EVAR par an et par établissement, et impose une astreinte chirurgicale vasculaire opérationnelle en permanence. Les établissements non conformes au 1er janvier 2027 devront transférer leur activité EVAR vers un centre autorisé.",
+      references: ['Décret n°2026-412 du 9 avril 2026 — JORF', 'Recommandations HAS chirurgie endovasculaire aortique 2024']
     }
   },
   {
     id: 'demo-2',
-    title_raw: 'Alerte sécurité pompes infusion BD Alaris',
+    title_raw: 'ANSM — Alerte matériovigilance : endoprothèse aortique Endurant IIs (Medtronic) — risque de migration précoce',
     official_url: 'https://ansm.sante.fr',
-    official_date: '2026-02-24',
-    score_density: 7,
-    categorie: 'therapeutique',
+    official_date: '2026-04-03',
+    score_density: 8,
+    source: 'ansm_securite',
+    source_type: 'reglementaire',
+    categorie: 'exercice',
     tri_json: {
-      titre_court: 'Alerte sécurité pompes infusion BD Alaris',
-      resume: "L'ANSM signale un problème de sécurité sur les pousse-seringues BD Alaris NeXus et Alaris Plus utilisés en milieu hospitalier et structure médicale. Cette alerte concerne les établissements disposant de ces dispositifs.",
-      impact_pratique: "Vérifier immédiatement vos appareils BD Alaris et appliquer la mise à jour firmware si disponible.",
-      date_publication: '2026-02-24'
+      titre_court: 'ANSM — Alerte Endurant IIs Medtronic : risque migration précoce',
+      resume: "L'ANSM émet une alerte de matériovigilance sur l'endoprothèse aortique Endurant IIs de Medtronic. Des cas de migration proximale précoce ont été signalés dans des anatomies avec collet court (< 10 mm) malgré un déploiement techniquement correct. Lots concernés : références EU-ENDxx-xx, fabriqués entre janvier et mars 2026.",
+      impact_pratique: "Identifier les patients implantés avec les lots concernés et programmer un scanner de contrôle à 1 mois si ce n'est pas déjà fait. Signaler tout cas à l'ANSM via le portail de matériovigilance.",
+      date_publication: '2026-04-03'
     },
     lecture_json: {
       points_cles: [
-        "Dysfonctionnement possible du système d'alarme de la pompe",
-        "Mise à jour firmware obligatoire pour les versions antérieures à 9.15",
-        "Signaler tout incident au fabricant et à l'ANSM via matériovigilance"
+        'Migration proximale signalée dans 4 centres — lots EU-ENDxx fabriqués jan.–mars 2026',
+        'Anatomies à risque : collet aortique < 10 mm, angulation > 60°',
+        'Scanner de contrôle à 1 mois recommandé pour tous les patients implantés avec ces lots'
       ],
-      texte_long: "BD Medical a identifié un défaut potentiel sur le système d'alarme des pompes Alaris NeXus et Plus. Dans de rares cas, l'alarme d'occlusion peut ne pas se déclencher correctement.",
-      references: ['Alerte ANSM matériovigilance 2026-02-24']
+      texte_long: "Medtronic a informé l'ANSM de signalements de migration proximale précoce sur l'endoprothèse Endurant IIs dans des anatomies limite. L'analyse préliminaire suggère un défaut de sertissage sur les lots concernés. Une Field Safety Notice sera diffusée dans les prochains jours avec la liste complète des numéros de lot.",
+      references: ['Alerte ANSM matériovigilance 03/04/2026', 'Field Safety Notice Medtronic — en cours']
     }
   },
   {
     id: 'demo-3',
-    title_raw: 'Alerte sécurité pousse-seringue Spaceplus Perfusor',
-    official_url: 'https://ansm.sante.fr',
-    official_date: '2026-02-19',
-    score_density: 7,
-    categorie: 'therapeutique',
+    title_raw: 'ESVS 2026 — Mise à jour guidelines AOMI : rivaroxaban faible dose + aspirine en classe I chez les patients à haut risque CV',
+    official_url: 'https://www.esvs.org',
+    official_date: '2026-04-12',
+    score_density: 9,
+    source: 'esc_guidelines',
+    source_type: 'recommandation',
+    categorie: 'clinique',
     tri_json: {
-      titre_court: 'Alerte sécurité pousse-seringue Spaceplus Perfusor',
-      resume: "L'ANSM signale un risque de sécurité sur le pousse-seringue Spaceplus Perfusor de B. Braun Medical, concernant la fonctionnalité de relais de voies TOM.",
-      impact_pratique: "Suspendre l'utilisation du mode TOM jusqu'à la mise à jour logicielle. Contacter B. Braun pour planifier la mise à jour.",
-      date_publication: '2026-02-19'
+      titre_court: 'ESVS 2026 AOMI : rivaroxaban 2,5 mg + aspirine — classe I chez les patients à haut risque CV',
+      resume: "L'ESVS publie une mise à jour de ses guidelines sur l'artériopathie oblitérante des membres inférieurs, intégrant les données des essais COMPASS, EUCLID et VOYAGER-PAD. L'association rivaroxaban 2,5 mg × 2/j + aspirine 100 mg/j passe en recommandation de classe I chez les patients en stade claudication/ischémie chronique à haut risque cardiovasculaire, indépendamment du statut diabétique.",
+      impact_pratique: "Réévaluer le traitement antithrombotique de vos patients AOMI à haut risque. L'association rivaroxaban faible dose + aspirine doit être discutée systématiquement. Contrôler la tolérance hémorragique à 1 mois.",
+      date_publication: '2026-04-12'
     },
     lecture_json: {
       points_cles: [
-        'Défaut de la fonction relais TOM dans certaines configurations',
-        'Ne pas utiliser le mode TOM en attendant le correctif',
-        'Mise à jour gratuite disponible sur demande auprès de B. Braun Medical'
+        'Rivaroxaban 2,5 mg × 2/j + aspirine 100 mg/j : recommandation classe I (niveau A) en AOMI à haut risque CV',
+        'Bénéfice indépendant du statut diabétique — applicable dès le stade claudication invalidante',
+        'Contrôle hémorragique à 1 mois recommandé — IPP systématique si antécédent ulcère gastrique'
       ],
-      texte_long: null,
-      references: ['Alerte matériovigilance B. Braun / ANSM 02/2026']
+      texte_long: "La mise à jour ESVS 2026 intègre les résultats du suivi étendu des essais COMPASS (réduction MACE 24 %), EUCLID (non-infériorité ticagrélor vs clopidogrel) et VOYAGER-PAD (post-revascularisation). La recommandation de classe I pour la bithérapie rivaroxaban/aspirine marque un changement de paradigme par rapport aux guidelines 2019 qui ne ciblaient que les patients post-revascularisation.",
+      references: ['ESVS Guidelines AOMI 2026 — European Journal of Vascular and Endovascular Surgery', 'COMPASS trial (NEJM 2017)', 'VOYAGER-PAD (NEJM 2020)']
     }
   },
   {
     id: 'demo-4',
-    title_raw: 'Alerte sécurité masques chirurgicaux MPB-CH1X Paul Boyé',
-    official_url: 'https://ansm.sante.fr',
-    official_date: '2026-02-16',
-    score_density: 6,
-    categorie: 'therapeutique',
+    title_raw: 'HAS — Actualisation référentiel surveillance post-EVAR : réduction de la fréquence scanner pour les patients stables à 5 ans',
+    official_url: 'https://www.has-sante.fr',
+    official_date: '2026-04-09',
+    score_density: 7,
+    source: 'has_reco',
+    source_type: 'recommandation',
+    categorie: 'clinique',
     tri_json: {
-      titre_court: 'Alerte sécurité masques chirurgicaux MPB-CH1X Paul Boyé',
-      resume: "L'ANSM a identifié un problème de sécurité sur les masques chirurgicaux MPB-CH1X de Paul Boyé. Cette alerte impose une vigilance accrue lors de la dispensation.",
-      impact_pratique: "Retirer les lots concernés de la circulation. Vérifier les stocks et contacter le fournisseur.",
-      date_publication: '2026-02-16'
+      titre_court: 'HAS post-EVAR : scanner tous les 2 ans (non 3) pour les patients stables — substitution CEUS possible',
+      resume: "La HAS actualise son référentiel de surveillance après traitement endovasculaire d'un anévrisme de l'aorte abdominale. Pour les patients sans endofuite à 5 ans (classe A), la fréquence de surveillance passe de 3 à 2 imageries annuelles, avec possibilité de substitution par échographie de contraste (CEUS) après validation par le chirurgien référent. Les endofuites de type I et III restent sous protocole scanner strict.",
+      impact_pratique: "Adapter vos protocoles post-EVAR selon la nouvelle stratification HAS. La substitution scanner → CEUS est applicable dès le bilan à 5 ans pour les endoprothèses stables — à documenter dans le dossier chirurgical.",
+      date_publication: '2026-04-09'
     },
     lecture_json: {
       points_cles: [
-        'Non-conformité aux normes EN 14683 pour certains lots',
-        'Efficacité de filtration bactérienne inférieure aux spécifications',
-        'Retrait immédiat des lots identifiés dans la décision ANSM'
+        'Classe A (pas d\'endofuite à 5 ans) : 2 imageries/an au lieu de 3 — scanner ou CEUS',
+        'CEUS validé comme alternative au scanner pour le suivi de classe A après avis chirurgical',
+        'Endofuites type I/III : protocole scanner annuel inchangé — suivi chirurgical rapproché'
       ],
-      texte_long: null,
-      references: ['Décision de retrait ANSM 16/02/2026']
+      texte_long: "La HAS s'appuie sur les données des registres EVAR DREAM et EUROSTAR montrant que le taux de complications tardives chez les patients stables à 5 ans est inférieur à 2 %/an. La réduction de la fréquence d'imagerie vise à diminuer l'exposition aux produits de contraste iodés et la charge organisationnelle pour les patients. La CEUS est validée par 4 études prospectives comparatives.",
+      references: ['Référentiel HAS surveillance post-EVAR — avril 2026', 'EVAR DREAM registry 2025', 'EUROSTAR long-term outcomes 2024']
     }
   },
   {
     id: 'demo-5',
-    title_raw: 'Alerte sécurité gazométrie GEM Premier 5000',
-    official_url: 'https://ansm.sante.fr',
-    official_date: '2026-02-10',
-    score_density: 6,
-    categorie: 'exercice',
+    title_raw: 'Lancet — BEST-CLI 2 trial : pontage fémoro-poplité supérieur au ballon actif (DCB) dans la CLTI sur lésions longues TASC C/D',
+    official_url: 'https://www.thelancet.com',
+    official_date: '2026-04-11',
+    score_density: 9,
+    source: 'pubmed_lancet',
+    source_type: 'innovation',
+    categorie: 'therapeutique',
     tri_json: {
-      titre_court: 'Alerte sécurité gazométrie GEM Premier 5000',
-      resume: "L'ANSM signale un problème de sécurité sur les cartouches GEM Premier 5000 PAK utilisées pour la gazométrie artérielle/veineuse. Cette alerte concerne tous les laboratoires et services d'urgence.",
-      impact_pratique: "Vérifier les numéros de série des cartouches en stock. Effectuer un contrôle qualité avant toute utilisation si les lots concernés sont présents.",
-      date_publication: '2026-02-10'
+      titre_court: 'BEST-CLI 2 (Lancet) : pontage > DCB dans la CLTI TASC C/D — survie sans amputation +10,6 pts à 3 ans',
+      resume: "Cet essai randomisé multicentrique (n = 1 830, suivi médian 3 ans) compare le pontage fémoro-poplité au ballon à élution de paclitaxel (DCB) dans l'ischémie critique des membres inférieurs avec lésions longues (TASC II C/D). Le pontage démontre une supériorité nette sur la survie sans amputation majeure à 3 ans (72,4 % vs 61,8 % ; HR 0,68 ; IC95 % 0,54–0,85 ; p = 0,003), au prix d'une morbidité péri-opératoire plus élevée (12 % vs 4 %).",
+      impact_pratique: "Dans la CLTI avec lésions longues TASC C/D et capital veineux disponible, privilégier le pontage chirurgical si le risque opératoire le permet. L'option DCB reste valide en première intention chez les patients fragiles ou sans veine saphène utilisable.",
+      date_publication: '2026-04-11'
     },
     lecture_json: {
       points_cles: [
-        'Risque de résultats erronés sur la mesure du lactate dans certaines conditions',
-        'Lots concernés : vérifier le tableau de correspondance ANSM',
-        'Contacter Werfen France pour remplacement des lots défectueux'
+        'Survie sans amputation majeure à 3 ans : 72,4 % (pontage) vs 61,8 % (DCB) — HR 0,68, p = 0,003',
+        'Morbidité péri-opératoire : 12 % (pontage) vs 4 % (DCB) — délai de récupération plus long',
+        'Sous-groupe capital veineux disponible : bénéfice pontage amplifié (HR 0,58) — creuser le bilan veineux pré-op'
       ],
-      texte_long: null,
-      references: ['Alerte ANSM matériovigilance 10/02/2026']
+      texte_long: "BEST-CLI 2 étend les résultats de BEST-CLI 1 aux lésions TASC C et D (occlusives longues, multiétagées). Le bénéfice du pontage est plus marqué chez les patients avec une veine grande saphène de bonne qualité (diamètre ≥ 3 mm). L'analyse en sous-groupe montre que les patients à risque opératoire intermédiaire (score ASA ≤ 3) bénéficient autant du pontage que les patients à faible risque.",
+      references: ['BEST-CLI 2 — The Lancet, avril 2026', 'BEST-CLI 1 — NEJM 2022', 'ESVS CLTI guidelines 2024']
     }
   },
   {
     id: 'demo-6',
-    title_raw: 'Nouvelles recommandations HAS réanimation cardio-pulmonaire 2026',
-    official_url: 'https://has-sante.fr',
-    official_date: '2026-03-01',
-    score_density: 8,
-    categorie: 'clinique',
+    title_raw: 'EMA — Autorisation CE endoprothèse fenêtrée ZFEN III (Cook Medical) pour anévrismes aorto-iliaques juxtarénaux complexes',
+    official_url: 'https://www.ema.europa.eu',
+    official_date: '2026-04-08',
+    score_density: 7,
+    source: 'ansm_decisions',
+    source_type: 'innovation',
+    categorie: 'therapeutique',
     tri_json: {
-      titre_court: 'Recommandations HAS RCP — mise à jour 2026',
-      resume: "La HAS publie une mise à jour des recommandations de réanimation cardio-pulmonaire pour les professionnels de santé. Ces nouvelles recommandations intègrent les dernières données de l'ERC 2025.",
-      impact_pratique: "Mettre à jour vos protocoles RCP internes. Formation recommandée avant le 30 juin 2026.",
-      date_publication: '2026-03-01'
+      titre_court: 'EMA ZFEN III (Cook) : endoprothèse fenêtrée 3e génération — accès précoce France T3 2026',
+      resume: "L'EMA délivre un marquage CE à l'endoprothèse fenêtrée de 3e génération ZFEN III (Cook Medical), intégrant un système de déploiement robotisé et des fenêtres préchargées pour les artères rénales et mésentériques. Les données du registre EVAS (280 cas, 18 mois) montrent une réduction du temps opératoire de 35 % et un taux de succès technique de 97,5 % dans les anévrismes juxtarénaux.",
+      impact_pratique: "Anticiper l'accès au Dispositif d'Accès Précoce (DAP) pour vos patients à anatomie aortique complexe (juxtarénal, pararénal). Contacter le référent Cook Medical pour les modalités d'inclusion dans le registre post-commercial obligatoire.",
+      date_publication: '2026-04-08'
     },
     lecture_json: {
       points_cles: [
-        'Ratio compressions/ventilations inchangé (30:2) mais rythme augmenté à 110/min',
-        'Défibrillation précoce renforcée — objectif < 3 min en intra-hospitalier',
-        "Nouvelles posologies adrénaline ajustées selon durée de l'arrêt"
+        'Marquage CE obtenu — disponibilité en France via DAP à partir du 3e trimestre 2026',
+        'Réduction du temps opératoire de 35 % vs ZFEN II — système de déploiement robotisé',
+        'Registre post-commercial obligatoire (EVAS-III) — inclusion via Cook Medical référent régional'
       ],
-      texte_long: "La HAS a actualisé ses recommandations RCP sur la base des guidelines ERC 2025. Les principaux changements concernent le rythme de compression recommandé et la stratégie de défibrillation précoce.",
-      references: ['Recommandation HAS mars 2026', 'ERC Guidelines 2025']
+      texte_long: "Le ZFEN III améliore le ZFEN II par un système de fenêtres préchargées permettant de réduire la manipulation intra-opératoire et la durée de scopie. Les 280 patients du registre EVAS montrent un taux de perméabilité des artères rénales de 98,2 % à 18 mois. La disponibilité en France est conditionnée à l'obtention du DAP par la HAS, attendue pour le 3e trimestre 2026.",
+      references: ['Décision EMA avril 2026 — marquage CE ZFEN III', 'Registre EVAS — EJVES 2026', 'Critères DAP HAS — dispositifs endovasculaires aortiques complexes']
     }
   }
 ];
 
 const DEMO_SPECIALTIES = [
-  { slug: 'medecine-d-urgence', name: "Médecine d'urgence" },
+  { slug: 'chirurgie-vasculaire', name: 'Chirurgie vasculaire' },
   { slug: 'anesthesiologie-reanimation', name: 'Anesthésiologie-réanimation' },
   { slug: 'cardiologie', name: 'Cardiologie' },
   { slug: 'medecine-generale', name: 'Médecine générale' },
@@ -2143,16 +2155,16 @@ const DEMO_SPECIALTIES = [
 function loadDemoData() {
   document.getElementById('demo-banner').style.display = 'block';
   document.getElementById('user-email').textContent = 'demo@mednews.fr';
-  userSpecSlug = 'medecine-d-urgence';
-  userSpecName = "Médecine d'urgence";
+  userSpecSlug = 'chirurgie-vasculaire';
+  userSpecName = 'Chirurgie vasculaire';
   activeSpecSlug = userSpecSlug;
   activeAudience = 'MY_SPEC';
   document.getElementById('spec-label').textContent = userSpecName;
   allSpecialties = DEMO_SPECIALTIES;
   specTypeCounts = {
-    'medecine-d-urgence':        { total:6, reglementaire:2, recommandation:3, innovation:1 },
+    'chirurgie-vasculaire':      { total:6, reglementaire:2, recommandation:2, innovation:2 },
     'anesthesiologie-reanimation':{ total:3, reglementaire:1, recommandation:2, innovation:0 },
-    'cardiologie':               { total:6, reglementaire:2, recommandation:3, innovation:1 },
+    'cardiologie':               { total:5, reglementaire:1, recommandation:2, innovation:2 },
     'medecine-generale':         { total:9, reglementaire:4, recommandation:4, innovation:1 },
     'chirurgie-orthopedique':    { total:2, reglementaire:1, recommandation:1, innovation:0 },
     'biologie-medicale':         { total:4, reglementaire:2, recommandation:2, innovation:0 },
