@@ -11,12 +11,13 @@ Pipeline — collecte pilotée par la ROUTINE (onglet admin), envoi automatique.
     job_collect_innovation()    → PubMed (JACC, EHJ, JTCVS, EJCTS…) + RSS presse
   Aucun cron de collecte — la cadence est contrôlée par l'opérateur.
 
-  AUTO-ENVOI NEWSLETTERS (quotidien — vérifie conditions avant d'envoyer)
+  AUTO-ENVOI NEWSLETTERS (hebdomadaire — vérifie conditions avant d'envoyer)
   ─────────────────────────────────────────────────────────────────────────
-  Quotidien 09h UTC   → job_try_send_regulation()
-      Si 0 PENDING réglementaire ET newsletter pas encore envoyée ce mois → envoi
-  Quotidien 09h30 UTC → job_try_send_recommendations()
+  Lundi 09h UTC   → job_try_send_regulation()
+      Si 0 PENDING réglementaire ET newsletter pas encore envoyée cette semaine → envoi
+  Lundi 09h30 UTC → job_try_send_recommendations()
       Si 0 PENDING recommandation ET pas encore envoyée cette semaine → envoi
+  (jour configurable via NEWSLETTER_SEND_DAY_OF_WEEK, défaut "mon")
 
   MAINTENANCE
   ─────────────────────────────────────────────────────────────────────────
@@ -127,16 +128,19 @@ def _release_newsletter_slot(newsletter_type: str, period_label: str) -> None:
             )
 
 
-def _regulation_period() -> str:
-    """Label de la période mensuelle réglementation, ex. '2026-03'."""
-    return date.today().strftime("%Y-%m")
-
-
-def _recommendation_period() -> str:
-    """Label de la semaine ISO courante, ex. '2026-W12'."""
+def _weekly_period() -> str:
+    """Label de la semaine ISO courante, ex. '2026-W16'.
+    Utilisé pour toutes les newsletters (réglementation + recommandations)
+    depuis le passage en cadence hebdomadaire.
+    """
     today = date.today()
     iso = today.isocalendar()
     return f"{iso.year}-W{iso.week:02d}"
+
+
+# Alias pour compatibilité avec les appels existants
+_regulation_period    = _weekly_period
+_recommendation_period = _weekly_period
 
 
 # ---------------------------------------------------------------------------
@@ -488,10 +492,10 @@ def _run_llm_batch() -> None:
 
 def job_try_send_regulation() -> None:
     """
-    Vérifie chaque jour si la newsletter réglementation peut être envoyée :
+    Vérifie chaque vendredi si la newsletter réglementation peut être envoyée :
     - Aucun item PENDING de type réglementaire/thérapeutique
-    - Newsletter pas encore envoyée ce mois-ci
-    Si oui : envoie et enregistre.
+    - Newsletter pas encore envoyée cette semaine (période ISO)
+    Si oui : envoie (fenêtre = 10 derniers jours) et enregistre.
     """
     period = _regulation_period()
 
@@ -748,26 +752,28 @@ def start_scheduler() -> AsyncIOScheduler:
     # (toutes les ~48h, spécialité par spécialité, à la main de l'opérateur).
     # Les fonctions job_collect_*() restent disponibles comme callables.
 
-    # ── Auto-envoi réglementation : quotidien à 09h UTC ──────────
-    # Vérifie les conditions (0 PENDING + pas encore envoyée ce mois) avant d'agir.
+    # ── Auto-envoi newsletters : hebdomadaire (lundi par défaut) ─
+    # Jour configurable via NEWSLETTER_SEND_DAY_OF_WEEK (ex. "mon", "fri").
+    # Vérifie les conditions (0 PENDING + pas encore envoyée cette semaine) avant d'agir.
     send_check_hour = int(os.environ.get("NEWSLETTER_CHECK_HOUR", "9"))
+    send_dow = os.environ.get("NEWSLETTER_SEND_DAY_OF_WEEK", "mon")
 
     _scheduler.add_job(
         job_try_send_regulation,
-        trigger=CronTrigger(hour=send_check_hour, minute=0),
+        trigger=CronTrigger(day_of_week=send_dow, hour=send_check_hour, minute=0),
         id="regulation_send_check",
-        name=f"Auto-envoi newsletter réglementation (quotidien h={send_check_hour}h UTC)",
+        name=f"Auto-envoi newsletter réglementation (hebdo {send_dow} {send_check_hour}h UTC)",
         executor="threadpool",
         replace_existing=True,
         misfire_grace_time=3600,
     )
 
-    # ── Auto-envoi recommandations : quotidien à 09h30 UTC ───────
+    # ── Auto-envoi recommandations : même jour, 30 min après ──────
     _scheduler.add_job(
         job_try_send_recommendations,
-        trigger=CronTrigger(hour=send_check_hour, minute=30),
+        trigger=CronTrigger(day_of_week=send_dow, hour=send_check_hour, minute=30),
         id="recommendation_send_check",
-        name=f"Auto-envoi newsletter recommandations (quotidien h={send_check_hour}h30 UTC)",
+        name=f"Auto-envoi newsletter recommandations (hebdo {send_dow} {send_check_hour}h30 UTC)",
         executor="threadpool",
         replace_existing=True,
         misfire_grace_time=3600,
@@ -786,10 +792,8 @@ def start_scheduler() -> AsyncIOScheduler:
 
     _scheduler.start()
     logger.info(
-        "Scheduler démarré — réglementation j=%d h=%dh | recommandations lundi h=%dh | "
-        "auto-send check h=%dh (UTC)",
-        regulation_collect_day, regulation_collect_hour,
-        recommendation_collect_hour, send_check_hour,
+        "Scheduler démarré — auto-envoi hebdo (%s %dh / %dh30 UTC) | cleanup tokens 03h UTC",
+        send_dow, send_check_hour, send_check_hour,
     )
     return _scheduler
 
