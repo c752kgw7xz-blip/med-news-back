@@ -1194,6 +1194,7 @@ const SOURCE_LABELS = {
   pubmed_jacc:          'JACC',
   vascular_news:        'Vascular News',
   vascular_specialist:  'Vascular Specialist',
+  sofmer:               'SOFMER',
   tctmd:                'TCTMD',
   esc_guidelines:       'ESC',
   acc_aha:              'ACC/AHA',
@@ -1680,7 +1681,8 @@ function showSpecSplash(accordId) {
     { stype: 'innovation',     cls: 'stype-innov',label: 'Innovation',      count: counts.innovation     || 0 },
   ];
   document.getElementById('spec-splash-name').textContent = spec.name || '';
-  document.getElementById('spec-splash-cats').innerHTML = cats.map(c => `
+  const visibleCats = cats.filter(c => c.count > 0);
+  document.getElementById('spec-splash-cats').innerHTML = visibleCats.map(c => `
     <button class="spec-splash-cat-btn ${c.cls}"
             onclick="selectSpecType('${spec.slug}','${c.stype}','${accordId}')">
       <span class="splash-count">${c.count}</span>
@@ -1978,153 +1980,276 @@ async function loadMore() {
 // ── Demo data ─────────────────────────────────────────────────
 const DEMO_ARTICLES = [
   {
-    id: 'demo-1',
-    title_raw: 'Décret du 9 avril 2026 : conditions d\'autorisation des activités de chirurgie endovasculaire aortique (EVAR / TEVAR)',
-    official_url: 'https://www.legifrance.gouv.fr',
-    official_date: '2026-04-09',
-    score_density: 9,
-    source: 'jorf_decret',
-    source_type: 'reglementaire',
-    categorie: 'exercice',
-    tri_json: {
-      titre_court: 'Décret EVAR/TEVAR : seuils d\'activité et garde chirurgicale obligatoires',
-      resume: "Le décret du 9 avril 2026 instaure des seuils d'activité minimaux pour la réalisation des procédures endovasculaires aortiques en France. Les établissements doivent justifier d'un volume annuel d'au moins 30 procédures EVAR et disposer d'une astreinte chirurgicale vasculaire permanente. Délai de mise en conformité : 1er janvier 2027.",
-      impact_pratique: "Vérifier que votre établissement atteint le seuil de 30 procédures EVAR annuelles. Déclaration d'activité à soumettre à l'ARS avant le 30 juin 2026.",
-      date_publication: '2026-04-09'
-    },
-    lecture_json: {
-      points_cles: [
-        'Volume minimal de 30 procédures EVAR/an requis par établissement',
-        'Astreinte chirurgicale vasculaire permanente (24h/24) obligatoire',
-        'Déclaration d\'activité à l\'ARS avant le 30 juin 2026 — délai de conformité jan. 2027'
-      ],
-      texte_long: "Le décret complète les recommandations HAS 2024 sur la chirurgie endovasculaire aortique. Il fixe un seuil d'activité de 30 procédures EVAR par an et par établissement, et impose une astreinte chirurgicale vasculaire opérationnelle en permanence. Les établissements non conformes au 1er janvier 2027 devront transférer leur activité EVAR vers un centre autorisé.",
-      references: ['Décret n°2026-412 du 9 avril 2026 — JORF', 'Recommandations HAS chirurgie endovasculaire aortique 2024']
-    }
-  },
-  {
-    id: 'demo-2',
-    title_raw: 'ANSM — Alerte matériovigilance : endoprothèse aortique Endurant IIs (Medtronic) — risque de migration précoce',
-    official_url: 'https://ansm.sante.fr',
-    official_date: '2026-04-03',
+    id: '2517ab71-210e-4408-937a-bc2195be53d1',
+    title_raw: 'DEEPER REVEAL à 12 mois : le système Spur RST confirme ses résultats dans le BTK-CLTI',
+    official_url: 'https://vascularnews.com/reflow-medical-announces-12-month-results-from-deeper-reveal-trial/',
+    official_date: '2026-04-14',
     score_density: 8,
-    source: 'ansm_securite',
-    source_type: 'reglementaire',
-    categorie: 'exercice',
+    source: 'vascular_news',
+    source_type: 'innovation',
+    categorie: 'therapeutique',
     tri_json: {
-      titre_court: 'ANSM — Alerte Endurant IIs Medtronic : risque migration précoce',
-      resume: "L'ANSM émet une alerte de matériovigilance sur l'endoprothèse aortique Endurant IIs de Medtronic. Des cas de migration proximale précoce ont été signalés dans des anatomies avec collet court (< 10 mm) malgré un déploiement techniquement correct. Lots concernés : références EU-ENDxx-xx, fabriqués entre janvier et mars 2026.",
-      impact_pratique: "Identifier les patients implantés avec les lots concernés et programmer un scanner de contrôle à 1 mois si ce n'est pas déjà fait. Signaler tout cas à l'ANSM via le portail de matériovigilance.",
-      date_publication: '2026-04-03'
-    },
-    lecture_json: {
-      points_cles: [
-        'Migration proximale signalée dans 4 centres — lots EU-ENDxx fabriqués jan.–mars 2026',
-        'Anatomies à risque : collet aortique < 10 mm, angulation > 60°',
-        'Scanner de contrôle à 1 mois recommandé pour tous les patients implantés avec ces lots'
-      ],
-      texte_long: "Medtronic a informé l'ANSM de signalements de migration proximale précoce sur l'endoprothèse Endurant IIs dans des anatomies limite. L'analyse préliminaire suggère un défaut de sertissage sur les lots concernés. Une Field Safety Notice sera diffusée dans les prochains jours avec la liste complète des numéros de lot.",
-      references: ['Alerte ANSM matériovigilance 03/04/2026', 'Field Safety Notice Medtronic — en cours']
-    }
-  },
-  {
-    id: 'demo-3',
-    title_raw: 'ESVS 2026 — Mise à jour guidelines AOMI : rivaroxaban faible dose + aspirine en classe I chez les patients à haut risque CV',
-    official_url: 'https://www.esvs.org',
-    official_date: '2026-04-12',
-    score_density: 9,
-    source: 'esc_guidelines',
-    source_type: 'recommandation',
-    categorie: 'clinique',
-    tri_json: {
-      titre_court: 'ESVS 2026 AOMI : rivaroxaban 2,5 mg + aspirine — classe I chez les patients à haut risque CV',
-      resume: "L'ESVS publie une mise à jour de ses guidelines sur l'artériopathie oblitérante des membres inférieurs, intégrant les données des essais COMPASS, EUCLID et VOYAGER-PAD. L'association rivaroxaban 2,5 mg × 2/j + aspirine 100 mg/j passe en recommandation de classe I chez les patients en stade claudication/ischémie chronique à haut risque cardiovasculaire, indépendamment du statut diabétique.",
-      impact_pratique: "Réévaluer le traitement antithrombotique de vos patients AOMI à haut risque. L'association rivaroxaban faible dose + aspirine doit être discutée systématiquement. Contrôler la tolérance hémorragique à 1 mois.",
+      titre_court: 'DEEPER REVEAL à 12 mois : le système Spur RST confirme ses résultats dans le BTK-CLTI',
+      resume: 'Reflow Medical présente au congrès SIR 2026 (Toronto) les résultats à 12 mois du trial DEEPER REVEAL évaluant le système Spur RST dans les lésions below-the-knee (BTK) pour la CLTI. C\'est le premier rapport à 12 mois de cet essai, présenté par Constantino Peña (Miami). Les données de suivi prolongé sur des lésions BTK — les plus difficiles en endovasculaire — sont rares et très attendues par la communauté.',
+      impact_pratique: 'En pratique : les données 12 mois du Spur RST dans le BTK-CLTI viennent combler un manque de preuves durables pour les lésions tibiales — à considérer dans l\'arsenal endovasculaire BTK en complément des ballons actifs.',
       date_publication: '2026-04-12'
     },
     lecture_json: {
-      points_cles: [
-        'Rivaroxaban 2,5 mg × 2/j + aspirine 100 mg/j : recommandation classe I (niveau A) en AOMI à haut risque CV',
-        'Bénéfice indépendant du statut diabétique — applicable dès le stade claudication invalidante',
-        'Contrôle hémorragique à 1 mois recommandé — IPP systématique si antécédent ulcère gastrique'
-      ],
-      texte_long: "La mise à jour ESVS 2026 intègre les résultats du suivi étendu des essais COMPASS (réduction MACE 24 %), EUCLID (non-infériorité ticagrélor vs clopidogrel) et VOYAGER-PAD (post-revascularisation). La recommandation de classe I pour la bithérapie rivaroxaban/aspirine marque un changement de paradigme par rapport aux guidelines 2019 qui ne ciblaient que les patients post-revascularisation.",
-      references: ['ESVS Guidelines AOMI 2026 — European Journal of Vascular and Endovascular Surgery', 'COMPASS trial (NEJM 2017)', 'VOYAGER-PAD (NEJM 2020)']
+      texte_long: 'DEEPER REVEAL fournit à 12 mois les premières données durables sur le système Spur RST (Reflow Medical) dans les lésions artérielles tibiales et péronières chez des patients CLTI. Les lésions BTK représentent le défi majeur en endovasculaire : long, calcifié, petits calibres, résultats souvent décevants à 6-12 mois avec les techniques conventionnelles. Le Spur RST combine une préparation mécanique de la paroi avec un profil optimisé pour les vaisseaux distaux. Les 12 mois de données permettent d\'évaluer la perméabilité et le sauvetage de membre au-delà de la phase précoce — critères qui comptent vraiment en CLTI. Les résultats complets ne sont pas disponibles dans l\'abstract du communiqué, mais la présentation à SIR 2026 par un investigateur principal de référence (Peña, Miami Cardiac & Vascular Institute) garantit une revue rigoureuse.',
+      points_cles: ['12 mois de suivi DEEPER REVEAL — premier rapport prolongé', 'Spur RST : système de préparation vasculaire pour lésions BTK', 'SIR 2026, Toronto — présentation récente (Avril 2026)', 'CLTI below-the-knee : indication à très fort besoin médical non satisfait'],
+      references: ['DEEPER REVEAL Trial 12-month, SIR Annual Meeting, Toronto, Avril 2026', 'Reflow Medical press release', 'Vascular News, Avril 2026']
     }
   },
   {
-    id: 'demo-4',
-    title_raw: 'HAS — Actualisation référentiel surveillance post-EVAR : réduction de la fréquence scanner pour les patients stables à 5 ans',
-    official_url: 'https://www.has-sante.fr',
+    id: 'a81faea1-035d-4830-ae67-c95e5e4609b1',
+    title_raw: 'STORM-PE : thrombectomie par aspiration + anticoagulation supérieure à j90 dans l\'EP intermédiaire-haute',
+    official_url: 'https://vascularnews.com/new-storm-pe-data-show-improved-functional-outcomes-with-cavt-plus-anticoagulation/',
+    official_date: '2026-04-13',
+    score_density: 8,
+    source: 'vascular_news',
+    source_type: 'innovation',
+    categorie: 'clinique',
+    tri_json: {
+      titre_court: 'STORM-PE : thrombectomie par aspiration + anticoagulation supérieure à j90 dans l\'EP intermédiaire-haute',
+      resume: 'Les résultats à 90 jours du RCT STORM-PE montrent que les patients traités par thrombectomie veineuse par aspiration assistée par ordinateur (CAVT) plus anticoagulation présentent une amélioration fonctionnelle significativement supérieure par rapport à l\'anticoagulation seule dans l\'embolie pulmonaire (EP) aiguë intermédiaire-haute risque. Les patients marchaient significativement plus loin et atteignaient plus souvent le statut NYHA I. Un RCT avec résultats à 90 jours — niveau de preuve élevé pour cette indication.',
+      impact_pratique: 'En pratique : le CAVT améliore l\'outcome fonctionnel à 90 jours dans l\'EP intermédiaire-haute — à intégrer dans la stratégie PERT pour les patients éligibles sans contre-indication.',
+      date_publication: '2026-03-15'
+    },
+    lecture_json: {
+      texte_long: 'STORM-PE apporte des données de niveau RCT dans un domaine où la preuve manquait cruellement : la thrombectomie par aspiration dans l\'EP intermédiaire-haute risque. Jusqu\'ici, les données étaient principalement observationnelles ou issues de registres. L\'essai montre qu\'à 90 jours, l\'ajout du CAVT à l\'anticoagulation améliore significativement le statut fonctionnel des patients — mesure cliniquement pertinente car ces patients gardaient souvent une dyspnée résiduelle et une capacité d\'effort réduite après le seul traitement médical. Pour les chirurgiens vasculaires impliqués dans les PERT, cette donnée renforce la légitimité d\'une approche interventionnelle dans les EP intermédiaires-hautes risque, en complément des guidelines ACC/AHA 2026 (voir article séparé).',
+      points_cles: ['RCT STORM-PE — comparaison CAVT+anticoag vs anticoag seule', 'EP intermédiaire-haute risque — segment ciblé par les PERTs', 'Marche significativement plus longue à j90', 'NYHA I atteint dans proportion plus élevée avec CAVT'],
+      references: ['STORM-PE RCT, Vascular News Mars 2026', 'AVF Annual Meeting 2026']
+    }
+  },
+  {
+    id: '3169c2e0-6c11-47e5-a8a7-cfb837060e4b',
+    title_raw: 'TADV : l\'artérialisation transcathéter des veines profondes — méta-analyse JVS montre supériorité dans la CLTI sans option',
+    official_url: 'https://vascularspecialistonline.com/tadv-delivers-transformative-advancement-for-no-option-clti/',
     official_date: '2026-04-09',
+    score_density: 9,
+    source: 'vascular_specialist',
+    source_type: 'innovation',
+    categorie: 'therapeutique',
+    tri_json: {
+      titre_court: 'TADV : l\'artérialisation transcathéter des veines profondes — méta-analyse JVS montre supériorité dans la CLTI sans option',
+      resume: 'Une revue systématique et méta-analyse publiée dans le JVS, dirigée par Anahita Dua (Boston), démontre que la TADV (transcatheter arterialization of deep veins — artérialisation veineuse transcathéter) produit des taux supérieurs de sauvetage de membre, de survie sans amputation et de cicatrisation par rapport au traitement standard chez les patients CLTI sans option de revascularisation artérielle conventionnelle. Un résultat transformateur pour les patients autrefois condamnés à l\'amputation.',
+      impact_pratique: 'En pratique : la TADV s\'impose comme standard de soins dans la CLTI sans option — méta-analyse JVS = niveau de preuve suffisant pour intégrer cette technique dans les protocoles institutionnels.',
+      date_publication: '2026-01-20'
+    },
+    lecture_json: {
+      texte_long: 'La TADV (transcatheter arterialization of deep veins) est une technique innovante qui reverse le flux sanguin des artères dans le réseau veineux du pied (artère pédieuse → réseau veineux pedal), créant une perfusion rétrograde dans les territoires ischémiques sans artère cible perméable. Elle s\'adresse à la population des \'no-option CLTI\' — patients avec maladie tibiale/pédieuse diffuse sans artère d\'atterrissage possible pour un pontage ou une angioplastie. Cette méta-analyse JVS est la synthèse la plus complète disponible et démontre une supériorité claire de la TADV sur le traitement conservateur seul en termes de sauvetage de membre, survie sans amputation et cicatrisation. Pour les chirurgiens vasculaires qui ne pratiquent pas encore cette technique, c\'est le signal pour évaluer la formation et la mise en place d\'un programme.',
+      points_cles: ['Méta-analyse JVS — Anahita Dua et al.', 'TADV > SoC : sauvetage de membre, AFS, cicatrisation', 'Population : no-option CLTI — autrement condamnée à l\'amputation', 'Impact transformateur reconnu dans le titre — forte conclusion des auteurs'],
+      references: ['TADV Meta-analysis, Anahita Dua et al., Journal of Vascular Surgery 2026']
+    }
+  },
+  {
+    id: '221ffc6d-1c60-4219-86b6-506e053de8c2',
+    title_raw: 'Cathéter Angel CE marqué en Europe pour prévention de l\'EP chez les patients anti-coagulés non éligibles',
+    official_url: 'https://vascularnews.com/mermaid-medical-receives-ce-mark-for-angel-pulmonary-embolism-catheter/',
+    official_date: '2026-04-08',
     score_density: 7,
-    source: 'has_reco',
+    source: 'vascular_news',
+    source_type: 'innovation',
+    categorie: 'therapeutique',
+    tri_json: {
+      titre_court: 'Cathéter Angel CE marqué en Europe pour prévention de l\'EP chez les patients anti-coagulés non éligibles',
+      resume: 'Mermaid Medical annonce l\'obtention du marquage CE pour le cathéter Angel, un filtre à embolie pulmonaire redessiné destiné aux patients qui ne peuvent pas recevoir d\'anticoagulation. Le cathéter Angel est conçu comme alternative aux filtres cave classiques pour prévenir les EP fatales chez les patients critiques en contre-indication aux anticoagulants. Sa disponibilité commerciale en Europe est désormais possible.',
+      impact_pratique: 'En pratique : nouvelle option de prévention EP en Europe pour les patients non éligibles à l\'anticoagulation — marquage CE obtenu, à évaluer pour les politraumatisés ou post-opératoires à très haut risque hémorragique.',
+      date_publication: '2026-03-05'
+    },
+    lecture_json: {
+      texte_long: 'Le cathéter Angel de Mermaid Medical vise à combler le gap de prévention de l\'EP dans la population des patients ne pouvant pas recevoir d\'anticoagulation thérapeutique — typiquement : polytraumatisés, post-opératoires à haut risque hémorragique, patients neurochirurgicaux. Les filtres cave permanents ou temporaires classiques ont des limites (thrombose de filtre, syndrome post-thrombotique, complications d\'explantation). Le cathéter Angel se positionne comme une solution alternative avec un profil de complications potentiellement différent. L\'obtention du CE mark valide le dispositif pour une utilisation clinique en Europe. Son positionnement dans les algorithmes de prévention EP reste à préciser selon les résultats des premières séries réelles européennes.',
+      points_cles: ['CE mark obtenu — disponible en Europe', 'Indication : patients avec contre-indication à l\'anticoagulation', 'Prévention EP — filtre alternatif aux filtres cave classiques', 'Conçu pour patients critiques ou chirurgicaux à haut risque hémorragique'],
+      references: ['Mermaid Medical press release', 'Vascular News, Mars 2026']
+    }
+  },
+  {
+    id: '4b5a64ee-90d3-4f19-a279-8a4f0f887afd',
+    title_raw: 'Nexus (Endospan) approuvé par la FDA pour les anévrysmes et dissections de la crosse aortique',
+    official_url: 'https://vascularnews.com/endospan-receives-us-fda-approval-for-nexus-aortic-arch-stent-graft-system/',
+    official_date: '2026-04-07',
+    score_density: 8,
+    source: 'vascular_news',
+    source_type: 'innovation',
+    categorie: 'therapeutique',
+    tri_json: {
+      titre_court: 'Nexus (Endospan) approuvé par la FDA pour les anévrysmes et dissections de la crosse aortique',
+      resume: 'Endospan annonce l\'approbation FDA du stent-graft Nexus pour le traitement de la crosse aortique, incluant les dissections aortiques chroniques. L\'approbation est supportée par les résultats à 1 an de l\'étude IDE TRIOMPHE, montrant l\'efficacité du Nexus pour traiter les maladies de la crosse chez des patients à haut risque chirurgical. Le Nexus est conçu pour traiter la crosse en endovasculaire sans nécessiter d\'hypothermie profonde ni de circulation extra-corporelle.',
+      impact_pratique: 'En pratique : le Nexus ouvre la voie à un traitement endovasculaire total de la crosse aortique approuvé FDA — à intégrer dans la discussion des centres de référence aortique pour les patients à haut risque chirurgical.',
+      date_publication: '2026-03-25'
+    },
+    lecture_json: {
+      texte_long: 'L\'approbation FDA du stent-graft Nexus d\'Endospan constitue un événement majeur pour la chirurgie endovasculaire de la crosse aortique. La crosse reste l\'un des segments les plus difficiles à traiter en TEVAR : les ostia des troncs supra-aortiques imposent soit une chirurgie ouverte avec CEC et hypothermie profonde, soit des hybrides complexes (débranching + TEVAR), soit des fenestrations/branches sur mesure. Le Nexus propose une approche endovasculaire dédiée à la crosse, évitant la CEC. L\'approbation FDA s\'appuie sur l\'étude TRIOMPHE avec 1 an de données dans une population à haut risque chirurgical — les patients qui avaient jusqu\'ici peu d\'alternatives. Ce dispositif devrait être discuté dans les centres aortiques de référence dès maintenant pour les cas sélectionnés.',
+      points_cles: ['FDA approval — Nexus endovascular aortic arch system', 'Indication : maladie de la crosse aortique incluant les dissections chroniques', 'Etude TRIOMPHE IDE — 1 an de suivi support de l\'approbation', 'Alternative à la chirurgie à cœur ouvert pour patients à haut risque'],
+      references: ['FDA Approval Nexus, Endospan', 'TRIOMPHE IDE Study, 1-year', 'Vascular News, Mars 2026']
+    }
+  },
+  {
+    id: '2327a88b-2367-442a-a6db-c4fb81aff4ac',
+    title_raw: 'PowerWire 14 RF : premier guide 0,014" pour occlusions périphériques complètes',
+    official_url: 'https://vascularnews.com/baylis-medical-technologies-launches-powerwire-14-rf-guidewire/',
+    official_date: '2026-04-07',
+    score_density: 7,
+    source: 'vascular_news',
+    source_type: 'innovation',
+    categorie: 'therapeutique',
+    tri_json: {
+      titre_court: 'PowerWire 14 RF : premier guide 0,014" pour occlusions périphériques complètes',
+      resume: 'Baylis Medical Technologies annonce la clearance FDA 510(k) et le lancement commercial du PowerWire 14 RF, un guide de radiofréquence de 0,014 pouce conçu pour franchir les occlusions complètes (natives ou stentées) dans les vaisseaux périphériques ≥3 mm. Il s\'agit du premier guide RF en calibre 0,014" disponible sur le marché US. Le dispositif facilite le croisage des CTO dans les axes fémoraux, poplités et tibiaux.',
+      impact_pratique: 'En pratique : nouvel outil pour les CTO périphériques — le calibre 0,014" ouvre l\'accès à des cathéters plus petits et réduit le traumatisme pariétal lors du franchissement.',
+      date_publication: '2026-01-10'
+    },
+    lecture_json: {
+      texte_long: 'Le PowerWire 14 de Baylis Medical comble un manque dans l\'arsenal des guides RF endovasculaires périphériques : disponibles jusqu\'ici en calibre 0,035" et 0,018", les guides RF peuvent désormais être utilisés en 0,014" — le calibre standard des interventions coronaires et des systèmes BTK modernes. Cette réduction de calibre est cliniquement pertinente car elle permet d\'utiliser des cathéters support plus fins, de travailler dans des artères tibiales ou péronières de faible diamètre, et de limiter le traumatisme pariétal lors du franchissement de CTO. La clearance FDA est obtenue, le lancement commercial US est annoncé. L\'arrivée en Europe dépendra du marquage CE.',
+      points_cles: ['FDA clearance 510(k) obtenu — commercialisé aux USA', 'Premier guide RF 0,014" pour CTO périphérique', 'Compatible vaisseaux ≥3 mm (iliaque à tibial)', 'Permet franchissement CTO natifs ou stentés'],
+      references: ['Baylis Medical Technologies press release', 'Vascular News, Janvier 2026']
+    }
+  },
+  {
+    id: '9ff89671-a436-4527-b6d0-9ce8005863e1',
+    title_raw: 'Surveillance écho-Doppler post-revascularisation infrainguinale : revue systématique',
+    official_url: 'https://pubmed.ncbi.nlm.nih.gov/41935733/',
+    official_date: '2026-04-02',
+    score_density: 7,
+    source: 'pubmed_ejves',
+    source_type: 'innovation',
+    categorie: 'clinique',
+    tri_json: {
+      titre_court: 'Surveillance écho-Doppler post-revascularisation infrainguinale : revue systématique',
+      resume: 'Revue systématique (MEDLINE, Embase, Cochrane) évaluant l\'efficacité clinique de la surveillance par écho-Doppler après revascularisation infrainguinale chirurgicale ou endovasculaire pour claudication ou CLTI. Questionne l\'utilité réelle du protocole de surveillance systématique — souvent appliqué par tradition plus que par évidence. Inclut une synthèse narrative des résultats.',
+      impact_pratique: 'En pratique : les données de cette revue permettent de rationaliser le protocole de surveillance post-revascularisation — identifier qui bénéficie vraiment d\'une surveillance écho-Doppler intensive.',
+      date_publication: '2025-09-01'
+    },
+    lecture_json: {
+      texte_long: 'La surveillance par écho-Doppler après revascularisation infrainguinale est une pratique quasi-universelle, mais son niveau de preuve est faible. Pour certains patients (bypass prothétique, lésions tibiales endovasculaires), la surveillance permet de détecter des sténoses de greffon ou des resténoses avant occlusion. Pour d\'autres (bypass veineux de bonne qualité, angioplasties simples), son apport incrémental est discutable. Cette revue systématique est la première à synthétiser l\'ensemble de la littérature sur cette question. Elle donne les éléments pour construire un protocole de surveillance evidence-based : tous les patients ne méritent pas 12 échos de surveillance en 2 ans.',
+      points_cles: ['Revue systématique PRISMA — 3 bases de données', 'Surveillance DUS après revascularisation IC et CLTI', 'Chirurgie ouverte ET endovasculaire — analyse séparée', 'Question clinique pratique : à qui et combien de fois surveiller ?'],
+      references: ['DUS Surveillance after Infrainguinal Revascularisation, EJVES 2025/2026']
+    }
+  },
+  {
+    id: '05f420fd-c031-4014-a3f9-ddba3b8cad15',
+    title_raw: 'Revascularisation directe vs indirecte dans la CLTI infrapoplitée : l\'importance des collatérales',
+    official_url: 'https://pubmed.ncbi.nlm.nih.gov/41935826/',
+    official_date: '2026-04-02',
+    score_density: 7,
+    source: 'pubmed_ann_vasc_surg',
+    source_type: 'innovation',
+    categorie: 'clinique',
+    tri_json: {
+      titre_court: 'Revascularisation directe vs indirecte dans la CLTI infrapoplitée : l\'importance des collatérales',
+      resume: 'Comparaison des résultats cliniques de la revascularisation directe (DR) vs indirecte avec collatérales (IR-tc) vs indirecte sans collatérales (IR-wc) en angioplastie percutanée infrapoplitée pour CLTI. L\'existence de collatérales conditionne le résultat de la revascularisation indirecte. Cette classification opératoire aide à décider quelle stratégie endovasculaire adopter selon l\'imagerie préopératoire.',
+      impact_pratique: 'En pratique : évaluer systématiquement les collatérales à l\'angio-CT pré-opératoire pour guider le choix entre revascularisation directe et indirecte en CLTI infrapoplitée.',
+      date_publication: '2025-09-01'
+    },
+    lecture_json: {
+      texte_long: 'En pathologie tibiale CLTI, la revascularisation directe de l\'axe angiosomal du pied est l\'idéal mais n\'est pas toujours réalisable techniquement. Souvent, la revascularisation indirecte (via collatérales) est la seule option. Cette étude démontre que l\'existence de collatérales bien développées est le facteur clé qui distingue une revascularisation indirecte susceptible de sauver le membre d\'une revascularisation condamnée à l\'échec. La classification en 3 groupes (DR, IR avec collatérales, IR sans collatérales) est directement applicable à la planification à partir de l\'angio-CT préopératoire. Pour les patients IR sans collatérales, d\'autres options (artérialisation veineuse, amputation d\'emblée) doivent être discutées.',
+      points_cles: ['Première classification DR/IR-tc/IR-wc pour CLTI infrapoplité', 'Les collatérales conditionnent le résultat de la revascularisation indirecte', 'Angioplastie percutanée — territory tibial et pédieux', 'Aide à la planification opératoire pré-intervention'],
+      references: ['Direct vs Indirect Revascularization CLTI, SAVEPEDAL-type analysis, Ann Vasc Surg 2025/2026']
+    }
+  },
+  {
+    id: 'ecf48354-0ebf-452b-96f2-cd0b1c3f7b71',
+    title_raw: 'SirPAD : le ballon au sirolimus réduit les MALE à 1 an versus ballon nu dans l\'AOMI infrainguinale',
+    official_url: 'https://vascularnews.com/sirpad-primary-results-confirm-safety-and-efficacy-of-sirolimus-coated-balloon-in-pad/',
+    official_date: '2026-04-01',
+    score_density: 9,
+    source: 'vascular_news',
+    source_type: 'innovation',
+    categorie: 'therapeutique',
+    tri_json: {
+      titre_court: 'SirPAD : le ballon au sirolimus réduit les MALE à 1 an versus ballon nu dans l\'AOMI infrainguinale',
+      resume: 'Le RCT SirPAD — premier essai randomisé d\'un ballon coaté au sirolimus en pathologie artérielle périphérique infrainguinale — démontre une incidence significativement inférieure d\'événements adverses majeurs aux membres (MALE) à 1 an avec le ballon sirolimus vs ballon nu. Présenté par Stefano Barco (Zurich) et co-PI, il s\'agit du premier RCT sirolimus périphérique, avec des résultats congruents avec les données coronaires qui ont établi le sirolimus comme supérieur au paclitaxel. Un changement de paradigme potentiel pour les artères infrainguinales.',
+      impact_pratique: 'En pratique : le ballon sirolimus émerge comme alternative solide au paclitaxel pour l\'AOMI fémoro-poplitée — SirPAD fournit la première preuve RCT, attendue par les guidelines pour révision d\'ici 1-2 ans.',
+      date_publication: '2026-03-20'
+    },
+    lecture_json: {
+      texte_long: 'SirPAD est un essai charnière. Depuis la controverse paclitaxel de 2018-2019 (signal de mortalité à long terme), le domaine des ballons actifs en pathologie artérielle périphérique cherche des alternatives. Le sirolimus (limus-based) est déjà dominant en cardiologie interventionnelle pour les mêmes raisons (meilleur profil de sécurité, efficacité au moins équivalente). SirPAD confirme que le sirolimus est actif dans le territoire périphérique infrainguinal avec un endpoint clinique dur (MALE) — pas uniquement des données de perméabilité angiographique. Le principal investigateur Barco souligne qu\'il s\'agit du premier RCT dans cette catégorie. Les implications pour les prochaines guidelines ESVS (révision prévue 2026-2027) sont directes : SirPAD fournit exactement le niveau de preuve nécessaire pour modifier les recommandations sur les DCB en fémoro-poplité.',
+      points_cles: ['1er RCT ballon sirolimus en PAD infrainguinale — niveau de preuve inédit', 'Moins de MALE à 1 an vs ballon nu — endpoint clinique dur', 'Sirolimus coronaire déjà supérieur au paclitaxel — cohérence des données', 'Potentiel paradigm shift : sirolimus pourrait supplanter paclitaxel en périphérique'],
+      references: ['SirPAD RCT Trial — Barco et al.', 'Vascular News, Mars 2026']
+    }
+  },
+  {
+    id: '8f15f9a5-f362-414e-827f-eab448409a29',
+    title_raw: 'Préconditionnement ischémique à distance dans l\'ischémie aiguë des membres : RCT triple-aveugle',
+    official_url: 'https://pubmed.ncbi.nlm.nih.gov/41932602/',
+    official_date: '2026-04-01',
+    score_density: 7,
+    source: 'pubmed_ann_vasc_surg',
+    source_type: 'innovation',
+    categorie: 'clinique',
+    tri_json: {
+      titre_court: 'Préconditionnement ischémique à distance dans l\'ischémie aiguë des membres : RCT triple-aveugle',
+      resume: 'RCT triple-aveugle (n=28) évaluant le préconditionnement ischémique à distance (RIPC) avant revascularisation chirurgicale pour ischémie aiguë des membres (Rutherford 1-2b). Le RIPC — cycles d\'ischémie/reperfusion sur un bras — a montré un bénéfice en ischémie myocardique. Cette étude teste son effet sur le syndrome d\'ischémie-reperfusion après revascularisation pour ischémie aiguë des membres.',
+      impact_pratique: 'En pratique : signal précoce sur une manœuvre simple (brassard pneumatique) potentiellement protectrice avant revascularisation d\'ischémie aiguë — à confirmer sur effectifs plus larges avant adoption.',
+      date_publication: '2025-09-01'
+    },
+    lecture_json: {
+      texte_long: 'Le RIPC consiste en 3-4 cycles d\'ischémie/reperfusion du bras (gonflage brassard à 200 mmHg pendant 5 minutes) avant la revascularisation. Cette manœuvre simple, étudiée en cardiologie (réduction de la zone d\'infarctus) et en chirurgie aortique, n\'avait jamais été évaluée spécifiquement dans l\'ischémie aiguë des membres. Ce RCT triple-aveugle fournit le premier signal dans cette indication. Avec n=28, la puissance est limitée, mais le design RCT et l\'aspect triple-aveugle garantissent la qualité méthodologique. Si confirmé sur plus grande échelle, le RIPC représenterait une avancée à coût quasi-nul pour réduire les complications d\'ischémie-reperfusion (insuffisance rénale, syndrome de loge, lésions cardiaques).',
+      points_cles: ['RCT triple-aveugle — premier essai RIPC en ischémie aiguë des membres', 'n=28 — signal préliminaire, nécessite confirmation', 'Manœuvre simple, à faible coût, déjà validée en cardiologie', 'Rutherford 1-2b — ischémie aiguë viable, revascularisation chirurgicale'],
+      references: ['RIPC in Acute Lower Extremity Ischemia, triple-blind RCT, n=28, Ann Vasc Surg 2025/2026']
+    }
+  },
+  {
+    id: 'f0a8ac99-e488-4e0e-9a55-d36fe3a0b44f',
+    title_raw: 'Sarcomes de cuisse envahissant l\'axe fémoral : guide de décision onco-vasculaire',
+    official_url: 'https://pubmed.ncbi.nlm.nih.gov/41932600/',
+    official_date: '2026-04-01',
+    score_density: 7,
+    source: 'pubmed_ann_vasc_surg',
+    source_type: 'innovation',
+    categorie: 'therapeutique',
+    tri_json: {
+      titre_court: 'Sarcomes de cuisse envahissant l\'axe fémoral : guide de décision onco-vasculaire',
+      resume: 'Revue narrative structurée sur la résection/reconstruction de l\'axe vasculaire fémoral dans la chirurgie d\'épargne des sarcomes de cuisse. Trois domaines de décision: planification artérielle (bifurcation fémorale commune/profonde), reconstruction veineuse sélective vs ligature, durabilité du greffon et facteurs adjuvants.',
+      impact_pratique: 'Cadre de décision structuré pour la reconstruction vasculaire fémorale dans les sarcomes de cuisse : guide pour les équipes pluridisciplinaires en onco-vasculaire afin de maximiser l\'épargne de membre tout en assurant les marges oncologiques.',
+      date_publication: '2026-04-15'
+    },
+    lecture_json: {
+      texte_long: 'Les sarcomes de cuisse envahissant l\'axe vasculaire fémoral ont longtemps conduit à l\'amputation primaire. La chirurgie d\'épargne avec résection-reconstruction vasculaire planifiée permet désormais de préserver le membre dans des cas sélectionnés. Cette revue narrative structurée guide les équipes sur les trois domaines décisionnels clés: reconstruction artérielle fémorale, reconstruction veineuse sélective vs ligature, et choix du conduit en contexte oncologique.',
+      points_cles: ['Revue narrative structurée sur l\'onco-vasculaire fémoral dans les sarcomes de cuisse', '3 domaines décisionnels: artère fémorale, veine fémorale, choix du greffon', 'Chirurgie d\'épargne du membre vs amputation historique', 'Guide décisionnel pour équipes pluridisciplinaires en oncologie des sarcomes'],
+      references: ['structured narrative review', 'Ann Vasc Surg 2026']
+    }
+  },
+  {
+    id: 'e96e5582-ddc8-4037-9be9-50f997794dee',
+    title_raw: 'Compression médicale : prévention thrombose veineuse',
+    official_url: 'https://www.sofmer.com/download/sofmer/fiche_bon_usage_comp_med_prevention_thrombose_veineuse.pdf',
+    official_date: '2026-04-12',
+    score_density: 6,
+    source: 'sofmer',
     source_type: 'recommandation',
     categorie: 'clinique',
     tri_json: {
-      titre_court: 'HAS post-EVAR : scanner tous les 2 ans (non 3) pour les patients stables — substitution CEUS possible',
-      resume: "La HAS actualise son référentiel de surveillance après traitement endovasculaire d'un anévrisme de l'aorte abdominale. Pour les patients sans endofuite à 5 ans (classe A), la fréquence de surveillance passe de 3 à 2 imageries annuelles, avec possibilité de substitution par échographie de contraste (CEUS) après validation par le chirurgien référent. Les endofuites de type I et III restent sous protocole scanner strict.",
-      impact_pratique: "Adapter vos protocoles post-EVAR selon la nouvelle stratification HAS. La substitution scanner → CEUS est applicable dès le bilan à 5 ans pour les endoprothèses stables — à documenter dans le dossier chirurgical.",
-      date_publication: '2026-04-09'
+      titre_court: 'Compression médicale : prévention thrombose veineuse',
+      resume: 'La SOFMER publie une fiche de bon usage sur la compression médicale en prévention de la thrombose veineuse. Cette recommandation de médecine physique et réadaptation clarifie les indications, les niveaux de compression et les durées de traitement selon le contexte clinique (post-chirurgicaux, immobilisation, pathologies veineuses chroniques). L\'objectif est d\'harmoniser les pratiques et d\'optimiser l\'efficacité préventive.',
+      impact_pratique: 'Prescrire et adapter la compression médicale selon les seuils et durées recommandés par la fiche SOFMER pour réduire le risque thromboembolique post-opératoire ou iatrogène.',
+      date_publication: '2026-04-12'
     },
     lecture_json: {
-      points_cles: [
-        'Classe A (pas d\'endofuite à 5 ans) : 2 imageries/an au lieu de 3 — scanner ou CEUS',
-        'CEUS validé comme alternative au scanner pour le suivi de classe A après avis chirurgical',
-        'Endofuites type I/III : protocole scanner annuel inchangé — suivi chirurgical rapproché'
-      ],
-      texte_long: "La HAS s'appuie sur les données des registres EVAR DREAM et EUROSTAR montrant que le taux de complications tardives chez les patients stables à 5 ans est inférieur à 2 %/an. La réduction de la fréquence d'imagerie vise à diminuer l'exposition aux produits de contraste iodés et la charge organisationnelle pour les patients. La CEUS est validée par 4 études prospectives comparatives.",
-      references: ['Référentiel HAS surveillance post-EVAR — avril 2026', 'EVAR DREAM registry 2025', 'EUROSTAR long-term outcomes 2024']
+      texte_long: 'La Société Française de Médecine Physique et de Réadaptation (SOFMER) émet une fiche de bon usage détaillée sur l\'utilisation de la compression médicale (bas, manchons, bandes) pour la prévention primaire de la thromboembolie veineuse. Cette recommandation s\'adresse aux chirurgiens, anesthésistes, médecins de rééducation et équipes infirmières. Elle précise les indications selon le type d\'intervention (orthopédie, vasculaire, générale), les classes de compression recommandées (classe I, II, III), la durée de port optimal et les critères de surveillance. L\'enjeu est de réduire les phlébites et embolies pulmonaires en post-opératoire tout en assurant le confort du patient et la bonne observance.',
+      points_cles: ['Recommandation SOFMER sur compression médicale en prévention thrombose veineuse', 'Population cible : patients post-chirurgicaux, immobilisés, à risque veineux chronique', 'Clarification des indications, niveaux de compression et durées de traitement', 'Harmonisation des pratiques en médecine physique et spécialités chirurgicales', 'Fiche pratique à diffuser auprès des équipes soignantes (médecins, infirmiers)'],
+      references: ['SOFMER — Société Française de Médecine Physique et de Réadaptation', 'Date de parution : 12 avril 2026']
     }
   },
   {
-    id: 'demo-5',
-    title_raw: 'Lancet — BEST-CLI 2 trial : pontage fémoro-poplité supérieur au ballon actif (DCB) dans la CLTI sur lésions longues TASC C/D',
-    official_url: 'https://www.thelancet.com',
-    official_date: '2026-04-11',
-    score_density: 9,
-    source: 'pubmed_lancet',
-    source_type: 'innovation',
-    categorie: 'therapeutique',
+    id: 'ec053acf-3ea4-4f47-82b4-94cfd5fcea00',
+    title_raw: 'SVS 2026 : nouvelles guidelines trauma aortique thoracique fermé (BTAI) — mise à jour complète',
+    official_url: 'https://vascularspecialistonline.com/new-blunt-thoracic-aortic-injury-guidelines-reflect-evolution-in-evidence-and-care/',
+    official_date: '2026-04-09',
+    score_density: 8,
+    source: 'vascular_specialist',
+    source_type: 'recommandation',
+    categorie: 'clinique',
     tri_json: {
-      titre_court: 'BEST-CLI 2 (Lancet) : pontage > DCB dans la CLTI TASC C/D — survie sans amputation +10,6 pts à 3 ans',
-      resume: "Cet essai randomisé multicentrique (n = 1 830, suivi médian 3 ans) compare le pontage fémoro-poplité au ballon à élution de paclitaxel (DCB) dans l'ischémie critique des membres inférieurs avec lésions longues (TASC II C/D). Le pontage démontre une supériorité nette sur la survie sans amputation majeure à 3 ans (72,4 % vs 61,8 % ; HR 0,68 ; IC95 % 0,54–0,85 ; p = 0,003), au prix d'une morbidité péri-opératoire plus élevée (12 % vs 4 %).",
-      impact_pratique: "Dans la CLTI avec lésions longues TASC C/D et capital veineux disponible, privilégier le pontage chirurgical si le risque opératoire le permet. L'option DCB reste valide en première intention chez les patients fragiles ou sans veine saphène utilisable.",
-      date_publication: '2026-04-11'
+      titre_court: 'SVS 2026 : nouvelles guidelines trauma aortique thoracique fermé (BTAI) — mise à jour complète',
+      resume: 'La Society for Vascular Surgery (SVS) publie ses nouvelles clinical practice guidelines sur la prise en charge du traumatisme aortique thoracique fermé (blunt thoracic aortic injury, BTAI), supersédant les recommandations 2011. Après plus d\'une décennie d\'évolution de l\'évidence — consolidation du TEVAR comme traitement de référence, définition des grades lésionnels et timing d\'intervention — ce document est le référentiel actualisé pour la prise en charge en urgence.',
+      impact_pratique: 'En pratique : adopter les nouvelles SVS guidelines 2026 BTAI comme référentiel — notamment les nouvelles définitions de grades lésionnels et les recommandations de timing TEVAR selon le grade.',
+      date_publication: '2026-02-01'
     },
     lecture_json: {
-      points_cles: [
-        'Survie sans amputation majeure à 3 ans : 72,4 % (pontage) vs 61,8 % (DCB) — HR 0,68, p = 0,003',
-        'Morbidité péri-opératoire : 12 % (pontage) vs 4 % (DCB) — délai de récupération plus long',
-        'Sous-groupe capital veineux disponible : bénéfice pontage amplifié (HR 0,58) — creuser le bilan veineux pré-op'
-      ],
-      texte_long: "BEST-CLI 2 étend les résultats de BEST-CLI 1 aux lésions TASC C et D (occlusives longues, multiétagées). Le bénéfice du pontage est plus marqué chez les patients avec une veine grande saphène de bonne qualité (diamètre ≥ 3 mm). L'analyse en sous-groupe montre que les patients à risque opératoire intermédiaire (score ASA ≤ 3) bénéficient autant du pontage que les patients à faible risque.",
-      references: ['BEST-CLI 2 — The Lancet, avril 2026', 'BEST-CLI 1 — NEJM 2022', 'ESVS CLTI guidelines 2024']
-    }
-  },
-  {
-    id: 'demo-6',
-    title_raw: 'EMA — Autorisation CE endoprothèse fenêtrée ZFEN III (Cook Medical) pour anévrismes aorto-iliaques juxtarénaux complexes',
-    official_url: 'https://www.ema.europa.eu',
-    official_date: '2026-04-08',
-    score_density: 7,
-    source: 'ansm_decisions',
-    source_type: 'innovation',
-    categorie: 'therapeutique',
-    tri_json: {
-      titre_court: 'EMA ZFEN III (Cook) : endoprothèse fenêtrée 3e génération — accès précoce France T3 2026',
-      resume: "L'EMA délivre un marquage CE à l'endoprothèse fenêtrée de 3e génération ZFEN III (Cook Medical), intégrant un système de déploiement robotisé et des fenêtres préchargées pour les artères rénales et mésentériques. Les données du registre EVAS (280 cas, 18 mois) montrent une réduction du temps opératoire de 35 % et un taux de succès technique de 97,5 % dans les anévrismes juxtarénaux.",
-      impact_pratique: "Anticiper l'accès au Dispositif d'Accès Précoce (DAP) pour vos patients à anatomie aortique complexe (juxtarénal, pararénal). Contacter le référent Cook Medical pour les modalités d'inclusion dans le registre post-commercial obligatoire.",
-      date_publication: '2026-04-08'
-    },
-    lecture_json: {
-      points_cles: [
-        'Marquage CE obtenu — disponibilité en France via DAP à partir du 3e trimestre 2026',
-        'Réduction du temps opératoire de 35 % vs ZFEN II — système de déploiement robotisé',
-        'Registre post-commercial obligatoire (EVAS-III) — inclusion via Cook Medical référent régional'
-      ],
-      texte_long: "Le ZFEN III améliore le ZFEN II par un système de fenêtres préchargées permettant de réduire la manipulation intra-opératoire et la durée de scopie. Les 280 patients du registre EVAS montrent un taux de perméabilité des artères rénales de 98,2 % à 18 mois. La disponibilité en France est conditionnée à l'obtention du DAP par la HAS, attendue pour le 3e trimestre 2026.",
-      references: ['Décision EMA avril 2026 — marquage CE ZFEN III', 'Registre EVAS — EJVES 2026', 'Critères DAP HAS — dispositifs endovasculaires aortiques complexes']
+      texte_long: 'Les guidelines SVS 2026 sur le BTAI arrivent après 15 ans d\'évolution majeure de la prise en charge : le TEVAR a largement remplacé la chirurgie ouverte comme traitement de référence, les systèmes de classification des lésions aortiques traumatiques (grade I-IV selon l\'imagerie scanner) se sont standardisés, et les données sur le timing d\'intervention (immédiat, différé, voire traitement médical seul pour les grades 1) se sont accumulées. Ce document de référence SVS actualise toutes ces recommandations pour les chirurgiens vasculaires prenant en charge des traumatisés en urgence. L\'aspect le plus actionnable : les recommandations de timing TEVAR selon le grade lésionnel et l\'hémodynamique du patient.',
+      points_cles: ['SVS 2026 BTAI guidelines — supersède les recommandations 2011', 'TEVAR consolidé comme traitement de référence', 'Nouvelle classification des grades lésionnels BTAI', 'Timing TEVAR selon le grade et l\'instabilité hémodynamique', 'Applicable immédiatement en traumatologie vasculaire'],
+      references: ['SVS 2026 Clinical Practice Guidelines on BTAI, Vascular Specialist']
     }
   }
 ];
@@ -2162,7 +2287,7 @@ function loadDemoData() {
   document.getElementById('spec-label').textContent = userSpecName;
   allSpecialties = DEMO_SPECIALTIES;
   specTypeCounts = {
-    'chirurgie-vasculaire':      { total:6, reglementaire:2, recommandation:2, innovation:2 },
+    'chirurgie-vasculaire':      { total:13, reglementaire:0, recommandation:2, innovation:11 },
     'anesthesiologie-reanimation':{ total:3, reglementaire:1, recommandation:2, innovation:0 },
     'cardiologie':               { total:5, reglementaire:1, recommandation:2, innovation:2 },
     'medecine-generale':         { total:9, reglementaire:4, recommandation:4, innovation:1 },
