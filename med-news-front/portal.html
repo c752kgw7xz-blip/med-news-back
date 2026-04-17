@@ -1064,13 +1064,8 @@ function bnSelect(id) {
 
 // ── Fenêtre portail : mois calendaire courant ────────────────
 function portalFromDate() {
-  // Fenêtre : 1er du mois PRÉCÉDENT (aligné sur le défaut API)
-  // → articles du mois précédent + mois en cours tous visibles sans aller aux archives
   const now = new Date();
-  const prev = now.getMonth() === 0
-    ? new Date(now.getFullYear() - 1, 11, 1)   // jan → décembre N-1
-    : new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}-01`;
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 }
 
 function portalUntilDate() {
@@ -1080,11 +1075,8 @@ function portalUntilDate() {
 }
 
 function portalHeaderLabel() {
-  // Affiche "Mars – Avril 2026" pour refléter la fenêtre de 2 mois
   const now = new Date();
-  const prevMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
-  const prevYear  = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
-  return `${MONTHS[prevMonth]} – ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  return `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 }
 
 // ── Auth helpers ──────────────────────────────────────────────
