@@ -459,25 +459,27 @@ def job_collect_innovation() -> None:
 # Collecte innovation par spécialité (cœur de la Routine)
 # ---------------------------------------------------------------------------
 
-def collect_innovation_by_specialty(specialty_slug: str, days: int = 10) -> dict[str, Any]:
+def collect_by_specialty(specialty_slug: str, days: int = 2) -> dict[str, Any]:
     """
-    Collecte uniquement les sources innovation dont le specialty_hint correspond
-    à la spécialité demandée (ou "tous" — sources transversales incluses).
+    Collecte COMPLÈTE pour une spécialité — un seul déclencheur, tout inclus :
 
-    Flux :
-      1. PubMed  → filtré par specialty_hint
-      2. RSS presse médicale → filtré par specialty_hint
-      3. RSS journaux généraux → sources "tous" seulement (NEJM, JAMA, BMJ…)
-      4. Analyse LLM sur tous les candidats NEW résultants
+      1. Innovation filtrée par spécialité
+         - PubMed (sources dont specialty_hint == slug OU "tous")
+         - RSS presse médicale spécialisée (idem)
+         - RSS journaux généraux (NEJM, JAMA, BMJ… — "tous" uniquement)
+      2. Réglementation globale (JORF, KALI, LEGI, ANSM, BO Social)
+         → la déduplication empêche les doublons si plusieurs spés sont lancées le même jour
+      3. Recommandations globales (HAS, sociétés savantes, web scraping EU)
+         → idem
+      4. Analyse LLM sur tous les candidats NEW
+         → utilise le prompt + addendum dédié à la spécialité (SOURCE_SPECIALTY_HINTS +
+            _SPECIALTY_ADDENDA) pour un scoring spé-spécifique
 
-    Le LLM utilise le prompt dédié à la spécialité grâce à SOURCE_SPECIALTY_HINTS
-    et _SPECIALTY_ADDENDA — le scoring est donc bien spé-spécifique.
+    L'opérateur n'a qu'un bouton par spécialité — la séparation interne
+    réglementation / recommandations / innovation est transparente.
     """
     logger.info("=" * 60)
-    logger.info(
-        "COLLECTE INNOVATION [%s] démarrée — %s",
-        specialty_slug, date.today().isoformat(),
-    )
+    logger.info("COLLECTE [%s] démarrée — %s", specialty_slug, date.today().isoformat())
     logger.info("=" * 60)
 
     def _matches(hint: str) -> bool:
@@ -485,7 +487,7 @@ def collect_innovation_by_specialty(specialty_slug: str, days: int = 10) -> dict
 
     report: dict[str, Any] = {"specialty": specialty_slug, "days": days}
 
-    # ── 1. PubMed ──────────────────────────────────────────────────
+    # ── 1. Innovation — PubMed (filtré par spé) ─────────────────────
     try:
         from app.pubmed_collector import PUBMED_SOURCES, collect_pubmed_source
         pubmed_results: dict = {}
@@ -502,7 +504,7 @@ def collect_innovation_by_specialty(specialty_slug: str, days: int = 10) -> dict
         logger.error("[%s] PubMed échoué : %s", specialty_slug, e)
         report["pubmed"] = {"error": str(e)}
 
-    # ── 2. RSS presse médicale spécialisée ─────────────────────────
+    # ── 2. Innovation — RSS presse médicale (filtré par spé) ────────
     try:
         from app.rss_collector import collect_feed
         from app.sources_presse_medicale import ALL_PRESSE_MEDICALE_FEEDS
@@ -520,7 +522,7 @@ def collect_innovation_by_specialty(specialty_slug: str, days: int = 10) -> dict
         logger.error("[%s] RSS presse échoué : %s", specialty_slug, e)
         report["rss_presse"] = {"error": str(e)}
 
-    # ── 3. RSS journaux généraux (NEJM, JAMA, BMJ… — tous) ────────
+    # ── 3. Innovation — RSS journaux généraux (NEJM, JAMA… — "tous") ─
     try:
         from app.rss_collector import collect_feed
         from app.sources_innovation import ALL_INNOVATION_FEEDS
@@ -538,13 +540,29 @@ def collect_innovation_by_specialty(specialty_slug: str, days: int = 10) -> dict
         logger.error("[%s] RSS journaux échoué : %s", specialty_slug, e)
         report["rss_journals"] = {"error": str(e)}
 
-    # ── 4. Analyse LLM ─────────────────────────────────────────────
+    # ── 4. Réglementation globale (JORF, KALI, LEGI, ANSM, BO Social) ─
+    # job_collect_regulation() est idempotent grâce à la déduplication DB :
+    # pas de doublon si plusieurs spés tournent le même jour.
+    try:
+        report["regulation"] = job_collect_regulation()
+    except Exception as e:
+        logger.error("[%s] Réglementation échouée : %s", specialty_slug, e)
+        report["regulation"] = {"error": str(e)}
+
+    # ── 5. Recommandations globales (HAS, sociétés savantes, web EU) ──
+    try:
+        report["recommendations"] = job_collect_recommendations()
+    except Exception as e:
+        logger.error("[%s] Recommandations échouées : %s", specialty_slug, e)
+        report["recommendations"] = {"error": str(e)}
+
+    # ── 6. Analyse LLM (prompt spé-spécifique via SOURCE_SPECIALTY_HINTS)
     try:
         _run_llm_batch()
     except Exception as e:
         logger.error("[%s] Analyse LLM échouée : %s", specialty_slug, e)
 
-    logger.info("COLLECTE INNOVATION [%s] terminée", specialty_slug)
+    logger.info("COLLECTE [%s] terminée", specialty_slug)
     return report
 
 
