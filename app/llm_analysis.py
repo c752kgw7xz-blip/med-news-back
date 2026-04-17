@@ -260,7 +260,7 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "pubmed_ejcts":               "innovation",    # European Journal of Cardio-Thoracic Surgery
     "pubmed_ejcts_guidelines":    "recommandation",# EJCTS — Guidelines EACTS uniquement
     "pubmed_ann_thorac_surg":     "innovation",    # Annals of Thoracic Surgery
-    "pubmed_jama_surgery_card":   "innovation",    # JAMA Surgery — filtré chirurgie cardiaque
+    "pubmed_circulation_card":    "innovation",    # Circulation (AHA) — filtré chirurgie cardiaque
     # ── Presse spécialisée chirurgie cardiaque ────────────────────────────────
     "ctsnet":                     "innovation",    # CTSNet — organe officiel EACTS/STS/AATS
 }

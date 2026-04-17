@@ -29,7 +29,7 @@ Sources configurées (voir PUBMED_SOURCES) :
   pubmed_ejcts             : European Journal of Cardio-Thoracic Surgery
   pubmed_ejcts_guidelines  : EJCTS — Guidelines EACTS uniquement
   pubmed_ann_thorac_surg   : Annals of Thoracic Surgery
-  pubmed_jama_surgery_card : JAMA Surgery — filtré chirurgie cardiaque
+  pubmed_circulation_card  : Circulation (AHA) — filtré chirurgie cardiaque
 """
 
 from __future__ import annotations
@@ -225,28 +225,32 @@ PUBMED_SOURCES: list[dict] = [
         "min_score_hint": 7,
     },
 
-    # ── JAMA Surgery — chirurgie cardiaque (RSS 403 depuis avril 2026) ────────
-    # Double filtre : thématique cardiaque + type de publication.
-    # JAMA Surgery est généraliste — cible coronarien, valvulaire, aortique,
-    # assistance circulatoire. Score_density seuil 7 car sélection déjà faite.
+    # ── Circulation (AHA) — chirurgie cardiaque ──────────────────────────────
+    # Journal de l'American Heart Association — publie en priorité les grands essais
+    # cardiaques : EXCEL (CABG vs PCI left main), PARTNER long-term (TAVI), TEER
+    # tricuspide, RCT LVAD. Pas de RSS Elsevier → fallback PubMed.
+    # Double filtre thématique (cardiac surgery + valvulaire + coronaire) + PT.
+    # Seuil min_score 7 : sélection déjà très stricte par le filtre.
     {
-        "source": "pubmed_jama_surgery_card",
+        "source": "pubmed_circulation_card",
         "journal_term": (
-            '"JAMA Surg"[Journal] AND ('
+            '"Circulation"[Journal] AND ('
             '"cardiac surgery"[Title/Abstract] OR '
             '"coronary artery bypass"[Title/Abstract] OR '
             '"CABG"[Title/Abstract] OR '
             '"aortic valve"[Title/Abstract] OR '
             '"mitral valve"[Title/Abstract] OR '
+            '"tricuspid valve"[Title/Abstract] OR '
             '"TAVI"[Title/Abstract] OR '
             '"TAVR"[Title/Abstract] OR '
             '"heart valve"[Title/Abstract] OR '
-            '"aortic root"[Title/Abstract] OR '
-            '"ventricular assist"[Title/Abstract] OR '
-            '"heart transplant"[Title/Abstract]'
+            '"left main revascularization"[Title/Abstract] OR '
+            '"ventricular assist device"[Title/Abstract] OR '
+            '"heart transplantation"[Title/Abstract] OR '
+            '"aortic dissection"[Title/Abstract]'
             f') AND {_PT_FILTER}'
         ),
-        "label": "JAMA Surgery — cardiaque, RCTs & méta-analyses",
+        "label": "Circulation (AHA) — cardiaque, RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-cardiaque",
         "min_score_hint": 7,
