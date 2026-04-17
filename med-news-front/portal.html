@@ -858,6 +858,7 @@
 
 <script>
 const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
+let _demoCache = null; // articles dynamiques fetchés, fallback sur DEMO_ARTICLES
 const API = window.location.origin;
 let currentPage = 1;
 const perPage = 20;
@@ -1829,7 +1830,7 @@ async function selectExploreSpec(slug, el) {
   showSourcePills();
   if (DEMO_MODE) {
     // En démo, on affiche tous les articles (pas de filtrage par spé côté client)
-    allLoadedArticles = [...DEMO_ARTICLES];
+    allLoadedArticles = [...(_demoCache || DEMO_ARTICLES)];
     totalArticles = allLoadedArticles.length;
     renderGroupedArticles();
     updateRubrique();
@@ -1857,8 +1858,8 @@ async function resetAndLoad() {
   document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
 
   if (DEMO_MODE) {
-    allLoadedArticles = [...DEMO_ARTICLES];
-    totalArticles = DEMO_ARTICLES.length;
+    allLoadedArticles = [...(_demoCache || DEMO_ARTICLES)];
+    totalArticles = allLoadedArticles.length;
     document.getElementById('articles-container').innerHTML = '';
     renderGroupedArticles();
     updateRubrique();
@@ -2303,8 +2304,7 @@ async function loadDemoData() {
       const artData = await artRes.json();
       const cntData = await cntRes.json();
       if (artData.articles && artData.articles.length > 0) {
-        allLoadedArticles = artData.articles;
-        totalArticles = artData.articles.length;
+        _demoCache = artData.articles;
         specTypeCounts['chirurgie-vasculaire'] = {
           total: cntData.total || 0,
           reglementaire: cntData.reglementaire || 0,
@@ -2312,17 +2312,16 @@ async function loadDemoData() {
           innovation: cntData.innovation || 0,
         };
       } else {
-        allLoadedArticles = [...DEMO_ARTICLES];
-        totalArticles = DEMO_ARTICLES.length;
+        _demoCache = [...DEMO_ARTICLES];
       }
     } else {
-      allLoadedArticles = [...DEMO_ARTICLES];
-      totalArticles = DEMO_ARTICLES.length;
+      _demoCache = [...DEMO_ARTICLES];
     }
   } catch (e) {
-    allLoadedArticles = [...DEMO_ARTICLES];
-    totalArticles = DEMO_ARTICLES.length;
+    _demoCache = [...DEMO_ARTICLES];
   }
+  allLoadedArticles = _demoCache;
+  totalArticles = _demoCache.length;
   specCounts = Object.fromEntries(Object.entries(specTypeCounts).map(([k,v]) => [k, v.total]));
   buildSidebar();
   updateCounters();
