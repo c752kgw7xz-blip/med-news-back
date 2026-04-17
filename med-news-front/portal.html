@@ -1020,9 +1020,12 @@ function openFullPage(section) {
       if (sub && sub.dataset.slug) {
         e.stopPropagation();
         selectSpecType(sub.dataset.slug, sub.dataset.stype, sub.dataset.accordId);
-        // Activer "Ma spécialité" dans la nav (on revient à la lecture d'articles)
+        // Si la spé sélectionnée est la spé propre de l'utilisateur → onglet "Ma spécialité"
+        // Sinon → garder "Explorer" actif (l'utilisateur navigue dans une autre spé)
         document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
-        document.getElementById('mnav-specialite')?.classList.add('active');
+        const targetTab = sub.dataset.slug === userSpecSlug ? 'specialite' : 'explorer';
+        document.getElementById('mnav-' + targetTab)?.classList.add('active');
+        _prevNavSection = targetTab;
         setTimeout(() => closeFullPage('explorer'), 100);
       }
     };
