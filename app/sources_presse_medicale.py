@@ -41,6 +41,11 @@ from __future__ import annotations
 # ---------------------------------------------------------------------------
 # Presse spécialisée vasculaire — signal fort, volume modéré
 # ---------------------------------------------------------------------------
+# NOTE ARCHITECTURE :
+# Archives of Cardiovascular Diseases (SFC) est listé en bas de ce fichier
+# dans CARDIAC_JOURNAL_FEEDS — journal académique français avec RSS actif
+# (ScienceDirect, 56 items/mois, vérifié avril 2026).
+# ---------------------------------------------------------------------------
 # Ces deux sources couvrent exclusivement la chirurgie vasculaire et
 # endovasculaire. Le bruit existe (portraits, politique des sociétés savantes,
 # annonces de congrès sans contenu clinique) mais le ratio est bien meilleur
@@ -85,19 +90,22 @@ VASCULAR_PRESS_FEEDS: list[dict] = [
     },
 
     # ── TCTMD (Cardiovascular Research Foundation) ────────────────────────
-    # Presse médicale interventionnelle — cardiologie + vasculaire périphérique.
-    # Pertinence vasculaire : stenting iliaque, CLTI/AOMI, carotide, accès veineux.
-    # NB : couvre aussi la cardiologie interventionnelle (TAVI, coronaire) →
-    # le LLM doit écarter tout ce qui ne concerne pas le chirurgien vasculaire.
-    # Volume : ~60-80 articles/mois. Filtre LLM min_score=8 (bruit cardio élevé).
+    # Presse médicale interventionnelle — DOUBLE SPÉCIALITÉ :
+    #   • Vasculaire périphérique : stenting iliaque, CLTI/AOMI, carotide, accès veineux
+    #   • Cardiologie interventionnelle : TAVI, MitraClip/TEER, structural heart,
+    #     coronaire (PCI, CABG vs PCI), résultats congrès ACC/TCT/EuroPCR/AHA
+    # Source multi-spécialité → specialty_hint absent dans SOURCE_SPECIALTY_HINTS :
+    # le LLM utilise le prompt générique et classe chaque article en
+    # chirurgie-vasculaire OU chirurgie-cardiaque selon le contenu.
+    # Volume : ~60-80 articles/mois. Filtre LLM min_score=8.
     # Couvre les congrès : LINC, CIRSE, TCT, ACC, AHA, PCR — remplace les web scrapers.
     {
         "url": "https://www.tctmd.com/feed",
-        "label": "TCTMD — Cardiovascular & Endovascular News",
+        "label": "TCTMD — Cardiovascular & Endovascular News (vasculaire + cardiac interventional)",
         "source": "tctmd",
         "source_type": "innovation",
         "audience": ["medecins"],
-        "specialty_hint": "chirurgie-vasculaire",
+        "specialty_hint": "tous",  # multi-spécialité — LLM classe via contenu
         "min_score_hint": 8,
     },
 
@@ -173,10 +181,41 @@ FRENCH_MEDICAL_PRESS_FEEDS: list[dict] = [
 ]
 
 # ---------------------------------------------------------------------------
+# Journaux académiques français avec RSS actif — chirurgie cardiaque
+# ---------------------------------------------------------------------------
+# Ces sources sont des journaux scientifiques (pas de la presse médicale au
+# sens strict) mais disposent d'un RSS ScienceDirect fonctionnel, contrairement
+# à la majorité des journaux Elsevier (410 Gone).
+# ---------------------------------------------------------------------------
+
+CARDIAC_JOURNAL_FEEDS: list[dict] = [
+
+    # ── Archives of Cardiovascular Diseases (ACV) — journal officiel SFC ──
+    # Journal officiel de la Société Française de Cardiologie (SFC) et de la
+    # SFCTCV. Couvre cardiologie interventionnelle + chirurgie cardiaque.
+    # Pertinence chirurgie cardiaque : TAVI registres français (FRANCE-TAVI,
+    # FRANCE-2), MitraClip résultats multicentriques FR, bioprothèses valve
+    # aortique/mitrale, congénital adulte, LVAD France, transplantation cardiaque.
+    # Volume RSS : ~56 items/mois (ScienceDirect actif — vérifié avril 2026).
+    # Filtre LLM min_score=7 : contenu mix académique + clinique, bruit imagerie
+    # et biomarqueurs à écarter.
+    {
+        "url": "https://rss.sciencedirect.com/publication/science/18752136",
+        "label": "Archives of Cardiovascular Diseases (ACV) — journal officiel SFC/SFCTCV",
+        "source": "arch_cardiovasc_dis",
+        "source_type": "innovation",
+        "audience": ["medecins"],
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 7,
+    },
+]
+
+# ---------------------------------------------------------------------------
 # Export
 # ---------------------------------------------------------------------------
 
 ALL_PRESSE_MEDICALE_FEEDS: list[dict] = (
     VASCULAR_PRESS_FEEDS
     + FRENCH_MEDICAL_PRESS_FEEDS
+    + CARDIAC_JOURNAL_FEEDS
 )

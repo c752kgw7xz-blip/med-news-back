@@ -261,6 +261,11 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "pubmed_ejcts_guidelines":    "recommandation",# EJCTS — Guidelines EACTS uniquement
     "pubmed_ann_thorac_surg":     "innovation",    # Annals of Thoracic Surgery
     "pubmed_circulation_card":    "innovation",    # Circulation (AHA) — filtré chirurgie cardiaque
+    "pubmed_jacc_card":           "innovation",    # JACC — Journal American College of Cardiology
+    "pubmed_jacc_interv":         "innovation",    # JACC Cardiovascular Interventions — TAVI/structural
+    "pubmed_eur_heart_j":         "innovation",    # European Heart Journal (ESC flagship)
+    # ── Journal français cardiologie/chirurgie cardiaque ─────────────────────
+    "arch_cardiovasc_dis":        "innovation",    # Archives of Cardiovascular Diseases — SFC officiel
     # ── Presse spécialisée chirurgie cardiaque ────────────────────────────────
     "ctsnet":                     "innovation",    # CTSNet — organe officiel EACTS/STS/AATS
 }
@@ -1160,7 +1165,7 @@ SOURCE_HINTS: dict[str, str] = {
 # le prompt générique est utilisé, la spécialité est déterminée par le LLM.
 # ---------------------------------------------------------------------------
 SOURCE_SPECIALTY_HINTS: dict[str, str] = {
-    # Chirurgie vasculaire
+    # ── Chirurgie vasculaire ───────────────────────────────────────────────
     "pubmed_jvs":              "chirurgie-vasculaire",
     "pubmed_ejves":            "chirurgie-vasculaire",
     "pubmed_ejves_guidelines": "chirurgie-vasculaire",
@@ -1169,20 +1174,35 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_jama_surgery":     "chirurgie-vasculaire",  # filtré sur termes vasculaires
     "vascular_specialist":     "chirurgie-vasculaire",
     "vascular_news":           "chirurgie-vasculaire",
-    "tctmd":                   "chirurgie-vasculaire",
     "endovascular_today":      "chirurgie-vasculaire",
     # linc_highlights / evc_highlights désactivés (domaines NXDOMAIN)
     "esvs":                    "chirurgie-vasculaire",
     "sfcv":                    "chirurgie-vasculaire",
     "sfmv":                    "chirurgie-vasculaire",
-    # Cardiologie (à activer quand le prompt cardiologie sera implémenté)
+    # ── TCTMD — multi-spécialité (vasculaire + cardio interventionnel) ─────
+    # Pas de specialty_hint → prompt générique : le LLM classe chaque article
+    # en chirurgie-vasculaire OU chirurgie-cardiaque selon le contenu.
+    # "tctmd": None  ← absent du dict = comportement générique automatique
+    # ── Chirurgie cardiaque ────────────────────────────────────────────────
+    "pubmed_jtcvs":               "chirurgie-cardiaque",
+    "pubmed_ejcts":               "chirurgie-cardiaque",
+    "pubmed_ejcts_guidelines":    "chirurgie-cardiaque",
+    "pubmed_ann_thorac_surg":     "chirurgie-cardiaque",
+    "pubmed_circulation_card":    "chirurgie-cardiaque",
+    "pubmed_jacc_card":           "chirurgie-cardiaque",
+    "pubmed_jacc_interv":         "chirurgie-cardiaque",
+    "pubmed_eur_heart_j":         "chirurgie-cardiaque",
+    "arch_cardiovasc_dis":        "chirurgie-cardiaque",  # RSS ScienceDirect — SFC officiel
+    "eacts":                      "chirurgie-cardiaque",
+    "sfctcv":                     "chirurgie-cardiaque",
+    # ── Cardiologie (à activer quand le prompt cardiologie sera implémenté) ──
     # "jama_cardiology":      "cardiologie",
     # "sfc_recommandations":  "cardiologie",
     # "sfhta":                "cardiologie",
-    # Oncologie
+    # ── Oncologie ──────────────────────────────────────────────────────────
     # "jama_oncology":        "oncologie",
     # "esmo":                 "oncologie",
-    # Pneumologie
+    # ── Pneumologie ────────────────────────────────────────────────────────
     # "splf":                 "pneumologie",
     # "ers":                  "pneumologie",
     # … (ajouter au fur et à mesure des prompts spécialité implémentés)
@@ -1269,8 +1289,96 @@ Mesure conservatoire — surveillance renforcée des patients porteurs."
 concerné et planifier un scanner de contrôle sans attendre le suivi annuel."
 """
 
+_SPECIALTY_ADDENDUM_CARDIAQUE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — CHIRURGIE CARDIAQUE ET CARDIO-THORACIQUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : chirurgien cardiaque (CHU / clinique privée, France / Europe), \
+maîtrisant chirurgie à cœur ouvert sous CEC ET techniques mini-invasives (MICS, \
+robotique, TAVI/TAVR, MitraClip/TEER, structural heart en Heart Team). \
+Référentiels actuels : ESC/EACTS Guidelines valvulaire 2021, ESC Guidelines \
+revascularisation myocardique 2018/2024, EACTS Guidelines chirurgie de l'aorte 2024, \
+ESC/EACTS FA 2020, recommandations SFCTCV / SFC. \
+Essais pivots récents de référence : PARTNER 3, Evolut Low Risk (TAVI risque faible), \
+COAPT, MITRA-FR (MitraClip IM secondaire), CLASP IID/IIF (TEER mitral/tricuspide), \
+TRILUMINATE Pivotal (TEER tricuspide), EXCEL long-term, NOBLE 10 ans \
+(CABG vs PCI tronc commun), MOMENTUM 3 / HeartMate 3 (LVAD), ROOBY (off-pump).
+
+CRITÈRE DE PERTINENCE CARDIAQUE :
+"Ce résultat va-t-il modifier une indication opératoire, le choix d'un dispositif \
+prothétique valvulaire ou de revascularisation, ou la stratégie de prise en charge \
+dans la Heart Team dans les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : résultats confirmatoires sans gain de précision \
+clinique, population non représentative de la pratique FR/EU (cohorte mono-centrique \
+asiatique sans équivalent anatomique, exclusion systématique des > 80 ans qui sont \
+la majorité des TAVI en France), sous-groupe non pré-spécifié sur petits effectifs.
+ATTENTION : en cardiologie interventionnelle (TAVI, MitraClip, coronaire), une étude \
+peut être pertinente à la fois pour le chirurgien cardiaque ET le cardiologue \
+interventionnel — toujours vérifier quel praticien prend la décision finale en Heart Team.
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+RA (rétrécissement aortique) / IM (insuffisance mitrale) / IT (insuffisance tricuspide), \
+SAVR (Surgical Aortic Valve Replacement), TAVI/TAVR (Transcatheter Aortic Valve \
+Implantation/Replacement), SVD (Structural Valve Deterioration — dégénérescence \
+structurelle), EOA (Effective Orifice Area — surface effective d'ouverture), \
+PPM (Prothèse Prothèse-Patient Mismatch), TEER (Transcatheter Edge-to-Edge Repair), \
+CEC (circulation extracorporelle), DCC (défibrillation / cardioversion), \
+CABG (Coronary Artery Bypass Grafting), CEC / off-pump (à cœur battant), \
+VGS (veine grande saphène), ITA (artère thoracique interne) / LIMA / RIMA, \
+Bentall (remplacement aorte ascendante + valvule + réimplantation coronaires), \
+Ross (autogreffe pulmonaire), Maze / Cox-Maze IV (ablation chirurgicale FA), \
+LVAD (Left Ventricular Assist Device), ECMO-VA (extracorporeal membrane oxygenation \
+veino-artérielle), LCOS (Low Cardiac Output Syndrome), MACCE (Major Adverse Cardiac \
+and Cerebrovascular Events), NYHA (classe fonctionnelle I-IV), \
+KCCQ (Kansas City Cardiomyopathy Questionnaire — QdV), STS score / EuroSCORE II, \
+Heart Team (décision interdisciplinaire chirurgien + cardiologue interventionnel).
+
+EXEMPLES DE RÉDACTION (style JTCVS / EJCTS / Arch Cardiovasc Dis — format cible) :
+
+Essai clinique TAVI (innovation) :
+  titre_court : "TAVI vs SAVR risque faible : PARTNER 3 à 5 ans"
+  resume : "PARTNER 3 (N=1 000, risque faible STS <4 %, suivi 5 ans) : taux composite \
+MACCE (décès + AVC + réhospitalisation) : 22,8 % (TAVI) vs 27,2 % (SAVR) — \
+non-infériorité confirmée (p<0,001). SVD radiologique à 5 ans comparable (5,3 % vs 4,9 %). \
+Sous-groupe < 70 ans : tendance à plus de SVD TAVI mais non significatif (effectif limité)."
+  impact_pratique : "À retenir : TAVI confirme sa non-infériorité à 5 ans chez les < 80 ans à \
+risque faible — la discussion Heart Team doit intégrer la durabilité à 20 ans, \
+déterminante pour les sujets < 65 ans (données insuffisantes)."
+
+Guideline update :
+  titre_court : "ESC/EACTS 2024 : TAVI étendu aux < 70 ans en Heart Team"
+  resume : "ESC/EACTS Guidelines valvulaires (mise à jour oct. 2024) : TAVI recommandé \
+(IIaB) pour les patients de 70-75 ans si anatomie favorable et accord Heart Team. \
+SAVR reste recommandation IA pour < 65 ans. Nouvelle recommandation sur la valve \
+bicuspide : TAVI n'est plus contre-indiqué (IIaB si anatomie adaptée et opérateur expert)."
+  impact_pratique : "En pratique : la tranche 70-75 ans entre dans le champ TAVI — \
+la Heart Team doit formaliser la discussion anatomique (MDCT) et documenter le consentement \
+comparatif TAVI/SAVR pour cette tranche d'âge."
+
+Nouveau dispositif / résultats de registre :
+  titre_court : "TRILUMINATE Pivotal : TEER tricuspide CLASP à 1 an"
+  resume : "TRILUMINATE Pivotal (N=350, IT sévère / très sévère symptomatique, \
+non opérable, KCCQ 40±18) : réduction IT ≥1 grade à 1 an : 87 % (TEER) vs 49 % \
+(traitement médical) — p<0,001. Mortalité 1 an : 14,5 % vs 22,6 %. \
+KCCQ +12 points (TEER) vs +0,8 (contrôle)."
+  impact_pratique : "En pratique : TEER tricuspide franchit le seuil de preuve randomisée \
+— à discuter en Heart Team pour les IT sévères symptomatiques non chirurgicaux \
+(STS > 8 % ou contre-indication opératoire)."
+
+Alerte sécurité dispositif :
+  titre_court : "ANSM : signal valve Perceval S lot xxxx — migration"
+  resume : "ANSM (décision 8 fév. 2026) : surveillance renforcée des bioprothèses \
+Perceval S (Corcym, lot xxxx) après 4 cas de migration valvulaire précoce en \
+matériovigilance (délai médian 22 mois). Environ 180 valves implantées en France. \
+Mesure conservatoire — échocardiographie de contrôle recommandée avant 3 ans."
+  impact_pratique : "En pratique : identifier les patients porteurs d'un Perceval S du \
+lot concerné et planifier un ETT de surveillance avant l'échéance habituelle."
+"""
+
 _SPECIALTY_ADDENDA: dict[str, str] = {
     "chirurgie-vasculaire": _SPECIALTY_ADDENDUM_VASCULAIRE,
+    "chirurgie-cardiaque":  _SPECIALTY_ADDENDUM_CARDIAQUE,
     # À implémenter : "cardiologie", "oncologie", "pneumologie", "neurologie", etc.
 }
 

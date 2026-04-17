@@ -30,6 +30,9 @@ Sources configurées (voir PUBMED_SOURCES) :
   pubmed_ejcts_guidelines  : EJCTS — Guidelines EACTS uniquement
   pubmed_ann_thorac_surg   : Annals of Thoracic Surgery
   pubmed_circulation_card  : Circulation (AHA) — filtré chirurgie cardiaque
+  pubmed_jacc_card         : Journal of the American College of Cardiology — filtré cardiac
+  pubmed_jacc_interv       : JACC Cardiovascular Interventions — filtré cardiac (TAVI, structural)
+  pubmed_eur_heart_j       : European Heart Journal — filtré chirurgie cardiaque
 """
 
 from __future__ import annotations
@@ -223,6 +226,97 @@ PUBMED_SOURCES: list[dict] = [
         "source_type": "innovation",
         "specialty_hint": "chirurgie-cardiaque",
         "min_score_hint": 7,
+    },
+
+    # ── Journal of the American College of Cardiology (JACC) ─────────────────
+    # THE journal américain de référence en cardiologie — publie les grandes
+    # guidelines ACC/AHA (valvulaire, revascularisation, congénital adulte),
+    # RCTs TAVI (Evolut, SAPIEN comparaisons), registres multicentriques.
+    # RSS mort (410 Gone) → fallback PubMed. Filtre thématique cardiaque + PT.
+    # Volume modéré (6/trim.) mais qualité très haute — min_score 6.
+    {
+        "source": "pubmed_jacc_card",
+        "journal_term": (
+            '"J Am Coll Cardiol"[Journal] AND ('
+            '"cardiac surgery"[Title/Abstract] OR '
+            '"coronary artery bypass"[Title/Abstract] OR '
+            '"CABG"[Title/Abstract] OR '
+            '"aortic valve"[Title/Abstract] OR '
+            '"mitral valve"[Title/Abstract] OR '
+            '"tricuspid valve"[Title/Abstract] OR '
+            '"TAVI"[Title/Abstract] OR '
+            '"TAVR"[Title/Abstract] OR '
+            '"transcatheter"[Title/Abstract] OR '
+            '"structural heart"[Title/Abstract] OR '
+            '"ventricular assist device"[Title/Abstract] OR '
+            '"heart transplantation"[Title/Abstract] OR '
+            '"aortic dissection"[Title/Abstract]'
+            f') AND {_PT_FILTER}'
+        ),
+        "label": "JACC — Journal of the American College of Cardiology (cardiac surgery + structural)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 6,
+    },
+
+    # ── JACC Cardiovascular Interventions ────────────────────────────────────
+    # Sous-journal JACC spécialisé interventionnel — publie les grands RCTs
+    # structural heart : TAVI (PARTNER, Evolut), TEER (CLASP, TRILUMINATE),
+    # coronaire (PCI vs CABG sub-analyses), assistance circulatoire percutanée.
+    # C'est LE journal des Heart Teams pour les décisions TAVI vs SAVR.
+    # RSS mort → PubMed. Volume excellent (17/trim.) — min_score 6.
+    {
+        "source": "pubmed_jacc_interv",
+        "journal_term": (
+            '"JACC Cardiovasc Interv"[Journal] AND ('
+            '"aortic valve"[Title/Abstract] OR '
+            '"mitral valve"[Title/Abstract] OR '
+            '"tricuspid valve"[Title/Abstract] OR '
+            '"TAVI"[Title/Abstract] OR '
+            '"TAVR"[Title/Abstract] OR '
+            '"transcatheter"[Title/Abstract] OR '
+            '"structural heart"[Title/Abstract] OR '
+            '"cardiac surgery"[Title/Abstract] OR '
+            '"coronary artery bypass"[Title/Abstract] OR '
+            '"CABG"[Title/Abstract] OR '
+            '"ventricular assist"[Title/Abstract]'
+            f') AND {_PT_FILTER}'
+        ),
+        "label": "JACC Cardiovascular Interventions — TAVI, structural heart, PCI vs CABG",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 6,
+    },
+
+    # ── European Heart Journal (ESC flagship) ────────────────────────────────
+    # Journal officiel de l'ESC — publie les grands essais pivots qui alimentent
+    # directement les guidelines ESC/EACTS : LVAD (MOMENTUM 3 extensions),
+    # rejet greffe cardiaque, TAVI sex-specific outcomes, CABG multi-tronculaire.
+    # RSS mort (Elsevier/Oxford) → PubMed. Volume (7/trim.) mais qualité maximale.
+    {
+        "source": "pubmed_eur_heart_j",
+        "journal_term": (
+            '"Eur Heart J"[Journal] AND ('
+            '"cardiac surgery"[Title/Abstract] OR '
+            '"coronary artery bypass"[Title/Abstract] OR '
+            '"CABG"[Title/Abstract] OR '
+            '"aortic valve"[Title/Abstract] OR '
+            '"mitral valve"[Title/Abstract] OR '
+            '"tricuspid valve"[Title/Abstract] OR '
+            '"TAVI"[Title/Abstract] OR '
+            '"TAVR"[Title/Abstract] OR '
+            '"transcatheter"[Title/Abstract] OR '
+            '"structural heart"[Title/Abstract] OR '
+            '"ventricular assist device"[Title/Abstract] OR '
+            '"heart transplantation"[Title/Abstract] OR '
+            '"aortic dissection"[Title/Abstract] OR '
+            '"myocardial revascularization"[Title/Abstract]'
+            f') AND {_PT_FILTER}'
+        ),
+        "label": "European Heart Journal (ESC) — cardiac surgery & structural heart",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 6,
     },
 
     # ── Circulation (AHA) — chirurgie cardiaque ──────────────────────────────
