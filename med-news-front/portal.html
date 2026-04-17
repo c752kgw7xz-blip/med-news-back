@@ -2173,11 +2173,10 @@ function loadDemoData() {
   totalArticles = DEMO_ARTICLES.length;
   allLoadedArticles = [...DEMO_ARTICLES];
   buildSidebar();
-  renderGroupedArticles();
-  updateRubrique();
   updateCounters();
+  // Afficher le splash de la spécialité comme page de garde (pas les articles directement)
+  showSpecSplash('mine');
   document.getElementById('loading').style.display = 'none';
-  document.getElementById('content').style.display = 'block';
   if (window.lucide) lucide.createIcons();
   // Global click interceptor: catches static AND dynamically-built nav elements
   document.addEventListener('click', function(e) {

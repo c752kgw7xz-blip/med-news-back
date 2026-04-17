@@ -131,7 +131,9 @@ h1 em{font-style:italic;color:var(--text2)}
 .browser-dot{width:10px;height:10px;border-radius:50%}
 .dot-red{background:#e8b4b8}.dot-yellow{background:#e8d4b4}.dot-green{background:#b4d4b4}
 .browser-url{margin-left:12px;font-size:11px;color:var(--text4)}
-.portal-iframe{width:100%;height:600px;border:none;display:block}
+/* Iframe scaled down so content fits the preview proportionally */
+.portal-iframe-wrap{overflow:hidden;height:560px;position:relative}
+.portal-iframe{width:calc(100% / 0.72);height:calc(560px / 0.72);border:none;display:block;transform:scale(0.72);transform-origin:top left;}
 
 /* ── NEWSLETTER ── */
 .newsletter-full{display:flex;align-items:flex-start;gap:64px;padding:88px 40px;max-width:1200px;margin:0 auto}
@@ -330,7 +332,9 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
         <div class="browser-dot dot-green"></div>
         <div class="browser-url">mednews.fr/portal</div>
       </div>
-      <iframe src="/portal-demo?demo=1" class="portal-iframe" title="Portail MedNews démo" scrolling="yes" allow="popups"></iframe>
+      <div class="portal-iframe-wrap">
+        <iframe src="/portal-demo?demo=1" class="portal-iframe" title="Portail MedNews démo" scrolling="no" allow="popups"></iframe>
+      </div>
     </div>
   </div>
 </section>
