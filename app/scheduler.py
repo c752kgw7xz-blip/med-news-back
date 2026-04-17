@@ -1,42 +1,25 @@
 # app/scheduler.py
 """
-Pipeline automatisé — trois cadences distinctes :
+Pipeline — collecte pilotée par la ROUTINE (onglet admin), envoi automatique.
 
-  RÉGLEMENTATION  (mensuel — 1er du mois)
-  ─────────────────────────────────────────
-  Jour 1  06h UTC  → job_collect_regulation()
-      Sources : JORF, KALI, LEGI, CIRCULAIRES, ANSM, BO Social
-      Analyse Claude → items PENDING
-  Quotidien 09h UTC → job_try_send_regulation()
-      Si 0 article PENDING de type réglementaire ET
-      newsletter pas encore envoyée ce mois-ci → envoi
+  COLLECTE (déclenchée manuellement via l'onglet Routine, toutes les ~48h)
+  ─────────────────────────────────────────────────────────────────────────
+  Les fonctions de collecte sont appelées explicitement depuis la routine,
+  spécialité par spécialité :
+    job_collect_regulation()    → JORF, KALI, LEGI, CIRCULAIRES, ANSM, BO Social
+    job_collect_recommendations() → HAS, sociétés savantes, web scraping EU
+    job_collect_innovation()    → PubMed (JACC, EHJ, JTCVS, EJCTS…) + RSS presse
+  Aucun cron de collecte — la cadence est contrôlée par l'opérateur.
 
-  RECOMMANDATIONS (hebdomadaire — chaque lundi)
-  ─────────────────────────────────────────────
-  Lundi   06h UTC  → job_collect_recommendations()
-      Sources : HAS RSS, sociétés savantes, ANSM bon usage
-      Analyse Claude → items PENDING
-  Quotidien 09h UTC → job_try_send_recommendations()
-      Si 0 article PENDING de type recommandation ET
-      newsletter pas encore envoyée cette semaine → envoi
-      Fenêtre : articles des 7 derniers jours uniquement
-
-  INNOVATION (hebdomadaire — chaque mercredi)
-  ─────────────────────────────────────────────
-  Mercredi 06h UTC → job_collect_innovation()
-      Sources PubMed : JTCVS, EJCTS, EJCTS-guidelines, Ann Thorac Surg,
-                       JACC, JACC Cardiovasc Interv, European Heart J,
-                       Circulation (AHA), JVS, EJVES, JET, Ann Vasc Surg
-      Sources RSS    : JAMA/NEJM/Lancet/BMJ, journaux paramédicaux,
-                       presse médicale spécialisée (TCTMD, Vascular News,
-                       Vascular Specialist, Endovascular Today,
-                       Archives Cardiovasc Dis)
-      Analyse Claude → items PENDING
-  Cadence configurable : INNOVATION_COLLECT_DAY_OF_WEEK (défaut : "wed")
-                         INNOVATION_COLLECT_HOUR (défaut : 6)
+  AUTO-ENVOI NEWSLETTERS (quotidien — vérifie conditions avant d'envoyer)
+  ─────────────────────────────────────────────────────────────────────────
+  Quotidien 09h UTC   → job_try_send_regulation()
+      Si 0 PENDING réglementaire ET newsletter pas encore envoyée ce mois → envoi
+  Quotidien 09h30 UTC → job_try_send_recommendations()
+      Si 0 PENDING recommandation ET pas encore envoyée cette semaine → envoi
 
   MAINTENANCE
-  ─────────────────────────────────────────────
+  ─────────────────────────────────────────────────────────────────────────
   Quotidien 03h UTC → job_cleanup_tokens()
 
 ACTIVATION : SCHEDULER_ENABLED=true dans .env
@@ -760,35 +743,13 @@ def start_scheduler() -> AsyncIOScheduler:
 
     _scheduler = AsyncIOScheduler(timezone="UTC")
 
-    # ── Collecte réglementation : 1er du mois à 06h UTC ──────────
-    regulation_collect_day  = int(os.environ.get("REGULATION_COLLECT_DAY", "1"))
-    regulation_collect_hour = int(os.environ.get("REGULATION_COLLECT_HOUR", "6"))
-
-    _scheduler.add_job(
-        job_collect_regulation,
-        trigger=CronTrigger(day=regulation_collect_day, hour=regulation_collect_hour, minute=0),
-        id="regulation_collect",
-        name=f"Collecte réglementation (j={regulation_collect_day} h={regulation_collect_hour}h UTC)",
-        executor="threadpool",
-        replace_existing=True,
-        misfire_grace_time=3600,
-    )
-
-    # ── Collecte recommandations : chaque lundi à 06h UTC ────────
-    recommendation_collect_hour = int(os.environ.get("RECOMMENDATION_COLLECT_HOUR", "6"))
-
-    _scheduler.add_job(
-        job_collect_recommendations,
-        trigger=CronTrigger(day_of_week="mon", hour=recommendation_collect_hour, minute=0),
-        id="recommendation_collect",
-        name=f"Collecte recommandations (lundi h={recommendation_collect_hour}h UTC)",
-        executor="threadpool",
-        replace_existing=True,
-        misfire_grace_time=3600,
-    )
+    # NOTE : les jobs de COLLECTE (regulation, recommendations, innovation)
+    # ne sont plus enregistrés ici — ils sont appelés depuis l'onglet Routine
+    # (toutes les ~48h, spécialité par spécialité, à la main de l'opérateur).
+    # Les fonctions job_collect_*() restent disponibles comme callables.
 
     # ── Auto-envoi réglementation : quotidien à 09h UTC ──────────
-    # Déclenche dès que 0 PENDING et pas encore envoyée ce mois-ci.
+    # Vérifie les conditions (0 PENDING + pas encore envoyée ce mois) avant d'agir.
     send_check_hour = int(os.environ.get("NEWSLETTER_CHECK_HOUR", "9"))
 
     _scheduler.add_job(
@@ -807,20 +768,6 @@ def start_scheduler() -> AsyncIOScheduler:
         trigger=CronTrigger(hour=send_check_hour, minute=30),
         id="recommendation_send_check",
         name=f"Auto-envoi newsletter recommandations (quotidien h={send_check_hour}h30 UTC)",
-        executor="threadpool",
-        replace_existing=True,
-        misfire_grace_time=3600,
-    )
-
-    # ── Collecte innovation : chaque mercredi à 06h UTC ─────────
-    innovation_collect_dow  = os.environ.get("INNOVATION_COLLECT_DAY_OF_WEEK", "wed")
-    innovation_collect_hour = int(os.environ.get("INNOVATION_COLLECT_HOUR", "6"))
-
-    _scheduler.add_job(
-        job_collect_innovation,
-        trigger=CronTrigger(day_of_week=innovation_collect_dow, hour=innovation_collect_hour, minute=0),
-        id="innovation_collect",
-        name=f"Collecte innovation (jour={innovation_collect_dow} h={innovation_collect_hour}h UTC)",
         executor="threadpool",
         replace_existing=True,
         misfire_grace_time=3600,
