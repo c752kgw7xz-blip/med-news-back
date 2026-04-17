@@ -2,11 +2,12 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<base target="_blank">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>[MedNews] Cardiologie — Semaine du 14 avril 2026</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<title>[MedNews] Chirurgie vasculaire — Semaine du 14 avril 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
 <style>
 @media (prefers-color-scheme: dark) {
   :root {
@@ -41,30 +42,42 @@
   --impact:   #F5F4EF;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-       font-weight: 400; margin: 0; padding: 0; color: var(--text); }
+body {
+  background: var(--bg);
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 400; margin: 0; padding: 0; color: var(--text);
+}
 .bg  { background: var(--bg); padding: 32px 16px; }
 .wrap { max-width: 600px; margin: 0 auto; }
 
 /* Masthead */
-.masthead { text-align: center; padding: 36px 0 28px;
-            border-bottom: 1px solid var(--border); }
-.masthead-name { font-family: 'Instrument Serif', Georgia, serif;
-                  font-size: 24px; font-style: italic; color: var(--text); }
+.masthead { text-align: center; padding: 36px 0 28px; border-bottom: 1px solid var(--border); }
+.masthead-name {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 24px; font-style: italic; color: var(--text);
+}
 .masthead-name em { color: var(--accent); font-style: normal; }
-.masthead-sub { font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-                color: var(--text4); margin-top: 6px; font-weight: 500; }
+.masthead-sub {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text4); margin-top: 6px; font-weight: 500;
+}
 
 /* Header */
 .hd { padding: 32px 40px 24px; }
-.hd-eye { font-size: 10px; color: var(--text4); letter-spacing: 1px;
-           text-transform: uppercase; margin-bottom: 14px; font-weight: 500; }
-.hd-dot { width: 5px; height: 5px; background: var(--accent);
-           border-radius: 50%; display: inline-block;
-           margin-right: 6px; vertical-align: middle; }
-.hd-title { font-family: 'Instrument Serif', Georgia, serif;
-             font-size: 28px; font-weight: 400; color: var(--text);
-             line-height: 1.2; margin-bottom: 4px; }
+.hd-eye {
+  font-size: 10px; color: var(--text4); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 14px; font-weight: 500;
+}
+.hd-dot {
+  width: 5px; height: 5px; background: var(--accent);
+  border-radius: 50%; display: inline-block;
+  margin-right: 6px; vertical-align: middle;
+}
+.hd-title {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 28px; font-weight: 400; color: var(--text);
+  line-height: 1.2; margin-bottom: 4px;
+}
 .hd-title em { font-style: italic; color: var(--text2); }
 .hd-stats { font-size: 11px; color: var(--text4); letter-spacing: 0.2px; margin-top: 16px; }
 .hd-stats .n   { color: var(--text2); font-weight: 500; }
@@ -73,64 +86,71 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
 /* Édito */
 .edito { padding: 0 40px 26px; }
 .edito p { font-size: 13px; color: var(--text3); line-height: 1.85; }
-.edito-sign { font-size: 11px; color: var(--text4); margin-top: 12px;
-               letter-spacing: .5px; font-weight: 500; }
+.edito-sign { font-size: 11px; color: var(--text4); margin-top: 12px; letter-spacing: .5px; font-weight: 500; }
 
 /* CTA portal */
-.portal-strip { background: var(--strip); border-top: 1px solid var(--border);
-                border-bottom: 1px solid var(--border);
-                padding: 18px 40px; margin-bottom: 8px; }
-.portal-strip p { font-size: 12px; color: var(--text4);
-                  letter-spacing: .2px; line-height: 1.6;
-                  display: inline-block; vertical-align: middle;
-                  max-width: 340px; }
-.portal-btn { font-size: 12px; font-weight: 500; color: var(--text);
-              text-decoration: none; background: var(--surface);
-              border: 1px solid var(--border2);
-              padding: 8px 18px; border-radius: 4px;
-              white-space: nowrap; display: inline-block;
-              vertical-align: middle; margin-left: 16px; }
+.portal-strip {
+  background: var(--strip); border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border); padding: 18px 40px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.portal-strip p {
+  font-size: 12px; color: var(--text4); letter-spacing: .2px;
+  line-height: 1.6; flex: 1; min-width: 180px;
+}
+.portal-btn {
+  font-size: 12px; font-weight: 500; color: var(--text); text-decoration: none;
+  background: var(--surface); border: 1px solid var(--border2);
+  padding: 8px 18px; border-radius: 4px; white-space: nowrap;
+}
 
 /* Section headers */
 .grp { padding: 28px 40px 12px; }
-.grp-label { font-size: 11px; font-weight: 500;
-              letter-spacing: .6px; text-transform: uppercase;
-              padding-left: 10px; display: block; }
+.grp-label {
+  font-size: 11px; font-weight: 500; letter-spacing: .6px; text-transform: uppercase;
+  padding-left: 10px; display: block;
+}
 .grp-reg   { color: #3B52A4; border-left: 3px solid #3B52A4; }
 .grp-reco  { color: #1A6B5C; border-left: 3px solid #1A6B5C; }
 .grp-innov { color: #9B5714; border-left: 3px solid #9B5714; }
 
 /* Cards */
-.card { background: var(--surface); border: 1px solid var(--border);
-         border-radius: 4px; padding: 22px 28px 20px;
-         margin: 0 40px 8px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 22px 28px 20px; margin: 0 40px 8px;
+}
 .card-top { margin-bottom: 10px; }
 .card-top > * { display: inline-block; vertical-align: middle; margin-right: 7px; }
 .card-date { font-size: 11px; color: var(--text5); }
-.cat { font-size: 10px; letter-spacing: .3px; text-transform: uppercase;
-        padding: 2px 8px; border-radius: 2px; font-weight: 500; }
-.cat-reg  { background: rgba(59,82,164,.07); color: #3B52A4;
-             border: 0.5px solid rgba(59,82,164,.2); }
-.cat-reco { background: rgba(26,107,92,.07); color: #1A6B5C;
-             border: 0.5px solid rgba(26,107,92,.2); }
-.cat-innov{ background: rgba(155,87,20,.07); color: #9B5714;
-             border: 0.5px solid rgba(155,87,20,.2); }
+.cat {
+  font-size: 10px; letter-spacing: .3px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 2px; font-weight: 500;
+}
+.cat-reg   { background: rgba(59,82,164,.07);  color: #3B52A4; border: 0.5px solid rgba(59,82,164,.2); }
+.cat-reco  { background: rgba(26,107,92,.07);  color: #1A6B5C; border: 0.5px solid rgba(26,107,92,.2); }
+.cat-innov { background: rgba(155,87,20,.07);  color: #9B5714; border: 0.5px solid rgba(155,87,20,.2); }
 .card-source { font-size: 10px; color: var(--text5); letter-spacing: .2px; }
-.card-title { font-size: 0.95rem; font-weight: 500; color: var(--text);
-               line-height: 1.45; margin-bottom: 10px; }
-.card-resume { font-size: 13px; color: var(--text3);
-                line-height: 1.7; margin-bottom: 12px; }
-.card-impact { font-size: 12px; color: var(--text3); line-height: 1.65;
-                padding: 10px 14px; margin-bottom: 14px;
-                background: var(--impact); border-radius: 4px;
-                border: 1px solid var(--border); }
-.card-link { font-size: 12px; font-weight: 500; color: var(--accent);
-              text-decoration: none; display: inline-block; }
+.card-title { font-size: 0.95rem; font-weight: 500; color: var(--text); line-height: 1.45; margin-bottom: 10px; }
+.card-resume { font-size: 13px; color: var(--text3); line-height: 1.7; margin-bottom: 12px; }
+.card-impact {
+  font-size: 12px; color: var(--text3); line-height: 1.65;
+  padding: 10px 14px; margin-bottom: 14px;
+  background: var(--impact); border-radius: 4px; border: 1px solid var(--border);
+}
+.card-link { font-size: 12px; font-weight: 500; color: var(--accent); text-decoration: none; display: inline-block; }
+.card-link:hover { text-decoration: underline; }
 
 /* Footer */
 .footer { padding: 24px 40px 12px; text-align: center; }
 .footer p { font-size: 11px; color: var(--text5); letter-spacing: .2px; line-height: 2; }
 .footer a { color: var(--text4); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+@media (max-width: 480px) {
+  .hd, .edito, .grp, .footer { padding-left: 20px; padding-right: 20px; }
+  .card { margin-left: 16px; margin-right: 16px; padding: 18px 18px 16px; }
+  .portal-strip { padding: 14px 20px; }
+}
 </style>
 </head>
 <body>
@@ -140,7 +160,7 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
   <!-- MASTHEAD -->
   <div class="masthead">
     <div class="masthead-name">Med<em>News</em></div>
-    <div class="masthead-sub">La revue médicale · Cardiologie</div>
+    <div class="masthead-sub">La revue médicale · Chirurgie vasculaire</div>
   </div>
 
   <!-- HEADER -->
@@ -149,7 +169,7 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
       <span class="hd-dot"></span>Sélection éditoriale
     </div>
     <div class="hd-title">
-      Cardiologie<br><em>Semaine du 14 avril 2026</em>
+      Chirurgie vasculaire<br><em>Semaine du 14 avril 2026</em>
     </div>
     <div class="hd-stats">
       <span class="n">1</span> réglementaire
@@ -157,7 +177,7 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
       <span class="n">2</span> recommandations
       <span class="sep">·</span>
       <span class="n">2</span> innovations
-      <span class="sep">·</span>ESC · NEJM · HAS · JORF
+      <span class="sep">·</span>ESVS · Lancet · HAS · JORF
     </div>
   </div>
 
@@ -170,7 +190,7 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
   <!-- CTA PORTAL -->
   <div class="portal-strip">
     <p>Retrouvez tous vos articles,<br>archives et favoris sur votre espace</p>
-    <a class="portal-btn" href="/portal">Accéder à mon espace →</a>
+    <a class="portal-btn" href="https://med-news.fr/portal" target="_blank">Accéder à mon espace →</a>
   </div>
 
   <!-- RÉGLEMENTATION -->
@@ -180,13 +200,13 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
 
   <div class="card">
     <div class="card-top">
-<span class="card-date">10 avr. 2026</span>
+      <span class="card-date">9 avr. 2026</span>
       <span class="cat cat-reg">Exercice &amp; admin</span>
     </div>
-    <div class="card-title">Nouvelles conditions d'autorisation pour les défibrillateurs implantables — arrêté du 8 avril</div>
-    <p class="card-resume">L'arrêté du 8 avril 2026 révise les critères d'indication et de remboursement des défibrillateurs automatiques implantables (DAI) en France. Il introduit des exigences documentaires renforcées et précise les spécialistes habilités à poser l'indication initiale.</p>
-    <div class="card-impact">Vérifier que vos indications de pose de DAI sont conformes aux nouveaux critères avant toute prescription. Mettre à jour vos formulaires de demande d'entente préalable.</div>
-    <a class="card-link" href="https://www.legifrance.gouv.fr">Lire le texte officiel →</a>
+    <div class="card-title">Décret du 9 avril 2026 : nouvelles conditions d'autorisation des activités de chirurgie endovasculaire aortique (EVAR / TEVAR)</div>
+    <p class="card-resume">Le décret instaure des seuils d'activité minimaux pour la réalisation des procédures endovasculaires aortiques en France, en cohérence avec les recommandations HAS 2024. Les établissements doivent justifier d'un volume annuel d'au moins 30 procédures EVAR et disposer d'une astreinte chirurgicale vasculaire permanente. Un délai de mise en conformité jusqu'au 1er janvier 2027 est accordé.</p>
+    <div class="card-impact">Vérifier que votre établissement atteint le seuil de 30 procédures EVAR annuelles. Anticiper la déclaration d'activité auprès de l'ARS avant le 30 juin 2026 — premier bilan réglementaire requis.</div>
+    <a class="card-link" href="https://www.legifrance.gouv.fr" target="_blank">Lire le texte officiel →</a>
   </div>
 
   <!-- RECOMMANDATIONS -->
@@ -196,26 +216,26 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
 
   <div class="card">
     <div class="card-top">
-<span class="card-date">12 avr. 2026</span>
+      <span class="card-date">12 avr. 2026</span>
       <span class="cat cat-reco">Recommandation</span>
-      <span class="card-source">ESC</span>
+      <span class="card-source">ESVS</span>
     </div>
-    <div class="card-title">ESC 2026 — Prise en charge de l'insuffisance cardiaque à fraction d'éjection préservée (IC-FEp) : mise à jour des guidelines</div>
-    <p class="card-resume">L'ESC publie une mise à jour de ses guidelines sur l'IC-FEp, intégrant les données des essais EMPEROR-Preserved et DELIVER. Les inhibiteurs de SGLT2 (empagliflozine, dapagliflozine) passent en recommandation de classe I pour réduire les hospitalisations, indépendamment de la présence d'un diabète.</p>
-    <div class="card-impact">Reconsidérer l'introduction d'un iSGLT2 chez tous vos patients IC-FEp éligibles, y compris non-diabétiques. La spironolactone reste recommandée en deuxième ligne chez les femmes.</div>
-    <a class="card-link" href="https://www.escardio.org">Lire la recommandation →</a>
+    <div class="card-title">ESVS 2026 — Mise à jour des guidelines sur l'AOMI&nbsp;: place du rivaroxaban à faible dose et des nouveaux antithrombotiques</div>
+    <p class="card-resume">L'ESVS publie une mise à jour de ses guidelines sur l'artériopathie oblitérante des membres inférieurs, intégrant les données des essais COMPASS, EUCLID et VOYAGER-PAD. L'association rivaroxaban 2,5&nbsp;mg × 2/j + aspirine 100&nbsp;mg/j passe en recommandation de classe&nbsp;I chez les patients en stade claudication/ischémie chronique à haut risque cardiovasculaire, indépendamment du statut diabétique.</p>
+    <div class="card-impact">Réévaluer le traitement antithrombotique de vos patients AOMI à haut risque&nbsp;: l'association rivaroxaban faible dose + aspirine doit être discutée systématiquement. Contrôler la tolérance hémorragique à 1 mois, en particulier chez les patients sous IPP.</div>
+    <a class="card-link" href="https://www.esvs.org" target="_blank">Lire la recommandation →</a>
   </div>
 
   <div class="card">
     <div class="card-top">
-<span class="card-date">9 avr. 2026</span>
+      <span class="card-date">9 avr. 2026</span>
       <span class="cat cat-reco">Clinique</span>
       <span class="card-source">HAS</span>
     </div>
-    <div class="card-title">HAS — Actualisation du parcours de soins en post-infarctus : place de la réadaptation cardiaque ambulatoire</div>
-    <p class="card-resume">La HAS actualise ses recommandations sur la réadaptation cardiaque (RC) après infarctus du myocarde traité par angioplastie primaire. Elle renforce l'orientation systématique vers la RC ambulatoire dans les 4 semaines suivant la sortie, et clarifie les critères de prescription pour les patients à haut risque.</p>
-    <div class="card-impact">Systématiser la prescription de réadaptation cardiaque ambulatoire dès la consultation de sortie. Utiliser le formulaire HAS actualisé pour l'orientation.</div>
-    <a class="card-link" href="https://www.has-sante.fr">Lire la recommandation →</a>
+    <div class="card-title">HAS — Actualisation du référentiel de surveillance post-EVAR&nbsp;: réduction de la fréquence scanner chez les patients stables</div>
+    <p class="card-resume">La HAS actualise son référentiel de suivi après traitement endovasculaire d'un anévrisme de l'aorte abdominale. Pour les patients sans endofuite à 5&nbsp;ans (classe A), la surveillance passe de 3 à 2 imageries annuelles, avec possibilité de substitution par échographie de contraste (CEUS) après validation par le chirurgien référent. Les endofuites de type&nbsp;I et&nbsp;III restent sous protocole scanner strict.</p>
+    <div class="card-impact">Adapter vos protocoles de suivi post-EVAR selon la nouvelle stratification HAS. La substitution scanner → CEUS est applicable dès le bilan à 5&nbsp;ans pour les endoprothèses stables — à documenter dans le dossier chirurgical.</div>
+    <a class="card-link" href="https://www.has-sante.fr" target="_blank">Lire la recommandation →</a>
   </div>
 
   <!-- INNOVATION -->
@@ -225,34 +245,34 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
 
   <div class="card">
     <div class="card-top">
-<span class="card-date">11 avr. 2026</span>
+      <span class="card-date">11 avr. 2026</span>
       <span class="cat cat-innov">Innovation</span>
-      <span class="card-source">NEJM</span>
+      <span class="card-source">Lancet</span>
     </div>
-    <div class="card-title">NEJM — ATLANTIS-AF trial : apixaban vs warfarine dans la FA sur valvulopathie mitrale modérée (phase III)</div>
-    <p class="card-resume">Cet essai de phase III (n = 4 372) démontre la non-infériorité de l'apixaban par rapport à la warfarine dans la fibrillation atriale associée à une sténose mitrale modérée (surface valvulaire > 1,5 cm²). Réduction significative des accidents hémorragiques majeurs (HR 0,72 ; IC95% 0,58–0,89) sans différence sur les AVC ischémiques.</p>
-    <div class="card-impact">Pour les FA sur sténose mitrale modérée (> 1,5 cm²), l'apixaban devient une alternative aux AVK à discuter au cas par cas. Les sténoses serrées (≤ 1,5 cm²) restent une contre-indication aux AOD.</div>
-    <a class="card-link" href="https://www.nejm.org">Voir l'étude →</a>
+    <div class="card-title">Lancet — BEST-CLI&nbsp;2&nbsp;: pontage fémoro-poplité versus ballon actif (DCB) dans l'ischémie critique des membres inférieurs — lésions longues TASC&nbsp;C/D</div>
+    <p class="card-resume">Cet essai randomisé multicentrique (n&nbsp;=&nbsp;1&nbsp;830, suivi médian 3&nbsp;ans) compare le pontage fémoro-poplité au ballon à élution de paclitaxel (DCB) dans la CLTI avec lésions longues (TASC&nbsp;II C/D). Le pontage démontre une supériorité sur la survie sans amputation majeure à 3&nbsp;ans (72,4&nbsp;% vs 61,8&nbsp;%&nbsp;; HR&nbsp;0,68&nbsp;; IC95&nbsp;% 0,54–0,85&nbsp;; p&nbsp;=&nbsp;0,003), au prix d'une morbidité péri-opératoire plus élevée (12&nbsp;% vs 4&nbsp;%).</p>
+    <div class="card-impact">Dans la CLTI avec lésions longues TASC&nbsp;C/D et capital veineux disponible, privilégier le pontage chirurgical si le risque opératoire le permet. L'option endovasculaire (DCB) reste valide en première intention chez les patients fragiles ou sans veine saphène utilisable.</div>
+    <a class="card-link" href="https://www.thelancet.com" target="_blank">Voir l'étude →</a>
   </div>
 
   <div class="card">
     <div class="card-top">
-<span class="card-date">8 avr. 2026</span>
+      <span class="card-date">8 avr. 2026</span>
       <span class="cat cat-innov">Médicaments &amp; Dispositifs</span>
       <span class="card-source">EMA</span>
     </div>
-    <div class="card-title">EMA — Autorisation de mise sur le marché du finerenone (Kerendia) étendue à l'insuffisance cardiaque chronique avec FE réduite</div>
-    <p class="card-resume">L'EMA accorde une extension d'AMM au finerenone (antagoniste des récepteurs aux minéralocorticoïdes non stéroïdien) pour la prise en charge de l'insuffisance cardiaque à fraction d'éjection réduite (IC-FEr), sur la base des données de l'essai FINEARTS-HF. Bénéfice démontré sur la réduction des hospitalisations (RR -0,82 ; p = 0,007).</p>
-    <div class="card-impact">Le finerenone devient une option thérapeutique en IC-FEr, à envisager en complément ou en substitution de la spironolactone chez les patients intolérants ou en hyperkaliémie. Disponibilité en France sous 3 à 6 mois selon la négociation de prix.</div>
-    <a class="card-link" href="https://www.ema.europa.eu">Voir le dispositif →</a>
+    <div class="card-title">EMA — Autorisation CE de l'endoprothèse fenêtrée ZFEN&nbsp;III (Cook Medical) pour les anévrismes aorto-iliaques juxtarénaux complexes</div>
+    <p class="card-resume">L'EMA délivre un marquage CE à l'endoprothèse fenêtrée de 3e génération ZFEN&nbsp;III, intégrant un système de déploiement robotisé et des fenêtres préchargées pour les artères rénales et mésentériques. Les données du registre EVAS (280&nbsp;cas) montrent une réduction du temps opératoire de 35&nbsp;% et un taux de succès technique de 97,5&nbsp;% dans les anévrismes juxtarénaux. Disponible en France sous dispositif d'accès précoce (DAP) à partir du 3e trimestre 2026.</p>
+    <div class="card-impact">Anticiper l'accès au DAP pour vos patients à anatomie aortique complexe (juxtarénal, pararénal). Contacter le référent Cook Medical de votre région pour les modalités d'inclusion dans le registre post-commercial obligatoire.</div>
+    <a class="card-link" href="https://www.ema.europa.eu" target="_blank">Voir le dispositif →</a>
   </div>
 
   <!-- FOOTER -->
   <div class="footer">
     <p>
       Abonné à MedNews ·
-      <a href="/settings">Se désabonner</a> ·
-      <a href="/portal">Voir en ligne</a><br>
+      <a href="https://med-news.fr/settings" target="_blank">Se désabonner</a> ·
+      <a href="https://med-news.fr/portal" target="_blank">Voir en ligne</a><br>
       MedNews — La revue médicale par spécialité
     </p>
   </div>
