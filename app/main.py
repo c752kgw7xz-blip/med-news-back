@@ -46,7 +46,7 @@ from starlette.requests import Request as StarletteRequest
 app = FastAPI(lifespan=lifespan)
 
 
-_IFRAME_ALLOWED_PATHS = {"/newsletter-demo", "/portal-demo"}
+_IFRAME_ALLOWED_PATHS = {"/newsletter-demo", "/newsletter-preview", "/portal-demo"}
 
 # CSP commune : autorise Google Fonts + Lucide CDN (utilisés par toutes les pages front)
 _CSP_SCRIPT = "script-src 'self' 'unsafe-inline' https://unpkg.com"
@@ -107,12 +107,14 @@ app.add_middleware(
 )
 
 from app.portal_routes import router as portal_router
+from app.demo_routes import router as demo_router
 
 app.include_router(auth_router)
 app.include_router(piste_router)
 app.include_router(llm_router)
 app.include_router(sources_router)
 app.include_router(portal_router)
+app.include_router(demo_router)
 
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -169,6 +171,17 @@ def serve_settings():
 @app.get("/newsletter-demo")
 def serve_newsletter_demo():
     return FileResponse(os.path.join(_FRONT_DIR, "newsletter-demo.html"), media_type="text/html", headers=_NO_CACHE)
+
+@app.get("/newsletter-preview")
+def newsletter_preview(specialty: str = "chirurgie-vasculaire"):
+    from fastapi.responses import HTMLResponse
+    from app.newsletter_builder import build_newsletter
+    from app.demo_routes import _fetch_demo_articles
+    today = date.today()
+    from_date = f"{today.year}-{today.month:02d}-01"
+    items = _fetch_demo_articles(specialty, from_date)
+    _, html, _ = build_newsletter(specialty, items)
+    return HTMLResponse(content=html, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 @app.get("/portal-demo")
 def serve_portal_demo():

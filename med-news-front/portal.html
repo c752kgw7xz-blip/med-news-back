@@ -2277,7 +2277,7 @@ const DEMO_SPECIALTIES = [
   { slug: 'chirurgie-generale', name: 'Chirurgie générale' },
 ];
 
-function loadDemoData() {
+async function loadDemoData() {
   document.getElementById('demo-banner').style.display = 'block';
   document.getElementById('user-email').textContent = 'demo@mednews.fr';
   userSpecSlug = 'chirurgie-vasculaire';
@@ -2294,9 +2294,36 @@ function loadDemoData() {
     'chirurgie-orthopedique':    { total:2, reglementaire:1, recommandation:1, innovation:0 },
     'biologie-medicale':         { total:4, reglementaire:2, recommandation:2, innovation:0 },
   };
+  try {
+    const [artRes, cntRes] = await Promise.all([
+      fetch('/demo/articles?specialty=chirurgie-vasculaire'),
+      fetch('/demo/counts?specialty=chirurgie-vasculaire'),
+    ]);
+    if (artRes.ok && cntRes.ok) {
+      const artData = await artRes.json();
+      const cntData = await cntRes.json();
+      if (artData.articles && artData.articles.length > 0) {
+        allLoadedArticles = artData.articles;
+        totalArticles = artData.articles.length;
+        specTypeCounts['chirurgie-vasculaire'] = {
+          total: cntData.total || 0,
+          reglementaire: cntData.reglementaire || 0,
+          recommandation: cntData.recommandation || 0,
+          innovation: cntData.innovation || 0,
+        };
+      } else {
+        allLoadedArticles = [...DEMO_ARTICLES];
+        totalArticles = DEMO_ARTICLES.length;
+      }
+    } else {
+      allLoadedArticles = [...DEMO_ARTICLES];
+      totalArticles = DEMO_ARTICLES.length;
+    }
+  } catch (e) {
+    allLoadedArticles = [...DEMO_ARTICLES];
+    totalArticles = DEMO_ARTICLES.length;
+  }
   specCounts = Object.fromEntries(Object.entries(specTypeCounts).map(([k,v]) => [k, v.total]));
-  totalArticles = DEMO_ARTICLES.length;
-  allLoadedArticles = [...DEMO_ARTICLES];
   buildSidebar();
   updateCounters();
   // Afficher le splash de la spécialité comme page de garde (pas les articles directement)
