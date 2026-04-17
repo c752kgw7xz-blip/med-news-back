@@ -305,14 +305,16 @@ def collect_web(request: Request):
 def collect_innovation(request: Request, days: int = Query(default=90, ge=1, le=365)):
     """
     Collecte les sources innovation + réglementation dispositifs médicaux :
-    - Presse médicale : Vascular Specialist, Vascular News, TCTMD,
-      Le Quotidien du Médecin, Egora
-    - PubMed (JVS, EJVES, JET, Annals — RCTs & méta-analyses uniquement)
-    - Flux RSS journaux : JAMA/NEJM/Lancet/BMJ/Nature Medicine
+    - PubMed — chirurgie vasculaire : JVS, EJVES, EJVES-guidelines, JET, Ann Vasc Surg, JAMA Surgery
+    - PubMed — chirurgie cardiaque  : JTCVS, EJCTS, EJCTS-guidelines, Ann Thorac Surg,
+                                      JACC, JACC Cardiovasc Interv, European Heart J, Circulation
+    - RSS presse médicale : Vascular Specialist, Vascular News, TCTMD (vasculaire + cardiac interv.),
+                            Endovascular Today, Archives of Cardiovascular Diseases (SFC)
+    - RSS presse généraliste : Le Quotidien du Médecin, Egora
+    - Flux RSS journaux : JAMA/NEJM/Lancet/BMJ/Nature Medicine + paramédicaux
     - Approbations FDA (PMA Class III + clearances 510k)
     - Dispositifs CE EUDAMED (classes III, codes EMDN vasculaires E06/E07)
-    - ANSM sécurité dispositifs médicaux (ansm_securite_dm) — alertes matériovigilance,
-      rappels d'implants vasculaires, DHPC sur dispositifs chirurgicaux
+    - ANSM sécurité dispositifs médicaux (ansm_securite_dm)
     days=90 par défaut pour l'historique récent au premier run.
     """
     _require_admin(request)

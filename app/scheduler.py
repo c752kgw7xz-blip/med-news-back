@@ -1,6 +1,6 @@
 # app/scheduler.py
 """
-Pipeline automatisé — deux cadences distinctes :
+Pipeline automatisé — trois cadences distinctes :
 
   RÉGLEMENTATION  (mensuel — 1er du mois)
   ─────────────────────────────────────────
@@ -20,6 +20,20 @@ Pipeline automatisé — deux cadences distinctes :
       Si 0 article PENDING de type recommandation ET
       newsletter pas encore envoyée cette semaine → envoi
       Fenêtre : articles des 7 derniers jours uniquement
+
+  INNOVATION (hebdomadaire — chaque mercredi)
+  ─────────────────────────────────────────────
+  Mercredi 06h UTC → job_collect_innovation()
+      Sources PubMed : JTCVS, EJCTS, EJCTS-guidelines, Ann Thorac Surg,
+                       JACC, JACC Cardiovasc Interv, European Heart J,
+                       Circulation (AHA), JVS, EJVES, JET, Ann Vasc Surg
+      Sources RSS    : JAMA/NEJM/Lancet/BMJ, journaux paramédicaux,
+                       presse médicale spécialisée (TCTMD, Vascular News,
+                       Vascular Specialist, Endovascular Today,
+                       Archives Cardiovasc Dis)
+      Analyse Claude → items PENDING
+  Cadence configurable : INNOVATION_COLLECT_DAY_OF_WEEK (défaut : "wed")
+                         INNOVATION_COLLECT_HOUR (défaut : 6)
 
   MAINTENANCE
   ─────────────────────────────────────────────
@@ -375,6 +389,86 @@ def job_collect_recommendations() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Collecte innovation (hebdomadaire — mercredi par défaut)
+# ---------------------------------------------------------------------------
+
+def job_collect_innovation() -> None:
+    """
+    Collecte les sources innovation :
+      - PubMed (tous les journaux configurés dans PUBMED_SOURCES) :
+          chirurgie vasculaire : JVS, EJVES, EJVES-guidelines, JET, Ann Vasc Surg, JAMA Surgery
+          chirurgie cardiaque  : JTCVS, EJCTS, EJCTS-guidelines, Ann Thorac Surg,
+                                 JACC, JACC Cardiovasc Interv, EHJ, Circulation
+      - RSS journaux généralistes : JAMA, NEJM, Lancet, BMJ, Nature Medicine
+      - RSS presse médicale spécialisée : TCTMD, Vascular Specialist, Vascular News,
+          Endovascular Today, Archives of Cardiovascular Diseases
+      - RSS journaux paramédicaux (kinésithérapie, sage-femme, pharmacien…)
+    Fenêtre : 10 jours (légère marge sur la semaine écoulée).
+    Analyse LLM à la fin.
+    """
+    logger.info("=" * 60)
+    logger.info("JOB COLLECTE INNOVATION démarré — %s", date.today().isoformat())
+    logger.info("=" * 60)
+
+    report: dict[str, Any] = {}
+    days = 10  # fenêtre hebdomadaire + marge
+
+    # ── PubMed (tous journaux configurés) ────────────────────────
+    try:
+        from app.pubmed_collector import collect_all_pubmed
+        pubmed_results = collect_all_pubmed(days=days)
+        report["pubmed"] = pubmed_results
+        total_pubmed = sum(r.get("inserted", 0) for r in pubmed_results.values() if isinstance(r, dict))
+        logger.info("[innovation] PubMed : %d sources, %d insérés", len(pubmed_results), total_pubmed)
+    except Exception as e:
+        logger.error("[innovation] PubMed échoué : %s", e)
+        report["pubmed"] = {"error": str(e)}
+
+    # ── RSS journaux scientifiques (JAMA, NEJM, Lancet, BMJ…) ────
+    try:
+        from app.rss_collector import collect_feed
+        from app.sources_innovation import ALL_INNOVATION_FEEDS
+        rss_journals: dict = {}
+        for feed in ALL_INNOVATION_FEEDS:
+            try:
+                rss_journals[feed["source"]] = collect_feed(feed, days=days)
+            except Exception as e:
+                rss_journals[feed["source"]] = {"error": str(e)}
+        report["rss_journals"] = rss_journals
+        total_journals = sum(r.get("inserted", 0) for r in rss_journals.values() if isinstance(r, dict))
+        logger.info("[innovation] RSS journaux : %d sources, %d insérés", len(rss_journals), total_journals)
+    except Exception as e:
+        logger.error("[innovation] RSS journaux échoué : %s", e)
+        report["rss_journals"] = {"error": str(e)}
+
+    # ── RSS presse médicale (TCTMD, Vascular News, Arch CV Dis…) ─
+    try:
+        from app.rss_collector import collect_feed
+        from app.sources_presse_medicale import ALL_PRESSE_MEDICALE_FEEDS
+        rss_presse: dict = {}
+        for feed in ALL_PRESSE_MEDICALE_FEEDS:
+            try:
+                rss_presse[feed["source"]] = collect_feed(feed, days=days)
+            except Exception as e:
+                rss_presse[feed["source"]] = {"error": str(e)}
+        report["rss_presse"] = rss_presse
+        total_presse = sum(r.get("inserted", 0) for r in rss_presse.values() if isinstance(r, dict))
+        logger.info("[innovation] RSS presse : %d sources, %d insérés", len(rss_presse), total_presse)
+    except Exception as e:
+        logger.error("[innovation] RSS presse médicale échoué : %s", e)
+        report["rss_presse"] = {"error": str(e)}
+
+    # ── Analyse LLM ──────────────────────────────────────────────
+    try:
+        _run_llm_batch()
+    except Exception as e:
+        logger.error("[innovation] Analyse LLM échouée : %s", e)
+
+    logger.info("JOB COLLECTE INNOVATION terminé")
+    return report
+
+
+# ---------------------------------------------------------------------------
 # LLM batch (partagé)
 # ---------------------------------------------------------------------------
 
@@ -713,6 +807,20 @@ def start_scheduler() -> AsyncIOScheduler:
         trigger=CronTrigger(hour=send_check_hour, minute=30),
         id="recommendation_send_check",
         name=f"Auto-envoi newsletter recommandations (quotidien h={send_check_hour}h30 UTC)",
+        executor="threadpool",
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+
+    # ── Collecte innovation : chaque mercredi à 06h UTC ─────────
+    innovation_collect_dow  = os.environ.get("INNOVATION_COLLECT_DAY_OF_WEEK", "wed")
+    innovation_collect_hour = int(os.environ.get("INNOVATION_COLLECT_HOUR", "6"))
+
+    _scheduler.add_job(
+        job_collect_innovation,
+        trigger=CronTrigger(day_of_week=innovation_collect_dow, hour=innovation_collect_hour, minute=0),
+        id="innovation_collect",
+        name=f"Collecte innovation (jour={innovation_collect_dow} h={innovation_collect_hour}h UTC)",
         executor="threadpool",
         replace_existing=True,
         misfire_grace_time=3600,
