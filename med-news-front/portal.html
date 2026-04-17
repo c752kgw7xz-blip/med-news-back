@@ -1832,6 +1832,9 @@ async function selectExploreSpec(slug, el) {
     const _base = _demoCache || DEMO_ARTICLES;
     allLoadedArticles = slug === 'chirurgie-vasculaire' ? [..._base] : [];
     totalArticles = allLoadedArticles.length;
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    document.getElementById('spec-splash').style.display = 'none';
     renderGroupedArticles();
     updateRubrique();
     updateCounters();
@@ -1862,6 +1865,8 @@ async function resetAndLoad() {
     allLoadedArticles = activeSpecSlug === 'chirurgie-vasculaire' ? [..._base] : [];
     totalArticles = allLoadedArticles.length;
     document.getElementById('articles-container').innerHTML = '';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
     renderGroupedArticles();
     updateRubrique();
     updateCounters();
