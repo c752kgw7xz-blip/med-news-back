@@ -18,7 +18,6 @@ from app.scheduler import (
     job_try_send_recommendations,
 )
 from app.sources_routes import router as sources_router
-from app.routine_routes import router as routine_router
 
 import psycopg
 from fastapi import FastAPI, HTTPException, Request, Depends
@@ -114,7 +113,6 @@ app.include_router(auth_router)
 app.include_router(piste_router)
 app.include_router(llm_router)
 app.include_router(sources_router)
-app.include_router(routine_router)
 app.include_router(portal_router)
 app.include_router(demo_router)
 
@@ -137,10 +135,6 @@ def serve_landing():
 @app.get("/review")
 def serve_review():
     return FileResponse(os.path.join(_FRONT_DIR, "review.html"), media_type="text/html", headers=_NO_CACHE)
-
-@app.get("/routine")
-def serve_routine():
-    return FileResponse(os.path.join(_FRONT_DIR, "routine.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/login")
 def serve_login():

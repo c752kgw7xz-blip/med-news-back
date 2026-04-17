@@ -1,0 +1,429 @@
+{
+  "working": [
+    {
+      "source": "cnge",
+      "label": "CNGE — Généralistes enseignants",
+      "specialty": "medecine-generale",
+      "homepage": "https://www.cnge.fr/",
+      "rss_url": "https://www.cnge.fr/feed/",
+      "total_entries": 10,
+      "feed_title": "CNGE",
+      "sample": [
+        "P4DP et Doctolib : un nouveau partenariat pour enrichir les données de santé en soins primaires et renforcer la qualité des soins au niveau national",
+        "LES SOIGNANTS NE DOIVENT JAMAIS ETRE DES CIBLES. NOUS APPELONS À LEUR PROTECTION, À GAZA COMME EN TOUTE ZONE DE CONFLIT"
+      ]
+    },
+    {
+      "source": "snfmi",
+      "label": "SNFMI — Médecine interne",
+      "specialty": "medecine-interne",
+      "homepage": "https://www.snfmi.org/",
+      "rss_url": "https://www.snfmi.org/rss.xml",
+      "total_entries": 10,
+      "feed_title": "SNFMI - Société Nationale de Médecine Interne",
+      "sample": [
+        "A consulter d'urgence ! (ex: angioedème, Schnitzler, CAPIEC, SAPAS, syndrome de Blau, syndrome H, IgG4, Mycoplasme, interféronopathies, dermatomyosite sous anti-TNF, SAPL...)",
+        "Utilisation de l’eculizumab dans la crise rénale sclérodermique"
+      ]
+    },
+    {
+      "source": "sfhta",
+      "label": "SFHTA — Hypertension artérielle",
+      "specialty": "cardiologie",
+      "homepage": "https://www.sfhta.eu/",
+      "rss_url": "https://www.sfhta.eu/feed/",
+      "total_entries": 10,
+      "feed_title": "SFHTA",
+      "sample": [
+        "Références bibliographiques que la SFHTA vous propose de lire (Newsletter mars 2026)",
+        "World Hypertension League (WHL)- Informations"
+      ]
+    },
+    {
+      "source": "sfar",
+      "label": "SFAR — Anesthésie-Réanimation",
+      "specialty": "anesthesie-reanimation",
+      "homepage": "https://sfar.org/",
+      "rss_url": "https://sfar.org/feed/",
+      "total_entries": 10,
+      "feed_title": "Société Française d’Anesthésie et de Réanimation",
+      "sample": [
+        "Résultats des élections au Conseil d’Administration 2026",
+        "Recommandation de bonne pratique « Place de l’ECBU avant une prise en charge urologique chirurgicale ou interventionnelle chez l’adulte et modalités de traitement en cas de colonisation » – Janvier 2026"
+      ]
+    },
+    {
+      "source": "sfn",
+      "label": "SFN — Neurologie",
+      "specialty": "neurologie",
+      "homepage": "https://www.sf-neuro.org/",
+      "rss_url": "https://www.sf-neuro.org/feed/",
+      "total_entries": 10,
+      "feed_title": "SFN",
+      "sample": [
+        "Valproate chez l’homme en désir de conception : mise au point d’actualisation",
+        "Fonds pour la Recherche sur les AVC : appel à projets 2026"
+      ]
+    },
+    {
+      "source": "sfpsychiatrie",
+      "label": "SFP — Psychiatrie",
+      "specialty": "psychiatrie",
+      "homepage": "https://www.sfpsy.org/",
+      "rss_url": "https://www.sfpsy.org/feed/",
+      "total_entries": 10,
+      "feed_title": "SFP",
+      "sample": [
+        "28 mai 2026 Webinaire Clinique et Précarité",
+        "10 avril 2026 Préparation aux auditions. Postes de Maître de Conférences"
+      ]
+    },
+    {
+      "source": "snfge",
+      "label": "SNFGE — Gastroentérologie",
+      "specialty": "gastroenterologie",
+      "homepage": "https://www.snfge.org/",
+      "rss_url": "https://www.snfge.org/rss.xml",
+      "total_entries": 10,
+      "feed_title": "SNFGE",
+      "sample": [
+        "📱 L'application JFHOD 2026 est disponible !",
+        "Nouveau chapitre du TNCD : 26. \"Bilan pré-thérapeutique et surveillance des immunothérapies en oncologie digestive\""
+      ]
+    },
+    {
+      "source": "afef",
+      "label": "AFEF — Hépatologie",
+      "specialty": "hepatologie",
+      "homepage": "https://afef.asso.fr/",
+      "rss_url": "https://afef.asso.fr/feed/",
+      "total_entries": 12,
+      "feed_title": "AFEF",
+      "sample": [
+        "Quoi de neuf en hépatologie ? Webconférence AFEF 2026 – Intégrale",
+        "Quoi de neuf en hépatologie ? Webconférence AFEF 2026 – Stéatohépatite Métabolique, Maladies du Foie liées à l’Alcool et Hépatites Virales"
+      ]
+    },
+    {
+      "source": "splf",
+      "label": "SPLF — Pneumologie",
+      "specialty": "pneumologie",
+      "homepage": "https://splf.fr/",
+      "rss_url": "https://splf.fr/feed/",
+      "total_entries": 10,
+      "feed_title": "Société de Pneumologie de Langue Française",
+      "sample": [
+        "Actualités BPCO",
+        "Statuts"
+      ]
+    },
+    {
+      "source": "sfendocrino",
+      "label": "SFE — Endocrinologie",
+      "specialty": "endocrinologie",
+      "homepage": "https://www.sfendocrino.org/",
+      "rss_url": "https://www.sfendocrino.org/feed/",
+      "total_entries": 10,
+      "feed_title": "Société Française d'Endocrinologie",
+      "sample": [
+        "JNDES 2026",
+        "Un webinaire de la SFE/GRT : l’échographie thyroïdienne"
+      ]
+    },
+    {
+      "source": "sfdiabete",
+      "label": "SFD — Diabétologie",
+      "specialty": "endocrinologie",
+      "homepage": "https://www.sfdiabete.org/",
+      "rss_url": "https://www.sfdiabete.org/rss.xml",
+      "total_entries": 2,
+      "feed_title": "Société Francophone du Diabète",
+      "sample": [
+        "Les enfants vivant avec un diabète et présentant au moins une caractéristique extrapancréatique non auto-immune devraient bénéficier d’un dépistage de diabète monogénique",
+        "\"Tous contre le diabète\" - Grande cause nationale 2015 - Signez la pétition !"
+      ]
+    },
+    {
+      "source": "sfrhumato",
+      "label": "SFR — Rhumatologie",
+      "specialty": "rhumatologie",
+      "homepage": "https://www.larhumatologie.fr/",
+      "rss_url": "https://www.larhumatologie.fr/feed/",
+      "total_entries": 16,
+      "feed_title": "La Société Française de Rhumatologie",
+      "sample": [
+        "Changement de présidence à la Société Française de Rhumatologie : le Pr Corinne Miceli‑Richard succède au Pr Thierry Schaeverbeke",
+        "Fébuxostat 80 mg : recommandations face aux tensions d’approvisionnement"
+      ]
+    },
+    {
+      "source": "sfndt",
+      "label": "SFNDT — Néphrologie",
+      "specialty": "nephrologie",
+      "homepage": "https://www.sfndt.org/",
+      "rss_url": "https://www.sfndt.org/actualites/feed/",
+      "total_entries": 7,
+      "feed_title": "Actualités",
+      "sample": [
+        "REPLAY : NEPHROPROTECTION : CONTINUER D'AVANCER ! (web SFNDT n°36)",
+        "LES JEUNES CHERCHEURS ENGAGES DANS LA RECHERCHE DE POINTE (#Génomique en population #sénescence glomérulaire #prématurité et fonction rénale à long terme)"
+      ]
+    },
+    {
+      "source": "sforl",
+      "label": "SFORL — ORL",
+      "specialty": "orl",
+      "homepage": "https://www.sforl.org/",
+      "rss_url": "https://www.sforl.org/feed/",
+      "total_entries": 10,
+      "feed_title": "SFORL",
+      "sample": [
+        "Edito du Président du congrès",
+        "Appel à cotisation 2025"
+      ]
+    },
+    {
+      "source": "afu",
+      "label": "AFU — Urologie",
+      "specialty": "urologie",
+      "homepage": "https://www.urofrance.org/",
+      "rss_url": "https://www.urofrance.org/feed/",
+      "total_entries": 10,
+      "feed_title": "Urofrance",
+      "sample": [
+        "Roulons pour la Santé de l’Homme en 2026",
+        "TVIM : une avancée pour les patients qui ne peuvent pas recevoir de cisplatine"
+      ]
+    },
+    {
+      "source": "sfgg",
+      "label": "SFGG — Gériatrie",
+      "specialty": "geriatrie",
+      "homepage": "https://sfgg.org/",
+      "rss_url": "https://sfgg.org/feed/",
+      "total_entries": 10,
+      "feed_title": "Société Française de Gériatrie et Gérontologie (SFGG)",
+      "sample": [
+        "« Hospitalisations et mortalité en lien avec une chute chez les personnes de 65 ans et plus en France » (données 2015-2024)",
+        "« Healthcare trajectories following cancer surgery in older adults: insights from the French health data system »"
+      ]
+    },
+    {
+      "source": "sfro",
+      "label": "SFRO — Radiothérapie oncologique",
+      "specialty": "oncologie",
+      "homepage": "https://www.sfro.fr/",
+      "rss_url": "https://www.sfro.fr/?format=feed&type=rss",
+      "total_entries": 3,
+      "feed_title": "Société Française de Radiothérapie Oncologique",
+      "sample": [
+        "Connexion requise replay",
+        "Replays webinaire"
+      ]
+    },
+    {
+      "source": "sfctcv",
+      "label": "SFCTCV — Chirurgie Thoracique et Cardio-Vasculaire",
+      "specialty": "chirurgie-thoracique",
+      "homepage": "https://www.sfctcv.org/",
+      "rss_url": "https://www.sfctcv.org/feed/",
+      "total_entries": 10,
+      "feed_title": "Société Française de Chirurgie Thoracique et Cardio-Vasculaire",
+      "sample": [
+        "Bourse de Mobilité Hors France Métropolitaine",
+        "Fellowship de chirurgie thoracique – Montréal"
+      ]
+    },
+    {
+      "source": "sfnc",
+      "label": "SFNC — Société Française de Neurochirurgie",
+      "specialty": "neurochirurgie",
+      "homepage": "https://www.sfneurochirurgie.fr/",
+      "rss_url": "https://sfneurochirurgie.fr/feed/",
+      "total_entries": 10,
+      "feed_title": "Société Française de Neurochirurgie",
+      "sample": [
+        "UK Jobs Alert – Ref: JRH/OUH/HR/UK/2026/EOI",
+        "Recherche Neurochirurgien du Rachis – Métropole de Lyon (69)"
+      ]
+    },
+    {
+      "source": "snfcp",
+      "label": "SNFCP — Colo-Proctologie",
+      "specialty": "gastroenterologie",
+      "homepage": "https://www.snfcp.org/",
+      "rss_url": "https://www.snfcp.org/feed/",
+      "total_entries": 10,
+      "feed_title": "SNFCP",
+      "sample": [
+        "Procto Quiz – Février 2026",
+        "Procto Quiz – Janvier 2026"
+      ]
+    },
+    {
+      "source": "sfm_micro",
+      "label": "SFM — Société Française de Microbiologie",
+      "specialty": "biologie",
+      "homepage": "https://www.sfm-microbiologie.org/",
+      "rss_url": "https://www.sfm-microbiologie.org/actualites/feed/",
+      "total_entries": 10,
+      "feed_title": "Actualités - SFM, Société Française de Microbiologie",
+      "sample": [
+        "Praticien Hospitalier Contractuel temps plein 6 mois – Hôpital Cochin-Port Royal",
+        "Head of Virology and Serology – LNS Luxembourg"
+      ]
+    }
+  ],
+  "dead": [
+    {
+      "source": "sfmg",
+      "label": "SFMG — Médecine générale",
+      "specialty": "medecine-generale",
+      "homepage": "https://www.sfmg.org/"
+    },
+    {
+      "source": "cardio_online",
+      "label": "Cardio-online (bras média SFC)",
+      "specialty": "cardiologie",
+      "homepage": "https://www.cardio-online.fr/"
+    },
+    {
+      "source": "srlf",
+      "label": "SRLF — Réanimation",
+      "specialty": "reanimation",
+      "homepage": "https://www.srlf.org/"
+    },
+    {
+      "source": "sfdermato",
+      "label": "SFD — Dermatologie",
+      "specialty": "dermatologie",
+      "homepage": "https://www.sfdermato.org/"
+    },
+    {
+      "source": "sfo",
+      "label": "SFO — Ophtalmologie",
+      "specialty": "ophtalmologie",
+      "homepage": "https://www.sfo-online.fr/"
+    },
+    {
+      "source": "spilf",
+      "label": "SPILF — Infectiologie",
+      "specialty": "infectiologie",
+      "homepage": "https://www.infectiologie.com/"
+    },
+    {
+      "source": "sfr_radio",
+      "label": "SFR — Radiologie",
+      "specialty": "radiologie",
+      "homepage": "https://www.radiologie.fr/"
+    },
+    {
+      "source": "sfh",
+      "label": "SFH — Hématologie",
+      "specialty": "hematologie",
+      "homepage": "https://sfh.hematologie.net/"
+    },
+    {
+      "source": "ffcd",
+      "label": "FFCD — Cancérologie digestive",
+      "specialty": "oncologie",
+      "homepage": "https://www.ffcd.fr/"
+    },
+    {
+      "source": "unicancer",
+      "label": "UNICANCER — Oncologie",
+      "specialty": "oncologie",
+      "homepage": "https://www.unicancer.fr/"
+    },
+    {
+      "source": "scv",
+      "label": "SCV — Chirurgie Vasculaire",
+      "specialty": "chirurgie-vasculaire",
+      "homepage": "https://www.chirurgievasculaire.fr/"
+    },
+    {
+      "source": "sofcpre",
+      "label": "SOFCPRE — Chirurgie Plastique Reconstructrice et Esthétique",
+      "specialty": "chirurgie-plastique",
+      "homepage": "https://www.sofcpre.fr/"
+    },
+    {
+      "source": "sofmer",
+      "label": "SOFMER — Médecine Physique et Réadaptation",
+      "specialty": "medecine-physique",
+      "homepage": "https://www.sofmer.com/"
+    },
+    {
+      "source": "sfa_allergo",
+      "label": "SFA — Société Française d'Allergologie",
+      "specialty": "allergologie",
+      "homepage": "https://www.sfa-allergologie.org/"
+    },
+    {
+      "source": "sfmv",
+      "label": "SFMV — Société Française de Médecine Vasculaire",
+      "specialty": "medecine-vasculaire",
+      "homepage": "https://www.sf-mv.fr/"
+    },
+    {
+      "source": "sfms",
+      "label": "SFMS — Société Française de Médecine du Sport",
+      "specialty": "medecine-sport",
+      "homepage": "https://www.sfms.asso.fr/"
+    },
+    {
+      "source": "sfa_addicto",
+      "label": "SFA — Société Française d'Alcoologie",
+      "specialty": "addictologie",
+      "homepage": "https://www.sfalcoologie.asso.fr/"
+    },
+    {
+      "source": "sfpath",
+      "label": "SFP — Société Française de Pathologie",
+      "specialty": "anatomopathologie",
+      "homepage": "https://www.sfpathol.org/"
+    },
+    {
+      "source": "sfmn",
+      "label": "SFMN — Société Française de Médecine Nucléaire",
+      "specialty": "medecine-nucleaire",
+      "homepage": "https://www.sfmn.org/"
+    },
+    {
+      "source": "fncgm",
+      "label": "FNCGM — Fédération Nationale des Collèges de Gynécologie Médicale",
+      "specialty": "gynecologie",
+      "homepage": "https://www.gynecologie-medicale.com/"
+    },
+    {
+      "source": "sfscmf",
+      "label": "SFSCMF — Chirurgie Maxillo-Faciale",
+      "specialty": "stomatologie",
+      "homepage": "https://www.sfscmf.fr/"
+    },
+    {
+      "source": "sfmu",
+      "label": "SFMU — Médecine d'Urgence",
+      "specialty": "medecine-urgences",
+      "homepage": "https://www.sfmu.org/"
+    },
+    {
+      "source": "sfpediatrie",
+      "label": "SFP — Société Française de Pédiatrie",
+      "specialty": "pediatrie",
+      "homepage": "https://www.sfpediatrie.com/"
+    },
+    {
+      "source": "sfnn",
+      "label": "SFNN — Société Française de Néonatologie",
+      "specialty": "pediatrie",
+      "homepage": "https://www.sfnn.fr/"
+    },
+    {
+      "source": "sfsp",
+      "label": "SFSP — Société Française de Santé Publique",
+      "specialty": "sante-publique",
+      "homepage": "https://www.sfsp.fr/"
+    }
+  ]
+}
