@@ -255,6 +255,14 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "tctmd":                "innovation",   # TCTMD — interventionnel vasculaire + cardio
     "quotidien_medecin":    "innovation",   # Le Quotidien du Médecin (FR, généraliste)
     "egora":                "innovation",   # Egora (FR, libéral, bruit élevé)
+    # ── PubMed — chirurgie cardiaque (Elsevier RSS mort → fallback NCBI) ─────
+    "pubmed_jtcvs":               "innovation",    # Journal of Thoracic and Cardiovascular Surgery
+    "pubmed_ejcts":               "innovation",    # European Journal of Cardio-Thoracic Surgery
+    "pubmed_ejcts_guidelines":    "recommandation",# EJCTS — Guidelines EACTS uniquement
+    "pubmed_ann_thorac_surg":     "innovation",    # Annals of Thoracic Surgery
+    "pubmed_jama_surgery_card":   "innovation",    # JAMA Surgery — filtré chirurgie cardiaque
+    # ── Presse spécialisée chirurgie cardiaque ────────────────────────────────
+    "ctsnet":                     "innovation",    # CTSNet — organe officiel EACTS/STS/AATS
 }
 
 
@@ -304,7 +312,9 @@ Nature Medicine, Clinical Chemistry, Physical Therapy Journal, BJOG, \
 Clinical Pharmacology & Therapeutics, Journal of Dental Research, \
 Journal of Advanced Nursing, etc.).
 
-SOURCE INNOVATION — Si la SOURCE indique un journal scientifique international :
+SOURCE INNOVATION — Si la SOURCE indique un journal scientifique international \
+(JAMA, NEJM, Lancet, BMJ, JVS, EJVES, JET, Annals of Vascular Surgery, \
+JTCVS, EJCTS, Annals of Thoracic Surgery, etc.) :
 → PERTINENCE : retenir UNIQUEMENT si l'article rapporte des résultats pouvant \
 CONCRÈTEMENT changer la pratique d'un professionnel de santé : essai clinique de \
 phase 3 ou 4, méta-analyse modifiant un standard de traitement, nouvelle thérapie ou \
@@ -332,8 +342,9 @@ méta-analyses, études observationnelles de grande envergure). \
 ayant valeur de recommandation explicite (grade de recommandation mentionné).
 
 SOURCE INNOVATION — BLOC evidence_json OBLIGATOIRE pour tout article de journal scientifique :
-Quand la SOURCE est un journal médical international (JAMA, NEJM, Lancet, BMJ, JVS, EJVES, \
-JET, Annals of Vascular Surgery, etc.), tu dois remplir un champ "evidence_json" \
+Quand la SOURCE est un journal médical international (JAMA, NEJM, Lancet, BMJ, \
+JVS, EJVES, JET, Annals of Vascular Surgery, \
+JTCVS, EJCTS, Annals of Thoracic Surgery, etc.), tu dois remplir un champ "evidence_json" \
 dans ta réponse JSON. Ce bloc est la clé pour distinguer un RCT pivot \
 (qui va changer les guidelines dans 2 ans) d'une confirmation sans intérêt.
 
@@ -361,20 +372,26 @@ Champs de evidence_json :
 "follow_up_months" — durée de suivi en mois (entier) ou null
 
 "primary_endpoint" — type d'endpoint principal :
-  "mortality"         → mortalité toutes causes
-  "patency"           → perméabilité primaire/secondaire (vasculaire)
-  "limb-salvage"      → sauvetage de membre (CLTI, ischémie aiguë)
-  "stroke-TIA"        → AVC/AIT (carotide, aortique)
-  "reintervention"    → liberté de réintervention
-  "composite-MALE"    → composite d'événements membres (MALE) ou cardiovasculaires (MACE)
-  "technical-success" → succès technique ou anatomique
-  "quality-of-life"   → qualité de vie, symptômes fonctionnels
-  "other"             → autre endpoint
-  null                → non applicable (guideline, éditorial)
+  "mortality"          → mortalité toutes causes
+  "patency"            → perméabilité primaire/secondaire (vasculaire)
+  "limb-salvage"       → sauvetage de membre (CLTI, ischémie aiguë)
+  "stroke-TIA"         → AVC/AIT (carotide, aortique)
+  "reintervention"     → liberté de réintervention
+  "composite-MALE"     → composite d'événements membres (MALE) ou cardiovasculaires (MACE)
+  "composite-MACCE"    → MACCE cardiaque : mortalité + AVC + IDM + réintervention (cardio)
+  "LVEF-function"      → fraction d'éjection, remodelage ventriculaire, fonction valvulaire
+  "valve-durability"   → durabilité valvulaire, liberté de dégénérescence structurelle (SVD)
+  "AF-recurrence"      → récidive de fibrillation atriale post-procédure
+  "technical-success"  → succès technique ou anatomique
+  "quality-of-life"    → qualité de vie, symptômes fonctionnels (KCCQ, NYHA)
+  "other"              → autre endpoint
+  null                 → non applicable (guideline, éditorial)
 
 "primary_endpoint_met" — true si l'endpoint primaire est atteint, false si non atteint, \
 null si non déterminable depuis le résumé. \
 ATTENTION : un essai négatif (false) peut être aussi important qu'un essai positif.
+
+━━ CHAMPS CHIRURGIE VASCULAIRE — remplir seulement si specialty_hint = chirurgie-vasculaire ━━
 
 "vascular_domain" — domaine vasculaire concerné :
   "aorte-abdominale"           → AAA, EVAR, chirurgie ouverte aorte sous-rénale
@@ -392,13 +409,43 @@ ATTENTION : un essai négatif (false) peut être aussi important qu'un essai pos
   "multi-domaine"              → article couvrant plusieurs territoires
   "non-vasculaire"             → si l'article ne porte pas sur la chirurgie vasculaire
 
-"intervention_type" — type d'intervention principale :
+"intervention_type" — type d'intervention principale (chirurgie vasculaire) :
   Endovasculaire : "EVAR"|"TEVAR"|"FEVAR-BEVAR"|"CAS"|"TCAR"|"PTA-stent"|"DCB"|
                    "atherectomie"|"thrombectomie-mecanique"|"thrombolyse-CDT"|
                    "ablation-thermique"|"ablation-non-thermique"
   Chirurgical    : "pontage"|"endarterectomie"|"reparation-ouverte"|"hybride"
   Pharmacologique: "anticoagulation"|"antiplatelet"|"traitement-medical"
   Autre          : "strategie-diagnostique"|"surveillance"|"multi-modalite"|"autre"
+
+━━ CHAMPS CHIRURGIE CARDIAQUE — remplir seulement si specialty_hint = chirurgie-cardiaque ━━
+
+"cardiac_domain" — domaine cardio-thoracique concerné :
+  "coronaire-CABG"             → revascularisation myocardique chirurgicale, pontage aorto-coronarien
+  "valvulaire-aortique"        → remplacement valvulaire aortique (SAVR, TAVI/TAVR), Ross, Bentall
+  "valvulaire-mitral"          → chirurgie mitrale (plastie, remplacement), MitraClip, TEER
+  "valvulaire-tricuspide"      → chirurgie tricuspide (réparation, TTVR percutané)
+  "aorte-ascendante-arche"     → anévrisme aorte ascendante, chirurgie arche aortique (elephant trunk)
+  "structural-heart"           → fermeture FOP/CIA, LAA occlusion, valvuloplastie per-cutanée
+  "LVAD-assistance-circ"       → ventricule artificiel (HeartMate, HVAD), ECMO chirurgicale
+  "arythmie-Maze"              → procédure de Maze, ablation chirurgicale FA, cryoablation épicardique
+  "congenital-adulte"          → cardiopathie congénitale de l'adulte, switch artériel, Fontan, Norwood
+  "transplantation-cardiaque"  → greffe cardiaque, immunosuppression post-greffe, cœur artificiel total
+  "perikarde-tumeur"           → péricardectomie, tumeur cardiaque (myxome), ablation de thrombus
+  "multi-domaine-cardiaque"    → article couvrant plusieurs territoires cardiaques
+  "non-cardiaque"              → si l'article ne porte pas sur la chirurgie cardiaque/thoracique
+
+"cardiac_procedure" — type d'intervention principal (chirurgie cardiaque) :
+  Valvulaire       : "SAVR"|"TAVI-TAVR"|"Ross"|"Bentall"|"plastie-mitrale"|"remplacement-mitral"|
+                     "MitraClip-TEER"|"remplacement-tricuspide"|"plastie-tricuspide"
+  Coronaire        : "CABG-CEC"|"CABG-off-pump"|"CABG-vs-PCI"|"revascularisation-hybride"
+  Aorte            : "remplacement-aorte-ascendante"|"intervention-arche"|"elephant-trunk"|
+                     "Bentall-Yacoub"
+  Assistance       : "LVAD"|"ECMO-VA"|"ballon-contre-pulsion"|"cœur-artificiel-total"
+  Structural       : "fermeture-FOP-CIA"|"LAA-occlusion"|"valvuloplastie-mitrale"
+  Arythmie         : "Maze-Cox"|"cryoablation-epikardique"|"ablation-chirurgicale-FA"
+  Autre            : "transplantation"|"traitement-medical"|"surveillance"|"multi-modalite"|"autre"
+
+━━ CHAMPS COMMUNS (tous les journaux scientifiques) ━━
 
 "comparator_type" — comparateur de l'étude :
   "vs-chirurgie-ouverte"|"vs-endovasculaire-autre"|"vs-traitement-medical"|
@@ -425,13 +472,19 @@ utile mais pas nouvelle information pour un praticien averti
   "guideline_update"|"autorisation_temporaire"
 
 "guideline_body" — organisme émetteur du guideline :
-  null|"ESVS"|"ESC"|"HAS"|"AHA-ACC"|"SFCV"|"SFMV"|"autre"
+  null|"ESVS"|"EACTS"|"ESC"|"HAS"|"AHA-ACC"|"STS"|"AATS"|"SFC"|"SFCTCV"|"SFCV"|"SFMV"|"autre"
+  (EACTS = European Association for Cardio-Thoracic Surgery,
+   STS = Society of Thoracic Surgeons — Amérique du Nord,
+   AATS = American Association for Thoracic Surgery,
+   SFC = Société Française de Cardiologie,
+   SFCTCV = Société Française de Chirurgie Thoracique et Cardio-Vasculaire)
 
 "guideline_grade" — grade de recommandation si précisé dans l'article :
   null|"IA"|"IB"|"IIaA"|"IIaB"|"IIbA"|"IIbB"|"III"
 
 "paradigm_shift" — VRAI uniquement si le résultat contredit un guideline établi.
-Standards actuels de référence pour détecter un paradigm shift en chirurgie vasculaire :
+
+Standards actuels — CHIRURGIE VASCULAIRE (specialty_hint = chirurgie-vasculaire) :
   • AAA : EVAR first-line si anatomie favorable (collet ≥15mm, angle <60°) — ESVS 2019/2024
   • CLTI : endovasculaire first-line si lésions simples (GVG-GLASS grade 1-2) ; \
 bypass si complexe (grade 3+) ou anatomie défavorable — BEST-CLI/BASIL-2 2023
@@ -439,6 +492,19 @@ bypass si complexe (grade 3+) ou anatomie défavorable — BEST-CLI/BASIL-2 2023
   • Carotide asymptomatique : bénéfice intervention incertain sous traitement médical optimal — ACST-2
   • AOMI femoro-poplitée : DCB supérieur PTA seul pour lésions <25cm — guideline ESVS 2023
   • TVP ilio-fémorale : DOAC first-line ; CDT seulement si massive + faible risque hémorragique
+
+Standards actuels — CHIRURGIE CARDIAQUE (specialty_hint = chirurgie-cardiaque) :
+  • TAVI vs SAVR risque faible : TAVI non-inférieur à SAVR à 5 ans — PARTNER 3/Evolut Low Risk 2024 ; \
+SAVR reste préféré chez sujets jeunes (<70 ans) pour durabilité à 20 ans — ESC/EACTS 2021
+  • RA sévère asymptomatique : chirurgie précoce dès LVEF <60% ou dilatation VG significative — ESC 2021
+  • CABG vs PCI multi-tronculaire : CABG supérieur à PCI (stent) en termes de survie à 10 ans \
+(SYNTAX, EXCEL long-term) — ESC 2018/2024 revascularisation myocardique
+  • CABG off-pump vs on-pump : pas de supériorité démontrée sur la mortalité à long terme — \
+méta-analyse 2019, ROOBY trial
+  • FA + chirurgie cardiaque concomitante : ablation simultanée recommandée (Maze/cryoablation) \
+si FA persistante/permanente — EACTS/ESC 2020 grade IIaB
+  • Dissection aortique aiguë type A : chirurgie d'urgence standard absolu — EACTS 2024
+  • Assistance LVAD : pont greffe ou thérapie définitive équivalents en survie à 2 ans — REMATCH/HeartMate 3
   → Un RCT qui invalide l'un de ces standards = paradigm_shift:true
 
 "negative_result" — true si l'endpoint primaire N'EST PAS atteint (important à signaler \

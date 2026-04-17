@@ -3,7 +3,7 @@
 Collecteur PubMed via NCBI E-utilities.
 
 Utilisé pour les journaux dont le RSS éditeur est mort (Elsevier 410 Gone,
-JAMA Surgery 403 depuis avril 2026), notamment en chirurgie vasculaire.
+JAMA Surgery 403 depuis avril 2026), notamment en chirurgie vasculaire et cardiaque.
 
 API : https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
   - esearch.fcgi : recherche par journal + filtre thématique + date → liste PMIDs
@@ -15,11 +15,21 @@ Rate limit NCBI :
   Stratégie : batch de 20 PMIDs par efetch + sleep entre lots si nécessaire.
 
 Sources configurées (voir PUBMED_SOURCES) :
-  pubmed_jvs           : Journal of Vascular Surgery
-  pubmed_ejves         : European Journal of Vascular and Endovascular Surgery
-  pubmed_jet           : Journal of Endovascular Therapy
-  pubmed_ann_vasc_surg : Annals of Vascular Surgery
-  pubmed_jama_surgery  : JAMA Surgery (RSS 403 depuis avril 2026) — filtré chirurgie vasculaire
+
+  ── Chirurgie vasculaire ──────────────────────────────────────────────────────
+  pubmed_jvs               : Journal of Vascular Surgery
+  pubmed_ejves             : European Journal of Vascular and Endovascular Surgery
+  pubmed_ejves_guidelines  : EJVES — Guidelines ESVS uniquement
+  pubmed_jet               : Journal of Endovascular Therapy
+  pubmed_ann_vasc_surg     : Annals of Vascular Surgery
+  pubmed_jama_surgery      : JAMA Surgery (RSS 403 depuis avril 2026) — filtré vasculaire
+
+  ── Chirurgie cardiaque ───────────────────────────────────────────────────────
+  pubmed_jtcvs             : Journal of Thoracic and Cardiovascular Surgery
+  pubmed_ejcts             : European Journal of Cardio-Thoracic Surgery
+  pubmed_ejcts_guidelines  : EJCTS — Guidelines EACTS uniquement
+  pubmed_ann_thorac_surg   : Annals of Thoracic Surgery
+  pubmed_jama_surgery_card : JAMA Surgery — filtré chirurgie cardiaque
 """
 
 from __future__ import annotations
@@ -148,6 +158,97 @@ PUBMED_SOURCES: list[dict] = [
         "label": "JAMA Surgery — vasculaire, RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
+        "min_score_hint": 7,
+    },
+
+    # ==========================================================================
+    # ── CHIRURGIE CARDIAQUE ────────────────────────────────────────────────────
+    # ==========================================================================
+
+    # ── Journal of Thoracic and Cardiovascular Surgery (JTCVS) ───────────────
+    # Premier journal de référence mondiale en chirurgie cardiaque et thoracique.
+    # Publie les grands RCTs (NOTION, SWEDEHEART), méta-analyses CABG vs PCI,
+    # études de survie valvulaire, résultats à long terme endoprothèses aortiques.
+    # Filtre PT : élimine les séries rétrospectives monocentriques qui dominent le journal.
+    {
+        "source": "pubmed_jtcvs",
+        "journal_term": f'"J Thorac Cardiovasc Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Thoracic and Cardiovascular Surgery (JTCVS) — RCTs & méta-analyses",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 6,
+    },
+
+    # ── European Journal of Cardio-Thoracic Surgery (EJCTS) — Innovation ─────
+    # Homologue européen de JTCVS. Publie les grandes études multicentriques
+    # européennes (PARTNER, SURTAVI sub-analyses européennes, études TAVI vs
+    # SAVR, pontage à cœur battant). Forum d'expression de l'EACTS.
+    {
+        "source": "pubmed_ejcts",
+        "journal_term": f'"Eur J Cardiothorac Surg"[Journal] AND {_PT_FILTER}',
+        "label": "EJCTS — RCTs & méta-analyses",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 6,
+    },
+
+    # ── EJCTS — Guidelines EACTS uniquement (source_type recommandation) ──────
+    # Filtre titre : guideline, consensus, recommendation, expert consensus…
+    # Les guidelines EACTS sont publiées dans EJCTS joint avec ESC ou en solo.
+    # Pas de filtre PT : parfois taguées "Review" ou "Article" sur PubMed.
+    {
+        "source": "pubmed_ejcts_guidelines",
+        "journal_term": (
+            '"Eur J Cardiothorac Surg"[Journal] AND ('
+            'guideline[Title] OR consensus[Title] OR recommendation[Title] OR '
+            '"clinical practice"[Title] OR "position statement"[Title] OR '
+            '"expert consensus"[Title] OR "European Association"[Title] OR '
+            '"EACTS"[Title] OR "management of"[Title]'
+            ')'
+        ),
+        "label": "EJCTS — Guidelines EACTS",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 4,
+    },
+
+    # ── Annals of Thoracic Surgery (Ann Thorac Surg) ─────────────────────────
+    # Journal à fort volume rétrospectif (séries de cas, registres monocentriques).
+    # Même avec le filtre PT, le niveau moyen est plus bas que JTCVS/EJCTS.
+    # Seuil relevé à 7 pour ne retenir que les études à impact clinique réel.
+    {
+        "source": "pubmed_ann_thorac_surg",
+        "journal_term": f'"Ann Thorac Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Annals of Thoracic Surgery — RCTs & méta-analyses",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 7,
+    },
+
+    # ── JAMA Surgery — chirurgie cardiaque (RSS 403 depuis avril 2026) ────────
+    # Double filtre : thématique cardiaque + type de publication.
+    # JAMA Surgery est généraliste — cible coronarien, valvulaire, aortique,
+    # assistance circulatoire. Score_density seuil 7 car sélection déjà faite.
+    {
+        "source": "pubmed_jama_surgery_card",
+        "journal_term": (
+            '"JAMA Surg"[Journal] AND ('
+            '"cardiac surgery"[Title/Abstract] OR '
+            '"coronary artery bypass"[Title/Abstract] OR '
+            '"CABG"[Title/Abstract] OR '
+            '"aortic valve"[Title/Abstract] OR '
+            '"mitral valve"[Title/Abstract] OR '
+            '"TAVI"[Title/Abstract] OR '
+            '"TAVR"[Title/Abstract] OR '
+            '"heart valve"[Title/Abstract] OR '
+            '"aortic root"[Title/Abstract] OR '
+            '"ventricular assist"[Title/Abstract] OR '
+            '"heart transplant"[Title/Abstract]'
+            f') AND {_PT_FILTER}'
+        ),
+        "label": "JAMA Surgery — cardiaque, RCTs & méta-analyses",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
         "min_score_hint": 7,
     },
 ]
