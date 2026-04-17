@@ -270,6 +270,21 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
 .footer { padding: 24px 0 8px; text-align: center; }
 .footer p { font-size: 11px; color: var(--text5); letter-spacing: .2px; line-height: 2; }
 .footer a { color: var(--text4); text-decoration: none; }
+
+/* ── Responsive mobile ── */
+@media (max-width: 480px) {
+  .bg  { padding: 16px 8px; }
+  .hd  { padding: 20px 16px 16px; }
+  .hd-title { font-size: 20px; }
+  .edito { padding: 0 16px 20px; }
+  .portal-strip { padding: 14px 16px; }
+  .portal-strip p { display: block; max-width: 100%; margin-right: 0; }
+  .portal-btn { display: block; margin-left: 0; margin-top: 10px; text-align: center; }
+  .grp  { padding: 20px 16px 8px; }
+  .card { margin: 0 8px 8px; padding: 16px 14px 14px; }
+  .card-title { font-size: 0.88rem; }
+  .card-resume { font-size: 12px; }
+}
 """
 
 # ---------------------------------------------------------------------------
