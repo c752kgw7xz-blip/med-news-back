@@ -1829,8 +1829,8 @@ async function selectExploreSpec(slug, el) {
   activeSourceType = 'all';
   showSourcePills();
   if (DEMO_MODE) {
-    // En démo, on affiche tous les articles (pas de filtrage par spé côté client)
-    allLoadedArticles = [...(_demoCache || DEMO_ARTICLES)];
+    const _base = _demoCache || DEMO_ARTICLES;
+    allLoadedArticles = slug === 'chirurgie-vasculaire' ? [..._base] : [];
     totalArticles = allLoadedArticles.length;
     renderGroupedArticles();
     updateRubrique();
@@ -1858,7 +1858,8 @@ async function resetAndLoad() {
   document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
 
   if (DEMO_MODE) {
-    allLoadedArticles = [...(_demoCache || DEMO_ARTICLES)];
+    const _base = _demoCache || DEMO_ARTICLES;
+    allLoadedArticles = activeSpecSlug === 'chirurgie-vasculaire' ? [..._base] : [];
     totalArticles = allLoadedArticles.length;
     document.getElementById('articles-container').innerHTML = '';
     renderGroupedArticles();
@@ -2288,12 +2289,7 @@ async function loadDemoData() {
   document.getElementById('spec-label').textContent = userSpecName;
   allSpecialties = DEMO_SPECIALTIES;
   specTypeCounts = {
-    'chirurgie-vasculaire':      { total:13, reglementaire:0, recommandation:2, innovation:11 },
-    'anesthesiologie-reanimation':{ total:3, reglementaire:1, recommandation:2, innovation:0 },
-    'cardiologie':               { total:5, reglementaire:1, recommandation:2, innovation:2 },
-    'medecine-generale':         { total:9, reglementaire:4, recommandation:4, innovation:1 },
-    'chirurgie-orthopedique':    { total:2, reglementaire:1, recommandation:1, innovation:0 },
-    'biologie-medicale':         { total:4, reglementaire:2, recommandation:2, innovation:0 },
+    'chirurgie-vasculaire': { total:13, reglementaire:0, recommandation:2, innovation:11 },
   };
   try {
     const [artRes, cntRes] = await Promise.all([
