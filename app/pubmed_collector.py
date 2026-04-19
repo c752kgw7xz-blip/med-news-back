@@ -349,6 +349,252 @@ PUBMED_SOURCES: list[dict] = [
         "specialty_hint": "chirurgie-cardiaque",
         "min_score_hint": 7,
     },
+
+    # ── Journal of Heart and Lung Transplantation (JHLT) ─────────────────────
+    # Journal de référence mondial transplant cardiaque + MCS/LVAD/TMCS.
+    # Publie : RCTs LVAD, registres ISHLT, guidelines transplant, études bridging.
+    # Journal 100 % ciblé → pas de filtre thématique supplémentaire.
+    # Volume : ~21 articles/90j. Min_score 6 (niveau de preuve élevé dans ce journal).
+    {
+        "source": "pubmed_jhlt",
+        "journal_term": f'"J Heart Lung Transplant"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Heart and Lung Transplantation — transplant & LVAD",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 6,
+    },
+
+    # ── EuroIntervention (PCR) ────────────────────────────────────────────────
+    # Journal de référence européen pour l'interventionnel structurel cardiaque.
+    # Publie : essais TAVI, TEER, occlusion auricule, cardio-oncologie interventionnelle.
+    # Filtre thématique cardiac structural — exclut coronaire pur et péricardique.
+    # Volume : ~8 articles/90j. Min_score 6.
+    {
+        "source": "pubmed_eurointerv",
+        "journal_term": (
+            '"EuroIntervention"[Journal] AND ('
+            '"TAVI"[tiab] OR "TAVR"[tiab] OR "transcatheter"[tiab] OR '
+            '"aortic valve"[tiab] OR "mitral valve"[tiab] OR "tricuspid"[tiab] OR '
+            '"structural heart"[tiab] OR "left atrial appendage"[tiab] OR '
+            '"TEER"[tiab] OR "edge-to-edge"[tiab] OR "valve-in-valve"[tiab] OR '
+            '"cardiac surgery"[tiab] OR "coronary artery bypass"[tiab]'
+            f') AND {_PT_FILTER}'
+        ),
+        "label": "EuroIntervention (PCR) — structural heart & TAVI européen",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 6,
+    },
+
+    # ── Circulation: Heart Failure (AHA) ─────────────────────────────────────
+    # Journal AHA dédié à l'insuffisance cardiaque avancée.
+    # Publie : essais LVAD (MOMENTUM 3, ENDURANCE), registres MCS, études transplant,
+    # nouvelles thérapies IC terminale. Journal ciblé → pas de filtre thématique.
+    # Volume : ~9 articles/90j. Min_score 6.
+    {
+        "source": "pubmed_circ_heart_fail",
+        "journal_term": f'"Circ Heart Fail"[Journal] AND {_PT_FILTER}',
+        "label": "Circulation: Heart Failure — LVAD, MCS, transplant, IC avancée",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 6,
+    },
+
+    # ── ESC Guidelines (via European Heart Journal + Eur J Heart Fail) ───────
+    # Les guidelines ESC sont publiées dans EHJ et Eur J Heart Fail.
+    # PubMed ne les tague pas systématiquement "Practice Guideline"[pt] →
+    # on filtre par titre (guideline, consensus, recommendation, position statement).
+    # Volume très faible (~3/180j) mais chaque document = guideline ESC complet.
+    # Min_score 4 — sélection sur pertinence cardiaque chirurgicale en aval.
+    {
+        "source": "pubmed_esc_guidelines",
+        "journal_term": (
+            '("Eur Heart J"[Journal] OR "Eur J Heart Fail"[Journal] OR '
+            '"Eur Heart J Cardiovasc Imaging"[Journal]) AND '
+            '(guideline[Title] OR "consensus document"[Title] OR '
+            '"position statement"[Title] OR "expert consensus"[Title] OR '
+            '"ESC Guidelines"[Title] OR "management of"[Title] OR '
+            '"recommendations for"[Title])'
+        ),
+        "label": "ESC Guidelines — EHJ / Eur J Heart Fail / EHJCI",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 4,
+    },
+
+    # ── STS Guidelines (via Annals of Thoracic Surgery) ──────────────────────
+    # Les guidelines STS (Society of Thoracic Surgeons) sont publiées dans
+    # Ann Thorac Surg et Ann Thorac Surg Short Reports.
+    # Filtre titre guideline + STS/Society of Thoracic Surgeons.
+    # Volume faible (~3/180j) mais haute valeur réglementaire US (souvent adoptés en EU).
+    # Min_score 4.
+    {
+        "source": "pubmed_sts_guidelines",
+        "journal_term": (
+            '"Ann Thorac Surg"[Journal] AND ('
+            'guideline[Title] OR "STS guideline"[Title] OR '
+            '"Society of Thoracic Surgeons"[tiab] OR '
+            '"consensus statement"[Title] OR "position statement"[Title] OR '
+            '"expert consensus"[Title] OR "expert panel"[Title]'
+            ')'
+        ),
+        "label": "STS Guidelines — Annals of Thoracic Surgery",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-cardiaque",
+        "min_score_hint": 4,
+    },
+
+    # ── Chirurgie orthopédique — journaux innovation ──────────────────────────
+    # Seuil 7 par défaut : équivalent chirurgie cardiaque, ajustable après retour.
+    {
+        "source": "pubmed_jbjs",
+        "journal_term": f'"J Bone Joint Surg Am"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Bone & Joint Surgery (Am) — JBJS",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    {
+        "source": "pubmed_bone_joint_j",
+        "journal_term": f'"Bone Joint J"[Journal] AND {_PT_FILTER}',
+        "label": "Bone & Joint Journal (BJJ/JBJS Br) — EFORT flagship",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    {
+        "source": "pubmed_corr",
+        "journal_term": f'"Clin Orthop Relat Res"[Journal] AND {_PT_FILTER}',
+        "label": "Clinical Orthopaedics and Related Research (CORR)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    {
+        "source": "pubmed_jarthroplasty",
+        "journal_term": f'"J Arthroplasty"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Arthroplasty — prothèses hanche/genou",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    {
+        "source": "pubmed_kssta",
+        "journal_term": f'"Knee Surg Sports Traumatol Arthrosc"[Journal] AND {_PT_FILTER}',
+        "label": "Knee Surgery Sports Traumatology Arthroscopy (KSSTA) — ESSKA",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    {
+        "source": "pubmed_acta_orthop",
+        "journal_term": f'"Acta Orthop"[Journal] AND {_PT_FILTER}',
+        "label": "Acta Orthopaedica — Nordic Orthopaedic Federation",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    # ── Chirurgie du sport / arthroscopie ────────────────────────────────────
+    {
+        "source": "pubmed_ajsm",
+        "journal_term": f'"Am J Sports Med"[Journal] AND {_PT_FILTER}',
+        "label": "American Journal of Sports Medicine (AJSM) — AOSSM",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    {
+        "source": "pubmed_arthroscopy",
+        "journal_term": f'"Arthroscopy"[Journal] AND {_PT_FILTER}',
+        "label": "Arthroscopy — Journal of Arthroscopic and Related Surgery",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    # ── Sous-spécialités ortho ────────────────────────────────────────────────
+    {
+        "source": "pubmed_jses",
+        "journal_term": f'"J Shoulder Elbow Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Shoulder and Elbow Surgery (JSES)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    {
+        "source": "pubmed_spine",
+        "journal_term": f'"Spine (Phila Pa 1976)"[Journal] AND {_PT_FILTER}',
+        "label": "Spine — Wolters Kluwer",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    {
+        "source": "pubmed_j_orthop_trauma",
+        "journal_term": f'"J Orthop Trauma"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Orthopaedic Trauma",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 7,
+    },
+    # ── Journaux européens complémentaires ───────────────────────────────────
+    {
+        "source": "pubmed_int_orthop",
+        "journal_term": f'"Int Orthop"[Journal] AND {_PT_FILTER}',
+        "label": "International Orthopaedics (SICOT)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 6,
+    },
+    {
+        "source": "pubmed_arch_orthop_trauma",
+        "journal_term": f'"Arch Orthop Trauma Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Archives of Orthopaedic and Trauma Surgery",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 6,
+    },
+    # OTSR = journal officiel SOFCOT — bilinguisme FR/EN, haut contexte français
+    {
+        "source": "pubmed_otsr",
+        "journal_term": f'"Orthop Traumatol Surg Res"[Journal] AND {_PT_FILTER}',
+        "label": "Orthopaedics & Traumatology Surgery & Research (OTSR) — SOFCOT",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 6,
+    },
+
+    # ── Chirurgie orthopédique — guidelines / recommandations ─────────────────
+    # Filtre titre plutôt que PT : les guidelines ortho ne sont pas systématiquement
+    # taguées "Practice Guideline"[pt] dans PubMed.
+    {
+        "source": "pubmed_otsr_guidelines",
+        "journal_term": (
+            '"Orthop Traumatol Surg Res"[Journal] AND ('
+            'guideline[Title] OR recommendation[Title] OR consensus[Title] OR '
+            '"position statement"[Title] OR "expert opinion"[Title] OR '
+            '"clinical practice"[Title] OR "best practice"[Title]'
+            ')'
+        ),
+        "label": "OTSR Guidelines — SOFCOT recommandations",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 4,
+    },
+    {
+        "source": "pubmed_efort_guidelines",
+        "journal_term": (
+            '"EFORT Open Rev"[Journal] AND ('
+            'guideline[Title] OR recommendation[Title] OR consensus[Title] OR '
+            '"position statement"[Title] OR "expert opinion"[Title] OR '
+            '"clinical practice"[Title] OR "best practice"[Title] OR '
+            '"systematic review"[Title] OR "meta-analysis"[Title]'
+            ')'
+        ),
+        "label": "EFORT Open Reviews — Guidelines européennes ortho",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-orthopedique",
+        "min_score_hint": 4,
+    },
 ]
 
 

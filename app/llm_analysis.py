@@ -264,10 +264,33 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "pubmed_jacc_card":           "innovation",    # JACC — Journal American College of Cardiology
     "pubmed_jacc_interv":         "innovation",    # JACC Cardiovascular Interventions — TAVI/structural
     "pubmed_eur_heart_j":         "innovation",    # European Heart Journal (ESC flagship)
+    "pubmed_jhlt":                "innovation",    # Journal of Heart and Lung Transplantation — transplant & LVAD
+    "pubmed_eurointerv":          "innovation",    # EuroIntervention (PCR) — structural heart, TAVI/TEER européen
+    "pubmed_circ_heart_fail":     "innovation",    # Circulation: Heart Failure — LVAD, MCS, IC avancée
+    "pubmed_esc_guidelines":      "recommandation",# ESC Guidelines via EHJ / Eur J Heart Fail
+    "pubmed_sts_guidelines":      "recommandation",# STS Guidelines via Annals of Thoracic Surgery
     # ── Journal français cardiologie/chirurgie cardiaque ─────────────────────
     "arch_cardiovasc_dis":        "innovation",    # Archives of Cardiovascular Diseases — SFC officiel
     # ── Presse spécialisée chirurgie cardiaque ────────────────────────────────
     "ctsnet":                     "innovation",    # CTSNet — organe officiel EACTS/STS/AATS
+    # ── PubMed — chirurgie orthopédique ──────────────────────────────────────
+    "pubmed_jbjs":                "innovation",    # Journal of Bone & Joint Surgery (Am)
+    "pubmed_bone_joint_j":        "innovation",    # Bone & Joint Journal — EFORT flagship
+    "pubmed_corr":                "innovation",    # Clinical Orthopaedics and Related Research
+    "pubmed_jarthroplasty":       "innovation",    # Journal of Arthroplasty
+    "pubmed_kssta":               "innovation",    # Knee Surg Sports Traumatol Arthrosc — ESSKA
+    "pubmed_acta_orthop":         "innovation",    # Acta Orthopaedica
+    "pubmed_otsr":                "innovation",    # OTSR — journal officiel SOFCOT
+    "pubmed_otsr_guidelines":     "recommandation",# OTSR — guidelines/recommandations SOFCOT
+    "pubmed_efort_guidelines":    "recommandation",# EFORT Open Reviews — guidelines européennes
+    # ── Chirurgie du sport / sous-spécialités ortho ───────────────────────────
+    "pubmed_ajsm":                "innovation",    # American Journal of Sports Medicine
+    "pubmed_arthroscopy":         "innovation",    # Arthroscopy — AOSSM
+    "pubmed_jses":                "innovation",    # Journal of Shoulder and Elbow Surgery
+    "pubmed_spine":               "innovation",    # Spine (Wolters Kluwer)
+    "pubmed_j_orthop_trauma":     "innovation",    # Journal of Orthopaedic Trauma
+    "pubmed_int_orthop":          "innovation",    # International Orthopaedics — SICOT
+    "pubmed_arch_orthop_trauma":  "innovation",    # Archives of Orthopaedic and Trauma Surgery
 }
 
 
@@ -1192,9 +1215,32 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_jacc_card":           "chirurgie-cardiaque",
     "pubmed_jacc_interv":         "chirurgie-cardiaque",
     "pubmed_eur_heart_j":         "chirurgie-cardiaque",
+    "pubmed_jhlt":                "chirurgie-cardiaque",  # Journal of Heart and Lung Transplantation
+    "pubmed_eurointerv":          "chirurgie-cardiaque",  # EuroIntervention — structural heart
+    "pubmed_circ_heart_fail":     "chirurgie-cardiaque",  # Circulation: Heart Failure
+    "pubmed_esc_guidelines":      "chirurgie-cardiaque",  # ESC Guidelines via EHJ
+    "pubmed_sts_guidelines":      "chirurgie-cardiaque",  # STS Guidelines via Ann Thorac Surg
     "arch_cardiovasc_dis":        "chirurgie-cardiaque",  # RSS ScienceDirect — SFC officiel
     "eacts":                      "chirurgie-cardiaque",
     "sfctcv":                     "chirurgie-cardiaque",
+    # ── Chirurgie orthopédique ─────────────────────────────────────────────────
+    "pubmed_jbjs":                "chirurgie-orthopedique",
+    "pubmed_bone_joint_j":        "chirurgie-orthopedique",
+    "pubmed_corr":                "chirurgie-orthopedique",
+    "pubmed_jarthroplasty":       "chirurgie-orthopedique",
+    "pubmed_kssta":               "chirurgie-orthopedique",
+    "pubmed_acta_orthop":         "chirurgie-orthopedique",
+    "pubmed_otsr":                "chirurgie-orthopedique",
+    "pubmed_otsr_guidelines":     "chirurgie-orthopedique",
+    "pubmed_efort_guidelines":    "chirurgie-orthopedique",
+    # efort (RSS) déjà configuré dans sources_europe.py → specialty_hint implicite
+    "pubmed_ajsm":                "chirurgie-orthopedique",
+    "pubmed_arthroscopy":         "chirurgie-orthopedique",
+    "pubmed_jses":                "chirurgie-orthopedique",
+    "pubmed_spine":               "chirurgie-orthopedique",
+    "pubmed_j_orthop_trauma":     "chirurgie-orthopedique",
+    "pubmed_int_orthop":          "chirurgie-orthopedique",
+    "pubmed_arch_orthop_trauma":  "chirurgie-orthopedique",
     # ── Cardiologie (à activer quand le prompt cardiologie sera implémenté) ──
     # "jama_cardiology":      "cardiologie",
     # "sfc_recommandations":  "cardiologie",
@@ -1660,6 +1706,27 @@ SOURCE_CONFIG: dict[str, dict] = {
         "require_whitelist": False,
         "min_llm_score": 6,
     },
+    # ── Sources PubMed — chirurgie orthopédique ───────────────────────────────
+    # Seuil 7 : même logique que chirurgie cardiaque au lancement.
+    # Ajustable vers 8 si trop de bruit (séries courtes, registres rétrospectifs).
+    **{src: {"require_whitelist": False, "min_llm_score": 7} for src in [
+        "pubmed_jbjs", "pubmed_bone_joint_j", "pubmed_corr",
+        "pubmed_jarthroplasty", "pubmed_kssta", "pubmed_acta_orthop",
+    ]},
+    # OTSR : journal SOFCOT — moins sélectif que JBJS mais fort contexte FR → seuil 6.
+    "pubmed_otsr": {"require_whitelist": False, "min_llm_score": 6},
+    # Guidelines ortho : filtre titre déjà sélectif → seuil bas, ne pas rater.
+    "pubmed_otsr_guidelines":  {"require_whitelist": False, "min_llm_score": 4},
+    "pubmed_efort_guidelines": {"require_whitelist": False, "min_llm_score": 4},
+    # Chirurgie du sport / sous-spécialités : IF élevé (AJSM, Arthroscopy) → seuil 7.
+    **{src: {"require_whitelist": False, "min_llm_score": 7} for src in [
+        "pubmed_ajsm", "pubmed_arthroscopy", "pubmed_jses",
+        "pubmed_spine", "pubmed_j_orthop_trauma",
+    ]},
+    # Journaux européens complémentaires : IF plus modeste → seuil 6.
+    **{src: {"require_whitelist": False, "min_llm_score": 6} for src in [
+        "pubmed_int_orthop", "pubmed_arch_orthop_trauma",
+    ]},
 }
 
 _DEFAULT_SOURCE_CONFIG = {"require_whitelist": False, "min_llm_score": 5}
