@@ -33,6 +33,20 @@ Sources configurées (voir PUBMED_SOURCES) :
   pubmed_jacc_card         : Journal of the American College of Cardiology — filtré cardiac
   pubmed_jacc_interv       : JACC Cardiovascular Interventions — filtré cardiac (TAVI, structural)
   pubmed_eur_heart_j       : European Heart Journal — filtré chirurgie cardiaque
+
+  ── Chirurgie plastique & reconstructrice ────────────────────────────────────
+  pubmed_prs               : Plastic and Reconstructive Surgery (ASPS flagship)
+  pubmed_jpras             : Journal of Plastic, Reconstructive & Aesthetic Surgery (BAPRAS/ESPRAS)
+  pubmed_asj               : Aesthetic Surgery Journal (ASAPS)
+  pubmed_ann_plast_surg    : Annals of Plastic Surgery
+  pubmed_jhs_am            : Journal of Hand Surgery American (ASSH)
+  pubmed_jhs_eur           : Journal of Hand Surgery European (FESSH)
+  pubmed_jrms              : Journal of Reconstructive Microsurgery
+  pubmed_microsurgery      : Microsurgery
+  pubmed_burns             : Burns — Elsevier
+  pubmed_acpe              : Annales de Chirurgie Plastique Esthétique (SOFCPRE)
+  pubmed_prs_guidelines    : PRS — Guidelines ASPS / consensus plastique
+  pubmed_jpras_guidelines  : JPRAS — Guidelines BAPRAS/ESPRAS
 """
 
 from __future__ import annotations
@@ -553,6 +567,184 @@ PUBMED_SOURCES: list[dict] = [
         "specialty_hint": "chirurgie-orthopedique",
         "min_score_hint": 6,
     },
+    # ==========================================================================
+    # ── CHIRURGIE PLASTIQUE & RECONSTRUCTRICE ─────────────────────────────────
+    # ==========================================================================
+
+    # ── Plastic and Reconstructive Surgery (PRS) — ASPS flagship ─────────────
+    # Journal de référence mondial : reconstruction mammaire, microchirurgie,
+    # lambeaux libres, chirurgie esthétique. Publie les RCTs multicentriques ASPS,
+    # méta-analyses DIEP vs TRAM, essais randomisés liposuccion/abdominoplastie.
+    # Filtre PT : élimine les séries rétrospectives monocentriques qui dominent.
+    {
+        "source": "pubmed_prs",
+        "journal_term": f'"Plast Reconstr Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Plastic and Reconstructive Surgery (PRS) — ASPS flagship",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 7,
+    },
+
+    # ── Journal of Plastic, Reconstructive & Aesthetic Surgery (JPRAS) ────────
+    # Organe officiel BAPRAS (British) et forum ESPRAS (European). Publie les
+    # grandes études européennes multicentrique : brûlures, reconstruction post-
+    # oncologique, chirurgie de la main, microchirurgie reconstructrice.
+    {
+        "source": "pubmed_jpras",
+        "journal_term": f'"J Plast Reconstr Aesthet Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Plastic, Reconstructive & Aesthetic Surgery (JPRAS) — BAPRAS/ESPRAS",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 7,
+    },
+
+    # ── Aesthetic Surgery Journal (ASJ) — ASAPS ───────────────────────────────
+    # Journal référence chirurgie esthétique : rhinoplastie, mammoplastie, lifting,
+    # liposuccion. Publie guidelines ASAPS, essais randomisés implants, méta-analyses
+    # techniques esthétiques. Contexte fortement US mais largement lu en France.
+    {
+        "source": "pubmed_asj",
+        "journal_term": f'"Aesthet Surg J"[Journal] AND {_PT_FILTER}',
+        "label": "Aesthetic Surgery Journal (ASJ) — ASAPS",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 7,
+    },
+
+    # ── Annals of Plastic Surgery ─────────────────────────────────────────────
+    # Journal Wolters Kluwer à fort volume rétrospectif. Même avec filtre PT,
+    # niveau moyen plus bas que PRS/JPRAS. Seuil relevé à 8 : ne retenir que
+    # les méta-analyses à fort impact ou études multicentriques pivots.
+    {
+        "source": "pubmed_ann_plast_surg",
+        "journal_term": f'"Ann Plast Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Annals of Plastic Surgery",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 8,
+    },
+
+    # ── Journal of Hand Surgery — American (ASSH) ─────────────────────────────
+    # Référence mondiale chirurgie de la main. En France la chirurgie de la main
+    # est exercée principalement par les chirurgiens plasticiens reconstructeurs.
+    # Publie RCTs tendons, nerfs, arthrose digitale, réimplantations, syndactylie.
+    {
+        "source": "pubmed_jhs_am",
+        "journal_term": f'"J Hand Surg Am"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Hand Surgery American (ASSH) — chirurgie de la main",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 7,
+    },
+
+    # ── Journal of Hand Surgery — European (FESSH) ────────────────────────────
+    # Homologue européen — publie les grandes séries européennes (registres
+    # nordiques, études FESSH multicentriques) sur tendon, nerf, arthroplastie
+    # digitale, traumatologie sévère de la main.
+    {
+        "source": "pubmed_jhs_eur",
+        "journal_term": f'"J Hand Surg Eur Vol"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Hand Surgery European (FESSH)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 6,
+    },
+
+    # ── Journal of Reconstructive Microsurgery (JRM) ──────────────────────────
+    # Journal dédié microchirurgie reconstructrice : lambeaux libres (DIEP, ALT,
+    # fibula), replantations, transferts nerveux, lymphœdème microsurgical.
+    # Journal ciblé → pas de filtre thématique additionnel.
+    {
+        "source": "pubmed_jrms",
+        "journal_term": f'"J Reconstr Microsurg"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Reconstructive Microsurgery (JRM)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 6,
+    },
+
+    # ── Microsurgery ──────────────────────────────────────────────────────────
+    # Journal spécialisé microchirurgie (Wiley). Publie études sur perforateurs,
+    # cartographie MSCT, techniques anastomose, lymphœdème microsurgical (LYMPHA,
+    # LVA), transfert vascularisé ganglionnaire lymphatique.
+    {
+        "source": "pubmed_microsurgery",
+        "journal_term": f'"Microsurgery"[Journal] AND {_PT_FILTER}',
+        "label": "Microsurgery — Wiley",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 6,
+    },
+
+    # ── Burns (Elsevier) ──────────────────────────────────────────────────────
+    # Journal international de référence pour la prise en charge des brûlures.
+    # Publie RCTs pansements, greffes en maille, substituts cutanés (MatriDerm,
+    # Integra), protocoles de réhabilitation, épidémiologie centres brûlés.
+    {
+        "source": "pubmed_burns",
+        "journal_term": f'"Burns"[Journal] AND {_PT_FILTER}',
+        "label": "Burns — International Journal of Burn Care (Elsevier)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 6,
+    },
+
+    # ── Annales de Chirurgie Plastique Esthétique (ACPE) — SOFCPRE ───────────
+    # Journal officiel de la SOFCPRE (Société Française de Chirurgie Plastique
+    # Reconstructrice et Esthétique). Publie études françaises multicentriques,
+    # recommandations SOFCPRE, registres implants mammaires PIP-post. Bilinguisme.
+    # Seuil 6 : contexte français fort, même études de niveau moyen sont pertinentes.
+    {
+        "source": "pubmed_acpe",
+        "journal_term": f'"Ann Chir Plast Esthet"[Journal] AND {_PT_FILTER}',
+        "label": "Annales de Chirurgie Plastique Esthétique (ACPE) — SOFCPRE",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 6,
+    },
+
+    # ── Chirurgie plastique — guidelines / recommandations ────────────────────
+
+    # PRS Guidelines — ASPS / consensus plastique
+    # Filtre titre : guideline, consensus, recommendation, position statement,
+    # clinical practice, systematic review ayant valeur de recommandation.
+    # Les guidelines ASPS (Breast Implant Safety, DIEP best practice, etc.)
+    # sont publiées dans PRS en tant qu'articles de société.
+    {
+        "source": "pubmed_prs_guidelines",
+        "journal_term": (
+            '"Plast Reconstr Surg"[Journal] AND ('
+            'guideline[Title] OR recommendation[Title] OR consensus[Title] OR '
+            '"position statement"[Title] OR "expert opinion"[Title] OR '
+            '"clinical practice"[Title] OR "best practice"[Title] OR '
+            '"ASPS"[Title] OR "American Society of Plastic Surgeons"[Title] OR '
+            '"practice advisory"[Title]'
+            ')'
+        ),
+        "label": "PRS Guidelines — ASPS recommandations & consensus plastique",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 4,
+    },
+
+    # JPRAS Guidelines — BAPRAS / ESPRAS recommandations
+    {
+        "source": "pubmed_jpras_guidelines",
+        "journal_term": (
+            '"J Plast Reconstr Aesthet Surg"[Journal] AND ('
+            'guideline[Title] OR recommendation[Title] OR consensus[Title] OR '
+            '"position statement"[Title] OR "expert opinion"[Title] OR '
+            '"clinical practice"[Title] OR "best practice"[Title] OR '
+            '"BAPRAS"[Title] OR "ESPRAS"[Title] OR "ISAPS"[Title] OR '
+            '"systematic review"[Title]'
+            ')'
+        ),
+        "label": "JPRAS Guidelines — BAPRAS / ESPRAS recommandations plastique",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 4,
+    },
+
     # OTSR = journal officiel SOFCOT — bilinguisme FR/EN, haut contexte français
     {
         "source": "pubmed_otsr",

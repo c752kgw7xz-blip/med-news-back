@@ -291,6 +291,19 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "pubmed_j_orthop_trauma":     "innovation",    # Journal of Orthopaedic Trauma
     "pubmed_int_orthop":          "innovation",    # International Orthopaedics — SICOT
     "pubmed_arch_orthop_trauma":  "innovation",    # Archives of Orthopaedic and Trauma Surgery
+    # ── PubMed — chirurgie plastique & reconstructrice ────────────────────────
+    "pubmed_prs":                 "innovation",    # Plastic and Reconstructive Surgery (ASPS flagship)
+    "pubmed_jpras":               "innovation",    # Journal of Plastic, Reconstructive & Aesthetic Surgery
+    "pubmed_asj":                 "innovation",    # Aesthetic Surgery Journal (ASAPS)
+    "pubmed_ann_plast_surg":      "innovation",    # Annals of Plastic Surgery
+    "pubmed_jhs_am":              "innovation",    # Journal of Hand Surgery American (ASSH)
+    "pubmed_jhs_eur":             "innovation",    # Journal of Hand Surgery European (FESSH)
+    "pubmed_jrms":                "innovation",    # Journal of Reconstructive Microsurgery
+    "pubmed_microsurgery":        "innovation",    # Microsurgery (Wiley)
+    "pubmed_burns":               "innovation",    # Burns — prise en charge brûlures
+    "pubmed_acpe":                "innovation",    # Annales de Chirurgie Plastique Esthétique — SOFCPRE
+    "pubmed_prs_guidelines":      "recommandation",# PRS — Guidelines ASPS / consensus plastique
+    "pubmed_jpras_guidelines":    "recommandation",# JPRAS — Guidelines BAPRAS / ESPRAS
 }
 
 
@@ -533,6 +546,57 @@ méta-analyse 2019, ROOBY trial
 si FA persistante/permanente — EACTS/ESC 2020 grade IIaB
   • Dissection aortique aiguë type A : chirurgie d'urgence standard absolu — EACTS 2024
   • Assistance LVAD : pont greffe ou thérapie définitive équivalents en survie à 2 ans — REMATCH/HeartMate 3
+  → Un RCT qui invalide l'un de ces standards = paradigm_shift:true
+
+━━ CHAMPS CHIRURGIE PLASTIQUE & RECONSTRUCTRICE — remplir seulement si specialty_hint = chirurgie-plastique ━━
+
+"plastic_domain" — domaine chirurgical plastique concerné :
+  "reconstruction-mammaire"      → reconstruction après mastectomie (DIEP, TRAM, Grand Dorsal, implant+expandeur, lipofilling)
+  "chirurgie-esthetique"         → rhinoplastie, rhytidectomie (lifting), blépharoplastie, mammoplastie de réduction/augmentation,
+                                     abdominoplastie, liposuccion, otoplastie, corps contouring
+  "microchirurgie"               → lambeaux libres (ALT, fibula, DIEP, gracilis, LD), replantations, transferts nerveux,
+                                     anastomoses microvasculaires, lymphœdème microsurgical (LVA, VLNT)
+  "chirurgie-main"               → tendons (suture, greffe), nerfs périphériques, lésions de la main (fractures articulaires,
+                                     pouce, doigts), arthroplastie digitale, canal carpien/cubital, maladie de Dupuytren
+  "brulures"                     → prise en charge aiguë (excision-greffe), reconstruction post-brûlures (escarres, chéloïdes,
+                                     contractures), substituts cutanés (Integra, MatriDerm, RECELL)
+  "oncoplastique"                → reconstruction après exérèse tumorale (sein, tête-cou, sarcomes, mélanomes étendus)
+  "cicatrices-cheloïdes"         → cicatrices hypertrophiques, chéloïdes, traitements (chirurgie, laser, radiothérapie, injectables)
+  "lipofilling"                  → transfert graisseux (fat grafting) : sein, visage, reconstruction, nanofat
+  "malformations-congenitales"   → fentes palatines/labiomaxillaires, anomalies pavillon auriculaire, syndactylie,
+                                     polydactylie, asymétrie congénitale
+  "couverture-cutanee"           → lambeaux locaux/régionaux (perforateur, fascio-cutané, musculo-cutané) pour plaies chroniques,
+                                     escarres, perte de substance post-traumatique ou post-ablation
+  "tete-cou-reconstruction"      → reconstruction cervico-faciale post-exérèse (lambeau antébrachial, frontal,
+                                     naso-labial, paramedian forehead, ALT)
+  "implants-protheses-mammaires" → sécurité implants (BIA-ALCL, rupture, contraction capsulaire), registres nationaux,
+                                     implants texturés vs lisses, explantation
+
+"plastic_procedure" — technique ou procédure principale :
+  Reconstruction mammaire : "DIEP"|"TRAM"|"Grand-Dorsal-implant"|"implant-seul"|"expandeur-implant"|
+                            "SGAP-IGAP"|"lipofilling-sein"|"reconstruction-immediate-vs-differee"
+  Esthétique              : "rhinoplastie"|"rhytidectomie-lifting"|"blepharoplastie"|"mammoplastie-augmentation"|
+                            "mammoplastie-reduction"|"abdominoplastie"|"liposuccion"|"otoplastie"|"lipofilling-visage"
+  Microchirurgie          : "lambeau-libre-ALT"|"lambeau-libre-DIEP"|"lambeau-libre-fibula"|
+                            "replantation-digitale"|"transfert-nerveux"|"LVA-lymphatique"|"VLNT"
+  Main                    : "suture-tendon"|"greffe-nerveuse"|"arthroplastie-digitale"|"aponevrotomie-Dupuytren"|
+                            "liberation-canal-carpien"|"prothese-pouce"
+  Brûlures                : "excision-autogreffe"|"substitut-Integra"|"substitut-MatriDerm"|"RECELL"|
+                            "greffe-filet"|"expansion-tissuaire"
+  Autre                   : "lambeau-local-regional"|"lambeau-perforateur"|"greffe-peau-mince"|
+                            "traitement-cheloïdes"|"laser-cicatrice"|"autre"
+
+Standards actuels — CHIRURGIE PLASTIQUE (specialty_hint = chirurgie-plastique) :
+  • Reconstruction mammaire post-mastectomie : DIEP = standard de référence reconstruction autologue ;
+    implant+expandeur reste option valide si souhait patiente ou contre-indication lambeau — ASPS 2022
+  • Implants mammaires texturés : retrait de certains types texturés macro (Biocell Allergan) après BIA-ALCL —
+    ANSM/FDA 2019 ; surveillance actives des patientes porteuses implants texturés
+  • BIA-ALCL : incidence estimée 1/2 000 à 1/86 000 selon texture ; excision-capsulectomie totale si diagnostic —
+    ASPS/NCCN 2024 guidelines
+  • Canal carpien : libération (ouverte ou endoscopique) = standard si échec traitement conservateur 3-6 mois ;
+    résultats équivalents entre les deux voies d'abord — Cochrane 2014
+  • Liposuccion/abdominoplastie combinées : morbi-mortalité plus élevée — contre-indication relative selon ASPS 2020
+  • Lambeau ALT vs DIEP : aucun gold standard universel — choix selon anatomie, équipe, défect à couvrir
   → Un RCT qui invalide l'un de ces standards = paradigm_shift:true
 
 "negative_result" — true si l'endpoint primaire N'EST PAS atteint (important à signaler \
@@ -1179,6 +1243,19 @@ SOURCE_HINTS: dict[str, str] = {
     "tctmd":               "TCTMD (Cardiovascular Research Foundation) — Presse médicale interventionnelle : vasculaire périphérique (stenting iliaque, CLTI, carotide, AOMI), plus cardiologie interventionnelle. Filtrer sévèrement ce qui ne concerne pas le chirurgien vasculaire.",
     "quotidien_medecin":   "Le Quotidien du Médecin — Presse médicale française généraliste : peut couvrir alertes ANSM, nouvelles recommandations HAS, changements de remboursement. Bruit élevé (politique santé, RH médicales) → ne retenir que les news cliniquement actionnables.",
     "egora":               "Egora — Presse médicale libérale française : orientation médecine générale, parfois alertes réglementaires ou nouveaux remboursements. Bruit très élevé → seuil maximal.",
+    # ── PubMed — chirurgie plastique & reconstructrice ────────────────────────
+    "pubmed_prs":          "Plastic and Reconstructive Surgery (PRS/ASPS) — Essai clinique, méta-analyse ou guideline ASPS en chirurgie plastique reconstructrice et esthétique",
+    "pubmed_jpras":        "Journal of Plastic, Reconstructive & Aesthetic Surgery (JPRAS/BAPRAS/ESPRAS) — Études multicentriques européennes : reconstruction mammaire, microchirurgie, brûlures, chirurgie de la main",
+    "pubmed_asj":          "Aesthetic Surgery Journal (ASJ/ASAPS) — Essai clinique ou guideline en chirurgie esthétique : rhinoplastie, mammoplastie, liposuccion, lifting, implants mammaires",
+    "pubmed_ann_plast_surg":"Annals of Plastic Surgery — Chirurgie plastique reconstructrice : méta-analyses techniques reconstructives, études multicentriques",
+    "pubmed_jhs_am":       "Journal of Hand Surgery American (ASSH) — Essai clinique ou méta-analyse en chirurgie de la main : tendons, nerfs, arthroplastie digitale, Dupuytren, canal carpien",
+    "pubmed_jhs_eur":      "Journal of Hand Surgery European (FESSH) — Études européennes en chirurgie de la main : registres nordiques, séries multicentriques FESSH",
+    "pubmed_jrms":         "Journal of Reconstructive Microsurgery (JRM) — Essai clinique ou méta-analyse en microchirurgie reconstructrice : lambeaux libres (DIEP, ALT, fibula), replantations, lymphœdème microsurgical",
+    "pubmed_microsurgery": "Microsurgery (Wiley) — Études en microchirurgie : anastomoses, cartographie perforateurs, techniques LVA/VLNT lymphatique, transferts nerveux",
+    "pubmed_burns":        "Burns (Elsevier) — Essai clinique ou méta-analyse en chirurgie et prise en charge des brûlures : substituts cutanés, excision-greffe, cicatrisation, réhabilitation",
+    "pubmed_acpe":         "Annales de Chirurgie Plastique Esthétique (ACPE/SOFCPRE) — Journal officiel SOFCPRE : études françaises, recommandations SOFCPRE, registres implants mammaires, bilinguisme FR/EN",
+    "pubmed_prs_guidelines":   "PRS Guidelines ASPS — Recommandation ou consensus ASPS en chirurgie plastique : sécurité implants mammaires, BIA-ALCL, reconstruction mammaire, techniques esthétiques",
+    "pubmed_jpras_guidelines": "JPRAS Guidelines BAPRAS/ESPRAS — Recommandation européenne chirurgie plastique : reconstruction, brûlures, main, techniques esthétiques",
 }
 
 # ---------------------------------------------------------------------------
@@ -1241,6 +1318,19 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_j_orthop_trauma":     "chirurgie-orthopedique",
     "pubmed_int_orthop":          "chirurgie-orthopedique",
     "pubmed_arch_orthop_trauma":  "chirurgie-orthopedique",
+    # ── Chirurgie plastique & reconstructrice ─────────────────────────────────
+    "pubmed_prs":                 "chirurgie-plastique",
+    "pubmed_jpras":               "chirurgie-plastique",
+    "pubmed_asj":                 "chirurgie-plastique",
+    "pubmed_ann_plast_surg":      "chirurgie-plastique",
+    "pubmed_jhs_am":              "chirurgie-plastique",
+    "pubmed_jhs_eur":             "chirurgie-plastique",
+    "pubmed_jrms":                "chirurgie-plastique",
+    "pubmed_microsurgery":        "chirurgie-plastique",
+    "pubmed_burns":               "chirurgie-plastique",
+    "pubmed_acpe":                "chirurgie-plastique",
+    "pubmed_prs_guidelines":      "chirurgie-plastique",
+    "pubmed_jpras_guidelines":    "chirurgie-plastique",
     # ── Cardiologie (à activer quand le prompt cardiologie sera implémenté) ──
     # "jama_cardiology":      "cardiologie",
     # "sfc_recommandations":  "cardiologie",
@@ -1422,9 +1512,113 @@ Mesure conservatoire — échocardiographie de contrôle recommandée avant 3 an
 lot concerné et planifier un ETT de surveillance avant l'échéance habituelle."
 """
 
+_SPECIALTY_ADDENDUM_PLASTIQUE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — CHIRURGIE PLASTIQUE, RECONSTRUCTRICE ET ESTHÉTIQUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : chirurgien plasticien reconstructeur (CHU / clinique privée, France / Europe), \
+maîtrisant reconstruction mammaire post-mastectomie (DIEP, TRAM, Grand Dorsal, implant), \
+microchirurgie (lambeaux libres, replantations), chirurgie de la main (tendons, nerfs, \
+Dupuytren), brûlures (excision-greffe, substituts cutanés), chirurgie esthétique \
+(rhinoplastie, mammoplastie, liposuccion, lifting). \
+Référentiels actuels : ASPS guidelines reconstruction mammaire 2022, ASPS/NCCN BIA-ALCL \
+2024, SOFCPRE recommandations nationales, BAPRAS/ESPRAS guidelines, FESSH (main). \
+Essais pivots récents de référence : MACS lift RCT, essais randomisés Botox vs chirurgie \
+esthétique, DIEP vs implant reconstruction mammaire, canal carpien endoscopique vs ouvert \
+(Cochrane), RECELL essai brûlures pivotal.
+
+CRITÈRE DE PERTINENCE PLASTIQUE :
+"Ce résultat va-t-il modifier une indication opératoire, le choix d'une technique \
+reconstructrice, la sélection des patients candidats à une procédure esthétique, \
+ou la gestion d'une complication dans les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : résultats confirmatoires d'une technique déjà \
+établie sans gain de précision clinique, études de satisfaction patient non validées \
+(questionnaire maison, non comparatif), description de technique sans résultats cliniques \
+comparatifs, cohortes de moins de 50 patients pour les études non-RCT.
+
+FILTRES SPÉCIFIQUES CHIRURGIE ESTHÉTIQUE :
+→ Retenir : RCTs comparant deux techniques chirurgicales esthétiques (ex. SMAS vs deep plane \
+lifting), méta-analyses sur complications d'implants, études multicentriques sur résultats \
+à long terme rhinoplastie, guidelines sur sécurité des procédures esthétiques invasives. \
+→ Rejeter : études de satisfaction sur moins de 100 patients, cohortes rétrospectives \
+monocentriques sans comparateur actif, études sur injectables non-chirurgicaux (toxine \
+botulique, acide hyaluronique) sauf si complication grave ou changement de pratique majeur.
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+DIEP (Deep Inferior Epigastric Perforator flap), TRAM (Transverse Rectus Abdominis \
+Myocutaneous flap), Grand Dorsal + implant, SGAP/IGAP (fessiers), ALT (Antero-Lateral \
+Thigh flap), lambeau antébrachial radial, lambeau fibulaire (NF libre), \
+expandeur + implant en 2 temps (prepectoral vs subpectoral), lipofilling mammaire, \
+BIA-ALCL (Breast Implant-Associated Anaplastic Large Cell Lymphoma), BIA-SIA \
+(Breast Implant Illness), texturé macro/micro, contraction capsulaire (Baker I-IV), \
+capsulectomie totale / partielle, rhinoplastie ouverte/fermée, SMAS (Superficial \
+Musculoaponeurotic System), deep plane lifting, MACS lift, blépharoplastie \
+supérieure/inférieure, mammoplastie de réduction (Lejour, Wise, inverted-T), \
+abdominoplastie (lipoabdominoplastie, mini-abdominoplastie), liposuccion (VASER, \
+power-assisted), liposuccion haute définition, suture tendon (Kessler, Tsuge, Savage), \
+greffe nerveuse, transfert nerveux (Oberlin, Souquet), tunnel carpien / canal de \
+Guyon, aponévrotomie à l'aiguille Dupuytren, fasciectomie totale, arthroplastie \
+PIP (Swanson, pyrocarbone), Integra / MatriDerm (substituts dermiques), RECELL \
+(ReCell — spray de cellules autologues), greffe en maille (meshtome), cicatrisation \
+dirigée par pression négative (NPWT), cicatrices hypertrophiques / chéloïdes, \
+LVA (lympho-veinous anastomosis), VLNT (vascularized lymph node transfer), \
+LYMPHA (Lymphatic Microsurgical Preventive Healing Approach), \
+TRAM / DIEP bilatéral, flap delay, supercharge, perforasome, SCIP flap, MSCT \
+(mapping préopératoire perforateurs), BREAST-Q (patient-reported outcomes reconstruction).
+
+EXEMPLES DE RÉDACTION (style PRS / JPRAS / ACPE — format cible) :
+
+Essai clinique reconstruction mammaire :
+  titre_court : "DIEP vs implant prépectoral : RCT satisfaction à 2 ans"
+  resume : "RCT multicentrique (N=312, mastectomie bilatérale prophylactique, suivi 24 mois) : \
+score BREAST-Q satisfaction sein 74,2 ± 12,1 (DIEP) vs 68,5 ± 14,3 (implant prépectoral) — \
+p = 0,012. Taux de complications majeures à 30 j : 8,2 % (DIEP) vs 5,1 % (implant). \
+Durée opératoire médiane : 310 min (DIEP) vs 180 min (implant). \
+Satisfaction mammaire à 2 ans significativement supérieure pour DIEP, au prix d'une \
+morbidité peropératoire plus élevée."
+  impact_pratique : "À retenir : DIEP offre une meilleure satisfaction à 2 ans chez les \
+patientes à haut risque de complications implant (tabac, obésité, radiothérapie préalable) — \
+discussion préopératoire à adapter selon le profil."
+
+Guideline BIA-ALCL / implants :
+  titre_court : "ASPS/NCCN 2024 : BIA-ALCL — explantation systématique si texturé macro"
+  resume : "ASPS/NCCN Guideline BIA-ALCL (mise à jour 2024) : capsulectomie totale avec \
+explantation recommandée (Grade 1A) pour tout BIA-ALCL confirmé, quel que soit le stade. \
+Surveillance des patientes porteuses de texturés macros (Biocell, Siltex) : IRM + cytologie \
+épanchement si symptômes (douleur, gonflement > 1 an post-op). \
+Incidence cumulée révisée : 1/3 817 pour texturés macros Allergan (vs 1/355 000 lisses)."
+  impact_pratique : "En pratique : proposer une information proactive aux patientes \
+porteuses d'implants texturés Biocell/Siltex et planifier une surveillance échographique \
+annuelle à partir de 5 ans post-implantation."
+
+Essai clinique chirurgie de la main :
+  titre_court : "Canal carpien : endoscopique vs ouvert — méta-analyse 34 RCTs"
+  resume : "Méta-analyse (34 RCTs, N=4 203, suivi médian 12 mois) : libération endoscopique \
+du canal carpien vs ouverte. Retour au travail : −9 jours (endoscopique) — IC95% −12 à −6 j. \
+Douleur cicatricielle à 3 mois : SMD −0,42 (endoscopique) — p < 0,001. \
+Complications équivalentes (taux global 3,1 % vs 3,4 %). Résultats fonctionnels (BCTQ, \
+force de poignet) à 12 mois : pas de différence significative."
+  impact_pratique : "En pratique : la libération endoscopique permet un retour au travail \
+plus rapide et moins de douleur cicatricielle — avantage significatif chez les travailleurs \
+manuels et les patients à contrainte professionnelle forte."
+
+Alerte sécurité implants :
+  titre_court : "ANSM : retrait implants mammaires Allergan Natrelle (lot xxxx)"
+  resume : "ANSM (décision 3 mars 2026) : retrait du marché des implants mammaires \
+Allergan Natrelle texturés Biocell (lot xxxx) après 12 nouveaux cas de BIA-ALCL \
+en matériovigilance française (délai médian 9 ans post-implantation). \
+Environ 2 800 implants du lot concerné implantés en France depuis 2018. \
+Consultations de suivi recommandées en urgence pour les patientes porteuses."
+  impact_pratique : "En pratique : identifier les patientes porteuses via registre \
+d'implants, les contacter pour information et planifier une consultation de surveillance \
+(examen clinique + imagerie selon symptômes) avant la fin du trimestre."
+"""
+
 _SPECIALTY_ADDENDA: dict[str, str] = {
     "chirurgie-vasculaire": _SPECIALTY_ADDENDUM_VASCULAIRE,
     "chirurgie-cardiaque":  _SPECIALTY_ADDENDUM_CARDIAQUE,
+    "chirurgie-plastique":  _SPECIALTY_ADDENDUM_PLASTIQUE,
     # À implémenter : "cardiologie", "oncologie", "pneumologie", "neurologie", etc.
 }
 
