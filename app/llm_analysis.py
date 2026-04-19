@@ -302,6 +302,8 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "pubmed_microsurgery":        "innovation",    # Microsurgery (Wiley)
     "pubmed_burns":               "innovation",    # Burns — prise en charge brûlures
     "pubmed_acpe":                "innovation",    # Annales de Chirurgie Plastique Esthétique — SOFCPRE
+    "pubmed_prs_global_open":      "innovation",    # Plastic and Reconstructive Surgery Global Open (ASPS)
+    "pubmed_wound_repair":         "innovation",    # Wound Repair and Regeneration — cicatrisation, substituts cutanés
     "pubmed_prs_guidelines":      "recommandation",# PRS — Guidelines ASPS / consensus plastique
     "pubmed_jpras_guidelines":    "recommandation",# JPRAS — Guidelines BAPRAS / ESPRAS
 }
@@ -1254,6 +1256,8 @@ SOURCE_HINTS: dict[str, str] = {
     "pubmed_microsurgery": "Microsurgery (Wiley) — Études en microchirurgie : anastomoses, cartographie perforateurs, techniques LVA/VLNT lymphatique, transferts nerveux",
     "pubmed_burns":        "Burns (Elsevier) — Essai clinique ou méta-analyse en chirurgie et prise en charge des brûlures : substituts cutanés, excision-greffe, cicatrisation, réhabilitation",
     "pubmed_acpe":         "Annales de Chirurgie Plastique Esthétique (ACPE/SOFCPRE) — Journal officiel SOFCPRE : études françaises, recommandations SOFCPRE, registres implants mammaires, bilinguisme FR/EN",
+    "pubmed_prs_global_open":  "Plastic and Reconstructive Surgery Global Open (ASPS open access) — Essai clinique, méta-analyse ou étude comparative en chirurgie plastique, reconstructrice et esthétique (companion open-access de PRS)",
+    "pubmed_wound_repair":     "Wound Repair and Regeneration (WRR/Wiley) — Essai clinique ou méta-analyse sur cicatrisation, substituts cutanés (Integra, MatriDerm, NPWT, RECELL), brûlures, plaies chroniques, techniques de greffe",
     "pubmed_prs_guidelines":   "PRS Guidelines ASPS — Recommandation ou consensus ASPS en chirurgie plastique : sécurité implants mammaires, BIA-ALCL, reconstruction mammaire, techniques esthétiques",
     "pubmed_jpras_guidelines": "JPRAS Guidelines BAPRAS/ESPRAS — Recommandation européenne chirurgie plastique : reconstruction, brûlures, main, techniques esthétiques",
 }
@@ -1329,6 +1333,8 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_microsurgery":        "chirurgie-plastique",
     "pubmed_burns":               "chirurgie-plastique",
     "pubmed_acpe":                "chirurgie-plastique",
+    "pubmed_prs_global_open":      "chirurgie-plastique",
+    "pubmed_wound_repair":         "chirurgie-plastique",
     "pubmed_prs_guidelines":      "chirurgie-plastique",
     "pubmed_jpras_guidelines":    "chirurgie-plastique",
     # ── Cardiologie (à activer quand le prompt cardiologie sera implémenté) ──

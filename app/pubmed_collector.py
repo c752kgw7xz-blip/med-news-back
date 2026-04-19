@@ -745,6 +745,37 @@ PUBMED_SOURCES: list[dict] = [
         "min_score_hint": 4,
     },
 
+    # ── Plastic and Reconstructive Surgery Global Open (PRS GO) — ASPS ────────
+    # Companion open-access de PRS. Les RCTs et méta-analyses qui ne passent pas
+    # la barre éditoriale de PRS atterrissent ici. Volume plus élevé que PRS
+    # avec IF ~2 (vs PRS IF ~5) — filtre PT identique, seuil 7 pour ne retenir
+    # que les études ayant un impact clinique réel malgré le rang plus bas.
+    {
+        "source": "pubmed_prs_global_open",
+        "journal_term": f'"Plast Reconstr Surg Glob Open"[Journal] AND {_PT_FILTER}',
+        "label": "Plastic and Reconstructive Surgery Global Open (ASPS open access)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 7,
+    },
+
+    # ── Wound Repair and Regeneration (WRR) — Wiley ───────────────────────────
+    # Journal de référence en biologie de la cicatrisation et médecine régénérative.
+    # Publie les essais randomisés sur substituts dermiques (Integra, MatriDerm,
+    # NPWT, RECELL), protocols de cicatrisation des brûlures et plaies chroniques,
+    # techniques de greffe cutanée. Central pour les plasticiens reconstructeurs
+    # et les chirurgiens des brûlures.
+    # Filtre PT : élimine les travaux fondamentaux (mécanismes cellulaires,
+    # modèles murins) qui dominent le journal mais sans intérêt clinique direct.
+    {
+        "source": "pubmed_wound_repair",
+        "journal_term": f'"Wound Repair Regen"[Journal] AND {_PT_FILTER}',
+        "label": "Wound Repair and Regeneration (WRR) — Wiley",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-plastique",
+        "min_score_hint": 6,
+    },
+
     # OTSR = journal officiel SOFCOT — bilinguisme FR/EN, haut contexte français
     {
         "source": "pubmed_otsr",

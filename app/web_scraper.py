@@ -7,7 +7,7 @@ extrait les liens vers des documents récents, insère en base via le même
 pipeline que le collecteur RSS.
 
 Deux périmètres couverts :
-  1. Sources FR  (WEB_SCRAPER_SOURCES)  : SFH, SFR, SFO, SFPédiatrie, SOFCOT, SOFMER
+  1. Sources FR  (WEB_SCRAPER_SOURCES)  : SFH, SFR, SFO, SFPédiatrie, SOFCOT, SOFMER, SOFCPRE plastique
   2. Sources EUR (EUROPE_WEB_SOURCES)   : ESC, EULAR, EAU, ESCMID, EAN, ECCO, EHA,
                                           EASD, ESE, ERA — priorité médico-légale haute
 
@@ -198,6 +198,29 @@ WEB_SCRAPER_SOURCES: list[dict] = [
         "specialty_hint": "chirurgie-orthopedique",
         "link_pattern": r"sofcot\.fr/",
         "exclude_pattern": r"/(la-sofcot|adhesion|agenda|congres|bourses|formation|annuaire|contact|accueil)(/|$)",
+    },
+
+    # ── SOFCPRE — Société Française de Chirurgie Plastique Reconstructrice ──
+    # Seule page publique avec contenu clinique sur sofcpre.fr.
+    # Le RSS sofcpre.fr/feed/ est 404 depuis mars 2026. Le site est quasi-statique
+    # (dernier contenu connu : 2020), MAIS le scraper tournera trimestriellement
+    # et capturera automatiquement tout nouveau document ajouté.
+    # Contenu actuel : recommandations CCAM, registre implants, COVID (2020).
+    # Contenu futur attendu : recommandations BIA-ALCL, implants mammaires, CCAM
+    # chirurgie plastique, recommandations techniques esthétiques.
+    # Alternative principale : pubmed_acpe (ACPE = journal officiel SOFCPRE).
+    # Vérifié actif : sofcpre.fr/recommandations.html → 200 (avril 2026).
+    {
+        "url": "https://www.sofcpre.fr/recommandations.html",
+        "source": "sofcpre_plastique",
+        "label": "SOFCPRE — Recommandations chirurgie plastique reconstructrice et esthétique",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "chirurgie-plastique",
+        # Inclure les liens internes sofcpre.fr et les liens PDF/HAS/ANSM référencés
+        "link_pattern": r"(sofcpre\.fr|has-sante\.fr|ansm\.sante\.fr|solidarites-sante\.gouv\.fr)",
+        # Exclure navigation, annuaire chirurgiens, mentions légales
+        "exclude_pattern": r"/(chirurgiens/|identification|accueil|$)",
     },
 ]
 

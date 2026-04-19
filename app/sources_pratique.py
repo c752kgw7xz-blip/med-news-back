@@ -454,7 +454,7 @@ SOCIETES_SAVANTES_FEEDS: list[dict] = [
     #    /feed et 15+ patterns testés — pas de balise RSS dans le HTML
     #    → Suivi manuel : https://www.sofcot.fr/actualites
 
-    # ❌ SOFCPRE plastique (sofcpre.fr/feed/) — 404 mars 2026
+    # ✅ SOFCPRE plastique → scraper web_scraper.WEB_SCRAPER_SOURCES (sofcpre.fr/recommandations.html)
     # ❌ SFCP chirurgie pédiatrique (chirurgie-pediatrique.com/feed/) — 404 mars 2026
 
     # ── Infirmiers ────────────────────────────────────────────────────────
