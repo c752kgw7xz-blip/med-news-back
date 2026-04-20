@@ -194,16 +194,19 @@
     .portal-page-title p { font-size: 0.62rem; letter-spacing: .2px; white-space: normal; overflow-wrap: break-word; }
     /* ── Splash mobile ── */
     #spec-splash { padding: 24px 16px 28px; min-height: 55vh; overflow: hidden; }
-    #spec-splash-name { font-size: 1.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+    #spec-splash-name { font-size: 1.9rem; white-space: normal; word-break: break-word; max-width: 100%; }
     .spec-splash-hint { font-size: 0.82rem; margin-bottom: 20px; }
     .spec-splash-cats { flex-direction: column; gap: 8px; width: 100%; }
     .spec-splash-cat-btn {
       width: 100%; min-width: 0;
       flex-direction: row; justify-content: space-between; align-items: center;
-      padding: 14px 18px; gap: 10px;
+      padding: 16px 20px; gap: 12px;
+      font-size: 0.92rem; border-width: 2px;
+      background: var(--surface2, var(--surface));
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
     }
-    .spec-splash-cat-btn .splash-count { font-size: 1.4rem; order: 2; flex-shrink: 0; }
-    .spec-splash-cat-btn > span:not(.splash-count) { order: 1; flex: 1; text-align: left; }
+    .spec-splash-cat-btn .splash-count { font-size: 1.5rem; order: 2; flex-shrink: 0; }
+    .spec-splash-cat-btn > span:not(.splash-count) { order: 1; flex: 1; text-align: left; font-weight: 600; }
     /* Bottom nav visible */
     .bottom-nav { display: flex; }
     /* New 5-tab mobile nav */
@@ -1078,8 +1081,6 @@
       <!-- Splash spécialité — affiché quand une spé est sélectionnée sans sous-catégorie -->
       <div id="spec-splash">
         <h1 id="spec-splash-name"></h1>
-        <p class="spec-splash-hint">Sélectionnez une catégorie pour commencer</p>
-        <div class="spec-splash-cats" id="spec-splash-cats"></div>
 
         <!-- Recherche tous mois -->
         <div class="splash-search-wrap">
@@ -1093,6 +1094,8 @@
           </div>
           <div id="splash-search-results"></div>
         </div>
+        <p class="spec-splash-hint">Sélectionnez une catégorie pour commencer</p>
+        <div class="spec-splash-cats" id="spec-splash-cats"></div>
       </div>
     </div>
   </div>
