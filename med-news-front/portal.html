@@ -2087,6 +2087,10 @@ function hideSpecSplash() {
   if (rh) rh.style.display = '';
 }
 
+function refreshMonthPicker() {
+  loadMonthCounts().then(() => buildMonthList());
+}
+
 function toggleAccord(id) {
   const header   = document.getElementById(`accord-${id}`);
   const subitems = document.getElementById(`subitems-${id}`);
@@ -2103,6 +2107,9 @@ function toggleAccord(id) {
     document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
     _activeSubId = null;
+    // Update specialty + refresh month picker for this spec
+    const specEntry = _accordSpecMap[id];
+    if (specEntry) { activeSpecSlug = specEntry.slug; refreshMonthPicker(); }
     showSpecSplash(id);
   } else {
     _activeAccordId = null;
@@ -2124,7 +2131,8 @@ async function selectSpecType(slug, stype, accordId) {
   if (headEl) headEl.classList.add('subactive');
   _activeSubId = `sub-${accordId}-${subKey}`;
   // Update state
-  activeSpecSlug    = slug;
+  if (activeSpecSlug !== slug) { activeSpecSlug = slug; refreshMonthPicker(); }
+  else activeSpecSlug = slug;
   activeSourceType  = stype;
   hideSourcePills();
   favoritesMode = false;
