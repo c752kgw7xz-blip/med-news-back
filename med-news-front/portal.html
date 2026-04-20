@@ -1947,15 +1947,14 @@ function showFavorites() {
   const cardMap = {};
   document.querySelectorAll('.article-card[data-item-id]').forEach(c => { cardMap[c.dataset.itemId] = c; });
 
-  // Build data index for demo mode (fallback to localStorage cache)
-  let dataSource = (_demoCache && _demoCache.length > 0) ? _demoCache
-                 : (typeof DEMO_ARTICLES !== 'undefined' && DEMO_ARTICLES.length > 0) ? DEMO_ARTICLES
-                 : allLoadedArticles;
-  if (!dataSource || dataSource.length === 0) {
-    try { const c = localStorage.getItem('mednews-article-cache'); if (c) dataSource = JSON.parse(c); } catch {}
-  }
+  // Source de données : en mode auth, utiliser allLoadedArticles + DOM existant
   const articleById = {};
-  (dataSource || []).forEach(a => { if (a.id) articleById[a.id] = a; });
+  if (DEMO_MODE) {
+    const src = (_demoCache && _demoCache.length > 0) ? _demoCache : DEMO_ARTICLES;
+    src.forEach(a => { if (a.id) articleById[a.id] = a; });
+  } else {
+    allLoadedArticles.forEach(a => { if (a.id) articleById[a.id] = a; });
+  }
 
   // Flat list of favorites, no groups
   const frag = document.createDocumentFragment();
@@ -2111,8 +2110,6 @@ async function selectSpecType(slug, stype, accordId) {
   const adminPill = document.querySelector('.filter-pill[data-cat="exercice"]');
   if (adminPill) adminPill.style.display = (stype === 'innovation' || stype === 'recommandation') ? 'none' : '';
   await resetAndLoad();
-  // Auto-sélectionner la première sous-catégorie qui contient des articles
-  autoSelectFirstCat();
 }
 
 // ── Sidebar ──────────────────────────────────────────────────
@@ -3111,10 +3108,13 @@ async function selectMonth(key, label) {
     if (nc) spec.counts = nc;
   });
   updateSidebarCounts();
-  if (_activeAccordId && document.getElementById('spec-splash').style.display !== 'none') {
-    showSpecSplash(_activeAccordId);
+  const splashVisible = _activeAccordId &&
+    document.getElementById('spec-splash').style.display !== 'none';
+  if (splashVisible) {
+    showSpecSplash(_activeAccordId); // refresh counts, stay on splash
+  } else {
+    await resetAndLoad(); // reload articles si on était en vue article
   }
-  await resetAndLoad();
 }
 let _customFrom = null, _customUntil = null;
 
@@ -3128,12 +3128,13 @@ function getReadHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
 }
 function addToHistory(itemId, titre) {
+  const article = allLoadedArticles.find(a => a.id === itemId) || null;
   const h = getReadHistory();
   const existing = h.findIndex(x => x.id === itemId);
   if (existing > -1) h.splice(existing, 1);
-  h.unshift({ id: itemId, titre, ts: Date.now() });
+  h.unshift({ id: itemId, titre, ts: Date.now(), data: article });
   if (h.length > 50) h.pop();
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); } catch(e) {}
   updateHistoryCount();
 }
 function updateHistoryCount() {
@@ -3155,24 +3156,20 @@ function showHistory() {
     return;
   }
 
-  // Construire un index id→article depuis les données disponibles
-  let dataSource = (_demoCache && _demoCache.length > 0) ? _demoCache
-                 : (typeof DEMO_ARTICLES !== 'undefined' && DEMO_ARTICLES.length > 0) ? DEMO_ARTICLES
-                 : allLoadedArticles;
-  // Fallback localStorage si rien en mémoire (après rechargement)
-  if (!dataSource || dataSource.length === 0) {
-    try {
-      const cached = localStorage.getItem('mednews-article-cache');
-      if (cached) dataSource = JSON.parse(cached);
-    } catch(e) {}
-  }
+  // En mode authentifié, priorité aux données de l'entrée d'historique (stockées au moment de la lecture)
+  // puis fallback sur allLoadedArticles si disponible
   const articleById = {};
-  dataSource.forEach(a => { if (a.id) articleById[a.id] = a; });
+  if (!DEMO_MODE) {
+    allLoadedArticles.forEach(a => { if (a.id) articleById[a.id] = a; });
+  } else {
+    const src = (_demoCache && _demoCache.length > 0) ? _demoCache : DEMO_ARTICLES;
+    src.forEach(a => { if (a.id) articleById[a.id] = a; });
+  }
 
   container.innerHTML = '';
   let rendered = 0;
   history.forEach((entry, idx) => {
-    const article = articleById[entry.id];
+    const article = articleById[entry.id] || entry.data; // entry.data = article sauvegardé au moment de la lecture
     if (article) {
       const wrapper = document.createElement('div');
       wrapper.innerHTML = renderArticle(article, idx);
