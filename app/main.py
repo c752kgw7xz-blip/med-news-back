@@ -46,7 +46,7 @@ from starlette.requests import Request as StarletteRequest
 app = FastAPI(lifespan=lifespan)
 
 
-_IFRAME_ALLOWED_PATHS = {"/newsletter-demo", "/newsletter-preview", "/portal-demo"}
+_IFRAME_ALLOWED_PATHS = {"/newsletter-demo", "/newsletter-preview", "/portal-demo", "/portal"}
 
 # CSP commune : autorise Google Fonts + Lucide CDN (utilisés par toutes les pages front)
 _CSP_SCRIPT = "script-src 'self' 'unsafe-inline' https://unpkg.com"
@@ -125,6 +125,10 @@ _FRONT_DIR = os.path.join(os.path.dirname(__file__), "..", "med-news-front")
 _screenshots_dir = os.path.join(_FRONT_DIR, "screenshots")
 if os.path.isdir(_screenshots_dir):
     app.mount("/screenshots", StaticFiles(directory=_screenshots_dir), name="screenshots")
+
+_img_dir = os.path.join(_FRONT_DIR, "img")
+if os.path.isdir(_img_dir):
+    app.mount("/img", StaticFiles(directory=_img_dir), name="img")
 
 _NO_CACHE = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache"}
 

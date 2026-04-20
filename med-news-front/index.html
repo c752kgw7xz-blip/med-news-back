@@ -42,6 +42,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px sol
 
 /* ── HERO ── */
 .hero{min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 32px;border-bottom:1px solid var(--border)}
+.hero-body{display:contents}
+.hero-phone-wide{display:none}
 .hero-eyebrow{font-size:0.72rem;font-weight:500;color:var(--accent);letter-spacing:.8px;text-transform:uppercase;margin-bottom:28px}
 h1{font-family:var(--serif);font-size:clamp(40px,5.5vw,70px);color:var(--text);line-height:1.1;letter-spacing:-.5px;max-width:820px;margin-bottom:20px}
 h1 em{font-style:italic;color:var(--text2)}
@@ -60,6 +62,19 @@ h1 em{font-style:italic;color:var(--text2)}
 .stat-item:last-child{border-right:none}
 .stat-n{font-family:var(--serif);font-size:2.2rem;color:var(--text);line-height:1}
 .stat-l{font-size:0.72rem;color:var(--text3);margin-top:5px}
+/* ── Hero 2-col on wide screens ── */
+@media(min-width:1280px){
+  .hero{flex-direction:row;align-items:center;text-align:left;gap:72px;max-width:1400px;margin:0 auto;padding:80px 60px;min-height:88vh}
+  .hero-body{display:flex;flex-direction:column;align-items:flex-start;flex:1}
+  .hero-phone-wide{display:block;flex-shrink:0}
+  .hero-sub{max-width:520px}
+  .hero-actions{justify-content:flex-start}
+  .hero-stats{border-top:1px solid var(--border);padding-top:32px;margin-top:48px;width:100%}
+  .stat-item{padding:0 32px}
+  .stat-item:first-child{padding-left:0}
+  .phone-wide-frame{width:260px;border-radius:36px;overflow:hidden;border:2px solid var(--border-strong);box-shadow:0 24px 64px rgba(0,0,0,.13)}
+  .phone-wide-frame img{width:100%;display:block}
+}
 
 /* ── REVEAL ── */
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
@@ -72,7 +87,7 @@ h1 em{font-style:italic;color:var(--text2)}
 .divider-line{height:1px;background:var(--border)}
 
 /* ── SECTIONS ── */
-.section{padding:88px 40px;max-width:1200px;margin:0 auto}
+.section{padding:88px 40px;max-width:1400px;margin:0 auto}
 .section-center{text-align:center}
 .section-center .section-sub{margin-left:auto;margin-right:auto}
 .section-tag{font-size:0.72rem;font-weight:500;color:var(--accent);letter-spacing:.6px;text-transform:uppercase;margin-bottom:12px;display:block}
@@ -120,12 +135,12 @@ h1 em{font-style:italic;color:var(--text2)}
 
 /* ── SPEC ── */
 .spec-section{padding:88px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface)}
-.spec-inner{max-width:1200px;margin:0 auto;padding:0 40px}
+.spec-inner{max-width:1400px;margin:0 auto;padding:0 40px}
 .spec-scroll{display:flex;gap:8px;flex-wrap:wrap;margin-top:36px}
 .spec-pill{font-size:0.72rem;padding:5px 14px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);white-space:nowrap;font-family:var(--sans);font-weight:400}
 
 /* ── PORTAL PREVIEW ── */
-.portal-preview-wrap{width:100%;max-width:1200px;margin:0 auto}
+.portal-preview-wrap{width:100%;max-width:1400px;margin:0 auto}
 .browser-frame{border-radius:4px;overflow:hidden;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.07)}
 .browser-bar{background:var(--surface2);padding:10px 16px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
 .browser-dot{width:10px;height:10px;border-radius:50%}
@@ -136,7 +151,7 @@ h1 em{font-style:italic;color:var(--text2)}
 .portal-iframe{width:calc(100% / 0.72);height:calc(560px / 0.72);border:none;display:block;transform:scale(0.72);transform-origin:top left;}
 
 /* ── NEWSLETTER ── */
-.newsletter-full{display:flex;align-items:flex-start;gap:64px;padding:88px 40px;max-width:1200px;margin:0 auto}
+.newsletter-full{display:flex;align-items:flex-start;gap:64px;padding:88px 40px;max-width:1400px;margin:0 auto}
 .newsletter-full-text{flex:0 0 320px}
 .newsletter-full-preview{flex:1}
 .mail-frame{border-radius:4px;overflow:hidden;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.07)}
@@ -150,7 +165,7 @@ h1 em{font-style:italic;color:var(--text2)}
 .newsletter-perk-desc{font-size:0.79rem;color:var(--text3);line-height:1.6}
 
 /* ── MOBILE SECTION ── */
-.mobile-section{display:flex;align-items:center;gap:64px;padding:88px 40px;max-width:1200px;margin:0 auto}
+.mobile-section{display:flex;align-items:center;gap:64px;padding:88px 40px;max-width:1400px;margin:0 auto}
 .mobile-section-text{flex:1}
 .mobile-section-device{flex:0 0 auto}
 .mobile-bullets{display:flex;flex-direction:column;gap:16px;margin-top:28px}
@@ -255,20 +270,21 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 </nav>
 
 <section class="hero">
-  <div class="hero-eyebrow">La revue médicale par spécialité</div>
-  <h1>
-    <span class="h1-line1">L'information médicale</span>
-    <em class="h1-line2">à la précision de votre discipline</em>
-  </h1>
-  <p class="hero-sub">Réglementation française et européenne, guidelines des sociétés savantes, publications PubMed, NEJM, Lancet, JAMA — MedNews agrège l'intégralité du spectre médical avec la rigueur d'une revue spécialisée, pour chacune des 36 disciplines couvertes.</p>
-  <div class="hero-actions">
-    <a href="/signup" class="btn-primary">Accéder à MedNews</a>
-    <a href="#dimensions" class="btn-secondary">
-      Découvrir les 3 dimensions
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    </a>
-  </div>
-  <div class="hero-stats">
+  <div class="hero-body">
+    <div class="hero-eyebrow">La revue médicale par spécialité</div>
+    <h1>
+      <span class="h1-line1">L'information médicale</span>
+      <em class="h1-line2">à la précision de votre discipline</em>
+    </h1>
+    <p class="hero-sub">Réglementation française et européenne, guidelines des sociétés savantes, publications PubMed, NEJM, Lancet, JAMA — MedNews agrège l'intégralité du spectre médical avec la rigueur d'une revue spécialisée, pour chacune des 36 disciplines couvertes.</p>
+    <div class="hero-actions">
+      <a href="/signup" class="btn-primary">Accéder à MedNews</a>
+      <a href="#dimensions" class="btn-secondary">
+        Découvrir les 3 dimensions
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+    <div class="hero-stats">
     <div class="stat-item">
       <div class="stat-n" data-count="3" data-suffix="">3</div>
       <div class="stat-l">Dimensions couvertes</div>
@@ -284,6 +300,12 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
     <div class="stat-item">
       <div class="stat-n">1<span style="font-size:18px;font-family:var(--sans);color:var(--text2)">×</span></div>
       <div class="stat-l">Par semaine, dans votre boîte</div>
+    </div>
+  </div>
+  </div><!-- /hero-body -->
+  <div class="hero-phone-wide">
+    <div class="phone-wide-frame">
+      <img src="/img/mobile-preview.png" alt="Portail MedNews sur mobile">
     </div>
   </div>
 </section>
@@ -549,10 +571,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
   </div>
   <div class="mobile-section-device reveal reveal-delay-2">
     <div class="phone-frame">
-      <div style="width:100%;aspect-ratio:9/16;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--text4);">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-        <span style="font-size:0.65rem;font-family:monospace;letter-spacing:.5px;">portail mobile</span>
-      </div>
+      <img src="/img/mobile-preview.png" alt="Portail MedNews sur mobile" style="width:100%;display:block;">
     </div>
   </div>
 </div>
