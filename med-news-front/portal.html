@@ -2374,7 +2374,7 @@ async function loadArticles(page) {
   const container = document.getElementById('articles-container');
   if (page === 1 && data.articles.length === 0) {
     const monthLabel = `${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}`;
-    container.innerHTML = `<div class="empty">Aucun article pour ${monthLabel} \u2014 <a href="/archives" style="color:var(--green);text-decoration:underline;">consultez les Archives</a> pour les mois pr\u00e9c\u00e9dents.</div>`;
+    container.innerHTML = `<div class="empty">Aucun article pour cette cat\u00e9gorie ce mois-ci \u2014 veuillez choisir une autre p\u00e9riode.</div>`;
   } else {
     data.articles.forEach(a => allLoadedArticles.push(a));
     renderGroupedArticles();
