@@ -716,7 +716,8 @@
   #mnav-transversal.active { color: var(--green); }
   #mnav-explorer.active { color: var(--green); }
   #mnav-archives { display: none; }
-  #mnav-compte.active { color: var(--green); }
+  #mnav-activite.active { color: var(--green); }
+  #mnav-parametres.active { color: var(--green); }
   .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }
   .mobile-nav-icon svg { width: 22px; height: 22px; }
   .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
@@ -1088,7 +1089,7 @@
     </div>
   </div>
 
-  <!-- Bottom navigation mobile (5 tabs) -->
+  <!-- Bottom navigation mobile (4 tabs) -->
   <nav class="mobile-bottom-nav" id="mobile-nav">
     <button class="mobile-nav-item active" onclick="mobileNavClick('specialite')" id="mnav-specialite">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
@@ -1098,9 +1099,13 @@
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
       <span class="mobile-nav-label">Explorer</span>
     </button>
-    <button class="mobile-nav-item" onclick="mobileNavClick('compte')" id="mnav-compte">
-      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
-      <span class="mobile-nav-label">Compte</span>
+    <button class="mobile-nav-item" onclick="mobileNavClick('activite')" id="mnav-activite">
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+      <span class="mobile-nav-label">Mon activité</span>
+    </button>
+    <button class="mobile-nav-item" onclick="mobileNavClick('parametres')" id="mnav-parametres">
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <span class="mobile-nav-label">Paramètres</span>
     </button>
   </nav>
 
@@ -1135,22 +1140,39 @@
     </div>
   </div>
 
-  <!-- Full-page overlay — Compte (nav visible en bas) -->
-  <div class="fp-overlay compte-mode" id="fp-compte">
+  <!-- Full-page overlay — Mon activité (nav visible en bas) -->
+  <div class="fp-overlay compte-mode" id="fp-activite">
     <div class="fp-overlay-header">
-      <button class="fp-overlay-back" onclick="closeFullPage('compte')">
+      <button class="fp-overlay-back" onclick="closeFullPage('activite')">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Retour
       </button>
-      <span class="fp-overlay-title">Compte</span>
+      <span class="fp-overlay-title">Mon activité</span>
     </div>
     <div class="fp-overlay-content">
-      <div class="sidebar-item" onclick="closeFullPage('compte');showFavorites();" style="display:flex;padding:14px 20px;">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris</span>
+      <div class="sidebar-item" onclick="closeFullPage('activite');showFavorites();" style="display:flex;padding:14px 20px;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris <span id="fp-fav-count" style="margin-left:6px;font-size:0.75rem;background:var(--green);color:#fff;border-radius:10px;padding:1px 7px;display:none;"></span></span>
         <span style="color:var(--text5);">&#8250;</span>
       </div>
-      <div class="sidebar-item" onclick="closeFullPage('compte');window.location.href='/settings';" style="display:flex;padding:14px 20px;">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
+      <div class="sidebar-item" onclick="closeFullPage('activite');showHistory();" style="display:flex;padding:14px 20px;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Historique</span>
+        <span style="color:var(--text5);">&#8250;</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-page overlay — Paramètres (nav visible en bas) -->
+  <div class="fp-overlay compte-mode" id="fp-parametres">
+    <div class="fp-overlay-header">
+      <button class="fp-overlay-back" onclick="closeFullPage('parametres')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Retour
+      </button>
+      <span class="fp-overlay-title">Paramètres</span>
+    </div>
+    <div class="fp-overlay-content">
+      <div class="sidebar-item" onclick="closeFullPage('parametres');window.location.href='/settings';" style="display:flex;padding:14px 20px;">
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres du compte</span>
         <span style="color:var(--text5);">&#8250;</span>
       </div>
       <div class="sidebar-item" onclick="logout();" style="display:flex;padding:14px 20px;color:var(--text3);">
@@ -1194,8 +1216,8 @@ let _prevNavSection = 'specialite'; // mémorise le dernier onglet actif avant C
 
 function mobileNavClick(section) {
   // Ferme tout overlay ouvert avant de naviguer
-  if (section !== 'compte') {
-    ['explorer', 'compte'].forEach(s => closeFullPage(s));
+  if (section !== 'activite' && section !== 'parametres') {
+    ['explorer', 'activite', 'parametres'].forEach(s => closeFullPage(s));
     _prevNavSection = section;
   }
   document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
@@ -1203,25 +1225,22 @@ function mobileNavClick(section) {
 
   if (section === 'specialite') {
     closeDrawer();
-    // Sur mobile, réafficher le splash de sélection (pas directement les articles)
     if (_accordSpecMap['mine'] && _accordSpecMap['mine'].slug) {
       showSpecSplash('mine');
     } else {
       selectMySpec(null);
     }
   } else if (section === 'transversal') {
-    // Chargement direct des articles transversaux, sans drawer
     closeDrawer();
     const el = document.querySelector('#sidebar-transversal .sidebar-item');
     if (el) el.click();
   } else if (section === 'explorer') {
     if (window.expandExplore) window.expandExplore();
     openFullPage('explorer');
-  } else if (section === 'archives') {
-    if (DEMO_MODE) { try { window.top.location.href = '/signup'; } catch(e) { window.location.href = '/signup'; } return; }
-    window.location.href = '/archives';
-  } else if (section === 'compte') {
-    openFullPage('compte');
+  } else if (section === 'activite') {
+    openFullPage('activite');
+  } else if (section === 'parametres') {
+    openFullPage('parametres');
   }
 }
 
@@ -2022,6 +2041,11 @@ async function showFavorites() {
 function updateSidebarFavCount() {
   const el = document.getElementById('fav-count');
   if (el) el.textContent = favoritesSet.size;
+  const badge = document.getElementById('fp-fav-count');
+  if (badge) {
+    if (favoritesSet.size > 0) { badge.textContent = favoritesSet.size; badge.style.display = 'inline'; }
+    else { badge.style.display = 'none'; }
+  }
 }
 
 // ── Sidebar helpers ──────────────────────────────────────────
@@ -3288,11 +3312,12 @@ function toggleSidebar() {
     document.getElementById('loading').style.display = 'none';
     // content reste masqué — showSpecSplash gère l'affichage
     if (window.lucide) lucide.createIcons();
-    setupSwipeToDismiss('compte');
+    setupSwipeToDismiss('activite');
+    setupSwipeToDismiss('parametres');
     setupSwipeToDismiss('explorer');
-    if (location.hash === '#compte') {
+    if (location.hash === '#parametres') {
       history.replaceState(null, '', location.pathname);
-      mobileNavClick('compte');
+      mobileNavClick('parametres');
     }
   }
 })();
