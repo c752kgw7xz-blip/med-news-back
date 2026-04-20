@@ -47,6 +47,13 @@ Sources configurées (voir PUBMED_SOURCES) :
   pubmed_acpe              : Annales de Chirurgie Plastique Esthétique (SOFCPRE)
   pubmed_prs_guidelines    : PRS — Guidelines ASPS / consensus plastique
   pubmed_jpras_guidelines  : JPRAS — Guidelines BAPRAS/ESPRAS
+
+  ── Chirurgie pédiatrique ─────────────────────────────────────────────────────
+  pubmed_jps               : Journal of Pediatric Surgery (IPEG/APSA flagship)
+  pubmed_psi               : Pediatric Surgery International (EUPSA/ESPES)
+  pubmed_ejps              : European Journal of Pediatric Surgery (EUPSA)
+  pubmed_semin_pediatr_surg: Seminars in Pediatric Surgery — Guidelines et consensus
+  pubmed_jps_guidelines    : JPS — Guidelines IPEG/APSA/EUPSA publiées dans JPS
 """
 
 from __future__ import annotations
@@ -817,6 +824,92 @@ PUBMED_SOURCES: list[dict] = [
         "source_type": "recommandation",
         "specialty_hint": "chirurgie-orthopedique",
         "min_score_hint": 4,
+    },
+
+    # ==========================================================================
+    # ── CHIRURGIE PÉDIATRIQUE ─────────────────────────────────────────────────
+    # ==========================================================================
+
+    # ── Journal of Pediatric Surgery (JPS) — IPEG/APSA/CAPS flagship ─────────
+    # Journal de référence mondial en chirurgie pédiatrique. Publie les RCTs
+    # multicentriques APSA, méta-analyses IPEG (laparoscopie pédiatrique),
+    # essais sur appendicite, hernie inguinale, sténose hypertrophique du pylore,
+    # malformations congénitales (atrésie œsophagienne, hernie diaphragmatique).
+    # Filtre PT : élimine les séries rétrospectives mono-centriques.
+    {
+        "source": "pubmed_jps",
+        "journal_term": f'"J Pediatr Surg"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Pediatric Surgery (JPS) — IPEG/APSA flagship",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 7,
+    },
+
+    # ── Pediatric Surgery International (PSI) ─────────────────────────────────
+    # Journal international à dominante européenne. Méta-analyses multicentriques
+    # sur malformations congénitales, laparoscopie pédiatrique, chirurgie néonatale.
+    # Publie régulièrement les positions de l'EUPSA et de l'ESPES.
+    {
+        "source": "pubmed_psi",
+        "journal_term": f'"Pediatr Surg Int"[Journal] AND {_PT_FILTER}',
+        "label": "Pediatric Surgery International (PSI) — EUPSA/ESPES",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 6,
+    },
+
+    # ── European Journal of Pediatric Surgery (EJPS) ──────────────────────────
+    # Organe officiel de l'EUPSA (European Paediatric Surgeons' Association).
+    # Focus chirurgie néonatale (atrésie œsophagienne, hernie diaphragmatique),
+    # oncologie pédiatrique chirurgicale, urologie pédiatrique (hypospadias,
+    # cryptorchidie, reflux), laparoscopie pédiatrique européenne.
+    {
+        "source": "pubmed_ejps",
+        "journal_term": f'"Eur J Pediatr Surg"[Journal] AND {_PT_FILTER}',
+        "label": "European Journal of Pediatric Surgery (EJPS/EUPSA)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 6,
+    },
+
+    # ── Seminars in Pediatric Surgery — revues thématiques et guidelines ───────
+    # Chaque numéro est dédié à un thème clinique (brûlures pédiatriques,
+    # atrésie biliaire, oncologie chirurgicale, chirurgie minimalemente invasive).
+    # Filtre titre : ne capture que les guidelines, consensus et revues systématiques.
+    {
+        "source": "pubmed_semin_pediatr_surg",
+        "journal_term": (
+            '"Semin Pediatr Surg"[Journal] AND ('
+            'guideline[Title] OR recommendation[Title] OR consensus[Title] OR '
+            '"position statement"[Title] OR "expert opinion"[Title] OR '
+            '"clinical practice"[Title] OR "systematic review"[Title] OR '
+            '"meta-analysis"[Title]'
+            ')'
+        ),
+        "label": "Seminars in Pediatric Surgery — Guidelines et consensus IPEG/APSA",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 5,
+    },
+
+    # ── JPS Guidelines — IPEG/APSA/EUPSA recommendations ─────────────────────
+    # Filtre sur Practice Guideline[pt] + titres de guidelines pour extraire
+    # uniquement les recommandations de sociétés savantes publiées dans JPS.
+    # Complémentaire de pubmed_jps : capte les guidelines non tagguées PT_FILTER.
+    {
+        "source": "pubmed_jps_guidelines",
+        "journal_term": (
+            '"J Pediatr Surg"[Journal] AND ('
+            '"Practice Guideline"[pt] OR '
+            'guideline[Title] OR recommendation[Title] OR consensus[Title] OR '
+            '"position statement"[Title] OR "clinical practice guideline"[Title] OR '
+            '"best practice"[Title]'
+            ')'
+        ),
+        "label": "JPS Guidelines — Recommandations IPEG/APSA/EUPSA publiées dans JPS",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 5,
     },
 ]
 

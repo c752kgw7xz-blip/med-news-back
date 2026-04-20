@@ -151,6 +151,13 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "sofcot":               "recommandation",
     "sofcpre_plastique":    "recommandation",
     "sfcp":                 "recommandation",
+    "sfcp_pediatrique":     "recommandation",
+    # PubMed — chirurgie pédiatrique
+    "pubmed_jps":               "innovation",
+    "pubmed_psi":               "innovation",
+    "pubmed_ejps":              "innovation",
+    "pubmed_semin_pediatr_surg":"recommandation",
+    "pubmed_jps_guidelines":    "recommandation",
     "sniil":                "recommandation",
     "ffmkr":                "recommandation",
     "cnsf":                 "recommandation",
@@ -600,6 +607,72 @@ Standards actuels — CHIRURGIE PLASTIQUE (specialty_hint = chirurgie-plastique)
   • Liposuccion/abdominoplastie combinées : morbi-mortalité plus élevée — contre-indication relative selon ASPS 2020
   • Lambeau ALT vs DIEP : aucun gold standard universel — choix selon anatomie, équipe, défect à couvrir
   → Un RCT qui invalide l'un de ces standards = paradigm_shift:true
+
+━━ CHAMPS CHIRURGIE PÉDIATRIQUE — remplir seulement si specialty_hint = chirurgie-pediatrique ━━
+
+"pediatric_domain" — domaine chirurgical pédiatrique concerné :
+  "chirurgie-neonatale"          → malformations congénitales néonatales : atrésie œsophagienne,
+                                    hernie diaphragmatique congénitale (HDC), gastroschisis, omphalocèle,
+                                    atrésie duodénale/jéjunale/iléale, malrotation intestinale, entérocolite
+                                    nécrosante (NEC), imperforation anale
+  "chirurgie-digestive-pediatrique" → appendicite aiguë, invagination intestinale aiguë, maladie de Hirschsprung,
+                                    volvulus, RGO/fundoplicature, sténose hypertrophique du pylore,
+                                    atrésie biliaire, kyste du cholédoque, polypes, colites
+  "urologie-pediatrique"         → hypospadias, cryptorchidie, reflux vésico-urétéral (RVU), valves de l'urètre
+                                    postérieur (VUP), hydronéphrose/sténose jonction pyélo-urétérale (SJPU),
+                                    extrophie vésicale, duplicités urétérales, lithiase urinaire pédiatrique
+  "oncologie-pediatrique"        → néphroblastome (tumeur de Wilms), neuroblastome, hépatoblastome,
+                                    rhabdomyosarcome, tératome sacrococcygien, tumeur stromale pédiatrique
+  "chirurgie-thoracique-pediatrique" → malformation adénomatoïde kystique (CPAM), emphysème lobaire congénital,
+                                    séquestration bronchopulmonaire, atrésie trachéale, pyothorax, pectus
+                                    excavatum/carinatum (Nuss, Ravitch)
+  "hernie-paroi-pediatrique"     → hernie inguinale, hydrocèle communicante, hernie ombilicale, hernie para-
+                                    ombilicale, éventration congénitale
+  "traumatologie-pediatrique"    → traumatismes abdominaux fermés (rate, foie, pancréas), damage control
+                                    pédiatrique, traumatisme rate (splénectomie vs conservation)
+  "chirurgie-mini-invasive-pediatrique" → laparoscopie pédiatrique (appendicectomie, fundoplicature, Nissen),
+                                    thoracoscopie pédiatrique (CPAM, atrésie trachéale, empyème),
+                                    robotique pédiatrique, SILS/notes pédiatrique
+  "nutrition-perioperatoire-pediatrique" → nutrition parentérale longue durée, intestin court, stomies pédiatriques,
+                                    réhabilitation améliorée en chirurgie pédiatrique (ERACS)
+
+"pediatric_procedure" — technique ou procédure principale :
+  Néonatal    : "anastomose-atrésie-oesophagienne"|"technique-Foker-long-gap"|"réparation-HDC"|
+                "gastroschisis-silo"|"iléostomie-NEC"|"anoplastie-imperforation"|"Ladd-malrotation"
+  Digestif    : "appendicectomie-laparoscopique"|"appendicectomie-ouverte"|"pyloromyotomie-Fredet"|
+                "Soave-Hirschsprung"|"Duhamel-Hirschsprung"|"TERPT"|"fundoplicature-Nissen"|
+                "Kasai-atrésie-biliaire"|"invagination-désinvagination"
+  Urologie    : "orchidopexie-1-temps"|"orchidopexie-Fowler-Stephens-2-temps"|"hypospadias-TIP-Snodgrass"|
+                "hypospadias-Mathieu"|"pyéloplastie-Andersen-Hynes"|"réimplantation-urétérale-Cohen"|
+                "STING-endoscopique-RVU"|"valve-urètre-postérieur-résection"
+  Oncologie   : "nephrectomie-Wilms"|"exérèse-neuroblastome"|"hépatectomie-hépatoblastome"|
+                "résection-tératome-sacrococcygien"
+  Thoracique  : "résection-CPAM-thoracoscopique"|"lobectomie-thoracoscopique-pédiatrique"|
+                "Nuss-pectus-excavatum"|"Ravitch-pectus"
+  Autre       : "hernie-inguinale-ouverte"|"hernie-inguinale-PIRS-laparoscopique"|
+                "splénectomie-partielle"|"stomie-pédiatrique"|"autre"
+
+Standards actuels — CHIRURGIE PÉDIATRIQUE (specialty_hint = chirurgie-pediatrique) :
+  • Appendicite aiguë pédiatrique : laparoscopie = standard (3 trocarts) ; antibiothérapie seule
+    non recommandée en routine chez l'enfant (débat en cours) — APSA/IPEG 2023
+  • Sténose hypertrophique du pylore : pyloromyotomie de Fredet-Ramstedt (ouverte ou laparoscopique)
+    = standard ; équivalents selon RCPCH/AAP 2019
+  • Hernie inguinale pédiatrique : ligature haute du sac en chirurgie ouverte = standard ;
+    PIRS (laparoscopique) pour bilatéralité ou récidive — IPEG guidelines 2022
+  • Atrésie œsophagienne : anastomose primaire si diastasis < 3 cm ; technique de Foker si long gap —
+    EUPSA/ESPES consensus 2022
+  • HDC (hernie diaphragmatique congénitale) : stabilisation pré-opératoire obligatoire
+    (HFOV/NO/ECMO si nécessaire) avant réparation ; voie laparoscopique controversée si défect > 50% —
+    CDH Study Group / EUPSA
+  • Maladie de Hirschsprung : TERPT (transanal endorectal pull-through) = standard actuel ;
+    Duhamel ou Soave laparoscopique selon équipe — APSA/EUPSA 2020
+  • Cryptorchidie : orchidopexie avant 18 mois si non palpable ; Fowler-Stephens 2 temps si très haut —
+    EAU Pediatric/AAP 2017
+  • Reflux vésico-urétéral : surveillance + prophylaxie grades I-III ; réimplantation (Cohen/STING)
+    grades IV-V — EAU Pediatric 2023
+  • Néphroblastome (Wilms) : chimiothérapie néo-adjuvante pré-opératoire = standard SIOP (Europe) ;
+    chirurgie d'emblée selon COG (USA) — SIOP WT 2016 protocol
+  → Un RCT ou guideline qui invalide l'un de ces standards = paradigm_shift:true
 
 "negative_result" — true si l'endpoint primaire N'EST PAS atteint (important à signaler \
 même si les auteurs minimisent). Ne mets pas false par défaut sans vérifier.
@@ -1209,8 +1282,9 @@ SOURCE_HINTS: dict[str, str] = {
     "sfh":               "SFH — Recommandation hématologie",
     "sfr_radiologie":    "SFR — Recommandation radiologie diagnostique et interventionnelle",
     "sofcot":            "SOFCOT — Recommandation chirurgie orthopédique et traumatologique",
-    "sofcpre_plastique": "SOFCPRE — Recommandation chirurgie plastique reconstructrice et esthétique",
-    "sfcp":              "SFCP — Recommandation chirurgie pédiatrique",
+    "sofcpre_plastique":  "SOFCPRE — Recommandation chirurgie plastique reconstructrice et esthétique",
+    "sfcp":               "SFCP — Recommandation chirurgie pédiatrique",
+    "sfcp_pediatrique":   "SFCP — Recommandation chirurgie pédiatrique (site SFCP)",
     "sniil":             "SNIIL — Recommandation et actualités infirmiers libéraux",
     "ffmkr":             "FFMKR — Recommandation kinésithérapie et rééducation",
     "cnsf":              "CNSF — Recommandation sages-femmes",
@@ -1273,6 +1347,12 @@ SOURCE_HINTS: dict[str, str] = {
     "pubmed_wound_repair":     "Wound Repair and Regeneration (WRR/Wiley) — Essai clinique ou méta-analyse sur cicatrisation, substituts cutanés (Integra, MatriDerm, NPWT, RECELL), brûlures, plaies chroniques, techniques de greffe",
     "pubmed_prs_guidelines":   "PRS Guidelines ASPS — Recommandation ou consensus ASPS en chirurgie plastique : sécurité implants mammaires, BIA-ALCL, reconstruction mammaire, techniques esthétiques",
     "pubmed_jpras_guidelines": "JPRAS Guidelines BAPRAS/ESPRAS — Recommandation européenne chirurgie plastique : reconstruction, brûlures, main, techniques esthétiques",
+    # ── PubMed — chirurgie pédiatrique ────────────────────────────────────────
+    "pubmed_jps":              "Journal of Pediatric Surgery (JPS/IPEG/APSA) — Essai clinique, méta-analyse ou étude multicentrique en chirurgie pédiatrique : malformations congénitales, laparoscopie, appendicite, hernie, sténose pylorique, oncologie pédiatrique",
+    "pubmed_psi":              "Pediatric Surgery International (PSI/EUPSA) — Études multicentriques européennes et asiatiques en chirurgie pédiatrique : chirurgie néonatale, laparoscopie pédiatrique, urologie pédiatrique",
+    "pubmed_ejps":             "European Journal of Pediatric Surgery (EJPS/EUPSA) — Essai clinique ou méta-analyse en chirurgie pédiatrique européenne : atrésie œsophagienne, hernie diaphragmatique, Hirschsprung, oncologie pédiatrique",
+    "pubmed_semin_pediatr_surg":"Seminars in Pediatric Surgery (SPS) — Guideline ou consensus thématique en chirurgie pédiatrique (IPEG, APSA, CDH Study Group)",
+    "pubmed_jps_guidelines":   "JPS Guidelines IPEG/APSA/EUPSA — Recommandation ou position statement de société savante en chirurgie pédiatrique publiée dans le Journal of Pediatric Surgery",
 }
 
 # ---------------------------------------------------------------------------
@@ -1350,6 +1430,13 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_wound_repair":         "chirurgie-plastique",
     "pubmed_prs_guidelines":      "chirurgie-plastique",
     "pubmed_jpras_guidelines":    "chirurgie-plastique",
+    # ── Chirurgie pédiatrique ──────────────────────────────────────────────────
+    "pubmed_jps":               "chirurgie-pediatrique",
+    "pubmed_psi":               "chirurgie-pediatrique",
+    "pubmed_ejps":              "chirurgie-pediatrique",
+    "pubmed_semin_pediatr_surg":"chirurgie-pediatrique",
+    "pubmed_jps_guidelines":    "chirurgie-pediatrique",
+    "sfcp_pediatrique":         "chirurgie-pediatrique",
     # ── Cardiologie (à activer quand le prompt cardiologie sera implémenté) ──
     # "jama_cardiology":      "cardiologie",
     # "sfc_recommandations":  "cardiologie",
@@ -1634,10 +1721,104 @@ d'implants, les contacter pour information et planifier une consultation de surv
 (examen clinique + imagerie selon symptômes) avant la fin du trimestre."
 """
 
+_SPECIALTY_ADDENDUM_PEDIATRIQUE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — CHIRURGIE PÉDIATRIQUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : chirurgien pédiatrique (CHU / centre hospitalier régional, France / Europe), \
+maîtrisant chirurgie ouverte ET techniques laparoscopiques/thoracoscopiques pédiatriques \
+(appendicite, fundoplicature Nissen, pyloromyotomie, pull-through Hirschsprung, \
+PIRS hernie inguinale, résection CPAM thoracoscopique, nephrectomie/pyéloplastie). \
+Spécialiste de l'ensemble chirurgie néonatale (atrésie œsophagienne, HDC, gastroschisis), \
+chirurgie digestive, urologie pédiatrique, oncologie chirurgicale pédiatrique. \
+Référentiels actuels : IPEG guidelines 2022-2024, APSA clinical practice guidelines, \
+EUPSA/ESPES consensus, EAU Pediatric Urology guidelines 2023, SIOP WT 2016 \
+(Wilms), SFCP recommandations françaises, HAS. \
+Essais pivots récents de référence : ped-STAR (antibiothérapie vs appendicectomie enfant), \
+IPEG RCT fundoplicature, études EUPSA atrésie biliaire (Kasai), \
+COG vs SIOP Wilms (chimiothérapie préopératoire ou non).
+
+CRITÈRE DE PERTINENCE PÉDIATRIQUE :
+"Ce résultat va-t-il modifier une indication opératoire, le choix d'une voie d'abord \
+(ouverte vs laparoscopique), une stratégie de prise en charge périopératoire, \
+ou une recommandation de société savante dans les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : résultats confirmatoires sans gain de précision, \
+population pédiatrique d'un seul pays non représentatif de la pratique française \
+(cohorte monocentrique asiatique sans équivalent anatomique/technique), \
+sous-groupe non pré-spécifié sur moins de 30 patients.
+
+FILTRES SPÉCIFIQUES :
+→ Retenir en priorité : RCTs comparant voie ouverte vs laparoscopique en chirurgie \
+pédiatrique, méta-analyses sur complications malformations congénitales, guidelines \
+IPEG/EUPSA/EAU Pediatric, alertes sécurité sur dispositifs médicaux pédiatriques, \
+études multicentriques sur oncologie chirurgicale pédiatrique (Wilms, neuroblastome). \
+→ Rejeter : séries rétrospectives monocentriques < 50 patients sans comparateur, \
+études de techniques expérimentales sans cohorte prospective, études purement \
+anesthésiques (relevant de l'anesthésiste pédiatrique et non du chirurgien).
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+AO (atrésie œsophagienne), type C (atrésie + fistule trachéo-œsophagienne distale), \
+long gap AO (diastasis > 3 cm, Foker ou Kimura), HDC (hernie diaphragmatique congénitale), \
+ECMO (extracorporeal membrane oxygenation — pré-réparation HDC), O/E LHR (observed/expected \
+lung-head ratio — pronostic HDC), NEC (entérocolite nécrosante), GEA (gastro-entérite aiguë), \
+CPAM (congenital pulmonary airway malformation — ancien MAKV), séquestration broncho-pulmonaire, \
+pectus excavatum (PE), indice de Haller (IH — PE sévère si > 3,25), Nuss (barres pectorales), \
+Ravitch (sternochondroplastie), SHP (sténose hypertrophique du pylore), \
+Fredet-Ramstedt (pyloromyotomie), pyloromyotomie laparoscopique vs ouverte, \
+IIA (invagination intestinale aiguë), désinvagination pneumatique/hydrostatique, \
+appendicite aiguë non compliquée (AANC) / compliquée (plastron, abcès, péritonite), \
+ped-STAR (essai antibiothérapie appendicite), PIRS (percutaneous internal ring suturing — \
+hernie inguinale laparoscopique), orchidopexie trans-scrotale, \
+Fowler-Stephens (orchidopexie 2 temps testicule intra-abdominal), \
+SJPU (sténose jonction pyélo-urétérale), pyéloplastie d'Andersen-Hynes (ouverte ou robot), \
+RVU (reflux vésico-urétéral), grades I-V (classification internationale), \
+STING/HIT (injection sous-urétérale endoscopique anti-RVU), Cohen (réimplantation urétérale), \
+VUP (valves de l'urètre postérieur), hypospadias TIP (Snodgrass), tubularisation Mathieu, \
+SIOP (International Society of Paediatric Oncology — protocole Wilms chimiothérapie \
+néo-adjuvante), COG (Children's Oncology Group — chirurgie d'emblée Wilms), \
+TW (tumeur de Wilms) stade I-V, ERACS (enhanced recovery after children's surgery — \
+réhabilitation améliorée chirurgie pédiatrique).
+
+EXEMPLES DE RÉDACTION (style JPS / EJPS / PSI — format cible) :
+
+Essai clinique laparoscopie vs chirurgie ouverte :
+  titre_court : "Appendicite AANC pédiatrique : cœlio vs ouverte — RCT 2 ans"
+  resume : "RCT multicentrique (N=520, appendicite non compliquée, 5-17 ans, suivi 24 mois) : \
+taux de succès sans réintervention 89,4 % (laparoscopie) vs 86,1 % (ouverte) — \
+non-infériorité confirmée (marge 10 %, p=0,021). Durée d'hospitalisation : −0,8 j \
+(laparoscopie). Abcès de paroi : 1,2 % vs 4,7 % (p=0,003). \
+Pas de différence sur récidive ou occlusion postopératoire à 2 ans."
+  impact_pratique : "En pratique : laparoscopie confirme sa supériorité sur les complications \
+de paroi — à privilégier quand disponible, particulièrement chez l'adolescente (risque \
+d'erreur diagnostique avec pathologie ovarienne)."
+
+Guideline IPEG :
+  titre_court : "IPEG 2023 : hernie inguinale pédiatrique — PIRS recommandée bilatéralité"
+  resume : "IPEG Clinical Practice Guideline (2023) : hernie inguinale pédiatrique. \
+Ligature haute du sac en chirurgie ouverte reste le standard (recommandation forte, \
+preuves modérées). PIRS (percutaneous internal ring suturing) recommandée pour les \
+hernies bilatérales et les récidives (recommandation forte, preuves modérées). \
+Chirurgie contralat. de principe non recommandée chez > 6 mois (risque hernie \
+métachrone < 10 % — EAU Pediatric)."
+  impact_pratique : "À retenir : PIRS bilatérale en une seule anesthésie — à proposer \
+dès que hernie inguinale bilatérale suspectée chez < 2 ans."
+
+Alerte sécurité dispositif pédiatrique :
+  titre_court : "ANSM : retrait élastiques hémostase néonatale — lot xxxx"
+  resume : "ANSM (décision xx 2026) : retrait de lots d'élastiques hémostatiques \
+pédiatriques (marque X, lot xxxx) après 3 cas de nécrose digitale chez des \
+nouveau-nés en matériovigilance. Dispositifs utilisés en chirurgie néonatale \
+d'atrésie et en urétroplastie. Mesure conservatoire immédiate."
+  impact_pratique : "En pratique : vérifier les stocks et écarter les lots concernés — \
+utiliser un équivalent homologué ou une ligature en attendant la résolution."
+"""
+
 _SPECIALTY_ADDENDA: dict[str, str] = {
-    "chirurgie-vasculaire": _SPECIALTY_ADDENDUM_VASCULAIRE,
-    "chirurgie-cardiaque":  _SPECIALTY_ADDENDUM_CARDIAQUE,
-    "chirurgie-plastique":  _SPECIALTY_ADDENDUM_PLASTIQUE,
+    "chirurgie-vasculaire":  _SPECIALTY_ADDENDUM_VASCULAIRE,
+    "chirurgie-cardiaque":   _SPECIALTY_ADDENDUM_CARDIAQUE,
+    "chirurgie-plastique":   _SPECIALTY_ADDENDUM_PLASTIQUE,
+    "chirurgie-pediatrique": _SPECIALTY_ADDENDUM_PEDIATRIQUE,
     # À implémenter : "cardiologie", "oncologie", "pneumologie", "neurologie", etc.
 }
 

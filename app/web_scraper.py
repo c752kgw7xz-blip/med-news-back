@@ -200,6 +200,23 @@ WEB_SCRAPER_SOURCES: list[dict] = [
         "exclude_pattern": r"/(la-sofcot|adhesion|agenda|congres|bourses|formation|annuaire|contact|accueil)(/|$)",
     },
 
+    # ── SFCP — Société Française de Chirurgie Pédiatrique ────────────────────
+    # Page des recommandations de la SFCP.
+    # chirurgie-pediatrique.com/feed/ — 404 depuis mars 2026.
+    # Le scraper cible la page publications/recommandations du site principal.
+    # Contenu attendu : recommandations SFCP, positions IPEG/EUPSA relayées,
+    # actualités réglementaires chirurgie pédiatrique française.
+    {
+        "url": "https://www.chirurgie-pediatrique.com/recommandations",
+        "source": "sfcp_pediatrique",
+        "label": "SFCP — Recommandations chirurgie pédiatrique",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "chirurgie-pediatrique",
+        "link_pattern": r"chirurgie-pediatrique\.com/",
+        "exclude_pattern": r"/(la-sfcp|adhesion|agenda|congres|bourses|formation|annuaire|contact|accueil)(/|$)",
+    },
+
     # ── SOFCPRE — Société Française de Chirurgie Plastique Reconstructrice ──
     # Seule page publique avec contenu clinique sur sofcpre.fr.
     # Le RSS sofcpre.fr/feed/ est 404 depuis mars 2026. Le site est quasi-statique
