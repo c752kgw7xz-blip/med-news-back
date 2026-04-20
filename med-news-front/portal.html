@@ -1173,6 +1173,7 @@ let specTypeCounts = {};  // {slug: {total, reglementaire, recommandation, innov
 // Favorites state
 let favoritesSet = new Set();
 let favoritesMode = false;
+const _favDataMap = {}; // id → article complet, stocké au moment du toggle
 let historyMode = false;
 
 const MONTHS = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin',
@@ -1912,10 +1913,12 @@ async function toggleFavorite(event, itemId) {
   } else {
     await authFetch(`${API}/favorites/${itemId}`, { method: 'POST' });
     favoritesSet.add(itemId);
+    // Stocker les données de l'article pour showFavorites()
+    const _fa = allLoadedArticles.find(a => a.id === itemId);
+    if (_fa) _favDataMap[itemId] = _fa;
     document.querySelectorAll(`.btn-fav[data-item-id="${itemId}"]`).forEach(b => {
       b.classList.add('active');
       b.title = 'Retirer des favoris';
-      // Ensure SVG fill is applied after class change
       const svg = b.querySelector('svg');
       if (svg) svg.style.fill = 'currentColor';
     });
@@ -1947,43 +1950,54 @@ function showFavorites() {
     return;
   }
 
-  // Build card map
-  const cardMap = {};
-  document.querySelectorAll('.article-card[data-item-id]').forEach(c => { cardMap[c.dataset.itemId] = c; });
+  container.innerHTML = '<div class="empty" style="color:var(--text4);">Chargement…</div>';
 
-  // Source de données : en mode auth, utiliser allLoadedArticles + DOM existant
-  const articleById = {};
-  if (DEMO_MODE) {
-    const src = (_demoCache && _demoCache.length > 0) ? _demoCache : DEMO_ARTICLES;
-    src.forEach(a => { if (a.id) articleById[a.id] = a; });
-  } else {
-    allLoadedArticles.forEach(a => { if (a.id) articleById[a.id] = a; });
+  // Pour les favoris sans données en cache, on les fetch en parallèle
+  const missing = [...favoritesSet].filter(id =>
+    !_favDataMap[id] && !allLoadedArticles.find(a => a.id === id)
+  );
+  if (!DEMO_MODE && missing.length > 0) {
+    await Promise.all(missing.map(id =>
+      authFetch(`${API}/articles/${id}`)
+        .then(r => r?.ok ? r.json() : null)
+        .then(a => { if (a) _favDataMap[id] = a; })
+        .catch(() => {})
+    ));
   }
 
-  // Flat list of favorites, no groups
-  const frag = document.createDocumentFragment();
-  let rendered = 0;
-  favoritesSet.forEach(id => {
-    // Try DOM first
-    const card = cardMap[id];
-    if (card) {
-      const clone = card.cloneNode(true);
-      clone.style.display = '';
-      clone.style.animationDelay = '0ms';
-      frag.appendChild(clone);
-      rendered++;
-    } else if (articleById[id]) {
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = renderArticle(articleById[id], rendered);
-      const newCard = wrapper.firstElementChild;
-      if (newCard) { frag.appendChild(newCard); rendered++; }
-    }
-  });
+  // Rendu format splash-result-card — même style que historique
+  window._splashSearchHits = window._splashSearchHits || {};
+  const src = DEMO_MODE
+    ? ((_demoCache && _demoCache.length > 0) ? _demoCache : DEMO_ARTICLES)
+    : [];
+  const demoById = {};
+  src.forEach(a => { if (a.id) demoById[a.id] = a; });
 
-  container.innerHTML = '';
-  container.appendChild(frag);
-  if (window.lucide) lucide.createIcons();
-  if (rh) rh.style.display = '';
+  const html = [...favoritesSet].map(id => {
+    const a = _favDataMap[id]
+           || allLoadedArticles.find(x => x.id === id)
+           || demoById[id];
+    if (!a) return '';
+    const titre = a.tri_json?.titre_court || a.title_raw || 'Sans titre';
+    const stype = a.source_type || 'reglementaire';
+    const date  = a.official_date || a.tri_json?.date_publication || '';
+    const stypeLabel = stype === 'reglementaire' ? 'Réglementation'
+                     : stype === 'recommandation' ? 'Recommandation'
+                     : 'Innovation';
+    window._splashSearchHits[id] = a;
+    return `<div class="splash-result-card" onclick="openSplashResult('${esc(a.id)}','${esc(stype)}')">
+      <span class="splash-result-stype stype-${esc(stype)}">${stypeLabel}</span>
+      <div class="splash-result-body">
+        <div class="splash-result-title">${esc(titre)}</div>
+        <div class="splash-result-meta">
+          <span>${esc(sourceLabel(a.source || ''))}</span>
+          ${date ? `<span>${esc(MedNews.formatDate(date))}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  container.innerHTML = html || '<div class="empty">Données indisponibles pour ces favoris.</div>';
 }
 function updateSidebarFavCount() {
   const el = document.getElementById('fav-count');
