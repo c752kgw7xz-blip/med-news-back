@@ -1998,7 +1998,10 @@ async function showFavorites() {
     </div>`;
   }).filter(Boolean).join('');
 
-  container.innerHTML = html || '<div class="empty">Données indisponibles pour ces favoris.</div>';
+  const cards = html ? html.split('splash-result-card').length - 1 : 0;
+  container.innerHTML = html || '<div class="empty">Aucun favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
+  const el = document.getElementById('fav-count');
+  if (el) el.textContent = cards;
 }
 function updateSidebarFavCount() {
   const el = document.getElementById('fav-count');
