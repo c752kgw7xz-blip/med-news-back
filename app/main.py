@@ -128,7 +128,7 @@ if os.path.isdir(_screenshots_dir):
 
 _NO_CACHE = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache"}
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def serve_landing():
     return FileResponse(os.path.join(_FRONT_DIR, "index.html"), media_type="text/html", headers=_NO_CACHE)
 
