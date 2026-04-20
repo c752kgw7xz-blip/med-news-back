@@ -970,7 +970,7 @@
       <!-- Mon activité -->
       <div class="sidebar-label"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block;margin-right:2px;"></span>Mon activité <span class="sb-label-line"></span></div>
 
-      <div class="sidebar-subitem" onclick="showFavorites()" style="padding-left:22px;padding-top:8px;padding-bottom:8px;">
+      <div id="sidebar-favorites-item" class="sidebar-subitem" onclick="showFavorites()" style="padding-left:22px;padding-top:8px;padding-bottom:8px;">
         <span style="display:flex;align-items:center;gap:7px;flex:1;">
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Mes favoris
@@ -1930,6 +1930,9 @@ async function toggleFavorite(event, itemId) {
 function showFavorites() {
   favoritesMode = true;
   historyMode = false;
+  document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
+  document.getElementById('sidebar-favorites-item')?.classList.add('active');
   document.getElementById('spec-splash').style.display = 'none';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
@@ -3156,41 +3159,32 @@ function showHistory() {
     return;
   }
 
-  // En mode authentifié, priorité aux données de l'entrée d'historique (stockées au moment de la lecture)
-  // puis fallback sur allLoadedArticles si disponible
-  const articleById = {};
-  if (!DEMO_MODE) {
-    allLoadedArticles.forEach(a => { if (a.id) articleById[a.id] = a; });
-  } else {
-    const src = (_demoCache && _demoCache.length > 0) ? _demoCache : DEMO_ARTICLES;
-    src.forEach(a => { if (a.id) articleById[a.id] = a; });
-  }
+  // Rendu format splash-result-card : badge stype + titre + source + date
+  // Ordre : dernier article ouvert en premier
+  window._splashSearchHits = window._splashSearchHits || {};
+  const html = history.map(entry => {
+    const a = entry.data;
+    if (!a) return '';
+    const titre  = a.tri_json?.titre_court || a.title_raw || entry.titre || 'Sans titre';
+    const stype  = a.source_type || 'reglementaire';
+    const date   = a.official_date || a.tri_json?.date_publication || '';
+    const stypeLabel = stype === 'reglementaire' ? 'Réglementation'
+                     : stype === 'recommandation' ? 'Recommandation'
+                     : 'Innovation';
+    window._splashSearchHits[a.id] = a;
+    return `<div class="splash-result-card" onclick="openSplashResult('${esc(a.id)}', '${esc(stype)}')">
+      <span class="splash-result-stype stype-${esc(stype)}">${stypeLabel}</span>
+      <div class="splash-result-body">
+        <div class="splash-result-title">${esc(titre)}</div>
+        <div class="splash-result-meta">
+          <span>${esc(sourceLabel(a.source || ''))}</span>
+          ${date ? `<span>${esc(MedNews.formatDate(date))}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).filter(Boolean).join('');
 
-  container.innerHTML = '';
-  let rendered = 0;
-  history.forEach((entry, idx) => {
-    const article = articleById[entry.id] || entry.data; // entry.data = article sauvegardé au moment de la lecture
-    if (article) {
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = renderArticle(article, idx);
-      const card = wrapper.firstElementChild;
-      if (card) container.appendChild(card);
-      rendered++;
-    } else {
-      // Fallback : titre + date seulement
-      const row = document.createElement('div');
-      row.className = 'article-card';
-      row.style.cursor = 'default';
-      row.innerHTML = '<div class="card-top" style="margin-bottom:0;"><span class="card-title" style="font-size:0.9rem;">' + (entry.titre || 'Article') + '</span><span class="card-date">' + new Date(entry.ts).toLocaleDateString('fr-FR') + '</span></div>';
-      container.appendChild(row);
-      rendered++;
-    }
-  });
-
-  if (rendered === 0) {
-    container.innerHTML = '<div class="empty">Historique indisponible pour cette session.</div>';
-  }
-  if (window.lucide) lucide.createIcons();
+  container.innerHTML = html || '<div class="empty">Historique indisponible pour cette session.</div>';
 }
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
