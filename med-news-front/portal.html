@@ -171,9 +171,12 @@
     .header-right .email { display: none; }
     .header-spec { display: none; }
     .header-sep { display: none; }
+    /* Cacher les boutons header sur mobile — accessibles via l'onglet Compte */
+    .btn-header-action { display: none !important; }
+    .btn-logout { display: none !important; }
     /* Contraindre le grid item content-area à la largeur du viewport */
     /* env() gère la barre d'accueil iOS (safe-area-inset-bottom ≈ 34px sur iPhone récent) */
-    .content-area { padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)); min-width: 0; overflow-x: hidden; }
+    .content-area { padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)); min-width: 0; overflow-x: hidden; width: 100%; }
     #articles-container { grid-template-columns: 1fr !important; min-width: 0; }
     /* Grid items : min-width:0 empêche le track 1fr d'être élargi par white-space:nowrap */
     .org-group { min-width: 0; overflow: hidden; }
@@ -183,9 +186,13 @@
     .rubrique-filters {
       flex-wrap: nowrap !important;
     }
+    /* ── Portal page title (sélecteur de mois) ── */
+    .portal-page-title { padding: 0 4px; }
+    .portal-page-title h2 { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .portal-page-title p { font-size: 0.62rem; letter-spacing: .2px; white-space: normal; overflow-wrap: break-word; }
     /* ── Splash mobile ── */
-    #spec-splash { padding: 24px 16px 28px; min-height: 55vh; }
-    #spec-splash-name { font-size: 1.9rem; }
+    #spec-splash { padding: 24px 16px 28px; min-height: 55vh; overflow: hidden; }
+    #spec-splash-name { font-size: 1.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
     .spec-splash-hint { font-size: 0.82rem; margin-bottom: 20px; }
     .spec-splash-cats { flex-direction: column; gap: 8px; width: 100%; }
     .spec-splash-cat-btn {
@@ -1085,15 +1092,9 @@
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
       <span class="mobile-nav-label">Ma spécialité</span>
     </button>
-
     <button class="mobile-nav-item" onclick="mobileNavClick('explorer')" id="mnav-explorer">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
       <span class="mobile-nav-label">Explorer</span>
-    </button>
-
-    <button class="mobile-nav-item" onclick="mobileNavClick('compte')" id="mnav-compte">
-      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
-      <span class="mobile-nav-label">Archives</span>
     </button>
     <button class="mobile-nav-item" onclick="mobileNavClick('compte')" id="mnav-compte">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
