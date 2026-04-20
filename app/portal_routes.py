@@ -713,6 +713,25 @@ def verify_email(payload: VerifyEmailPayload):
 
 
 # ---------------------------------------------------------------------------
+# PATCH /me/name — Met à jour prénom et nom
+# ---------------------------------------------------------------------------
+
+class NameUpdate(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+
+
+@router.patch("/me/name")
+def update_name(payload: NameUpdate, user_id: str = Depends(_get_current_user_id)):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET first_name = %s, last_name = %s WHERE id = %s;",
+                (payload.first_name or None, payload.last_name or None, user_id),
+            )
+    return {"status": "updated"}
+
+
 # PATCH /me/specialty — Met à jour la spécialité principale
 # ---------------------------------------------------------------------------
 

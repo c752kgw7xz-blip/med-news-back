@@ -307,6 +307,26 @@
         </div>
       </div>
 
+      <!-- ── Identit&eacute; ──────────────────────────── -->
+      <div class="settings-section">
+        <div class="section-title">Identit&eacute;</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Pr&eacute;nom</div>
+          </div>
+          <input type="text" class="settings-select" id="input-first-name" placeholder="Jean" autocomplete="given-name" style="width:200px;">
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Nom</div>
+          </div>
+          <input type="text" class="settings-select" id="input-last-name" placeholder="Dupont" autocomplete="family-name" style="width:200px;">
+        </div>
+        <div class="setting-row-action">
+          <button class="btn-save" onclick="saveName()">Enregistrer</button>
+        </div>
+      </div>
+
       <!-- ── Sp&eacute;cialit&eacute; ─────────────────────── -->
       <div class="settings-section">
         <div class="section-title">Ma sp&eacute;cialit&eacute;</div>
@@ -455,6 +475,19 @@ function applyFontChoice(mode) {
 }
 
 
+// ── Identit&eacute; ──────────────────────────────────────────────────────
+async function saveName() {
+  const first = document.getElementById('input-first-name').value.trim();
+  const last  = document.getElementById('input-last-name').value.trim();
+  const res = await authFetch(`${API}/me/name`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ first_name: first, last_name: last }),
+  });
+  if (res && res.ok) showToast('Nom mis à jour');
+  else showToast('Erreur lors de la sauvegarde');
+}
+
 // ── Sp&eacute;cialit&eacute; ─────────────────────────────────────────────────
 async function loadSpecialties(currentSlug) {
   try {
@@ -540,6 +573,8 @@ window.scrollTo(0, 0);
 
   document.getElementById('user-email').textContent = profile.email || '';
   document.getElementById('account-email').textContent = profile.email || '';
+  document.getElementById('input-first-name').value = profile.first_name || '';
+  document.getElementById('input-last-name').value = profile.last_name || '';
 
   await loadSpecialties(profile.specialty_slug);
   await loadPreferences();
