@@ -1931,7 +1931,7 @@ async function toggleFavorite(event, itemId) {
   }
 }
 
-function showFavorites() {
+async function showFavorites() {
   favoritesMode = true;
   historyMode = false;
   document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
