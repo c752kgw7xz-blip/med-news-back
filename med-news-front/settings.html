@@ -64,81 +64,46 @@
   }
   .btn-logout:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
   .header-back-btn {
-    display: none; background: none; border: none; cursor: pointer;
+    display: flex; background: none; border: none; cursor: pointer;
     color: var(--text3); padding: 6px 4px 6px 0; align-items: center;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
+  .header-back-btn:hover { color: var(--text); }
 
   /* ── Layout ─────────────────────────────── */
-  .layout {
-    display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 52px);
-  }
+  .layout { max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
+
   @media (max-width: 768px) {
-    .layout { grid-template-columns: 1fr; min-height: auto; }
-    .sidebar { display: none; }
     header { padding: 0 16px; overflow: hidden; position: relative; z-index: auto; gap: 8px; }
     .header-back-btn { display: flex; }
     .header-left { gap: 8px; }
     .header-right .email { display: none; }
     .header-spec { display: none; }
     .header-sep { display: none; }
-    .content-area { padding: 20px 16px 80px; min-width: 0; overflow-x: hidden; max-width: 100%; }
+    .layout { padding: 20px 16px 80px; }
     .page-title { font-size: 1.25rem; }
     .page-sub { font-size: 0.82rem; margin-bottom: 20px; }
-    /* Police fixe sur mobile — réglage taille masqué */
     html, body { font-size: 16px !important; --font-scale: 1 !important; }
     #row-fontsize { display: none; }
-    /* Chaque ligne de réglage passe en colonne sur mobile */
     .setting-row { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px 16px; }
     .setting-info { width: 100%; }
     .setting-label { font-size: 0.93rem; }
     .setting-desc { font-size: 0.79rem; }
-    /* Groupes de boutons : pleine largeur, boutons égaux */
     .option-group { flex-wrap: nowrap; width: 100%; }
     .option-btn { flex: 1; text-align: center; padding: 6px 8px; font-size: 0.79rem; }
-    /* Spécialité : select + bouton en ligne, full width */
     .setting-row > div[style*="flex-shrink:0"],
     .setting-row > div[style*="flex-shrink: 0"] {
       width: 100%; display: flex; gap: 8px; align-items: center;
     }
     .settings-select { flex: 1; min-width: 0; max-width: calc(100% - 110px); }
     .btn-save { white-space: nowrap; flex-shrink: 0; }
-    .setting-card { width: 100%; box-sizing: border-box; }
   }
   @media (max-width: 480px) {
     header { padding: 0 12px; height: 48px; }
-    .content-area { padding: 16px 12px; }
     .page-title { font-size: 1.18rem; }
     .setting-row { gap: 8px; }
     .option-btn { padding: 5px 10px; font-size: 0.71rem; }
   }
-
-  /* ── Sidebar ────────────────────────────── */
-  .sidebar {
-    background: var(--surface2); border-right: 0.5px solid var(--border);
-    padding: 20px 0; position: sticky; top: 52px; height: calc(100vh - 52px);
-    overflow-y: auto;
-  }
-  .sidebar-label {
-    font-family: 'Outfit', sans-serif; font-size:0.65rem; font-weight: 500;
-    letter-spacing: 0.4px; text-transform: uppercase;
-    color: var(--text3); padding: 6px 20px 4px; margin-bottom: 2px;
-  }
-  .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 10px 16px; }
-  .sidebar-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 7px 16px 7px 20px; cursor: pointer; transition: all .12s;
-    color: var(--text3); font-size:0.82rem; font-weight: 400; font-family: 'Outfit', sans-serif;
-    border-left: 2px solid transparent;
-  }
-  .sidebar-item:hover { color: var(--text2); background: rgba(0,0,0,.04); }
-  .sidebar-item.active {
-    color: var(--text); border-left-color: var(--green);
-    padding-left: 18px; background: rgba(0,0,0,.05); font-weight: 500;
-  }
-
-  /* ── Content ────────────────────────────── */
-  .content-area { padding: 32px 48px; }
 
   .page-title {
     font-family: 'Instrument Serif', Georgia, serif; font-size: 1.86rem;
@@ -254,25 +219,7 @@
   </header>
 
   <div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-label">Navigation</div>
-      <div class="sidebar-item" onclick="MedNews.goHome()">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Mon portail</span>
-        <span style="color:var(--text5);">&rarr;</span>
-      </div>
-      <div class="sidebar-item" onclick="window.location.href='/archives'">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Archives</span>
-        <span style="color:var(--text5);">&rarr;</span>
-      </div>
-      <hr class="sidebar-sep">
-      <div class="sidebar-item active">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
-      </div>
-    </aside>
-
-    <!-- Contenu -->
-    <div class="content-area">
+    <div>
       <div class="page-title">Param&egrave;tres</div>
       <div class="page-sub">Personnalisez votre exp&eacute;rience MedNews</div>
 
