@@ -2010,10 +2010,14 @@ async function showFavorites() {
   const missing = [...favoritesSet].filter(id =>
     !_favDataMap[id] && !allLoadedArticles.find(a => a.id === id)
   );
+  const _confirmed404 = new Set();
   if (!DEMO_MODE && missing.length > 0) {
     await Promise.all(missing.map(id =>
       authFetch(`${API}/articles/${id}`)
-        .then(r => r?.ok ? r.json() : null)
+        .then(r => {
+          if (r?.status === 404) { _confirmed404.add(id); return null; }
+          return r?.ok ? r.json() : null;
+        })
         .then(a => { if (a) _favDataMap[id] = a; })
         .catch(() => {})
     ));
@@ -2052,9 +2056,9 @@ async function showFavorites() {
     </div>`;
   }).filter(Boolean).join('');
 
-  // Nettoyer les IDs non résolus — orphelins en DB
-  if (!DEMO_MODE && unresolvedIds.length) {
-    unresolvedIds.forEach(id => {
+  // Nettoyer uniquement les vrais 404 confirmés (pas les erreurs réseau/auth)
+  if (!DEMO_MODE && _confirmed404.size) {
+    _confirmed404.forEach(id => {
       favoritesSet.delete(id);
       authFetch(`${API}/favorites/${id}`, { method: 'DELETE' }).catch(() => {});
     });

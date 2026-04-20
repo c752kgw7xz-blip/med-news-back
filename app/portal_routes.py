@@ -417,7 +417,8 @@ def get_article(
             cur.execute("""
                 SELECT i.id, i.audience, i.specialty_slug, i.score_density,
                        i.tri_json, i.lecture_json, i.published_at,
-                       c.title_raw, c.official_url, c.official_date::text, c.content_raw
+                       c.title_raw, c.official_url, c.official_date::text, c.content_raw,
+                       i.source_type, c.source
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.id = %s
@@ -441,6 +442,8 @@ def get_article(
         "official_url": row[8],
         "official_date": row[9],
         "content_raw": row[10],
+        "source_type": row[11],
+        "source": row[12],
     }
 
 
