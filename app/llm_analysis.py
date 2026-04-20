@@ -1032,8 +1032,21 @@ _INNOVATION_SOURCES: frozenset[str] = frozenset({
     "nejm", "lancet", "bmj", "nature_medicine",
     "clinical_chemistry", "ptj_kine", "bjog", "cpt_pharmacol",
     "jdr_dental", "jan_nursing",
-    # PubMed sources
+    # PubMed — chirurgie vasculaire
     "pubmed_jvs", "pubmed_ejves", "pubmed_jet", "pubmed_ann_vasc_surg",
+    # PubMed — chirurgie cardiaque
+    "pubmed_jtcvs", "pubmed_ejcts", "pubmed_ann_thorac_surg",
+    "pubmed_circulation_card", "pubmed_jacc_card", "pubmed_jacc_interv",
+    "pubmed_eur_heart_j", "pubmed_jhlt", "pubmed_eurointerv", "pubmed_circ_heart_fail",
+    # PubMed — chirurgie orthopédique
+    "pubmed_jbjs", "pubmed_bone_joint_j", "pubmed_corr", "pubmed_jarthroplasty",
+    "pubmed_kssta", "pubmed_acta_orthop", "pubmed_otsr",
+    "pubmed_ajsm", "pubmed_arthroscopy", "pubmed_jses", "pubmed_spine",
+    "pubmed_j_orthop_trauma", "pubmed_int_orthop", "pubmed_arch_orthop_trauma",
+    # PubMed — chirurgie plastique & reconstructrice
+    "pubmed_prs", "pubmed_jpras", "pubmed_asj", "pubmed_ann_plast_surg",
+    "pubmed_jhs_am", "pubmed_jhs_eur", "pubmed_jrms", "pubmed_microsurgery",
+    "pubmed_burns", "pubmed_acpe", "pubmed_prs_global_open", "pubmed_wound_repair",
     # EMA nouvelles AMM
     "ema_new_medicines",
 })
