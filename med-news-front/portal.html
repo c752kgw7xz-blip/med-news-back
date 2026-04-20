@@ -1173,36 +1173,6 @@
   </div>
 
   <!-- Full-page overlay — Paramètres (nav visible en bas) -->
-  <div class="fp-overlay compte-mode" id="fp-parametres">
-    <div class="fp-overlay-header">
-      <button class="fp-overlay-back" onclick="closeFullPage('parametres')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        Retour
-      </button>
-      <span class="fp-overlay-title">Paramètres</span>
-    </div>
-    <div class="fp-overlay-content" style="padding:0;">
-      <!-- Thème -->
-      <div style="padding:10px 16px 4px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);">Apparence</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);">
-        <span style="font-size:0.93rem;color:var(--text2);">Thème</span>
-        <div style="display:flex;gap:6px;" id="fp-theme-group">
-          <button class="fp-opt-btn" data-val="light" onclick="fpSetTheme('light')">Clair</button>
-          <button class="fp-opt-btn" data-val="auto" onclick="fpSetTheme('auto')">Auto</button>
-          <button class="fp-opt-btn" data-val="dark" onclick="fpSetTheme('dark')">Sombre</button>
-        </div>
-      </div>
-      <!-- Lien vers tous les paramètres -->
-      <div style="padding:10px 16px 4px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);">Compte</div>
-      <div class="sidebar-item" onclick="window.location.href='/settings';" style="display:flex;padding:14px 20px;">
-        <span style="font-size:0.93rem;">Tous les paramètres</span>
-        <span style="color:var(--text5);">&#8250;</span>
-      </div>
-      <div class="sidebar-item" onclick="logout();" style="display:flex;padding:14px 20px;color:var(--red);">
-        <span style="font-size:0.93rem;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>D&eacute;connexion</span>
-      </div>
-    </div>
-  </div>
 
 <script>
 const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
@@ -1239,8 +1209,8 @@ let _prevNavSection = 'specialite'; // mémorise le dernier onglet actif avant C
 
 function mobileNavClick(section) {
   // Ferme tout overlay ouvert avant de naviguer
-  if (section !== 'activite' && section !== 'parametres') {
-    ['explorer', 'activite', 'parametres'].forEach(s => closeFullPage(s));
+  if (section !== 'activite') {
+    ['explorer', 'activite'].forEach(s => closeFullPage(s));
     _prevNavSection = section;
   }
   document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
@@ -1263,7 +1233,7 @@ function mobileNavClick(section) {
   } else if (section === 'activite') {
     openFullPage('activite');
   } else if (section === 'parametres') {
-    openFullPage('parametres');
+    window.location.href = '/settings';
   }
 }
 
@@ -1331,9 +1301,7 @@ function openFullPage(section) {
   if (!el) return;
   el.classList.add('open');
 
-  if (section === 'parametres') {
-    fpInitTheme();
-  } else if (section === 'explorer') {
+  if (section === 'explorer') {
     const fpList = document.getElementById('fp-spec-list');
     fpList.innerHTML = document.getElementById('sidebar-explore')?.innerHTML || '';
 
@@ -3342,11 +3310,10 @@ function toggleSidebar() {
     // content reste masqué — showSpecSplash gère l'affichage
     if (window.lucide) lucide.createIcons();
     setupSwipeToDismiss('activite');
-    setupSwipeToDismiss('parametres');
     setupSwipeToDismiss('explorer');
-    if (location.hash === '#parametres') {
+    if (location.hash === '#activite') {
       history.replaceState(null, '', location.pathname);
-      mobileNavClick('parametres');
+      mobileNavClick('activite');
     }
   }
 })();
