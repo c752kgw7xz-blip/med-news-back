@@ -1974,11 +1974,12 @@ async function showFavorites() {
   const demoById = {};
   src.forEach(a => { if (a.id) demoById[a.id] = a; });
 
+  const unresolvedIds = [];
   const html = [...favoritesSet].map(id => {
     const a = _favDataMap[id]
            || allLoadedArticles.find(x => x.id === id)
            || demoById[id];
-    if (!a) return '';
+    if (!a) { unresolvedIds.push(id); return ''; }
     const titre = a.tri_json?.titre_court || a.title_raw || 'Sans titre';
     const stype = a.source_type || 'reglementaire';
     const date  = a.official_date || a.tri_json?.date_publication || '';
@@ -1998,10 +1999,16 @@ async function showFavorites() {
     </div>`;
   }).filter(Boolean).join('');
 
-  const cards = html ? html.split('splash-result-card').length - 1 : 0;
+  // Nettoyer les IDs non résolus — orphelins en DB
+  if (!DEMO_MODE && unresolvedIds.length) {
+    unresolvedIds.forEach(id => {
+      favoritesSet.delete(id);
+      authFetch(`${API}/favorites/${id}`, { method: 'DELETE' }).catch(() => {});
+    });
+  }
+
   container.innerHTML = html || '<div class="empty">Aucun favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
-  const el = document.getElementById('fav-count');
-  if (el) el.textContent = cards;
+  updateSidebarFavCount();
 }
 function updateSidebarFavCount() {
   const el = document.getElementById('fav-count');
