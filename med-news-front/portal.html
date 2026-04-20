@@ -3046,22 +3046,30 @@ function buildMonthList() {
   const list = document.getElementById('month-picker-list');
   if (!list) return;
   const now = new Date();
-  const items = [];
-  // Generate last 12 months + current
-  for (let i = 0; i <= 11; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const y = d.getFullYear();
-    const m = d.getMonth();
-    const label = MONTHS[m] + ' ' + y;
-    const key = y + '-' + String(m + 1).padStart(2, '0');
-    items.push({ label, key, y, m });
+  const currentKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+  // Build from _monthCountsMap (only months with articles) + current month always present
+  const keys = Object.keys(_monthCountsMap).sort().reverse();
+  if (!keys.includes(currentKey)) keys.unshift(currentKey);
+
+  const items = keys.map(key => {
+    const [y, m] = key.split('-').map(Number);
+    return { key, label: MONTHS[m - 1] + ' ' + y };
+  });
+
+  if (!items.length) {
+    list.innerHTML = '<div style="padding:10px 16px;color:var(--text4);font-size:0.82rem;">Aucun mois disponible</div>';
+    return;
   }
+
   list.innerHTML = items.map((item, i) => {
     const cnt = _monthCountsMap[item.key];
+    const isCurrentMonth = item.key === currentKey;
     const cntHtml = cnt != null
       ? `<span class="mp-count">${cnt}</span>`
-      : (i === 0 ? '<span class="mp-count">ce mois</span>' : '');
-    return `<div class="month-picker-item ${i === 0 && !_activeMonth ? 'active' : _activeMonth === item.key ? 'active' : ''}"
+      : (isCurrentMonth ? '<span class="mp-count">ce mois</span>' : '');
+    const isActive = (!_activeMonth && isCurrentMonth) || _activeMonth === item.key;
+    return `<div class="month-picker-item ${isActive ? 'active' : ''}"
          onclick="selectMonth('${item.key}', '${item.label}')">
        <span class="mp-month">${item.label}</span>
        ${cntHtml}
