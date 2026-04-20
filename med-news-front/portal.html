@@ -4,10 +4,98 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MedNews — Portail</title>
-<script src="/shared.js?v=7"></script>
+<script>/* shared.js — Thème + taille de police — exécuté en premier dans <head> */
+(function () {
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+
+  function _currentTheme() {
+    var mode = localStorage.getItem('mednews-theme') || 'auto';
+    if (mode === 'light') return 'light';
+    if (mode === 'dark') return 'dark';
+    return mq.matches ? 'dark' : 'light';
+  }
+
+  function applyTheme() {
+    var theme = _currentTheme();
+    document.documentElement.setAttribute('data-theme', theme);
+    // Prévention du flash : couleur de fond immédiate
+    document.documentElement.style.backgroundColor =
+      theme === 'dark' ? '#0f1117' : '#f6f5f2';
+  }
+
+  function setTheme(mode) {
+    localStorage.setItem('mednews-theme', mode);
+    applyTheme();
+  }
+
+  function applyFontSize() {
+    var fs = localStorage.getItem('mednews-fontsize') || 'normal';
+    // compact=20px, normal=23px, large=26px
+    var sizes = { compact: 20, normal: 23, large: 26 };
+    var px = sizes[fs] || 23;
+    var scale = px / 14;
+    // Injecter un <style> garanti — plus fiable que les CSS custom props inline
+    var el = document.getElementById('_mednews_fs');
+    if (!el) { el = document.createElement('style'); el.id = '_mednews_fs'; document.head.appendChild(el); }
+    el.textContent = 'html{font-size:' + px + 'px!important}body{font-size:' + px + 'px!important;--font-scale:' + scale + '}';
+  }
+
+  function setFontSize(mode) {
+    localStorage.setItem('mednews-fontsize', mode);
+    applyFontSize();
+  }
+
+  // Init synchrone (avant tout rendu)
+  applyTheme();
+  applyFontSize();
+
+  // Réagir aux changements OS en mode Auto
+  mq.addEventListener('change', applyTheme);
+
+  // Détecte si l'utilisateur connecté est admin (depuis le JWT)
+  function isAdmin() {
+    try {
+      var token = sessionStorage.getItem('access_token');
+      if (!token) return false;
+      var payload = JSON.parse(atob(token.split('.')[1]));
+      return !!payload.adm;
+    } catch (e) { return false; }
+  }
+
+  // Retourne l'URL "home" selon le rôle : /review pour admin, /portal pour user
+  function homeUrl() {
+    return isAdmin() ? '/review' : '/portal';
+  }
+
+  function goHome() {
+    window.location.href = homeUrl();
+  }
+
+  // Formate une date ISO (YYYY-MM-DD) en jj - mm - yyyy
+  function formatDate(raw) {
+    if (!raw) return '';
+    try {
+      var parts = raw.substring(0, 10).split('-');
+      if (parts.length !== 3) return raw;
+      return parts[2] + '/' + parts[1] + '/' + parts[0];
+    } catch (e) { return raw; }
+  }
+
+  // Export global
+  window.MedNews = {
+    setTheme: setTheme,
+    setFontSize: setFontSize,
+    applyTheme: applyTheme,
+    isAdmin: isAdmin,
+    homeUrl: homeUrl,
+    goHome: goHome,
+    formatDate: formatDate,
+  };
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Outfit:wght@400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" async></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,7 +148,7 @@
     color: var(--text3); border-radius: 3px; font-size:0.65rem; font-weight: 400;
     cursor: pointer; transition: all .2s;
   }
-  .btn-logout:hover { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+  .btn-logout:hover { background: rgba(155,35,53,.05) !important; color: var(--green) !important; border-color: var(--green) !important; }
 
   /* ── Verify banner ──────────────────────── */
   .verify-banner {
@@ -74,7 +162,7 @@
 
   /* ── Layout ─────────────────────────────── */
   .layout {
-    display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 52px);
+    display: grid; grid-template-columns: 300px 16px 1fr; min-height: calc(100vh - 52px); transition: grid-template-columns 0.25s ease;
   }
   @media (max-width: 768px) {
     .layout { grid-template-columns: 1fr; }
@@ -183,46 +271,54 @@
 
   /* ── Sidebar ────────────────────────────── */
   .sidebar {
-    background: var(--surface2); border-right: 0.5px solid var(--border);
-    padding: 20px 0; position: sticky; top: 52px; height: calc(100vh - 52px);
-    overflow-y: auto;
+    background: var(--surface); border-right: 1px solid var(--border);
+    padding: 0 0 32px; position: sticky; top: 52px; height: calc(100vh - 52px);
+    overflow-y: auto; overflow-x: hidden;
+    border-top: 3px solid var(--green);
+    transition: width 0.25s ease;
   }
   .sidebar-section { padding: 0 16px; margin-bottom: 6px; }
   .sidebar-label {
-    font-family: 'Outfit', sans-serif; font-size:0.65rem; font-weight: 500;
-    letter-spacing: 0.4px; color: var(--text3); text-transform: uppercase;
-    padding: 6px 16px 4px; margin-bottom: 2px;
+    font-family: 'Outfit', sans-serif; font-size: 0.65rem; font-weight: 600;
+    letter-spacing: .4px; color: var(--text2); text-transform: uppercase;
+    padding: 22px 20px 7px; display: flex; align-items: center; gap: 10px;
+    border-top: none;
   }
-  .sidebar-sep { border: none; border-top: 0.5px solid var(--border); margin: 10px 16px; }
+  .sidebar-sep { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
   .sidebar-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 6px 16px 6px 20px; cursor: pointer; transition: all .12s;
+    padding: 8px 20px 8px 22px; cursor: pointer; transition: all .12s;
     color: var(--text3); font-size:0.82rem; font-weight: 400; font-family: 'Outfit', sans-serif;
-    border-left: 2px solid transparent;
+    border-left: 2px solid transparent; gap: 8px;
   }
   .sidebar-item:hover { color: var(--text2); background: rgba(0,0,0,.04); }
   .sidebar-item.active {
     color: var(--text); border-left-color: var(--green);
-    padding-left: 18px; background: rgba(0,0,0,.05); font-weight: 500;
+    padding-left: 20px; background: rgba(155,35,53,.05); font-weight: 500;
   }
   .sidebar-item .count { font-size:0.65rem; color: var(--text4); font-weight: 400; }
   .sidebar-item.active .count { color: var(--text3); }
   /* ── Sidebar accordion ── */
   .sidebar-accord {
     display: flex; align-items: center; gap: 5px; width: 100%; box-sizing: border-box;
-    padding: 7px 16px; border: none; background: transparent; cursor: pointer;
-    font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 500;
+    padding: 8px 20px 8px 22px; border: none; background: transparent; cursor: pointer;
+    font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 400;
     color: var(--text2); transition: all .15s; border-left: 2px solid transparent; text-align: left;
   }
   .sidebar-accord:hover { color: var(--text); background: rgba(0,0,0,.04); }
   .sidebar-accord.subactive { border-left-color: var(--green); color: var(--text); }
   .sidebar-accord .count { font-size:0.65rem; color: var(--text4); margin-left: auto; }
-  .accord-chevron { font-size: 0.55rem; transition: transform .2s ease; flex-shrink: 0; opacity: .5; }
-  .sidebar-accord.open .accord-chevron { transform: rotate(90deg); }
+  .accord-chevron {
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: var(--text4); opacity: .6;
+    transition: transform .2s ease, opacity .15s;
+    width: 14px; height: 14px;
+  }
+  .sidebar-accord.open .accord-chevron { transform: rotate(90deg); opacity: 1; color: var(--green); }
   .sidebar-subitems { overflow: hidden; }
   .sidebar-subitem {
     display: flex; align-items: center; gap: 6px;
-    padding: 4px 16px 4px 32px; cursor: pointer;
+    padding: 7px 20px 7px 38px; cursor: pointer;
     font-size: 0.79rem; color: var(--text3); transition: all .15s;
     border-left: 2px solid transparent;
   }
@@ -604,7 +700,7 @@
   #mnav-specialite.active { color: var(--green); }
   #mnav-transversal.active { color: var(--green); }
   #mnav-explorer.active { color: var(--green); }
-  #mnav-archives.active { color: var(--green); }
+  #mnav-archives { display: none; }
   #mnav-compte.active { color: var(--green); }
   .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }
   .mobile-nav-icon svg { width: 22px; height: 22px; }
@@ -680,17 +776,171 @@
     flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 0 16px;
   }
   @media (min-width: 769px) { .fp-overlay { display: none !important; } }
+
+  /* ── Sidebar collapse ── */
+  .sidebar-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px 12px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+  .sidebar-brand {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.15rem; font-style: italic;
+    color: var(--text); letter-spacing: .2px;
+  }
+  /* Sidebar toggle — positionné sur le bord droit du layout sidebar */
+  .sidebar-toggle-wrap {
+    position: relative;
+    width: 0;
+    overflow: visible;
+    z-index: 50;
+  }
+  .btn-sidebar-toggle {
+    position: absolute;
+    left: -1px; top: 0; bottom: 0;
+    width: 16px;
+    border: none; background: transparent;
+    cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50;
+    color: var(--border-strong);
+    transition: color .2s;
+  }
+  .btn-sidebar-toggle:hover { color: var(--green); }
+  .btn-sidebar-toggle::before {
+    content: '';
+    position: absolute; top: 0; bottom: 0; left: 50%;
+    width: 1px;
+    background: var(--border);
+    transform: translateX(-50%);
+    transition: background .2s;
+  }
+  .btn-sidebar-toggle:hover::before { background: rgba(155,35,53,.35); }
+  .btn-sidebar-toggle svg { position: relative; z-index: 1; transition: transform .25s ease; background: var(--surface); border-radius: 2px; }
+  .layout.sidebar-collapsed .btn-sidebar-toggle svg { transform: rotate(180deg); }
+  .sidebar-label svg { display: none; }
+  .sidebar.collapsed { width: 0; padding: 0; overflow: hidden; border-right: none; border-top: none; }
+  .layout.sidebar-collapsed { grid-template-columns: 0 16px 1fr; }
+  .btn-sidebar-reopen {
+    position: fixed; left: 12px; top: 68px;
+    width: 36px; height: 36px; background: var(--surface);
+    border: 1px solid var(--border-strong); border-radius: 4px;
+    color: var(--text2); cursor: pointer; font-size: 0.75rem;
+    display: none; align-items: center; justify-content: center;
+    z-index: 150; transition: all .15s;
+    box-shadow: 0 2px 8px rgba(26,23,20,.1);
+  }
+  .btn-sidebar-reopen:hover { background: var(--surface2); border-color: var(--text3); color: var(--text); }
+  .btn-sidebar-reopen { display: none !important; }
+  /* Sidebar section label line */
+  .sb-label-line { flex: 1; height: 1px; background: var(--border-strong); }
+  /* Sidebar item count badge */
+  .sidebar-item .count {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 1px 5px; border-radius: 2px; color: var(--text5);
+  }
+  .sidebar-item.active .count { color: var(--text3); background: rgba(155,35,53,.08); border-color: rgba(155,35,53,.2); }
+  #sidebar-favorites { color: var(--amber, #b56808); }
+  #sidebar-favorites svg { color: var(--amber, #b56808); }
+
+
+  .btn-header-action {
+    display:flex;align-items:center;gap:5px;
+    padding:5px 12px;border:1px solid var(--border-strong);border-radius:3px;
+    background:transparent;color:var(--text3);font-size:0.65rem;font-family:inherit;
+    cursor:pointer;transition:all .2s;
+  }
+  .btn-header-action:hover, .btn-settings:hover { border-color:var(--green) !important;color:var(--green) !important;background:rgba(155,35,53,.05) !important; }
+  .btn-logout { transition:all .2s; }
+  .btn-logout:hover { border-color:var(--green) !important;color:var(--green) !important;background:rgba(155,35,53,.05) !important; }
+
+  /* ── Splash search ─────────────────────── */
+  .splash-search-wrap {
+    width: 100%; max-width: 560px; margin-top: 36px;
+  }
+  .splash-search-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px; color: var(--text5); font-size: 0.72rem;
+  }
+  .splash-search-divider::before, .splash-search-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .splash-search-input-wrap {
+    position: relative; display: flex; align-items: center;
+  }
+  .splash-search-icon {
+    position: absolute; left: 12px; color: var(--text4); pointer-events: none; flex-shrink: 0;
+  }
+  #splash-search-input {
+    width: 100%; padding: 10px 38px 10px 36px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--surface); color: var(--text);
+    font-family: 'Outfit', sans-serif; font-size: 0.86rem;
+    outline: none; transition: border-color .15s;
+  }
+  #splash-search-input:focus { border-color: var(--border-strong); }
+  #splash-search-input::placeholder { color: var(--text5); }
+  .splash-search-spinner {
+    position: absolute; right: 12px; width: 14px; height: 14px;
+    border: 2px solid var(--border); border-top-color: var(--green);
+    border-radius: 50%; animation: spin .6s linear infinite;
+  }
+  #splash-search-results {
+    margin-top: 10px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .splash-result-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 12px 14px; cursor: pointer;
+    text-align: left; transition: background .12s, border-color .12s;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .splash-result-card:hover { background: var(--surface2); border-color: var(--border-strong); }
+  .splash-result-body { flex: 1; min-width: 0; }
+  .splash-result-title {
+    font-size: 0.86rem; font-weight: 500; color: var(--text);
+    line-height: 1.35; margin-bottom: 3px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .splash-result-title mark {
+    background: rgba(155,35,53,.12); color: var(--green); border-radius: 2px; padding: 0 1px;
+  }
+  .splash-result-meta {
+    font-size: 0.68rem; color: var(--text4); display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .splash-result-stype {
+    font-size: 0.65rem; font-weight: 500; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 1px;
+  }
+  .splash-result-stype.stype-reglementaire { background: rgba(59,82,164,.08); color: #3B52A4; }
+  .splash-result-stype.stype-recommandation { background: rgba(26,107,92,.08); color: #1A6B5C; }
+  .splash-result-stype.stype-innovation { background: rgba(155,87,20,.08); color: #9B5714; }
+  .splash-result-empty { font-size: 0.82rem; color: var(--text5); text-align: center; padding: 20px 0; }
+
+  .month-picker-item {
+    display:flex;align-items:center;justify-content:space-between;
+    padding:8px 16px;cursor:pointer;transition:background .12s;
+    font-size:0.82rem;color:var(--text2);font-family:'Outfit',sans-serif;
+  }
+  .month-picker-item:hover { background:var(--surface2); }
+  .month-picker-item.active { color:var(--green);font-weight:500; background:rgba(155,35,53,.05); }
+  .month-picker-item .mp-month { font-family:'Instrument Serif',Georgia,serif;font-style:italic; }
+  .month-picker-item .mp-count { font-size:0.65rem;color:var(--text4);font-family:'DM Mono',monospace; }
 </style>
 </head>
 <body>
-  <header>
-    <div class="header-left">
-      <h1 onclick="window.location.href='/portal'" style="cursor:pointer;"><em>Med</em><b>News</b></h1>
-      <span class="header-sep"></span>
-      <span class="header-spec" id="spec-label"></span>
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:relative;">
+    <div class="header-left" style="display:flex;align-items:center;gap:0;">
+      <span id="spec-label" style="display:none;"></span>
+      <span id="doctor-name" style="font-size:1rem;color:var(--text);font-weight:400;font-family:'Instrument Serif',Georgia,serif;font-style:italic;letter-spacing:-.1px;"></span>
     </div>
-    <div class="header-right">
-      <span class="email" style="display:none;"><span class="header-dot"></span><span id="user-email"></span></span>
+    <h1 onclick="window.location.href='/portal'" style="cursor:pointer;font-family:'Instrument Serif',Georgia,serif;font-size:1.18rem;font-weight:400;color:var(--text);letter-spacing:-.2px;position:absolute;left:50%;transform:translateX(-50%);pointer-events:auto;"><em>Med</em><b>News</b></h1>
+    <div class="header-right" style="display:flex;align-items:center;gap:12px;justify-content:flex-end;">
+      <span class="email" style="display:none;font-size:0.86rem;color:var(--text2);"><span class="header-dot"></span><span id="user-email"></span></span>
+      <button class="btn-header-action" onclick="window.location.href='/settings'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        Paramètres
+      </button>
       <button class="btn-logout" onclick="logout()">D&#233;connexion</button>
     </div>
   </header>
@@ -706,35 +956,64 @@
 
   <div class="layout">
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-label"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Ma sp&#233;cialit&#233;</div>
+      <!-- Sidebar header -->
+      <div class="sidebar-header">
+        <span class="sidebar-brand">Navigation</span>
+      </div>
+
+      <!-- Ma spécialité -->
+      <div class="sidebar-label"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block;margin-right:2px;"></span>Ma spécialité <span class="sb-label-line"></span></div>
       <div id="sidebar-my-spec"></div>
-      <div class="sidebar-item" id="sidebar-favorites" onclick="showFavorites()">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoris</span>
+
+      <hr class="sidebar-sep">
+
+      <!-- Mon activité -->
+      <div class="sidebar-label"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block;margin-right:2px;"></span>Mon activité <span class="sb-label-line"></span></div>
+
+      <div class="sidebar-subitem" onclick="showFavorites()" style="padding-left:22px;padding-top:8px;padding-bottom:8px;">
+        <span style="display:flex;align-items:center;gap:7px;flex:1;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Mes favoris
+        </span>
         <span class="count" id="fav-count">0</span>
       </div>
+
+      <div class="sidebar-subitem" onclick="showHistory()" style="padding-left:22px;padding-top:8px;padding-bottom:8px;">
+        <span style="display:flex;align-items:center;gap:7px;flex:1;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Mon historique
+        </span>
+        <span class="count" id="history-count">0</span>
+      </div>
+
+
       <hr class="sidebar-sep">
-      <div class="sidebar-label"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>Explorer</div>
-      <div id="sidebar-explore-search" style="padding:0 10px 6px;"></div>
+
+      <!-- Explorer -->
+      <div class="sidebar-label"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block;margin-right:2px;"></span>Explorer <span class="sb-label-line"></span></div>
+      <div id="sidebar-explore-search" style="padding:0 12px 8px;"></div>
       <div id="sidebar-explore"></div>
+
       <hr class="sidebar-sep">
-      <div class="sidebar-label">Historique</div>
-      <div class="sidebar-item" onclick="window.location.href='/archives'">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Archives &amp; recherche</span>
-        <span style="color:var(--text5);">&rarr;</span>
-      </div>
-      <hr class="sidebar-sep">
-      <div class="sidebar-label">Compte</div>
-      <div class="sidebar-item" onclick="window.location.href='/settings'">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;margin-right:6px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres</span>
-        <span style="color:var(--text5);">&rarr;</span>
-      </div>
+
+      <!-- Archives supprimées — navigation par mois intégrée au portail -->
+
     </aside>
+    <!-- Toggle strip entre sidebar et contenu -->
+    <div class="sidebar-toggle-wrap">
+      <button class="btn-sidebar-toggle" onclick="toggleSidebar()" title="Réduire/ouvrir">
+        <svg width="14" height="36" viewBox="0 0 14 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,4 4,18 9,32"/></svg>
+      </button>
+    </div>
 
     <div class="content-area">
       <!-- Page title -->
-      <div class="portal-page-title">
-        <h2>Ce mois-ci</h2>
+      <div class="portal-page-title" style="position:relative;">
+        <h2 id="month-picker-btn" onclick="toggleMonthPicker()" style="cursor:pointer;" title="Changer de mois"><span id="month-picker-label">Ce mois-ci</span></h2>
         <p id="portal-month-subtitle"></p>
+        <div id="month-picker-dropdown" style="display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);background:var(--surface);border:1px solid var(--border);border-radius:4px;box-shadow:0 8px 24px rgba(26,23,20,.12);z-index:300;min-width:220px;padding:8px 0;">
+          <div id="month-picker-list"></div>
+        </div>
       </div>
       <!-- Rubrique header -->
       <div class="rubrique-header" id="rubrique-header">
@@ -751,9 +1030,9 @@
           <button class="source-pill" data-stype="innovation" onclick="filterBySourceType('innovation', this)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg> Innovation</button>
         </div>
         <div class="rubrique-filters" id="rubrique-filters">
-          <button class="filter-pill" data-cat="therapeutique" onclick="filterArticles('therapeutique', this)">Méd. &amp; Dispositifs</button>
-          <button class="filter-pill" data-cat="clinique" onclick="filterArticles('clinique', this)">Clinique</button>
-          <button class="filter-pill" data-cat="exercice" onclick="filterArticles('exercice', this)">Exercice &amp; Admin</button>
+          <button class="filter-pill" data-cat="therapeutique" onclick="filterArticles('therapeutique', this)">Dispositifs médicaux &amp; médicaments</button>
+          <button class="filter-pill" data-cat="clinique" onclick="filterArticles('clinique', this)">Ma pratique médicale</button>
+          <button class="filter-pill" data-cat="exercice" onclick="filterArticles('exercice', this)">Mes tâches administratives</button>
         </div>
         </div><!-- /pills-wrap -->
       </div>
@@ -776,6 +1055,19 @@
         <h1 id="spec-splash-name"></h1>
         <p class="spec-splash-hint">Sélectionnez une catégorie pour commencer</p>
         <div class="spec-splash-cats" id="spec-splash-cats"></div>
+
+        <!-- Recherche tous mois -->
+        <div class="splash-search-wrap">
+          <div class="splash-search-divider"><span>ou rechercher un article</span></div>
+          <div class="splash-search-input-wrap">
+            <svg class="splash-search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="splash-search-input" type="search" placeholder="Rechercher dans tous les articles…"
+              oninput="debouncedSplashSearch(this.value)"
+              autocomplete="off" spellcheck="false" />
+            <span id="splash-search-spinner" class="splash-search-spinner" style="display:none"></span>
+          </div>
+          <div id="splash-search-results"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -791,7 +1083,8 @@
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
       <span class="mobile-nav-label">Explorer</span>
     </button>
-    <button class="mobile-nav-item" onclick="mobileNavClick('archives')" id="mnav-archives">
+
+    <button class="mobile-nav-item" onclick="mobileNavClick('compte')" id="mnav-compte">
       <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
       <span class="mobile-nav-label">Archives</span>
     </button>
@@ -857,7 +1150,7 @@
   </div>
 
 <script>
-const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
+const DEMO_MODE = true;
 let _demoCache = null; // articles dynamiques fetchés, fallback sur DEMO_ARTICLES
 const API = window.location.origin;
 let currentPage = 1;
@@ -880,6 +1173,7 @@ let specTypeCounts = {};  // {slug: {total, reglementaire, recommandation, innov
 // Favorites state
 let favoritesSet = new Set();
 let favoritesMode = false;
+let historyMode = false;
 
 const MONTHS = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin',
   'Juillet','Ao\u00fbt','Septembre','Octobre','Novembre','D\u00e9cembre'];
@@ -1065,11 +1359,13 @@ function bnSelect(id) {
 
 // ── Fenêtre portail : mois calendaire courant ────────────────
 function portalFromDate() {
+  if (_customFrom) return _customFrom;
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 }
 
 function portalUntilDate() {
+  if (_customUntil) return _customUntil;
   const now = new Date();
   const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   return `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`;
@@ -1154,8 +1450,8 @@ async function resendVerification() {
 const CATEGORY_ORDER = ['therapeutique','clinique','exercice'];
 const CATEGORY_META = {
   therapeutique: { icon: 'pill',     label: 'M\u00e9d. & Dispositifs' },
-  clinique:      { icon: 'activity', label: 'Pratique clinique' },
-  exercice:      { icon: 'scale',    label: 'Exercice & Admin' },
+  clinique:      { icon: 'activity', label: 'Ma pratique médicale' },
+  exercice:      { icon: 'scale',    label: 'Mes tâches administratives' },
 };
 const CATEGORY_SVG_PATHS = {
   'pill':     '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
@@ -1170,8 +1466,8 @@ function catIconHtml(iconName, color) {
 
 const CATEGORIE_STYLE = {
   therapeutique: { bg: 'rgba(61,90,122,.08)', color: '#3D5A7A', border: '0.5px solid rgba(61,90,122,.25)', label: 'M\u00e9d. & Dispositifs' },
-  clinique:      { bg: 'rgba(26,107,92,.08)', color: '#1A6B5C', border: '0.5px solid rgba(26,107,92,.25)', label: 'Clinique' },
-  exercice:      { bg: 'rgba(122,78,37,.08)', color: '#7A4E25', border: '0.5px solid rgba(122,78,37,.25)',  label: 'Exercice & Admin' },
+  clinique:      { bg: 'rgba(26,107,92,.08)', color: '#1A6B5C', border: '0.5px solid rgba(26,107,92,.25)', label: 'Ma pratique médicale' },
+  exercice:      { bg: 'rgba(122,78,37,.08)', color: '#7A4E25', border: '0.5px solid rgba(122,78,37,.25)',  label: 'Mes tâches administratives' },
 };
 
 // ── Mapping source → label organisme ──────────────────────────
@@ -1365,6 +1661,10 @@ function esc(s) {
 }
 
 function toggleDetail(e, card) {
+  // Track in history
+  const itemId = card.dataset.itemId;
+  const titre = card.querySelector('.card-title')?.textContent?.trim() || '';
+  if (itemId && !card.classList.contains('expanded')) addToHistory(itemId, titre);
   if (e.target.closest('.detail-footer')) return;
   const detail = card.querySelector('.card-detail');
   const isOpen = detail.style.display === 'block';
@@ -1396,9 +1696,9 @@ function collapseCard(btn) {
 
 // ── Logique de filtrage commune (AND : catégorie × source_type) ───────────
 const CAT_LABELS = {
-  therapeutique: 'Méd. & Dispositifs',
-  clinique: 'Clinique',
-  exercice: 'Exercice & Admin',
+  therapeutique: 'Dispositifs médicaux & médicaments',
+  clinique: 'Ma pratique médicale',
+  exercice: 'Mes tâches administratives',
 };
 
 function selectCatFilter(cat) {
@@ -1414,9 +1714,11 @@ function updateCatEmpty() {
   if (visible === 0) {
     const others = ['therapeutique', 'clinique', 'exercice']
       .filter(c => c !== activeFilter)
+      .filter(c => !(c === 'exercice' && (activeSourceType === 'innovation' || activeSourceType === 'recommandation')))
       .map(c => `<button class="cat-sugg-btn" onclick="selectCatFilter('${c}')">${CAT_LABELS[c]}</button>`)
       .join('');
-    el.innerHTML = `<p>Aucun article dans cette catégorie</p><p>${others}</p>`;
+    const catName = CAT_LABELS[activeFilter] || activeFilter;
+    el.innerHTML = `<p>Aucun article en <strong>${catName}</strong></p>${others ? `<p>${others}</p>` : ''}`;
     el.style.display = 'block';
   } else {
     el.style.display = 'none';
@@ -1425,8 +1727,12 @@ function updateCatEmpty() {
 
 function applyFilters() {
   document.querySelectorAll('.article-card').forEach(card => {
-    const catMatch  = activeFilter     === 'all' || card.dataset.categorie   === activeFilter;
-    const typeMatch = activeSourceType === 'all' || card.dataset.sourceType  === activeSourceType;
+    const cat  = card.dataset.categorie;
+    const type = card.dataset.sourceType;
+    // Règle métier : "Mes tâches administratives" n'affiche jamais les articles Innovation
+    if (activeFilter === 'exercice' && type === 'innovation') { card.style.display = 'none'; return; }
+    const catMatch  = activeFilter     === 'all' || cat  === activeFilter;
+    const typeMatch = activeSourceType === 'all' || type === activeSourceType;
     card.style.display = (catMatch && typeMatch) ? '' : 'none';
   });
   // Masquer les groupes organisme vides
@@ -1452,14 +1758,19 @@ function filterArticles(categorie, btnEl) {
 }
 
 // ── Filtre source type ────────────────────────────────────────
-async function filterBySourceType(stype, btnEl) {
+function filterBySourceType(stype, btnEl) {
   activeSourceType = stype;
   document.querySelectorAll('.source-pill').forEach(b => b.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
-  // Rechargement serveur pour garantir la cohérence avec la pagination :
-  // loadArticles envoie &source_type au serveur, donc les pages suivantes
-  // doivent être cohérentes avec le filtre actif dès la page 1.
-  await resetAndLoad();
+  // Masquer l'onglet "Mes tâches administratives" si Innovation actif
+  const adminPill = document.querySelector('.filter-pill[data-cat="exercice"]');
+  if (adminPill) adminPill.style.display = stype === 'innovation' ? 'none' : '';
+  // Si l'onglet admin était actif, reset
+  if (stype === 'innovation' && activeFilter === 'exercice') {
+    activeFilter = 'all';
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  }
+  applyFilters();
 }
 
 // ── Accordéon catégorie ───────────────────────────────────────
@@ -1546,11 +1857,40 @@ async function loadFavorites() {
   } catch {}
 }
 
+const DEMO_FAV_KEY = 'mednews-demo-favorites';
+function loadDemoFavorites() {
+  try {
+    const ids = JSON.parse(localStorage.getItem(DEMO_FAV_KEY) || '[]');
+    favoritesSet = new Set(ids);
+    updateSidebarFavCount();
+  } catch {}
+}
+function saveDemoFavorites() {
+  try { localStorage.setItem(DEMO_FAV_KEY, JSON.stringify([...favoritesSet])); } catch {}
+}
+
 async function toggleFavorite(event, itemId) {
   event.stopPropagation();
   if (DEMO_MODE) {
-    const btn = document.querySelector(`.btn-fav[data-item-id="${itemId}"]`);
-    if (btn) btn.classList.toggle('active');
+    if (favoritesSet.has(itemId)) {
+      favoritesSet.delete(itemId);
+      document.querySelectorAll(`.btn-fav[data-item-id="${itemId}"]`).forEach(b => {
+        b.classList.remove('active');
+        const svg = b.querySelector('svg'); if (svg) svg.style.fill = '';
+      });
+      if (favoritesMode) {
+        const card = event.currentTarget?.closest('.article-card');
+        if (card) card.style.display = 'none';
+      }
+    } else {
+      favoritesSet.add(itemId);
+      document.querySelectorAll(`.btn-fav[data-item-id="${itemId}"]`).forEach(b => {
+        b.classList.add('active');
+        const svg = b.querySelector('svg'); if (svg) svg.style.fill = 'currentColor';
+      });
+    }
+    saveDemoFavorites();
+    updateSidebarFavCount();
     return;
   }
   const btn = event.currentTarget;
@@ -1589,43 +1929,59 @@ async function toggleFavorite(event, itemId) {
 
 function showFavorites() {
   favoritesMode = true;
-  // Mobile : le splash peut être affiché (articles pas encore chargés) — on l'efface
+  historyMode = false;
   document.getElementById('spec-splash').style.display = 'none';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
   const rh = document.getElementById('rubrique-header');
-  if (rh) rh.style.display = '';
-  setActiveSidebar(document.getElementById('sidebar-favorites'));
-  activeFilter = 'all';
-  activeSourceType = 'all';
-  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.source-pill').forEach((b, i) => b.classList.toggle('active', i === 0));
+  if (rh) rh.style.display = 'none';
 
-  document.querySelectorAll('.article-card').forEach(card => {
-    card.style.display = favoritesSet.has(card.dataset.itemId) ? '' : 'none';
-  });
-  // Hide empty group headers
-  document.querySelectorAll('.group-header').forEach(gh => {
-    let next = gh.nextElementSibling;
-    let hasVisible = false;
-    while (next && !next.classList.contains('group-header')) {
-      if (next.classList.contains('article-card') && next.style.display !== 'none') hasVisible = true;
-      next = next.nextElementSibling;
-    }
-    gh.style.display = hasVisible ? '' : 'none';
-  });
-
-  // Empty state
   const container = document.getElementById('articles-container');
-  const visibleCards = container.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])');
-  const count = visibleCards.length;
-  document.getElementById('rubrique-meta').textContent =
-    'Mes favoris';
-  if (visibleCards.length === 0) {
-    container.innerHTML = '<div class="empty">Aucun article en favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
-  }
-}
 
+  if (favoritesSet.size === 0) {
+    container.innerHTML = '<div class="empty">Aucun favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
+    return;
+  }
+
+  // Build card map
+  const cardMap = {};
+  document.querySelectorAll('.article-card[data-item-id]').forEach(c => { cardMap[c.dataset.itemId] = c; });
+
+  // Build data index for demo mode (fallback to localStorage cache)
+  let dataSource = (_demoCache && _demoCache.length > 0) ? _demoCache
+                 : (typeof DEMO_ARTICLES !== 'undefined' && DEMO_ARTICLES.length > 0) ? DEMO_ARTICLES
+                 : allLoadedArticles;
+  if (!dataSource || dataSource.length === 0) {
+    try { const c = localStorage.getItem('mednews-article-cache'); if (c) dataSource = JSON.parse(c); } catch {}
+  }
+  const articleById = {};
+  (dataSource || []).forEach(a => { if (a.id) articleById[a.id] = a; });
+
+  // Flat list of favorites, no groups
+  const frag = document.createDocumentFragment();
+  let rendered = 0;
+  favoritesSet.forEach(id => {
+    // Try DOM first
+    const card = cardMap[id];
+    if (card) {
+      const clone = card.cloneNode(true);
+      clone.style.display = '';
+      clone.style.animationDelay = '0ms';
+      frag.appendChild(clone);
+      rendered++;
+    } else if (articleById[id]) {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = renderArticle(articleById[id], rendered);
+      const newCard = wrapper.firstElementChild;
+      if (newCard) { frag.appendChild(newCard); rendered++; }
+    }
+  });
+
+  container.innerHTML = '';
+  container.appendChild(frag);
+  if (window.lucide) lucide.createIcons();
+  if (rh) rh.style.display = '';
+}
 function updateSidebarFavCount() {
   const el = document.getElementById('fav-count');
   if (el) el.textContent = favoritesSet.size;
@@ -1682,18 +2038,25 @@ function showSpecSplash(accordId) {
     { stype: 'innovation',     cls: 'stype-innov',label: 'Innovation',      count: counts.innovation     || 0 },
   ];
   document.getElementById('spec-splash-name').textContent = spec.name || '';
-  const visibleCats = cats.filter(c => c.count > 0);
-  document.getElementById('spec-splash-cats').innerHTML = visibleCats.map(c => `
-    <button class="spec-splash-cat-btn ${c.cls}"
-            onclick="selectSpecType('${spec.slug}','${c.stype}','${accordId}')">
+  document.getElementById('spec-splash-cats').innerHTML = cats.map(c => {
+    const onclick = `onclick="selectSpecType('${spec.slug}','${c.stype}','${accordId}')"`;
+    return `<button class="spec-splash-cat-btn ${c.cls}" ${onclick}>
       <span class="splash-count">${c.count}</span>
       <span>${c.label}</span>
-    </button>`).join('');
+    </button>`;
+  }).join('');
   document.getElementById('spec-splash').style.display = 'flex';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'none';
   const rh = document.getElementById('rubrique-header');
   if (rh) rh.style.display = 'none';
+  // Reset search
+  const si = document.getElementById('splash-search-input');
+  if (si) si.value = '';
+  const sr = document.getElementById('splash-search-results');
+  if (sr) sr.innerHTML = '';
+  const ss = document.getElementById('splash-search-spinner');
+  if (ss) ss.style.display = 'none';
 }
 
 function hideSpecSplash() {
@@ -1743,10 +2106,13 @@ async function selectSpecType(slug, stype, accordId) {
   activeSourceType  = stype;
   hideSourcePills();
   favoritesMode = false;
+  historyMode = false;
+  // Masquer "Mes tâches administratives" pour Innovation ET Recommandation
+  const adminPill = document.querySelector('.filter-pill[data-cat="exercice"]');
+  if (adminPill) adminPill.style.display = (stype === 'innovation' || stype === 'recommandation') ? 'none' : '';
   await resetAndLoad();
-  // Auto-sélectionner Méd. & Dispositifs dès l'arrivée
-  const firstTab = document.querySelector('.filter-pill[data-cat="therapeutique"]');
-  if (firstTab) filterArticles('therapeutique', firstTab);
+  // Auto-sélectionner la première sous-catégorie qui contient des articles
+  autoSelectFirstCat();
 }
 
 // ── Sidebar ──────────────────────────────────────────────────
@@ -1830,7 +2196,7 @@ async function selectExploreSpec(slug, el) {
   showSourcePills();
   if (DEMO_MODE) {
     const _base = _demoCache || DEMO_ARTICLES;
-    allLoadedArticles = slug === 'chirurgie-vasculaire' ? [..._base] : [];
+    allLoadedArticles = slug === 'chirurgie-vasculaire' ? demoFilterByMonth(_base) : [];
     totalArticles = allLoadedArticles.length;
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
@@ -1852,6 +2218,7 @@ function setActiveSidebar(el) {
 
 async function resetAndLoad() {
   favoritesMode = false;
+  historyMode = false;
   currentPage = 1;
   loadedArticles = 0;
   allLoadedArticles = [];
@@ -1862,7 +2229,7 @@ async function resetAndLoad() {
 
   if (DEMO_MODE) {
     const _base = _demoCache || DEMO_ARTICLES;
-    allLoadedArticles = activeSpecSlug === 'chirurgie-vasculaire' ? [..._base] : [];
+    allLoadedArticles = activeSpecSlug === 'chirurgie-vasculaire' ? demoFilterByMonth(_base) : [];
     totalArticles = allLoadedArticles.length;
     document.getElementById('articles-container').innerHTML = '';
     document.getElementById('loading').style.display = 'none';
@@ -1899,6 +2266,19 @@ async function loadProfile() {
   userSpecName = p.specialty_name || '';
   activeSpecSlug = userSpecSlug;
   document.getElementById('spec-label').textContent = userSpecName;
+  // Doctor name in header
+  const nameEl = document.getElementById('doctor-name');
+  if (nameEl) {
+    const firstName = p.first_name || '';
+    const lastName = p.last_name || '';
+    if (firstName || lastName) {
+      nameEl.textContent = 'Dr. ' + [firstName, lastName].filter(Boolean).join(' ');
+    } else {
+      // Fallback: capitalize email username
+      const username = (p.email || '').split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+      nameEl.textContent = 'Dr. ' + username;
+    }
+  }
   if (!p.email_verified) {
     document.getElementById('verify-banner').style.display = 'flex';
   }
@@ -2287,6 +2667,8 @@ const DEMO_SPECIALTIES = [
 async function loadDemoData() {
   document.getElementById('demo-banner').style.display = 'block';
   document.getElementById('user-email').textContent = 'demo@mednews.fr';
+  const _demoNameEl = document.getElementById('doctor-name');
+  if (_demoNameEl) _demoNameEl.textContent = 'Dr. Dupont';
   userSpecSlug = 'chirurgie-vasculaire';
   userSpecName = 'Chirurgie vasculaire';
   activeSpecSlug = userSpecSlug;
@@ -2321,6 +2703,8 @@ async function loadDemoData() {
   } catch (e) {
     _demoCache = [...DEMO_ARTICLES];
   }
+  // Persister les articles en localStorage pour l'historique inter-sessions
+  try { localStorage.setItem('mednews-article-cache', JSON.stringify(_demoCache)); } catch(e) {}
   allLoadedArticles = _demoCache;
   totalArticles = _demoCache.length;
   specCounts = Object.fromEntries(Object.entries(specTypeCounts).map(([k,v]) => [k, v.total]));
@@ -2329,6 +2713,9 @@ async function loadDemoData() {
   // Afficher le splash de la spécialité comme page de garde (pas les articles directement)
   showSpecSplash('mine');
   document.getElementById('loading').style.display = 'none';
+  // Restaurer favoris et compteur historique depuis localStorage
+  loadDemoFavorites();
+  updateHistoryCount();
   if (window.lucide) lucide.createIcons();
   // Global click interceptor: catches static AND dynamically-built nav elements
   document.addEventListener('click', function(e) {
@@ -2352,6 +2739,149 @@ async function loadDemoData() {
     if (h && !h.startsWith('#') && !h.startsWith('javascript') && !a.getAttribute('target')) {
       a.target = '_blank'; a.rel = 'noopener';
     }
+  });
+}
+
+// ── Auto-sélection première sous-catégorie avec articles ─────
+function autoSelectFirstCat() {
+  const ORDER = ['therapeutique', 'clinique', 'exercice'];
+  for (const cat of ORDER) {
+    // Ignorer "exercice" si le type actif est innovation ou recommandation
+    if (cat === 'exercice' && (activeSourceType === 'innovation' || activeSourceType === 'recommandation')) continue;
+    const cards = [...document.querySelectorAll(`.article-card[data-categorie="${cat}"]`)]
+      .filter(c => {
+        if (activeSourceType && activeSourceType !== 'all' && c.dataset.sourceType !== activeSourceType) return false;
+        return true;
+      });
+    if (cards.length > 0) {
+      const pill = document.querySelector(`.filter-pill[data-cat="${cat}"]`);
+      if (pill) { filterArticles(cat, pill); return; }
+    }
+  }
+  // Aucune catégorie avec articles : tout afficher
+  activeFilter = 'all';
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  applyFilters();
+}
+
+// ── Splash search ────────────────────────────────────────────────────────────
+let _splashSearchTimer = null;
+
+function debouncedSplashSearch(q) {
+  clearTimeout(_splashSearchTimer);
+  const resultsEl = document.getElementById('splash-search-results');
+  const spinner   = document.getElementById('splash-search-spinner');
+  if (!q || !q.trim()) {
+    resultsEl.innerHTML = '';
+    if (spinner) spinner.style.display = 'none';
+    return;
+  }
+  if (spinner) spinner.style.display = '';
+  _splashSearchTimer = setTimeout(() => runSplashSearch(q.trim()), 280);
+}
+
+async function runSplashSearch(q) {
+  const resultsEl = document.getElementById('splash-search-results');
+  const spinner   = document.getElementById('splash-search-spinner');
+  if (!q) { resultsEl.innerHTML = ''; return; }
+
+  try {
+    let hits = [];
+
+    if (DEMO_MODE) {
+      // Recherche locale dans le cache demo (tous articles, tous mois)
+      const src = _demoCache || DEMO_ARTICLES || [];
+      const ql  = q.toLowerCase();
+      hits = src.filter(a => {
+        const titre = (a.tri_json?.titre_court || a.title_raw || '').toLowerCase();
+        const resume = (a.tri_json?.resume || '').toLowerCase();
+        return titre.includes(ql) || resume.includes(ql);
+      }).slice(0, 12);
+    } else {
+      // Appel API — sans filtre de date, avec q=...
+      const spec = activeSpecSlug ? `&specialty=${encodeURIComponent(activeSpecSlug)}` : '';
+      const res  = await authFetch(`${API}/articles?q=${encodeURIComponent(q)}&per_page=12${spec}`);
+      if (res && res.ok) {
+        const data = await res.json();
+        hits = data.articles || [];
+      }
+    }
+
+    if (spinner) spinner.style.display = 'none';
+
+    if (hits.length === 0) {
+      resultsEl.innerHTML = `<div class="splash-result-empty">Aucun résultat pour « ${esc(q)} »</div>`;
+      return;
+    }
+
+    // Highlight helper
+    function highlight(text, q) {
+      if (!text) return '';
+      const safe = esc(text);
+      const re   = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+      return safe.replace(re, '<mark>$1</mark>');
+    }
+
+    resultsEl.innerHTML = hits.map(a => {
+      const titre  = a.tri_json?.titre_court || a.title_raw || 'Sans titre';
+      const stype  = a.source_type || 'reglementaire';
+      const date   = a.official_date || a.tri_json?.date_publication || '';
+      const stypeLabel = stype === 'reglementaire' ? 'Réglementation'
+                       : stype === 'recommandation' ? 'Recommandation'
+                       : 'Innovation';
+      return `<div class="splash-result-card" onclick="openSplashResult('${esc(a.id)}', '${esc(stype)}')">
+        <span class="splash-result-stype stype-${esc(stype)}">${stypeLabel}</span>
+        <div class="splash-result-body">
+          <div class="splash-result-title">${highlight(titre, q)}</div>
+          <div class="splash-result-meta">
+            <span>${esc(sourceLabel(a.source || ''))}</span>
+            ${date ? `<span>${esc(MedNews.formatDate(date))}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Stocker les articles trouvés pour pouvoir les ouvrir
+    window._splashSearchHits = {};
+    hits.forEach(a => { window._splashSearchHits[a.id] = a; });
+
+  } catch(e) {
+    if (spinner) spinner.style.display = 'none';
+    resultsEl.innerHTML = `<div class="splash-result-empty">Erreur lors de la recherche.</div>`;
+  }
+}
+
+function openSplashResult(id, stype) {
+  const a = (window._splashSearchHits || {})[id];
+  if (!a) return;
+  // Sélectionner la bonne sous-catégorie dans la sidebar et afficher l'article
+  const accordId = _activeAccordId || 'mine';
+  selectSpecType(activeSpecSlug, stype, accordId).then(() => {
+    // Attendre que les articles soient rendus puis ouvrir la carte
+    setTimeout(() => {
+      const card = document.querySelector(`.article-card[data-item-id="${id}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Si la carte n'est pas encore ouverte, la simuler
+        const detail = card.querySelector('.card-detail');
+        if (detail && detail.style.display !== 'block') {
+          card.click();
+        }
+      } else {
+        // Article pas dans le mois courant : injecter la carte en tête de liste
+        const container = document.getElementById('articles-container');
+        if (container) {
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = renderArticle(a, 0);
+          const newCard = wrapper.firstElementChild;
+          if (newCard) {
+            container.insertBefore(newCard, container.firstChild);
+            newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            newCard.click();
+          }
+        }
+      }
+    }, 400);
   });
 }
 
@@ -2439,6 +2969,203 @@ function setupSwipeToDismiss(section) {
   });
 }
 
+
+// ── Sidebar collapse ──────────────────────────────────────────
+
+
+// ── Sélecteur de mois ─────────────────────────────────────────
+// Helper : filtre les articles démo par le mois actif (null = tous)
+function demoFilterByMonth(articles) {
+  if (!_activeMonth) return [...articles];
+  const [y, m] = _activeMonth.split('-').map(Number);
+  const filtered = articles.filter(a => {
+    const dateStr = a.tri_json?.date_publication || a.official_date || '';
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return d.getFullYear() === y && (d.getMonth() + 1) === m;
+  });
+  return filtered;
+}
+
+let _activeMonth = null; // null = mois courant
+
+function buildMonthList() {
+  const list = document.getElementById('month-picker-list');
+  if (!list) return;
+  const now = new Date();
+  const items = [];
+  // Generate last 12 months + current
+  for (let i = 0; i <= 11; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const label = MONTHS[m] + ' ' + y;
+    const key = y + '-' + String(m + 1).padStart(2, '0');
+    items.push({ label, key, y, m });
+  }
+  list.innerHTML = items.map((item, i) =>
+    `<div class="month-picker-item ${i === 0 && !_activeMonth ? 'active' : _activeMonth === item.key ? 'active' : ''}"
+         onclick="selectMonth('${item.key}', '${item.label}')">
+       <span class="mp-month">${item.label}</span>
+       ${i === 0 ? '<span class="mp-count">ce mois</span>' : ''}
+     </div>`
+  ).join('');
+}
+
+function toggleMonthPicker() {
+  if (favoritesMode || historyMode) return;
+  const dd = document.getElementById('month-picker-dropdown');
+  if (!dd) return;
+  if (dd.style.display === 'none') {
+    buildMonthList();
+    dd.style.display = 'block';
+    setTimeout(() => document.addEventListener('click', closePicker, { once: true }), 50);
+  } else {
+    dd.style.display = 'none';
+  }
+}
+
+function closePicker(e) {
+  const dd = document.getElementById('month-picker-dropdown');
+  if (dd && !dd.contains(e.target)) dd.style.display = 'none';
+}
+
+async function selectMonth(key, label) {
+  _activeMonth = key;
+  const btn = document.getElementById('month-picker-label');
+  if (btn) btn.textContent = label;
+  document.getElementById('month-picker-dropdown').style.display = 'none';
+
+  const [y, m] = key.split('-').map(Number);
+  const from = key + '-01';
+  const last = new Date(y, m, 0).getDate();
+  const until = key + '-' + String(last).padStart(2, '0');
+
+  if (DEMO_MODE) {
+    // Réinitialiser les filtres actifs
+    activeFilter = 'all';
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+
+    // Filtrer les articles par mois sélectionné
+    const base = _demoCache || DEMO_ARTICLES || [];
+    const filtered = demoFilterByMonth(base);
+    allLoadedArticles = filtered;
+
+    document.getElementById('spec-splash').style.display = 'none';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    const rh = document.getElementById('rubrique-header');
+    if (rh) rh.style.display = '';
+
+    if (filtered.length === 0) {
+      document.getElementById('articles-container').innerHTML =
+        `<div class="empty">Aucun article pour ${label}.<br><span style="font-size:0.86rem;color:var(--text5);">La démo ne contient que des articles d'avril 2026.</span></div>`;
+    } else {
+      renderGroupedArticles();
+    }
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  _customFrom = from;
+  _customUntil = until;
+  await resetAndLoad();
+}
+let _customFrom = null, _customUntil = null;
+
+// Patch portalFromDate / portalUntilDate to use custom dates
+const _origFrom = portalFromDate;
+const _origUntil = portalUntilDate;
+
+// ── Historique de lecture ─────────────────────────────────────
+const HISTORY_KEY = 'mednews-read-history';
+function getReadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+function addToHistory(itemId, titre) {
+  const h = getReadHistory();
+  const existing = h.findIndex(x => x.id === itemId);
+  if (existing > -1) h.splice(existing, 1);
+  h.unshift({ id: itemId, titre, ts: Date.now() });
+  if (h.length > 50) h.pop();
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+  updateHistoryCount();
+}
+function updateHistoryCount() {
+  const el = document.getElementById('history-count');
+  if (el) el.textContent = getReadHistory().length;
+}
+function showHistory() {
+  historyMode = true;
+  favoritesMode = false;
+  document.getElementById('spec-splash').style.display = 'none';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  const rh = document.getElementById('rubrique-header');
+  if (rh) rh.style.display = 'none';
+  const history = getReadHistory();
+  const container = document.getElementById('articles-container');
+  if (history.length === 0) {
+    container.innerHTML = '<div class="empty">Aucun article consulté.<br><span style="font-size:0.86rem;color:var(--text5);">Dépliez un article pour le retrouver ici.</span></div>';
+    return;
+  }
+
+  // Construire un index id→article depuis les données disponibles
+  let dataSource = (_demoCache && _demoCache.length > 0) ? _demoCache
+                 : (typeof DEMO_ARTICLES !== 'undefined' && DEMO_ARTICLES.length > 0) ? DEMO_ARTICLES
+                 : allLoadedArticles;
+  // Fallback localStorage si rien en mémoire (après rechargement)
+  if (!dataSource || dataSource.length === 0) {
+    try {
+      const cached = localStorage.getItem('mednews-article-cache');
+      if (cached) dataSource = JSON.parse(cached);
+    } catch(e) {}
+  }
+  const articleById = {};
+  dataSource.forEach(a => { if (a.id) articleById[a.id] = a; });
+
+  container.innerHTML = '';
+  let rendered = 0;
+  history.forEach((entry, idx) => {
+    const article = articleById[entry.id];
+    if (article) {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = renderArticle(article, idx);
+      const card = wrapper.firstElementChild;
+      if (card) container.appendChild(card);
+      rendered++;
+    } else {
+      // Fallback : titre + date seulement
+      const row = document.createElement('div');
+      row.className = 'article-card';
+      row.style.cursor = 'default';
+      row.innerHTML = '<div class="card-top" style="margin-bottom:0;"><span class="card-title" style="font-size:0.9rem;">' + (entry.titre || 'Article') + '</span><span class="card-date">' + new Date(entry.ts).toLocaleDateString('fr-FR') + '</span></div>';
+      container.appendChild(row);
+      rendered++;
+    }
+  });
+
+  if (rendered === 0) {
+    container.innerHTML = '<div class="empty">Historique indisponible pour cette session.</div>';
+  }
+  if (window.lucide) lucide.createIcons();
+}
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const layout = document.querySelector('.layout');
+  const reopenBtn = document.getElementById('btn-sidebar-reopen');
+  const isCollapsed = sidebar.classList.toggle('collapsed');
+  layout.classList.toggle('sidebar-collapsed', isCollapsed);
+  if (reopenBtn) reopenBtn.classList.toggle('visible', isCollapsed);
+  localStorage.setItem('mednews-sidebar-collapsed', isCollapsed ? '1' : '0');
+}
+// Restore sidebar state on load
+(function() {
+  if (localStorage.getItem('mednews-sidebar-collapsed') === '1') {
+    setTimeout(() => toggleSidebar(), 100);
+  }
+})();
+
 // ── Init ──────────────────────────────────────────────────────
 (async () => {
   if (DEMO_MODE) { loadDemoData(); return; }
@@ -2475,6 +3202,104 @@ function setupSwipeToDismiss(section) {
       mobileNavClick('compte');
     }
   }
+})();
+
+// ── Onboarding overlay ────────────────────────────────────────
+(function() {
+  const ONBOARD_KEY = 'mednews-onboarded';
+  if (!DEMO_MODE && localStorage.getItem(ONBOARD_KEY)) return;
+
+  const steps = [
+    {
+      icon: `<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+      title: 'Bienvenue sur MedNews',
+      text: 'Votre veille médicale personnalisée. Chaque mois, les publications les plus pertinentes pour votre spécialité, sélectionnées et analysées pour vous.'
+    },
+    {
+      icon: `<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`,
+      title: 'Votre spécialité en priorité',
+      text: 'La sidebar gauche affiche directement les articles de votre spécialité. Explorez aussi les autres disciplines depuis le menu "Explorer".'
+    },
+    {
+      icon: `<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>`,
+      title: 'Trois types de contenus',
+      text: 'Chaque article est classé : <strong>Dispositifs médicaux & médicaments</strong> pour les thérapeutiques, <strong>Ma pratique médicale</strong> pour le clinique, et <strong>Mes tâches administratives</strong> pour le réglementaire. Les articles sont organisés par mois, et le contenu est actualisé chaque jour.'
+    },
+    {
+      icon: `<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+      title: 'Favoris & Historique',
+      text: 'Étoilez les articles importants pour les retrouver dans <strong>Favoris</strong>. Chaque article consulté est automatiquement enregistré dans <strong>Historique</strong>, même après rechargement.'
+    },
+    {
+      icon: `<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+      title: 'Naviguez dans le temps',
+      text: 'Cliquez sur le titre du mois en haut de la page pour accéder aux mois précédents. Les <strong>Archives</strong> donnent accès à l\'historique complet avec recherche.'
+    }
+  ];
+
+  let cur = 0;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'onboarding-overlay';
+  overlay.style.cssText = `
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(23,20,12,.82);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Outfit',sans-serif;
+  `;
+
+  function render() {
+    const s = steps[cur];
+    const isLast = cur === steps.length - 1;
+    overlay.innerHTML = `
+      <div style="
+        background:var(--surface,#1E1B12);border:1px solid var(--border,#342F24);
+        border-radius:10px;padding:44px 48px;max-width:460px;width:90%;
+        text-align:center;position:relative;
+        box-shadow:0 24px 64px rgba(0,0,0,.4);
+      ">
+        <div style="color:var(--green,#9B2335);margin-bottom:20px;opacity:.9;">${s.icon}</div>
+        <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:1.6rem;font-weight:400;
+          color:var(--text,#EDE7DC);margin:0 0 14px;font-style:italic;letter-spacing:-.3px;">${s.title}</h2>
+        <p style="font-size:0.93rem;color:var(--text3,#8A8378);line-height:1.65;margin:0 0 32px;">${s.text}</p>
+
+        <!-- Dots -->
+        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:28px;">
+          ${steps.map((_,i) => `<span style="width:${i===cur?'18':'6'}px;height:6px;border-radius:3px;
+            background:${i===cur?'var(--green,#9B2335)':'var(--border-strong,#4A4438)'};
+            transition:all .25s;display:inline-block;"></span>`).join('')}
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <button onclick="window.__onboardSkip()" style="
+            padding:9px 20px;background:transparent;border:1px solid var(--border-strong,#4A4438);
+            color:var(--text4,#6A6360);border-radius:4px;font-size:0.82rem;cursor:pointer;
+            font-family:'Outfit',sans-serif;transition:all .2s;
+          ">Passer</button>
+          <button onclick="window.__onboardNext()" style="
+            padding:9px 24px;background:var(--green,#9B2335);border:1px solid transparent;
+            color:#fff;border-radius:4px;font-size:0.82rem;font-weight:500;cursor:pointer;
+            font-family:'Outfit',sans-serif;transition:all .2s;
+          ">${isLast ? 'Commencer →' : 'Suivant →'}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  window.__onboardNext = function() {
+    if (cur < steps.length - 1) { cur++; render(); }
+    else window.__onboardSkip();
+  };
+
+  window.__onboardSkip = function() {
+    localStorage.setItem(ONBOARD_KEY, '1');
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity .3s';
+    setTimeout(() => overlay.remove(), 320);
+  };
+
+  render();
+  document.body.appendChild(overlay);
 })();
 
 </script>
