@@ -93,6 +93,10 @@
       Redirection vers la connexion...
     </div>
     <form id="form">
+      <label for="first_name">Prénom</label>
+      <input type="text" id="first_name" required autocomplete="given-name" placeholder="Jean">
+      <label for="last_name">Nom</label>
+      <input type="text" id="last_name" required autocomplete="family-name" placeholder="Dupont">
       <label for="email">Adresse email</label>
       <input type="email" id="email" required autocomplete="email" placeholder="vous@exemple.fr">
       <label for="password">Mot de passe</label>
@@ -164,6 +168,8 @@ form.addEventListener('submit', async (e) => {
         email: document.getElementById('email').value.trim(),
         password: pw,
         specialty_slug: slug,
+        first_name: document.getElementById('first_name').value.trim(),
+        last_name: document.getElementById('last_name').value.trim(),
       }),
     });
     const data = await res.json();

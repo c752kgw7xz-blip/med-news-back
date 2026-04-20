@@ -296,6 +296,8 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     specialty_slug: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
 
 
 # ======================
@@ -446,11 +448,12 @@ def create_user(payload: UserCreate):
             try:
                 cur.execute(
                     """
-                    INSERT INTO users (email_lookup, email_ciphertext, password_hash, specialty_id)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO users (email_lookup, email_ciphertext, password_hash, specialty_id, first_name, last_name)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING id, created_at;
                     """,
-                    (email_lookup, email_ciphertext, password_hash, specialty_id),
+                    (email_lookup, email_ciphertext, password_hash, specialty_id,
+                     payload.first_name or None, payload.last_name or None),
                 )
                 user_id, created_at = cur.fetchone()
             except psycopg.errors.UniqueViolation:

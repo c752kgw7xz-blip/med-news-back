@@ -91,7 +91,8 @@ def get_profile(user_id: str = Depends(_get_current_user_id)):
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT u.id, u.email_ciphertext, u.email_verified_at, u.created_at,
-                       s.slug AS specialty_slug, s.name AS specialty_name
+                       s.slug AS specialty_slug, s.name AS specialty_name,
+                       u.first_name, u.last_name
                 FROM users u
                 LEFT JOIN specialties s ON s.slug = u.specialty_id
                 WHERE u.id = %s;
@@ -110,6 +111,8 @@ def get_profile(user_id: str = Depends(_get_current_user_id)):
         "created_at": row[3].isoformat() if row[3] else None,
         "specialty_slug": row[4],
         "specialty_name": row[5],
+        "first_name": row[6],
+        "last_name": row[7],
     }
 
 
