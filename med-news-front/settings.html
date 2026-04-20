@@ -58,14 +58,36 @@
   /* ── Layout ─────────────────────────────── */
   .layout { max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
 
+  /* ── Bottom nav mobile ──────────────────── */
+  .mobile-bottom-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 60px; background: var(--surface); border-top: 1px solid var(--border);
+    z-index: 200; padding-bottom: env(safe-area-inset-bottom);
+    align-items: stretch;
+  }
+  @media (max-width: 768px) { .mobile-bottom-nav { display: flex; } }
+  .mobile-nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px; background: none; border: none; cursor: pointer;
+    color: var(--text4); padding: 6px 0; transition: color .15s;
+    font-family: 'Outfit', sans-serif; min-height: 44px;
+  }
+  .mobile-nav-item.active { color: var(--green); }
+  .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }
+  .mobile-nav-icon svg { width: 22px; height: 22px; }
+  .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
+
   @media (max-width: 768px) {
     header { padding: 0 16px; overflow: hidden; position: relative; z-index: auto; gap: 8px; }
+    .btn-header-action { display: none !important; }
     .header-back-btn { display: flex; }
     .header-left { gap: 8px; }
     .header-right .email { display: none; }
     .header-spec { display: none; }
     .header-sep { display: none; }
-    .layout { padding: 20px 16px 80px; }
+    .layout { padding: 20px 16px calc(80px + env(safe-area-inset-bottom, 0px)); }
     .page-title { font-size: 1.25rem; }
     .page-sub { font-size: 0.82rem; margin-bottom: 20px; }
     html, body { font-size: 16px !important; --font-scale: 1 !important; }
@@ -305,7 +327,6 @@
             <div class="setting-label" id="account-email" style="font-weight:400;color:var(--text2);"></div>
             <div class="setting-desc">Compte m&eacute;decin actif</div>
           </div>
-          <button class="btn-danger" onclick="logout()">D&eacute;connexion</button>
         </div>
       </div>
     </div>
@@ -313,6 +334,26 @@
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
+
+  <!-- Bottom nav mobile -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-item" onclick="window.location.href='/portal'">
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+      <span class="mobile-nav-label">Ma spécialité</span>
+    </button>
+    <button class="mobile-nav-item" onclick="window.location.href='/portal'">
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
+      <span class="mobile-nav-label">Explorer</span>
+    </button>
+    <button class="mobile-nav-item" onclick="window.location.href='/portal#activite'">
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+      <span class="mobile-nav-label">Mon activité</span>
+    </button>
+    <button class="mobile-nav-item active">
+      <span class="mobile-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <span class="mobile-nav-label">Paramètres</span>
+    </button>
+  </nav>
 
 <script>
 const API = window.location.origin;
