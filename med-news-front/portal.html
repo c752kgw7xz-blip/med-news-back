@@ -172,9 +172,8 @@
     .header-right .email { display: none; }
     .header-spec { display: none; }
     .header-sep { display: none; }
-    /* Cacher les boutons header sur mobile — accessibles via l'onglet Compte */
+    /* Cacher le bouton Paramètres header (accessible via nav tab) */
     .btn-header-action { display: none !important; }
-    .btn-logout { display: none !important; }
     /* Masquer le toggle sidebar pour que content-area prenne la col 1fr */
     .sidebar-toggle-wrap { display: none !important; }
     /* Contraindre le grid item content-area à la largeur du viewport */
@@ -760,18 +759,26 @@
   /* ── Full-page overlay (Instagram-style) ─────────────────── */
   .fp-overlay {
     position: fixed; inset: 0; background: var(--bg);
-    z-index: 500; display: none; flex-direction: column;
+    z-index: 500; display: flex; flex-direction: column;
     transform: translateY(100%);
-    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
-    pointer-events: none;
+    transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none; visibility: hidden;
+    will-change: transform;
   }
   .fp-overlay.compte-mode { bottom: calc(60px + env(safe-area-inset-bottom)); }
-  .fp-overlay.open { display: flex; transform: translateY(0); pointer-events: auto; }
+  .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
   .fp-overlay-header {
     height: 52px; display: flex; align-items: center; gap: 8px;
     padding: 0 16px; border-bottom: 1px solid var(--border);
     background: var(--surface); flex-shrink: 0;
   }
+  .fp-opt-btn {
+    padding: 5px 12px; border-radius: var(--radius); font-size: 0.79rem; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border-strong); background: transparent;
+    color: var(--text3); transition: all .15s; font-family: 'Outfit', sans-serif;
+  }
+  .fp-opt-btn.active { background: var(--green); border-color: var(--green); color: #fff; }
+
   .fp-overlay-back {
     background: none; border: none; color: var(--text); cursor: pointer;
     display: flex; align-items: center; gap: 3px; padding: 0;
@@ -1171,13 +1178,25 @@
       </button>
       <span class="fp-overlay-title">Paramètres</span>
     </div>
-    <div class="fp-overlay-content">
-      <div class="sidebar-item" onclick="closeFullPage('parametres');window.location.href='/settings';" style="display:flex;padding:14px 20px;">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Param&egrave;tres du compte</span>
+    <div class="fp-overlay-content" style="padding:0;">
+      <!-- Thème -->
+      <div style="padding:10px 16px 4px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);">Apparence</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);">
+        <span style="font-size:0.93rem;color:var(--text2);">Thème</span>
+        <div style="display:flex;gap:6px;" id="fp-theme-group">
+          <button class="fp-opt-btn" data-val="light" onclick="fpSetTheme('light')">Clair</button>
+          <button class="fp-opt-btn" data-val="auto" onclick="fpSetTheme('auto')">Auto</button>
+          <button class="fp-opt-btn" data-val="dark" onclick="fpSetTheme('dark')">Sombre</button>
+        </div>
+      </div>
+      <!-- Lien vers tous les paramètres -->
+      <div style="padding:10px 16px 4px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);">Compte</div>
+      <div class="sidebar-item" onclick="window.location.href='/settings';" style="display:flex;padding:14px 20px;">
+        <span style="font-size:0.93rem;">Tous les paramètres</span>
         <span style="color:var(--text5);">&#8250;</span>
       </div>
-      <div class="sidebar-item" onclick="logout();" style="display:flex;padding:14px 20px;color:var(--text3);">
-        <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>D&eacute;connexion</span>
+      <div class="sidebar-item" onclick="logout();" style="display:flex;padding:14px 20px;color:var(--red);">
+        <span style="font-size:0.93rem;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:10px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>D&eacute;connexion</span>
       </div>
     </div>
   </div>
@@ -1241,7 +1260,7 @@ function mobileNavClick(section) {
   } else if (section === 'activite') {
     openFullPage('activite');
   } else if (section === 'parametres') {
-    window.location.href = '/settings';
+    openFullPage('parametres');
   }
 }
 
@@ -1307,11 +1326,11 @@ function filterDrawerSpecs(query) {
 function openFullPage(section) {
   const el = document.getElementById('fp-' + section);
   if (!el) return;
-  // display:flex d'abord, puis .open au prochain frame pour déclencher la transition
-  el.style.display = 'flex';
-  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
+  el.classList.add('open');
 
-  if (section === 'explorer') {
+  if (section === 'parametres') {
+    fpInitTheme();
+  } else if (section === 'explorer') {
     const fpList = document.getElementById('fp-spec-list');
     fpList.innerHTML = document.getElementById('sidebar-explore')?.innerHTML || '';
 
@@ -1362,8 +1381,6 @@ function closeFullPage(section) {
   const el = document.getElementById('fp-' + section);
   if (!el || !el.classList.contains('open')) return;
   el.classList.remove('open');
-  // Remet display:none après la fin de la transition slide-down
-  el.addEventListener('transitionend', () => { el.style.display = 'none'; }, { once: true });
 
   if (section === 'compte') {
     // Restaure l'onglet actif précédent
@@ -2039,6 +2056,17 @@ async function showFavorites() {
   container.innerHTML = html || '<div class="empty">Aucun favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
   updateSidebarFavCount();
 }
+function fpSetTheme(mode) {
+  MedNews.setTheme(mode);
+  document.querySelectorAll('#fp-theme-group .fp-opt-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.val === mode));
+}
+function fpInitTheme() {
+  const current = localStorage.getItem('mednews-theme') || 'auto';
+  document.querySelectorAll('#fp-theme-group .fp-opt-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.val === current));
+}
+
 function updateSidebarFavCount() {
   const el = document.getElementById('fav-count');
   if (el) el.textContent = favoritesSet.size;
@@ -3011,14 +3039,11 @@ function setupSwipeToDismiss(section) {
       overlay.style.transform = 'translateY(110%)';
       overlay.addEventListener('transitionend', () => {
         overlay.classList.remove('open');
-        overlay.style.display = 'none';
         overlay.style.transition = '';
         overlay.style.transform = '';
-        if (section === 'compte') {
-          document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
-          const tab = typeof _prevNavSection !== 'undefined' ? _prevNavSection : 'specialite';
-          document.getElementById('mnav-' + tab)?.classList.add('active');
-        }
+        document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+        const tab = typeof _prevNavSection !== 'undefined' ? _prevNavSection : 'specialite';
+        document.getElementById('mnav-' + tab)?.classList.add('active');
       }, { once: true });
     } else {
       // Retour élastique
