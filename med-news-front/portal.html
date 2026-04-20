@@ -1010,7 +1010,7 @@
       <!-- Page title -->
       <div class="portal-page-title" style="position:relative;">
         <h2 id="month-picker-btn" onclick="toggleMonthPicker()" style="cursor:pointer;" title="Changer de mois"><span id="month-picker-label">Ce mois-ci</span></h2>
-        <p id="portal-month-subtitle"></p>
+
         <div id="month-picker-dropdown" style="display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);background:var(--surface);border:1px solid var(--border);border-radius:4px;box-shadow:0 8px 24px rgba(26,23,20,.12);z-index:300;min-width:220px;padding:8px 0;">
           <div id="month-picker-list"></div>
         </div>
@@ -2988,6 +2988,38 @@ function demoFilterByMonth(articles) {
 }
 
 let _activeMonth = null; // null = mois courant
+let _monthCountsMap = {}; // 'YYYY-MM' → nb articles
+
+async function loadMonthCounts() {
+  if (DEMO_MODE) return;
+  try {
+    const qs = activeSpecSlug ? `?specialty=${encodeURIComponent(activeSpecSlug)}&audience=SPEC_ONLY` : '';
+    const res = await authFetch(`${API}/articles/months${qs}`);
+    if (!res) return;
+    const data = await res.json();
+    _monthCountsMap = {};
+    (data.months || []).forEach(m => { _monthCountsMap[m.month] = m.count; });
+  } catch {}
+}
+
+function updateSidebarCounts() {
+  Object.entries(_accordSpecMap).forEach(([id, spec]) => {
+    const c = spec.counts || {};
+    const reg   = c.reglementaire || 0;
+    const reco  = c.recommandation || 0;
+    const innov = c.innovation || 0;
+    const tot   = c.total || 0;
+    const qc = el => el ? el.querySelector('.count') : null;
+    const regEl   = qc(document.getElementById(`sub-${id}-reg`));
+    const recoEl  = qc(document.getElementById(`sub-${id}-reco`));
+    const innovEl = qc(document.getElementById(`sub-${id}-innov`));
+    const totEl   = qc(document.getElementById(`accord-${id}`));
+    if (regEl)   regEl.textContent   = reg;
+    if (recoEl)  recoEl.textContent  = reco;
+    if (innovEl) innovEl.textContent = innov;
+    if (totEl)   totEl.textContent   = tot;
+  });
+}
 
 function buildMonthList() {
   const list = document.getElementById('month-picker-list');
@@ -3003,13 +3035,17 @@ function buildMonthList() {
     const key = y + '-' + String(m + 1).padStart(2, '0');
     items.push({ label, key, y, m });
   }
-  list.innerHTML = items.map((item, i) =>
-    `<div class="month-picker-item ${i === 0 && !_activeMonth ? 'active' : _activeMonth === item.key ? 'active' : ''}"
+  list.innerHTML = items.map((item, i) => {
+    const cnt = _monthCountsMap[item.key];
+    const cntHtml = cnt != null
+      ? `<span class="mp-count">${cnt}</span>`
+      : (i === 0 ? '<span class="mp-count">ce mois</span>' : '');
+    return `<div class="month-picker-item ${i === 0 && !_activeMonth ? 'active' : _activeMonth === item.key ? 'active' : ''}"
          onclick="selectMonth('${item.key}', '${item.label}')">
        <span class="mp-month">${item.label}</span>
-       ${i === 0 ? '<span class="mp-count">ce mois</span>' : ''}
-     </div>`
-  ).join('');
+       ${cntHtml}
+     </div>`;
+  }).join('');
 }
 
 function toggleMonthPicker() {
@@ -3069,6 +3105,15 @@ async function selectMonth(key, label) {
 
   _customFrom = from;
   _customUntil = until;
+  await loadCounts();
+  Object.entries(_accordSpecMap).forEach(([id, spec]) => {
+    const nc = specTypeCounts[spec.slug];
+    if (nc) spec.counts = nc;
+  });
+  updateSidebarCounts();
+  if (_activeAccordId && document.getElementById('spec-splash').style.display !== 'none') {
+    showSpecSplash(_activeAccordId);
+  }
   await resetAndLoad();
 }
 let _customFrom = null, _customUntil = null;
@@ -3171,17 +3216,13 @@ function toggleSidebar() {
   if (DEMO_MODE) { loadDemoData(); return; }
   if (!getToken()) { window.location.href = '/login'; return; }
   if (MedNews.isAdmin()) { window.location.href = '/review'; return; }
-  // Sous-titre dynamique : "Mars 2026"
-  const _now = new Date();
-  const _sub = document.getElementById('portal-month-subtitle');
-  if (_sub) _sub.textContent = `${MONTHS[_now.getMonth()]} ${_now.getFullYear()}`;
   try {
     console.log('[MedNews] init start');
     await loadProfile();
     console.log('[MedNews] loadProfile done');
     await loadFavorites();
     console.log('[MedNews] loadFavorites done');
-    await Promise.all([loadSpecialties(), loadCounts()]);
+    await Promise.all([loadSpecialties(), loadCounts(), loadMonthCounts()]);
     console.log('[MedNews] specialties+counts done');
     buildSidebar();
     console.log('[MedNews] buildSidebar done');
