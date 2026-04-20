@@ -978,7 +978,7 @@
         <span class="count" id="fav-count">0</span>
       </div>
 
-      <div class="sidebar-subitem" onclick="showHistory()" style="padding-left:22px;padding-top:8px;padding-bottom:8px;">
+      <div id="sidebar-history-item" class="sidebar-subitem" onclick="showHistory()" style="padding-left:22px;padding-top:8px;padding-bottom:8px;">
         <span style="display:flex;align-items:center;gap:7px;flex:1;">
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Mon historique
@@ -3143,7 +3143,7 @@ function showHistory() {
   // Clear all sidebar active states before activating history item
   document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
-  document.querySelector('.sidebar-subitem[onclick="showHistory()"]')?.classList.add('active');
+  document.getElementById('sidebar-history-item')?.classList.add('active');
   document.getElementById('spec-splash').style.display = 'none';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
