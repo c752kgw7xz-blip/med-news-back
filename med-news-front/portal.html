@@ -500,6 +500,9 @@
   .article-card.prio-high,
   .article-card.prio-mid,
   .article-card.prio-low { border-left-color: var(--border); }
+  .article-card[data-source-type="reglementaire"] { border-color: rgba(59,82,164,.25); border-left-color: #3B52A4; }
+  .article-card[data-source-type="recommandation"] { border-color: rgba(26,107,92,.25); border-left-color: #1A6B5C; }
+  .article-card[data-source-type="innovation"] { border-color: rgba(155,87,20,.25); border-left-color: #9B5714; }
   /* Carte étendue : pleine largeur sur les 2 colonnes */
   .article-card.expanded {
     cursor: default; grid-column: 1 / -1;
