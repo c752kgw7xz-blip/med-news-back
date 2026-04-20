@@ -1008,7 +1008,7 @@
 
     <div class="content-area">
       <!-- Page title -->
-      <div class="portal-page-title" style="position:relative;">
+      <div id="portal-page-title" class="portal-page-title" style="position:relative;">
         <h2 id="month-picker-btn" onclick="toggleMonthPicker()" style="cursor:pointer;" title="Changer de mois"><span id="month-picker-label">Ce mois-ci</span></h2>
 
         <div id="month-picker-dropdown" style="display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);background:var(--surface);border:1px solid var(--border);border-radius:4px;box-shadow:0 8px 24px rgba(26,23,20,.12);z-index:300;min-width:220px;padding:8px 0;">
@@ -1936,6 +1936,7 @@ function showFavorites() {
   document.getElementById('spec-splash').style.display = 'none';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
+  document.getElementById('portal-page-title').style.display = 'none';
   const rh = document.getElementById('rubrique-header');
   if (rh) rh.style.display = 'none';
 
@@ -2047,6 +2048,7 @@ function showSpecSplash(accordId) {
       <span>${c.label}</span>
     </button>`;
   }).join('');
+  document.getElementById('portal-page-title').style.display = '';
   document.getElementById('spec-splash').style.display = 'flex';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'none';
@@ -2219,6 +2221,7 @@ function setActiveSidebar(el) {
 async function resetAndLoad() {
   favoritesMode = false;
   historyMode = false;
+  document.getElementById('portal-page-title').style.display = '';
   currentPage = 1;
   loadedArticles = 0;
   allLoadedArticles = [];
@@ -3143,13 +3146,13 @@ function updateHistoryCount() {
 function showHistory() {
   historyMode = true;
   favoritesMode = false;
-  // Clear all sidebar active states before activating history item
   document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
   document.getElementById('sidebar-history-item')?.classList.add('active');
   document.getElementById('spec-splash').style.display = 'none';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
+  document.getElementById('portal-page-title').style.display = 'none';
   const rh = document.getElementById('rubrique-header');
   if (rh) rh.style.display = 'none';
   const history = getReadHistory();
