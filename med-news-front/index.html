@@ -62,19 +62,6 @@ h1 em{font-style:italic;color:var(--text2)}
 .stat-item:last-child{border-right:none}
 .stat-n{font-family:var(--serif);font-size:2.2rem;color:var(--text);line-height:1}
 .stat-l{font-size:0.72rem;color:var(--text3);margin-top:5px}
-/* ── Hero 2-col on wide screens ── */
-@media(min-width:1280px){
-  .hero{flex-direction:row;align-items:center;text-align:left;gap:72px;max-width:1400px;margin:0 auto;padding:80px 60px;min-height:88vh}
-  .hero-body{display:flex;flex-direction:column;align-items:flex-start;flex:1}
-  .hero-phone-wide{display:block;flex-shrink:0}
-  .hero-sub{max-width:520px}
-  .hero-actions{justify-content:flex-start}
-  .hero-stats{border-top:1px solid var(--border);padding-top:32px;margin-top:48px;width:100%}
-  .stat-item{padding:0 32px}
-  .stat-item:first-child{padding-left:0}
-  .phone-wide-frame{width:260px;border-radius:36px;overflow:hidden;border:2px solid var(--border-strong);box-shadow:0 24px 64px rgba(0,0,0,.13)}
-  .phone-wide-frame img{width:100%;display:block}
-}
 
 /* ── REVEAL ── */
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
