@@ -165,8 +165,9 @@
     display: grid; grid-template-columns: 300px 16px 1fr; min-height: calc(100vh - 52px); transition: grid-template-columns 0.25s ease;
   }
   @media (max-width: 768px) {
-    .layout { grid-template-columns: 1fr; }
+    .layout { display: block; }
     .sidebar { display: none; }
+    .sidebar-toggle-wrap { display: none !important; }
     header { padding: 0 16px; overflow: hidden; }
     .header-right .email { display: none; }
     .header-spec { display: none; }
