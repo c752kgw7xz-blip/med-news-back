@@ -1150,7 +1150,7 @@
   </div>
 
 <script>
-const DEMO_MODE = true;
+const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
 let _demoCache = null; // articles dynamiques fetchés, fallback sur DEMO_ARTICLES
 const API = window.location.origin;
 let currentPage = 1;

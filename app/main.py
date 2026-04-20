@@ -185,7 +185,8 @@ def newsletter_preview(specialty: str = "chirurgie-vasculaire"):
 
 @app.get("/portal-demo")
 def serve_portal_demo():
-    return FileResponse(os.path.join(_FRONT_DIR, "portal.html"), media_type="text/html", headers=_NO_CACHE)
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/portal?demo=1", status_code=302)
 
 @app.get("/shared.js")
 def serve_shared_js():
