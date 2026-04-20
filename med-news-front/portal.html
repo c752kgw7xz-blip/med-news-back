@@ -2903,9 +2903,18 @@ async function runSplashSearch(q) {
         return titre.includes(ql) || resume.includes(ql);
       }).slice(0, 12);
     } else {
-      // Appel API — sans filtre de date, avec q=...
       const spec = activeSpecSlug ? `&specialty=${encodeURIComponent(activeSpecSlug)}` : '';
-      const res  = await authFetch(`${API}/articles?q=${encodeURIComponent(q)}&per_page=12${spec}`);
+      // Filtre sur le mois sélectionné
+      let dateFilter = '';
+      const mon = _activeMonth || (() => {
+        const n = new Date();
+        return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;
+      })();
+      const [y, mo] = mon.split('-').map(Number);
+      const from = `${y}-${String(mo).padStart(2,'0')}-01`;
+      const to   = `${y}-${String(mo).padStart(2,'0')}-${new Date(y, mo, 0).getDate()}`;
+      dateFilter  = `&from_date=${from}&to_date=${to}`;
+      const res  = await authFetch(`${API}/articles?search=${encodeURIComponent(q)}&per_page=20${spec}${dateFilter}`);
       if (res && res.ok) {
         const data = await res.json();
         hits = data.articles || [];
