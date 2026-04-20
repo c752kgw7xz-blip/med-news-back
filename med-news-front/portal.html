@@ -3122,28 +3122,28 @@ let _customFrom = null, _customUntil = null;
 const _origFrom = portalFromDate;
 const _origUntil = portalUntilDate;
 
-// ── Historique de lecture ─────────────────────────────────────
-const HISTORY_KEY = 'mednews-read-history';
-function getReadHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
-}
+// ── Historique de lecture (session uniquement, in-memory) ─────
+let _sessionHistory = []; // réinitialisé à chaque chargement de page
+function getReadHistory() { return _sessionHistory; }
 function addToHistory(itemId, titre) {
   const article = allLoadedArticles.find(a => a.id === itemId) || null;
-  const h = getReadHistory();
-  const existing = h.findIndex(x => x.id === itemId);
-  if (existing > -1) h.splice(existing, 1);
-  h.unshift({ id: itemId, titre, ts: Date.now(), data: article });
-  if (h.length > 50) h.pop();
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); } catch(e) {}
+  const existing = _sessionHistory.findIndex(x => x.id === itemId);
+  if (existing > -1) _sessionHistory.splice(existing, 1);
+  _sessionHistory.unshift({ id: itemId, titre, data: article });
+  if (_sessionHistory.length > 50) _sessionHistory.pop();
   updateHistoryCount();
 }
 function updateHistoryCount() {
   const el = document.getElementById('history-count');
-  if (el) el.textContent = getReadHistory().length;
+  if (el) el.textContent = _sessionHistory.length;
 }
 function showHistory() {
   historyMode = true;
   favoritesMode = false;
+  // Clear all sidebar active states before activating history item
+  document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('subactive'));
+  document.querySelector('.sidebar-subitem[onclick="showHistory()"]')?.classList.add('active');
   document.getElementById('spec-splash').style.display = 'none';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
