@@ -464,6 +464,39 @@ def list_favorites(user_id: str = Depends(_get_current_user_id)):
 
 
 # ---------------------------------------------------------------------------
+# GET /favorites/articles — Données complètes des articles favoris (sans filtre spécialité)
+# ---------------------------------------------------------------------------
+
+@router.get("/favorites/articles")
+def list_favorites_articles(user_id: str = Depends(_get_current_user_id)):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT i.id, i.tri_json, i.source_type, i.specialty_slug,
+                       c.title_raw, c.official_date::text, c.source
+                FROM favorites f
+                JOIN items i ON i.id = f.item_id
+                JOIN candidates c ON c.id = i.candidate_id
+                WHERE f.user_id = %s
+                  AND i.review_status = 'APPROVED'
+                ORDER BY f.created_at DESC;
+            """, (user_id,))
+            rows = cur.fetchall()
+    return {"articles": [
+        {
+            "id": str(r[0]),
+            "tri_json": r[1],
+            "source_type": r[2],
+            "specialty_slug": r[3],
+            "title_raw": r[4],
+            "official_date": r[5],
+            "source": r[6],
+        }
+        for r in rows
+    ]}
+
+
+# ---------------------------------------------------------------------------
 # POST /favorites/{item_id} — Ajoute un favori
 # ---------------------------------------------------------------------------
 

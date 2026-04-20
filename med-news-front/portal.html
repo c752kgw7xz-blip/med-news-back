@@ -2006,66 +2006,65 @@ async function showFavorites() {
 
   container.innerHTML = '<div class="empty" style="color:var(--text4);">Chargement…</div>';
 
-  // Pour les favoris sans données en cache, on les fetch en parallèle
-  const missing = [...favoritesSet].filter(id =>
-    !_favDataMap[id] && !allLoadedArticles.find(a => a.id === id)
-  );
-  const _confirmed404 = new Set();
-  if (!DEMO_MODE && missing.length > 0) {
-    await Promise.all(missing.map(id =>
-      authFetch(`${API}/articles/${id}`)
-        .then(r => {
-          if (r?.status === 404) { _confirmed404.add(id); return null; }
-          return r?.ok ? r.json() : null;
-        })
-        .then(a => { if (a) _favDataMap[id] = a; })
-        .catch(() => {})
-    ));
+  if (DEMO_MODE) {
+    const src = (_demoCache && _demoCache.length > 0) ? _demoCache : DEMO_ARTICLES;
+    const demoById = {};
+    src.forEach(a => { if (a.id) demoById[a.id] = a; });
+    window._splashSearchHits = window._splashSearchHits || {};
+    const html = [...favoritesSet].map(id => {
+      const a = demoById[id]; if (!a) return '';
+      const titre = a.tri_json?.titre_court || a.title_raw || 'Sans titre';
+      const stype = a.source_type || 'reglementaire';
+      const date  = a.official_date || a.tri_json?.date_publication || '';
+      const stypeLabel = stype === 'reglementaire' ? 'Réglementation' : stype === 'recommandation' ? 'Recommandation' : 'Innovation';
+      window._splashSearchHits[id] = a;
+      return `<div class="splash-result-card" onclick="openSplashResult('${esc(a.id)}','${esc(stype)}')">
+        <span class="splash-result-stype stype-${esc(stype)}">${stypeLabel}</span>
+        <div class="splash-result-body">
+          <div class="splash-result-title">${esc(titre)}</div>
+          <div class="splash-result-meta"><span>${esc(sourceLabel(a.source || ''))}</span>${date ? `<span>${esc(MedNews.formatDate(date))}</span>` : ''}</div>
+        </div></div>`;
+    }).filter(Boolean).join('');
+    container.innerHTML = html || '<div class="empty">Aucun favori pour le moment.</div>';
+    updateSidebarFavCount();
+    return;
   }
 
-  // Rendu format splash-result-card — même style que historique
-  window._splashSearchHits = window._splashSearchHits || {};
-  const src = DEMO_MODE
-    ? ((_demoCache && _demoCache.length > 0) ? _demoCache : DEMO_ARTICLES)
-    : [];
-  const demoById = {};
-  src.forEach(a => { if (a.id) demoById[a.id] = a; });
+  // Mode authentifié — un seul appel, données complètes, sans filtre spécialité
+  try {
+    const res = await authFetch(`${API}/favorites/articles`);
+    if (!res || !res.ok) { container.innerHTML = '<div class="empty">Impossible de charger les favoris.</div>'; return; }
+    const data = await res.json();
+    const articles = data.articles || [];
 
-  const unresolvedIds = [];
-  const html = [...favoritesSet].map(id => {
-    const a = _favDataMap[id]
-           || allLoadedArticles.find(x => x.id === id)
-           || demoById[id];
-    if (!a) { unresolvedIds.push(id); return ''; }
-    const titre = a.tri_json?.titre_court || a.title_raw || 'Sans titre';
-    const stype = a.source_type || 'reglementaire';
-    const date  = a.official_date || a.tri_json?.date_publication || '';
-    const stypeLabel = stype === 'reglementaire' ? 'Réglementation'
-                     : stype === 'recommandation' ? 'Recommandation'
-                     : 'Innovation';
-    window._splashSearchHits[id] = a;
-    return `<div class="splash-result-card" onclick="openSplashResult('${esc(a.id)}','${esc(stype)}')">
-      <span class="splash-result-stype stype-${esc(stype)}">${stypeLabel}</span>
-      <div class="splash-result-body">
-        <div class="splash-result-title">${esc(titre)}</div>
-        <div class="splash-result-meta">
-          <span>${esc(sourceLabel(a.source || ''))}</span>
-          ${date ? `<span>${esc(MedNews.formatDate(date))}</span>` : ''}
-        </div>
-      </div>
-    </div>`;
-  }).filter(Boolean).join('');
+    // Resync favoritesSet avec la réalité DB (sans supprimer quoi que ce soit)
+    favoritesSet = new Set(articles.map(a => a.id));
+    updateSidebarFavCount();
 
-  // Nettoyer uniquement les vrais 404 confirmés (pas les erreurs réseau/auth)
-  if (!DEMO_MODE && _confirmed404.size) {
-    _confirmed404.forEach(id => {
-      favoritesSet.delete(id);
-      authFetch(`${API}/favorites/${id}`, { method: 'DELETE' }).catch(() => {});
+    window._splashSearchHits = window._splashSearchHits || {};
+    articles.forEach(a => {
+      _favDataMap[a.id] = a;
+      window._splashSearchHits[a.id] = a;
     });
-  }
 
-  container.innerHTML = html || '<div class="empty">Aucun favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
-  updateSidebarFavCount();
+    const html = articles.map(a => {
+      const titre = a.tri_json?.titre_court || a.title_raw || 'Sans titre';
+      const stype = a.source_type || 'reglementaire';
+      const date  = a.official_date || a.tri_json?.date_publication || '';
+      const stypeLabel = stype === 'reglementaire' ? 'Réglementation' : stype === 'recommandation' ? 'Recommandation' : 'Innovation';
+      return `<div class="splash-result-card" onclick="openSplashResult('${esc(a.id)}','${esc(stype)}')">
+        <span class="splash-result-stype stype-${esc(stype)}">${stypeLabel}</span>
+        <div class="splash-result-body">
+          <div class="splash-result-title">${esc(titre)}</div>
+          <div class="splash-result-meta"><span>${esc(sourceLabel(a.source || ''))}</span>${date ? `<span>${esc(MedNews.formatDate(date))}</span>` : ''}</div>
+        </div></div>`;
+    }).join('');
+
+    container.innerHTML = html || '<div class="empty">Aucun favori pour le moment.<br><span style="font-size:0.86rem;color:var(--text5);">Appuyez sur ★ sur un article pour l\'ajouter.</span></div>';
+    updateSidebarFavCount();
+  } catch(e) {
+    container.innerHTML = '<div class="empty">Erreur lors du chargement.</div>';
+  }
 }
 function fpSetTheme(mode) {
   MedNews.setTheme(mode);
