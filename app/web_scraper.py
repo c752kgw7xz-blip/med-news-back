@@ -200,6 +200,21 @@ WEB_SCRAPER_SOURCES: list[dict] = [
         "exclude_pattern": r"/(la-sofcot|adhesion|agenda|congres|bourses|formation|annuaire|contact|accueil)(/|$)",
     },
 
+    # ── EUPSA — European Paediatric Surgeons' Association ────────────────────
+    # Page des guidelines et position statements de l'EUPSA.
+    # Publie des consensus européens sur chirurgie néonatale, laparoscopie,
+    # malformations congénitales, atrésie biliaire, oncologie pédiatrique.
+    {
+        "url": "https://www.eupsa.org/guidelines",
+        "source": "eupsa_pediatrique",
+        "label": "EUPSA — Guidelines chirurgie pédiatrique européenne",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "chirurgie-pediatrique",
+        "link_pattern": r"eupsa\.org/",
+        "exclude_pattern": r"/(about|membership|congress|news|contact|login|register|jobs)(/|$)",
+    },
+
     # ── SFCP — Société Française de Chirurgie Pédiatrique ────────────────────
     # Page des recommandations de la SFCP.
     # chirurgie-pediatrique.com/feed/ — 404 depuis mars 2026.

@@ -54,6 +54,8 @@ Sources configurées (voir PUBMED_SOURCES) :
   pubmed_ejps              : European Journal of Pediatric Surgery (EUPSA)
   pubmed_semin_pediatr_surg: Seminars in Pediatric Surgery — Guidelines et consensus
   pubmed_jps_guidelines    : JPS — Guidelines IPEG/APSA/EUPSA publiées dans JPS
+  pubmed_jpu               : Journal of Pediatric Urology (ESPU/EAU)
+  pubmed_jpu_guidelines    : JPU — Guidelines EAU Pediatric Urology / ESPU
 """
 
 from __future__ import annotations
@@ -908,6 +910,112 @@ PUBMED_SOURCES: list[dict] = [
         ),
         "label": "JPS Guidelines — Recommandations IPEG/APSA/EUPSA publiées dans JPS",
         "source_type": "recommandation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 5,
+    },
+
+    # ── Journal of Pediatric Urology (JPU) — EAU/ESPU ────────────────────────
+    # Journal officiel de l'ESPU (European Society for Paediatric Urology) et
+    # de la WFPU. Publie les guidelines EAU Pediatric Urology, RCTs multicentriques
+    # sur hypospadias, cryptorchidie, RVU, VUP, SJPU, neurologie urinaire pédiatrique.
+    # Volume élevé mais filtre PT élimine les séries rétrospectives mono-centriques.
+    {
+        "source": "pubmed_jpu",
+        "journal_term": f'"J Pediatr Urol"[Journal] AND {_PT_FILTER}',
+        "label": "Journal of Pediatric Urology (JPU) — ESPU/EAU guidelines et RCTs",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 6,
+    },
+
+    # ── JPU Guidelines — EAU Pediatric / ESPU ────────────────────────────────
+    # Filtre titre pour capturer les guidelines EAU Pediatric publiées dans JPU
+    # (souvent non taguées Practice Guideline[pt] dans PubMed).
+    {
+        "source": "pubmed_jpu_guidelines",
+        "journal_term": (
+            '"J Pediatr Urol"[Journal] AND ('
+            '"Practice Guideline"[pt] OR '
+            'guideline[Title] OR recommendation[Title] OR consensus[Title] OR '
+            '"position statement"[Title] OR "EAU"[Title] OR "ESPU"[Title] OR '
+            '"clinical practice"[Title] OR "best practice"[Title]'
+            ')'
+        ),
+        "label": "JPU Guidelines — EAU Pediatric Urology / ESPU recommandations",
+        "source_type": "recommandation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 5,
+    },
+
+    # ── Journal of Pediatric Gastroenterology & Nutrition (JPGN) ─────────────
+    # Organe officiel de l'ESPGHAN et de la NASPGHAN. Publie les guidelines
+    # conjointes sur nutrition entérale/parentérale pédiatrique, maladies
+    # inflammatoires chroniques intestinales, atrésie biliaire, cholestase
+    # néonatale. Pertinent pour le chirurgien pédiatrique (Kasai, MICI chirurgicale,
+    # stomies pédiatriques). Filtre PT élimine lettres et séries rétrospectives.
+    {
+        "source": "pubmed_jpgn",
+        "journal_term": f'"J Pediatr Gastroenterol Nutr"[Journal] AND {_PT_FILTER}',
+        "label": "JPGN — ESPGHAN/NASPGHAN guidelines & RCTs gastro-chirurgie pédiatrique",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 6,
+    },
+
+    # ── Annals of Surgery — articles pédiatriques ────────────────────────────
+    # Journal généraliste de chirurgie à fort impact. Publie les grands RCTs
+    # multicentriques et méta-analyses de chirurgie pédiatrique lorsque l'effectif
+    # ou l'impact justifie une publication hors journaux spécialisés.
+    # Filtre titre "pediatric/paediatric/neonatal/congenital" + PT pour limiter
+    # le bruit des articles adultes.
+    {
+        "source": "pubmed_ann_surg_pediatric",
+        "journal_term": (
+            '"Ann Surg"[Journal] AND '
+            '(pediatric[Title] OR paediatric[Title] OR neonatal[Title] OR '
+            'congenital[Title] OR "pediatric surgery"[Title] OR '
+            '"children"[Title] OR infant[Title]) AND '
+            f'{_PT_FILTER}'
+        ),
+        "label": "Annals of Surgery — chirurgie pédiatrique (RCTs & méta-analyses)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 7,
+    },
+
+    # ── World Journal of Surgery — section pédiatrique ───────────────────────
+    # Journal de l'ISS/SIC. Publie des études multicentriques internationales
+    # en chirurgie pédiatrique, notamment sur les traumatismes pédiatriques,
+    # l'appendicite, les malformations congénitales dans les pays à revenus
+    # intermédiaires. Filtre titre pédiatrique + PT.
+    {
+        "source": "pubmed_wjs_pediatric",
+        "journal_term": (
+            '"World J Surg"[Journal] AND '
+            '(pediatric[Title] OR paediatric[Title] OR neonatal[Title] OR '
+            'congenital[Title] OR children[Title] OR infant[Title]) AND '
+            f'{_PT_FILTER}'
+        ),
+        "label": "World Journal of Surgery — section pédiatrique (ISS multicenter)",
+        "source_type": "innovation",
+        "specialty_hint": "chirurgie-pediatrique",
+        "min_score_hint": 6,
+    },
+
+    # ── Journal of Laparoendoscopic & Advanced Surgical Techniques — péd ─────
+    # Journal dédié aux techniques mini-invasives. Pertinent pour la laparoscopie
+    # pédiatrique (appendicite, hernie, fundoplicature, pylorotomie) et les
+    # nouvelles techniques endoscopiques. Filtre titre pédiatrique + PT.
+    {
+        "source": "pubmed_jlast_pediatric",
+        "journal_term": (
+            '"J Laparoendosc Adv Surg Tech A"[Journal] AND '
+            '(pediatric[Title] OR paediatric[Title] OR neonatal[Title] OR '
+            'children[Title] OR infant[Title]) AND '
+            f'{_PT_FILTER}'
+        ),
+        "label": "JLAST — Laparoscopie et techniques mini-invasives pédiatriques",
+        "source_type": "innovation",
         "specialty_hint": "chirurgie-pediatrique",
         "min_score_hint": 5,
     },

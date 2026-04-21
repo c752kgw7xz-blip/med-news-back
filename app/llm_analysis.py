@@ -158,6 +158,9 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "pubmed_ejps":              "innovation",
     "pubmed_semin_pediatr_surg":"recommandation",
     "pubmed_jps_guidelines":    "recommandation",
+    "pubmed_jpu":               "innovation",
+    "pubmed_jpu_guidelines":    "recommandation",
+    "eupsa_pediatrique":        "recommandation",
     "sniil":                "recommandation",
     "ffmkr":                "recommandation",
     "cnsf":                 "recommandation",
@@ -1353,6 +1356,9 @@ SOURCE_HINTS: dict[str, str] = {
     "pubmed_ejps":             "European Journal of Pediatric Surgery (EJPS/EUPSA) — Essai clinique ou méta-analyse en chirurgie pédiatrique européenne : atrésie œsophagienne, hernie diaphragmatique, Hirschsprung, oncologie pédiatrique",
     "pubmed_semin_pediatr_surg":"Seminars in Pediatric Surgery (SPS) — Guideline ou consensus thématique en chirurgie pédiatrique (IPEG, APSA, CDH Study Group)",
     "pubmed_jps_guidelines":   "JPS Guidelines IPEG/APSA/EUPSA — Recommandation ou position statement de société savante en chirurgie pédiatrique publiée dans le Journal of Pediatric Surgery",
+    "pubmed_jpu":              "Journal of Pediatric Urology (JPU/ESPU/EAU) — Essai clinique, méta-analyse ou étude multicentrique en urologie pédiatrique : hypospadias, cryptorchidie, RVU, VUP, SJPU, lithiase, neurologie urinaire pédiatrique",
+    "pubmed_jpu_guidelines":   "JPU Guidelines EAU Pediatric / ESPU — Recommandation ou position statement EAU Pediatric Urology / ESPU en urologie pédiatrique publiée dans le Journal of Pediatric Urology",
+    "eupsa_pediatrique":       "EUPSA — Guideline ou position statement de l'European Paediatric Surgeons' Association en chirurgie pédiatrique",
 }
 
 # ---------------------------------------------------------------------------
@@ -1437,6 +1443,9 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_semin_pediatr_surg":"chirurgie-pediatrique",
     "pubmed_jps_guidelines":    "chirurgie-pediatrique",
     "sfcp_pediatrique":         "chirurgie-pediatrique",
+    "pubmed_jpu":               "chirurgie-pediatrique",
+    "pubmed_jpu_guidelines":    "chirurgie-pediatrique",
+    "eupsa_pediatrique":        "chirurgie-pediatrique",
     # ── Cardiologie (à activer quand le prompt cardiologie sera implémenté) ──
     # "jama_cardiology":      "cardiologie",
     # "sfc_recommandations":  "cardiologie",
