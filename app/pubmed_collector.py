@@ -93,6 +93,21 @@ _PT_FILTER = (
     'NOT ("Letter"[pt] OR "Editorial"[pt] OR "Case Reports"[pt] OR "Comment"[pt]))'
 )
 
+# Filtre titre en complément de PT_FILTER : capture les articles récents dont les tags
+# PubMed ne sont pas encore assignés par les indexeurs NLM (délai 2-6 semaines).
+# Utilisé en OR avec PT_FILTER pour les journaux pédiatriques à faible volume.
+_TITLE_FILTER = (
+    '("meta-analysis"[Title] OR "systematic review"[Title] OR '
+    '"randomized"[Title] OR "randomised"[Title] OR '
+    '"multicenter"[Title] OR "multicentre"[Title] OR '
+    '"multi-center"[Title] OR "multi-centre"[Title] OR '
+    '"clinical trial"[Title] OR "guideline"[Title] OR '
+    '"consensus"[Title] OR "recommendation"[Title] OR '
+    '"position statement"[Title] OR "practice guideline"[Title])'
+)
+
+_PT_OR_TITLE = f'({_PT_FILTER} OR {_TITLE_FILTER})'
+
 PUBMED_SOURCES: list[dict] = [
 
     # ── Journal of Vascular Surgery (JVS) ────────────────────────────────
@@ -840,7 +855,7 @@ PUBMED_SOURCES: list[dict] = [
     # Filtre PT : élimine les séries rétrospectives mono-centriques.
     {
         "source": "pubmed_jps",
-        "journal_term": f'"J Pediatr Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Pediatr Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Pediatric Surgery (JPS) — IPEG/APSA flagship",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-pediatrique",
@@ -853,7 +868,7 @@ PUBMED_SOURCES: list[dict] = [
     # Publie régulièrement les positions de l'EUPSA et de l'ESPES.
     {
         "source": "pubmed_psi",
-        "journal_term": f'"Pediatr Surg Int"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Pediatr Surg Int"[Journal] AND {_PT_OR_TITLE}',
         "label": "Pediatric Surgery International (PSI) — EUPSA/ESPES",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-pediatrique",
@@ -867,7 +882,7 @@ PUBMED_SOURCES: list[dict] = [
     # cryptorchidie, reflux), laparoscopie pédiatrique européenne.
     {
         "source": "pubmed_ejps",
-        "journal_term": f'"Eur J Pediatr Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Eur J Pediatr Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "European Journal of Pediatric Surgery (EJPS/EUPSA)",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-pediatrique",
@@ -921,7 +936,7 @@ PUBMED_SOURCES: list[dict] = [
     # Volume élevé mais filtre PT élimine les séries rétrospectives mono-centriques.
     {
         "source": "pubmed_jpu",
-        "journal_term": f'"J Pediatr Urol"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Pediatr Urol"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Pediatric Urology (JPU) — ESPU/EAU guidelines et RCTs",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-pediatrique",
