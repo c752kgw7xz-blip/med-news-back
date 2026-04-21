@@ -196,7 +196,20 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "eacts":                "recommandation",  # chirurgie cardiaque/thoracique
     "iagg_geriatrie":       "recommandation",  # gériatrie
     "esprm":                "recommandation",  # médecine physique/réadaptation
-    "eap_pediatrie":        "recommandation",  # pédiatrie
+    "eap_pediatrie":              "recommandation",  # pédiatrie
+    "pubmed_pediatrics":          "innovation",
+    "pubmed_pediatrics_guidelines": "recommandation",
+    "pubmed_jama_peds":           "innovation",
+    "pubmed_arch_dis_child":      "innovation",
+    "pubmed_eur_j_pediatr":       "innovation",
+    "pubmed_lancet_child":        "innovation",
+    "pubmed_j_pediatr":           "innovation",
+    "pubmed_arch_pediatr":        "recommandation",  # Archives de Pédiatrie — publications SFP
+    "pubmed_pidj":                "innovation",
+    "pubmed_acta_paediatr":       "innovation",
+    "pubmed_pediatr_neurol":      "innovation",
+    "has_pediatrie":              "recommandation",
+    "gpip":                       "recommandation",
     "esr_radiologie":       "recommandation",  # radiologie
     "eos_ejo":              "recommandation",  # chirurgie orthopédique/colonne
     "ard_eular":            "recommandation",  # rhumatologie
@@ -1276,7 +1289,12 @@ SOURCE_HINTS: dict[str, str] = {
     "sfmn":              "SFMN — Recommandation médecine nucléaire",
     "sfscmfco":          "SFSCMFCO — Recommandation stomatologie et chirurgie maxillo-faciale",
     "sfmu":              "SFMU — Recommandation médecine d'urgence",
-    "sfpediatrie":       "SFP — Recommandation pédiatrie",
+    "sfpediatrie":                  "SFP — Recommandation pédiatrie",
+    "pubmed_pediatrics":            "Pediatrics (AAP)",
+    "pubmed_pediatrics_guidelines": "Pediatrics AAP — Clinical Practice Guidelines",
+    "pubmed_jama_peds":             "JAMA Pediatrics",
+    "pubmed_arch_dis_child":        "Archives of Disease in Childhood",
+    "pubmed_eur_j_pediatr":         "European Journal of Pediatrics",
     "sfnn":              "SFN — Recommandation néonatalogie",
     "sfsp":              "SFSP — Recommandation santé publique et prévention",
     "sfdermato":         "SFDermato — Recommandation dermatologie",
@@ -1445,7 +1463,24 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "sfcp_pediatrique":         "chirurgie-pediatrique",
     "pubmed_jpu":               "chirurgie-pediatrique",
     "pubmed_jpu_guidelines":    "chirurgie-pediatrique",
-    "eupsa_pediatrique":        "chirurgie-pediatrique",
+    "eupsa_pediatrique":              "chirurgie-pediatrique",
+    # ── Pédiatrie générale ──────────────────────────────────────────────────
+    "pubmed_pediatrics":              "pediatrie",
+    "pubmed_pediatrics_guidelines":   "pediatrie",
+    "pubmed_jama_peds":               "pediatrie",
+    "pubmed_arch_dis_child":          "pediatrie",
+    "pubmed_eur_j_pediatr":           "pediatrie",
+    "pubmed_lancet_child":            "pediatrie",
+    "pubmed_j_pediatr":               "pediatrie",
+    "pubmed_arch_pediatr":            "pediatrie",
+    "pubmed_pidj":                    "pediatrie",
+    "pubmed_acta_paediatr":           "pediatrie",
+    "pubmed_pediatr_neurol":          "pediatrie",
+    "sfpediatrie":                    "pediatrie",
+    "gpip":                           "pediatrie",
+    "eap_pediatrie":                  "pediatrie",
+    "has_pediatrie":                  "pediatrie",
+    "nice_pediatrie":                 "pediatrie",
     # ── Cardiologie (à activer quand le prompt cardiologie sera implémenté) ──
     # "jama_cardiology":      "cardiologie",
     # "sfc_recommandations":  "cardiologie",
@@ -1823,11 +1858,94 @@ d'atrésie et en urétroplastie. Mesure conservatoire immédiate."
 utiliser un équivalent homologué ou une ligature en attendant la résolution."
 """
 
+_SPECIALTY_ADDENDUM_PEDIATRIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — PÉDIATRIE GÉNÉRALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : pédiatre généraliste (libéral ou hospitalier, France / Europe), \
+prenant en charge des enfants de 0 à 18 ans. Compétences : pathologies courantes \
+(infections ORL, respiratoires, digestives, urinaires), croissance et développement, \
+nutrition pédiatrique (AME, diversification alimentaire), vaccins (calendrier DGS), \
+urgences pédiatriques de premier recours (fièvre, convulsions, déshydratation), \
+pathologies chroniques communes (asthme, TDAH, obésité, épilepsie). \
+Référentiels actuels : recommandations SFP, AAP (Red Book, Clinical Practice \
+Guidelines publiées dans Pediatrics), ESPGHAN, ESPID, HCSP, HAS, calendrier \
+vaccinal DGS. \
+Essais pivots récents de référence : SEREN (bronchiolite haut débit), \
+NIRSEVIMAB MELODY/HARMONIE (nirsévimab RSV), LEAP (arachide et prévention \
+allergie), SNIFFLE (LAIV grippe), PREVENTIA (prévention asthme), \
+INTERGROWTH-21st (courbes de croissance).
+
+CRITÈRE DE PERTINENCE PÉDIATRIE :
+"Ce résultat va-t-il modifier une décision lors d'une consultation ou d'un \
+appel pour un enfant malade dans les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : résultats confirmatoires d'une pratique \
+déjà établie sans gain de précision clinique, population non représentative de \
+la pratique FR/EU (ex. pays à faibles revenus sans extrapolation possible), \
+sous-spécialité nécessitant un recours spécialisé systématique (cardiopathies \
+congénitales complexes, oncologie pédiatrique, chirurgie, génétique) sauf si \
+l'article donne un critère de recours direct pour le pédiatre de premier recours. \
+Rejeter aussi : pure épidémiologie sans conséquence pratique, études de cohorte \
+monocentriques N<200 sur pathologies communes, bibliométrie, opinion.
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+RSV / VRS, bronchiolite, nirsévimab, palivizumab, haut débit nasal (HFT), \
+LAIV (vaccin vivant atténué intranasal grippe), ROR, DTPCaHibHepB (hexavalent), \
+méningocoque B/ACWY, pneumocoque 13/15/20-valent, HPV, calendrier vaccinal, \
+zone orange/rouge (score de gravité), score de Westley (laryngite), \
+score PEWS / PEVS / PIM, CRP/PCT/NFS, ECBU / nitrites / leucocytes, \
+courbe de poids/taille/PC (z-score, percentile), IMC (corpulence), \
+diversification alimentaire (DA), allergie aux protéines de lait de vache (APLV), \
+IgE spécifiques / Prick-test, SCORAD (eczéma), ACQ / ACT (asthme), \
+TDAH (score SDQ / SNAP-IV), TSA (score M-CHAT), convulsion fébrile simple/complexe, \
+statut épileptique, déshydratation (score Gorelick), SRO (soluté de réhydratation), \
+prématurité (AG, PC à la naissance), courbes INTERGROWTH-21st.
+
+EXEMPLES DE RÉDACTION (style Pediatrics AAP / Archives of Disease in Childhood) :
+
+RCT vaccin / prévention :
+  titre_court : "Nirsévimab : protection RSV nourrisson 77 % — MELODY N=1 490"
+  resume : "MELODY (RCT, N=1 490, nourrissons <1 an, 8 pays) : nirsévimab 50/100 mg \
+vs placebo. Hospitalisation pour BARI à RSV : 0,6 % vs 4,9 % (réduction relative \
+77 % ; IC95% 60–87 %, p<0,001). Durée médiane de protection évaluée à 5 mois. \
+Profil de sécurité identique au placebo. Homologation EMA jan. 2023 + \
+recommandation HCSP oct. 2023 pour tous les nourrissons en première saison \
+épidémique."
+  impact_pratique : "À retenir : nirsévimab recommandé pour tous les nourrissons \
+nés <6 mois avant le début de l'épidémie RSV et ceux en 2ème saison à risque — \
+prescrire en octobre-novembre selon le calendrier épidémique régional."
+
+Guideline AAP / mise à jour recommandation :
+  titre_court : "AAP 2024 — fièvre sans foyer <3 mois : stratification risque low/high"
+  resume : "Mise à jour des Clinical Practice Guidelines AAP sur la prise en charge \
+de la fièvre sans foyer chez le nourrisson <3 mois (Pediatrics 2024). Stratification \
+en trois groupes selon CRP, NFS et marqueurs infectieux : low risk (CRP<2 mg/L, \
+NFS normale) → surveillance ambulatoire sans antibiothérapie ni PL ; intermediate \
+risk → PL facultative selon contexte ; high risk → hospitalisation et antibiothérapie \
+empirique systématique. Seuil de fièvre abaissé à 38°C dès 8 jours de vie."
+  impact_pratique : "En pratique : appliquer la stratification AAP 2024 avec \
+CRP+NFS pour les nourrissons <3 mois fébriles — évite la PL systématique en \
+low-risk et réduit les hospitalisations inutiles."
+
+Étude de cohorte / épidémio avec impact direct :
+  titre_court : "LEAP : introduction arachide dès 4 mois divise l'allergie par 5 — N=640"
+  resume : "LEAP (RCT, N=640, nourrissons 4-11 mois à risque allergie arachide, \
+NEJM 2015 ; confirmation LEAP-On 2016) : consommation précoce d'arachide dès \
+4 mois vs éviction jusqu'à 60 mois. Allergie à 60 mois : 1,9 % (introduction) \
+vs 13,7 % (éviction) — RR 0,14 (p<0,001). Bénéfice maintenu à 72 mois \
+(follow-up LEAP-Trio). Sécurité : 0 anaphylaxie fatale dans le groupe introduction."
+  impact_pratique : "En pratique : introduire l'arachide dès 4-6 mois chez les \
+nourrissons à risque (eczéma modéré-sévère ou allergie à l'œuf) — l'éviction \
+préventive augmente le risque d'allergie et n'est plus recommandée."
+"""
+
 _SPECIALTY_ADDENDA: dict[str, str] = {
     "chirurgie-vasculaire":  _SPECIALTY_ADDENDUM_VASCULAIRE,
     "chirurgie-cardiaque":   _SPECIALTY_ADDENDUM_CARDIAQUE,
     "chirurgie-plastique":   _SPECIALTY_ADDENDUM_PLASTIQUE,
     "chirurgie-pediatrique": _SPECIALTY_ADDENDUM_PEDIATRIQUE,
+    "pediatrie":             _SPECIALTY_ADDENDUM_PEDIATRIE,
     # À implémenter : "cardiologie", "oncologie", "pneumologie", "neurologie", etc.
 }
 

@@ -395,6 +395,39 @@ EUROPE_SOCIETIES_FEEDS: list[dict] = [
         "specialty_hint": "pediatrie",
     },
 
+    # ── GPIP — Groupe de Pathologie Infectieuse Pédiatrique ─────────────────
+    # RSS WordPress officiel du GPIP (Groupe SFP, Créteil). Publie les
+    # recommandations françaises de référence en infectiologie pédiatrique :
+    # guide des antibiothérapies (mis à jour 2024), méningites, pneumonies,
+    # IU, scarlatine, otites, infections cutanées, sepsis neonatal.
+    # ✅ RSS vérifié avril 2026 : gpip.fr/feed/ actif
+    {
+        "url": "https://www.gpip.fr/feed/",
+        "label": "GPIP — Recommandations infectiologie pédiatrique française",
+        "source": "gpip",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "pediatrie",
+    },
+
+    # ── HAS — Haute Autorité de Santé (pédiatrie) ─────────────────────────
+    # RSS général des nouvelles publications HAS : recommandations de bonne
+    # pratique, guides du parcours de soins, fiches mémo, avis de la Commission
+    # de Transparence. Couvre toutes les spécialités — filtré ici sur pédiatrie
+    # (le LLM addendum pédiatrie élimine les articles hors-scope).
+    # ⚠️ À terme : créer une entrée HAS par spécialité quand l'architecture
+    # multi-specialty sera en place (source unique par slug).
+    {
+        "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081452",
+        "label": "HAS — Recommandations et guides de bonne pratique (pédiatrie)",
+        "source": "has_pediatrie",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "pediatrie",
+    },
+    # ── NICE supprimé — pas de flux RSS valide (retourne HTML)
+    # Alternative future : scraper https://www.nice.org.uk/guidance/published
+
     # ── RADIOLOGIE ────────────────────────────────────────────────────────
     # ESR = European Society of Radiology
     # Publications ESR : EuroSafe Imaging (radioprotection), iGuide (niveaux
