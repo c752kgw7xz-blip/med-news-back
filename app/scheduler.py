@@ -381,182 +381,56 @@ def job_collect_recommendations() -> None:
 
 def job_collect_innovation() -> None:
     """
-    Collecte les sources innovation :
-      - PubMed (tous les journaux configurés dans PUBMED_SOURCES) :
-          chirurgie vasculaire : JVS, EJVES, EJVES-guidelines, JET, Ann Vasc Surg, JAMA Surgery
-          chirurgie cardiaque  : JTCVS, EJCTS, EJCTS-guidelines, Ann Thorac Surg,
-                                 JACC, JACC Cardiovasc Interv, EHJ, Circulation
-      - RSS journaux généralistes : JAMA, NEJM, Lancet, BMJ, Nature Medicine
-      - RSS presse médicale spécialisée : TCTMD, Vascular Specialist, Vascular News,
-          Endovascular Today, Archives of Cardiovascular Diseases
-      - RSS journaux paramédicaux (kinésithérapie, sage-femme, pharmacien…)
-    Fenêtre : 10 jours (légère marge sur la semaine écoulée).
-    Analyse LLM à la fin.
+    Collecte toutes les sources innovation (RSS + PubMed + API).
+    Fenêtre : 10 jours. Analyse LLM à la fin.
     """
     logger.info("=" * 60)
     logger.info("JOB COLLECTE INNOVATION démarré — %s", date.today().isoformat())
     logger.info("=" * 60)
-
-    report: dict[str, Any] = {}
-    days = 10  # fenêtre hebdomadaire + marge
-
-    # ── PubMed (tous journaux configurés) ────────────────────────
-    try:
-        from app.pubmed_collector import collect_all_pubmed
-        pubmed_results = collect_all_pubmed(days=days)
-        report["pubmed"] = pubmed_results
-        total_pubmed = sum(r.get("inserted", 0) for r in pubmed_results.values() if isinstance(r, dict))
-        logger.info("[innovation] PubMed : %d sources, %d insérés", len(pubmed_results), total_pubmed)
-    except Exception as e:
-        logger.error("[innovation] PubMed échoué : %s", e)
-        report["pubmed"] = {"error": str(e)}
-
-    # ── RSS journaux scientifiques (JAMA, NEJM, Lancet, BMJ…) ────
-    try:
-        from app.rss_collector import collect_feed
-        from app.sources_innovation import ALL_INNOVATION_FEEDS
-        rss_journals: dict = {}
-        for feed in ALL_INNOVATION_FEEDS:
-            try:
-                rss_journals[feed["source"]] = collect_feed(feed, days=days)
-            except Exception as e:
-                rss_journals[feed["source"]] = {"error": str(e)}
-        report["rss_journals"] = rss_journals
-        total_journals = sum(r.get("inserted", 0) for r in rss_journals.values() if isinstance(r, dict))
-        logger.info("[innovation] RSS journaux : %d sources, %d insérés", len(rss_journals), total_journals)
-    except Exception as e:
-        logger.error("[innovation] RSS journaux échoué : %s", e)
-        report["rss_journals"] = {"error": str(e)}
-
-    # ── RSS presse médicale (TCTMD, Vascular News, Arch CV Dis…) ─
-    try:
-        from app.rss_collector import collect_feed
-        from app.sources_presse_medicale import ALL_PRESSE_MEDICALE_FEEDS
-        rss_presse: dict = {}
-        for feed in ALL_PRESSE_MEDICALE_FEEDS:
-            try:
-                rss_presse[feed["source"]] = collect_feed(feed, days=days)
-            except Exception as e:
-                rss_presse[feed["source"]] = {"error": str(e)}
-        report["rss_presse"] = rss_presse
-        total_presse = sum(r.get("inserted", 0) for r in rss_presse.values() if isinstance(r, dict))
-        logger.info("[innovation] RSS presse : %d sources, %d insérés", len(rss_presse), total_presse)
-    except Exception as e:
-        logger.error("[innovation] RSS presse médicale échoué : %s", e)
-        report["rss_presse"] = {"error": str(e)}
-
-    # ── Analyse LLM ──────────────────────────────────────────────
+    from app.collector import collect_all
+    report = collect_all(days=10)
     try:
         _run_llm_batch()
     except Exception as e:
         logger.error("[innovation] Analyse LLM échouée : %s", e)
-
     logger.info("JOB COLLECTE INNOVATION terminé")
     return report
 
 
 # ---------------------------------------------------------------------------
-# Collecte innovation par spécialité (cœur de la Routine)
+# Collecte par spécialité (cœur de la Routine)
 # ---------------------------------------------------------------------------
 
 def collect_by_specialty(specialty_slug: str, days: int = 2) -> dict[str, Any]:
     """
     Collecte COMPLÈTE pour une spécialité — un seul déclencheur, tout inclus :
 
-      1. Innovation filtrée par spécialité
-         - PubMed (sources dont specialty_hint == slug OU "tous")
-         - RSS presse médicale spécialisée (idem)
-         - RSS journaux généraux (NEJM, JAMA, BMJ… — "tous" uniquement)
+      1. Innovation filtrée par spécialité (RSS + PubMed + API via collector.py)
       2. Réglementation globale (JORF, KALI, LEGI, ANSM, BO Social)
-         → la déduplication empêche les doublons si plusieurs spés sont lancées le même jour
       3. Recommandations globales (HAS, sociétés savantes, web scraping EU)
-         → idem
-      4. Analyse LLM sur tous les candidats NEW
-         → utilise le prompt + addendum dédié à la spécialité (SOURCE_SPECIALTY_HINTS +
-            _SPECIALTY_ADDENDA) pour un scoring spé-spécifique
+      4. Analyse LLM (prompt spé-spécifique via SOURCE_SPECIALTY_HINTS)
 
-    L'opérateur n'a qu'un bouton par spécialité — la séparation interne
-    réglementation / recommandations / innovation est transparente.
+    La déduplication DB garantit l'idempotence si plusieurs spés tournent le même jour.
     """
     logger.info("=" * 60)
     logger.info("COLLECTE [%s] démarrée — %s", specialty_slug, date.today().isoformat())
     logger.info("=" * 60)
 
-    def _matches(hint: str) -> bool:
-        return hint == specialty_slug or hint == "tous"
+    from app.collector import collect_by_specialty_sources
+    report = collect_by_specialty_sources(specialty_slug, days=days)
 
-    report: dict[str, Any] = {"specialty": specialty_slug, "days": days}
-
-    # ── 1. Innovation — PubMed (filtré par spé) ─────────────────────
-    try:
-        from app.pubmed_collector import PUBMED_SOURCES, collect_pubmed_source
-        pubmed_results: dict = {}
-        for src in PUBMED_SOURCES:
-            if _matches(src.get("specialty_hint", "")):
-                try:
-                    pubmed_results[src["source"]] = collect_pubmed_source(src, days=days)
-                except Exception as e:
-                    pubmed_results[src["source"]] = {"error": str(e)}
-        report["pubmed"] = pubmed_results
-        total_pub = sum(r.get("inserted", 0) for r in pubmed_results.values() if isinstance(r, dict))
-        logger.info("[%s] PubMed : %d sources, %d insérés", specialty_slug, len(pubmed_results), total_pub)
-    except Exception as e:
-        logger.error("[%s] PubMed échoué : %s", specialty_slug, e)
-        report["pubmed"] = {"error": str(e)}
-
-    # ── 2. Innovation — RSS presse médicale (filtré par spé) ────────
-    try:
-        from app.rss_collector import collect_feed
-        from app.sources_presse_medicale import ALL_PRESSE_MEDICALE_FEEDS
-        rss_presse: dict = {}
-        for feed in ALL_PRESSE_MEDICALE_FEEDS:
-            if _matches(feed.get("specialty_hint", "")):
-                try:
-                    rss_presse[feed["source"]] = collect_feed(feed, days=days)
-                except Exception as e:
-                    rss_presse[feed["source"]] = {"error": str(e)}
-        report["rss_presse"] = rss_presse
-        total_presse = sum(r.get("inserted", 0) for r in rss_presse.values() if isinstance(r, dict))
-        logger.info("[%s] RSS presse : %d sources, %d insérés", specialty_slug, len(rss_presse), total_presse)
-    except Exception as e:
-        logger.error("[%s] RSS presse échoué : %s", specialty_slug, e)
-        report["rss_presse"] = {"error": str(e)}
-
-    # ── 3. Innovation — RSS journaux généraux (NEJM, JAMA… — "tous") ─
-    try:
-        from app.rss_collector import collect_feed
-        from app.sources_innovation import ALL_INNOVATION_FEEDS
-        rss_journals: dict = {}
-        for feed in ALL_INNOVATION_FEEDS:
-            if _matches(feed.get("specialty_hint", "")):
-                try:
-                    rss_journals[feed["source"]] = collect_feed(feed, days=days)
-                except Exception as e:
-                    rss_journals[feed["source"]] = {"error": str(e)}
-        report["rss_journals"] = rss_journals
-        total_journals = sum(r.get("inserted", 0) for r in rss_journals.values() if isinstance(r, dict))
-        logger.info("[%s] RSS journaux : %d sources, %d insérés", specialty_slug, len(rss_journals), total_journals)
-    except Exception as e:
-        logger.error("[%s] RSS journaux échoué : %s", specialty_slug, e)
-        report["rss_journals"] = {"error": str(e)}
-
-    # ── 4. Réglementation globale (JORF, KALI, LEGI, ANSM, BO Social) ─
-    # job_collect_regulation() est idempotent grâce à la déduplication DB :
-    # pas de doublon si plusieurs spés tournent le même jour.
     try:
         report["regulation"] = job_collect_regulation()
     except Exception as e:
         logger.error("[%s] Réglementation échouée : %s", specialty_slug, e)
         report["regulation"] = {"error": str(e)}
 
-    # ── 5. Recommandations globales (HAS, sociétés savantes, web EU) ──
     try:
         report["recommendations"] = job_collect_recommendations()
     except Exception as e:
         logger.error("[%s] Recommandations échouées : %s", specialty_slug, e)
         report["recommendations"] = {"error": str(e)}
 
-    # ── 6. Analyse LLM (prompt spé-spécifique via SOURCE_SPECIALTY_HINTS)
     try:
         _run_llm_batch()
     except Exception as e:

@@ -19,7 +19,7 @@ sont UNIQUEMENT couverts par ce scraper — ne pas les ignorer.
 
 from __future__ import annotations
 
-from app.sources_europe import EUROPE_WEB_SOURCES_TODO as EUROPE_WEB_SOURCES
+from app.sources import EU_WEB_SOURCES as EUROPE_WEB_SOURCES
 
 import logging
 import re
@@ -187,6 +187,10 @@ WEB_SCRAPER_SOURCES: list[dict] = [
         "exclude_pattern": r"/(la-sfp|adhesion|agenda|congres|bourses|formation|annuaire|nous-contacter|actualites/agenda)(/|$)",
     },
 
+    # ── GPIP — déplacé vers sources_europe.py (RSS WordPress /feed/) ────────
+    # gpip.fr expose un feed WordPress valide → collecté via rss_collector.
+    # Source : "gpip" dans ALL_EUROPE_FEEDS.
+
     # ── SOFCOT — Société Française de Chirurgie Orthopédique ─────────────
     # Actualités / publications de la SOFCOT.
     {
@@ -225,6 +229,40 @@ WEB_SCRAPER_SOURCES: list[dict] = [
         "link_pattern": r"(sofcpre\.fr|has-sante\.fr|ansm\.sante\.fr|solidarites-sante\.gouv\.fr)",
         # Exclure navigation, annuaire chirurgiens, mentions légales
         "exclude_pattern": r"/(chirurgiens/|identification|accueil|$)",
+    },
+
+    # ── INCa — Institut National du Cancer ───────────────────────────────
+    # Seule source nationale pour les recommandations et référentiels en
+    # oncologie : thésaurus de traitement (chimiothérapies, protocoles RCP),
+    # recommandations de bonne pratique clinique (RBP), référentiels nationaux
+    # labellisés, guides de prise en charge spécialisée.
+    #
+    # Domaine : cancer.fr (alias de e-cancer.fr, sans problème de certificat SSL)
+    # Page : catalogue des publications — statique HTML, pas de JS requis.
+    # Volume : ~10-20 nouvelles recommandations/référentiels par an.
+    # Dédup : par URL → les publications déjà en base ne sont pas re-insérées.
+    # Date : extraite du titre si disponible, sinon date du jour (acceptable
+    #        car le pipeline déduplique et les pubs récentes sont les seules nouvelles).
+    #
+    # Pattern d'exclusion : dépliant, affiche, guide patient, rapport épidémio,
+    # communiqué — contenu non clinique pour le praticien.
+    {
+        "url": "https://www.cancer.fr/catalogue-des-publications",
+        "source": "inca_recommandations",
+        "label": "INCa — Recommandations et référentiels nationaux en oncologie",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "oncologie",
+        "link_pattern": r"cancer\.fr/catalogue-des-publications/\S+",
+        "exclude_pattern": (
+            r"(?i)/catalogue-des-publications/"
+            r"(depliant|affiche|brochure|guide-patient|guide-du-patient"
+            r"|sante-des-femmes|defis-cancer|chiffres-cles|bilan-d-activite"
+            r"|rapport-annuel|communique|lettre-|newsletter|agenda|evenement"
+            r"|appel-a-projets|annonce|emploi|formation|kit-de-communication"
+            r"|poster|flyer|infographie)"
+        ),
+        "min_score_hint": 6,
     },
 ]
 

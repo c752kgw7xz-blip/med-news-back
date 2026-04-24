@@ -701,6 +701,279 @@ def jorf_search_to_candidates(
 
 
 # ----------------------
+# Collecte remboursement JORF (filtre mots-clés titre)
+# ----------------------
+
+# Mots-clés qui signalent un texte à impact remboursement / tarification / nomenclature.
+# Recherche EXACTE = phrase entière doit apparaître dans le titre (insensible à la casse côté PISTE).
+REMBOURSEMENT_KEYWORDS: list[str] = [
+    "remboursable",             # liste spécialités pharmaceutiques remboursables
+    "produits et prestations",  # LPP — dispositifs médicaux et prestations
+    "tarif de responsabilité",  # base de remboursement SS
+    "prix de cession",          # prix hôpital spécialités pharmaceutiques
+    "convention médicale",      # convention nationale CNAM / syndicats médecins
+    "convention nationale",     # avenants conventions professionnels de santé (infirmiers, kinés…)
+    "nomenclature",             # NGAP / CCAM / NABM — actes professionnels
+    "accès précoce",            # autorisation accès précoce (ex-ATU) — arrêtés HAS/CEPS
+]
+
+
+def _build_titre_champs(keywords: list[str]) -> list[dict[str, Any]]:
+    """
+    Construit le bloc 'champs' PISTE pour une recherche OU sur le TITRE.
+    typeRecherche='EXACTE' → la phrase doit apparaître telle quelle dans le titre.
+    """
+    criteres = [
+        {"typeRecherche": "EXACTE", "valeur": kw, "operateur": "OU"}
+        for kw in keywords
+    ]
+    return [{"typeChamp": "TITRE", "criteres": criteres, "operateur": "OU"}]
+
+
+@router.post("/jorf/search-remboursement-sample")
+def jorf_search_remboursement_sample(
+    request: Request,
+    page_size: int = 10,
+):
+    """
+    READ-ONLY. Sandbox-friendly.
+    Aperçu des textes remboursement / nomenclature / convention dans le JORF.
+    Filtre TITRE sur REMBOURSEMENT_KEYWORDS — sans insertion en base.
+    """
+    _require_admin(request)
+
+    payload = {
+        "fond": "JORF",
+        "recherche": {
+            "pageNumber": 1,
+            "pageSize": page_size,
+            "operateur": "ET",
+            "typePagination": "DEFAUT",
+            "champs": _build_titre_champs(REMBOURSEMENT_KEYWORDS),
+        },
+    }
+
+    data = _piste_call("/search", payload)
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=502, detail="unexpected response type")
+
+    items = _extract_list(data)
+    results: list[dict[str, Any]] = []
+
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        titles = it.get("titles") if isinstance(it.get("titles"), list) else []
+        t0 = titles[0] if titles and isinstance(titles[0], dict) else {}
+        nature = it.get("nature") or it.get("type")
+        jorftext_id = t0.get("cid")
+        results.append({
+            "titre": t0.get("title"),
+            "nature": nature,
+            "date_publication": (
+                _parse_date10(it.get("datePublication")) or _parse_date10(it.get("date"))
+            ),
+            "jorftext_id": jorftext_id,
+            "official_url": _official_url(jorftext_id) if isinstance(jorftext_id, str) and jorftext_id.startswith("JORFTEXT") else None,
+        })
+
+    return {
+        "ok": True,
+        "keywords": REMBOURSEMENT_KEYWORDS,
+        "items_count": len(items),
+        "results": results,
+    }
+
+
+@router.post("/jorf/search-remboursement")
+def jorf_search_remboursement(
+    request: Request,
+    days: int = 180,
+    page_size: int = 50,
+    max_pages: int = 40,
+):
+    """
+    WRITE. Collecte arrêtés / décrets remboursement, nomenclature et conventions.
+
+    Filtre double :
+      1. Titre : contient au moins un des REMBOURSEMENT_KEYWORDS (filtre PISTE côté serveur)
+      2. Nature : ARRETE, DECRET, LOI, ORDONNANCE (KEEP_NATURE, post-fetch)
+
+    Source : legifrance_jorf_remboursement
+    Fenêtre par défaut : 180 jours (les arrêtés de remboursement sortent en continu).
+    """
+    _require_admin(request)
+
+    if days <= 0 or days > 3650:
+        raise HTTPException(status_code=400, detail="invalid days")
+    if page_size <= 0 or page_size > 200:
+        raise HTTPException(status_code=400, detail="invalid page_size")
+    if max_pages <= 0 or max_pages > 200:
+        raise HTTPException(status_code=400, detail="invalid max_pages")
+
+    today = date.today()
+    start = today - timedelta(days=days)
+
+    source = "legifrance_jorf_remboursement"
+
+    seen = kept_after_strict = kept_in_window = inserted = deduped = pages_fetched = 0
+    stop_reason: str | None = None
+    dropped_reasons: Counter[str] = Counter()
+    too_old = too_new = 0
+    min_seen_date: date | None = None
+    max_seen_date: date | None = None
+    sample_seen_dates: list[str] = []
+
+    insert_sql = """
+    INSERT INTO candidates (
+      source, official_url, official_date, title_raw,
+      pdf_url, content_raw, raw_sha256, dedupe_key,
+      status, jorftext_id, raw_json
+    )
+    VALUES (
+      %(source)s, %(official_url)s, %(official_date)s, %(title_raw)s,
+      %(pdf_url)s, %(content_raw)s, %(raw_sha256)s, %(dedupe_key)s,
+      'NEW', %(jorftext_id)s, %(raw_json)s
+    )
+    ON CONFLICT (dedupe_key) DO NOTHING;
+    """
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            for page_number in range(1, max_pages + 1):
+                pages_fetched += 1
+
+                payload = {
+                    "fond": "JORF",
+                    "recherche": {
+                        "pageNumber": page_number,
+                        "pageSize": page_size,
+                        "operateur": "ET",
+                        "typePagination": "DEFAUT",
+                        "champs": _build_titre_champs(REMBOURSEMENT_KEYWORDS),
+                        "filtres": [
+                            {
+                                "facette": "DATE_PUBLICATION",
+                                "dates": {
+                                    "start": start.strftime("%Y-%m-%dT00:00:00.000+0000"),
+                                    "end": today.strftime("%Y-%m-%dT23:59:59.000+0000"),
+                                },
+                            }
+                        ],
+                    },
+                }
+
+                data = _piste_call("/search", payload)
+                if not isinstance(data, dict):
+                    raise HTTPException(
+                        status_code=502,
+                        detail={"msg": "unexpected /search response type", "type": str(type(data))},
+                    )
+
+                items = _extract_list(data)
+                if not items:
+                    stop_reason = "empty_page"
+                    break
+
+                for it in items:
+                    if not isinstance(it, dict):
+                        continue
+
+                    seen += 1
+
+                    titles = it.get("titles") if isinstance(it.get("titles"), list) else []
+                    t0 = titles[0] if titles and isinstance(titles[0], dict) else {}
+
+                    jorftext_id = t0.get("cid")
+                    title = t0.get("title")
+                    nature = it.get("nature") or it.get("type")
+
+                    # Filtre nature (arrêté, décret, loi, ordonnance)
+                    ok, reason = _keep_item_with_reason(nature, title)
+                    if not ok:
+                        if reason:
+                            dropped_reasons[reason] += 1
+                        continue
+
+                    kept_after_strict += 1
+
+                    pub_s = _parse_date10(it.get("datePublication")) or _parse_date10(it.get("date"))
+                    if not pub_s:
+                        dropped_reasons["no_date"] += 1
+                        continue
+
+                    pub_d = date.fromisoformat(pub_s)
+
+                    if min_seen_date is None or pub_d < min_seen_date:
+                        min_seen_date = pub_d
+                    if max_seen_date is None or pub_d > max_seen_date:
+                        max_seen_date = pub_d
+                    if len(sample_seen_dates) < 10:
+                        sample_seen_dates.append(pub_d.isoformat())
+
+                    if pub_d < start:
+                        too_old += 1
+                        continue
+                    if pub_d > today:
+                        too_new += 1
+                        continue
+
+                    kept_in_window += 1
+
+                    if not (isinstance(jorftext_id, str) and jorftext_id.startswith("JORFTEXT")):
+                        dropped_reasons["no_jorftext_id"] += 1
+                        continue
+
+                    official_url = _official_url(jorftext_id)
+                    dedupe_key = _sha256_hex(f"{source}|{jorftext_id}".encode("utf-8"))
+                    raw_bytes = _json_canonical_bytes(it)
+                    raw_sha256 = _sha256_hex(raw_bytes)
+
+                    params = {
+                        "source": source,
+                        "official_url": official_url,
+                        "official_date": pub_d,
+                        "title_raw": (title or "").strip() or "(no title)",
+                        "pdf_url": None,
+                        "content_raw": None,
+                        "raw_sha256": raw_sha256,
+                        "dedupe_key": dedupe_key,
+                        "jorftext_id": jorftext_id,
+                        "raw_json": Json(it),
+                    }
+
+                    cur.execute(insert_sql, params)
+                    if cur.rowcount == 1:
+                        inserted += 1
+                    else:
+                        deduped += 1
+
+            conn.commit()
+
+    return {
+        "ok": True,
+        "source": source,
+        "days": days,
+        "keywords": REMBOURSEMENT_KEYWORDS,
+        "from": start.isoformat(),
+        "to": today.isoformat(),
+        "pages_fetched": pages_fetched,
+        "seen": seen,
+        "kept_after_strict": kept_after_strict,
+        "kept_in_window": kept_in_window,
+        "inserted": inserted,
+        "deduped": deduped,
+        "stop_reason": stop_reason,
+        "dropped_reasons": dict(dropped_reasons.most_common(10)),
+        "too_old": too_old,
+        "too_new": too_new,
+        "min_seen_date": (min_seen_date.isoformat() if min_seen_date else None),
+        "max_seen_date": (max_seen_date.isoformat() if max_seen_date else None),
+        "sample_seen_dates": sample_seen_dates,
+    }
+
+
+# ----------------------
 # Collecte multi-fonds (KALI, LEGI, CIRC)
 # ----------------------
 

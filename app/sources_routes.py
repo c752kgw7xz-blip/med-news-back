@@ -319,66 +319,14 @@ def collect_innovation(request: Request, days: int = Query(default=90, ge=1, le=
     """
     _require_admin(request)
     try:
-        from app.pubmed_collector import collect_all_pubmed
-        from app.rss_collector import collect_feed, FEEDS
-        from app.sources_innovation import ALL_INNOVATION_FEEDS
-        from app.sources_presse_medicale import ALL_PRESSE_MEDICALE_FEEDS
-        from app.fda_collector import collect_all_fda
-        from app.eudamed_collector import collect_eudamed_devices
-
-        pubmed_results = collect_all_pubmed(days=days)
-        fda_results = collect_all_fda(days=days)
-        eudamed_result = {"eudamed": collect_eudamed_devices(days=days)}
-
-        rss_journals: dict = {}
-        for feed in ALL_INNOVATION_FEEDS:
-            try:
-                rss_journals[feed["source"]] = collect_feed(feed, days=days)
-            except Exception as e:
-                rss_journals[feed["source"]] = {"error": str(e)}
-
-        rss_presse: dict = {}
-        for feed in ALL_PRESSE_MEDICALE_FEEDS:
-            try:
-                rss_presse[feed["source"]] = collect_feed(feed, days=days)
-            except Exception as e:
-                rss_presse[feed["source"]] = {"error": str(e)}
-
-        # ANSM sécurité DM — alertes matériovigilance sur implants et dispositifs chirurgicaux
-        # Inclus ici car les alertes sur endoprothèses/stents/ballons sont réglementaires
-        # et doivent apparaître dans la newsletter vasculaire même lors d'un run "innovation".
-        _ANSM_DM_SOURCES = {"ansm_securite_dm", "ansm_securite"}
-        rss_reglementaire: dict = {}
-        for feed in FEEDS:
-            if feed["source"] in _ANSM_DM_SOURCES:
-                try:
-                    rss_reglementaire[feed["source"]] = collect_feed(feed, days=days)
-                except Exception as e:
-                    rss_reglementaire[feed["source"]] = {"error": str(e)}
-
+        from app.collector import collect_all
+        report = collect_all(days=days)
         total_inserted = sum(
             r.get("inserted", 0)
-            for r in (
-                list(pubmed_results.values())
-                + list(fda_results.values())
-                + list(eudamed_result.values())
-                + list(rss_journals.values())
-                + list(rss_presse.values())
-                + list(rss_reglementaire.values())
-            )
-            if isinstance(r, dict)
+            for section in report.values() if isinstance(section, dict)
+            for r in section.values() if isinstance(r, dict)
         )
-        return {
-            "ok": True,
-            "days": days,
-            "total_inserted": total_inserted,
-            "presse_medicale": rss_presse,
-            "pubmed": pubmed_results,
-            "fda": fda_results,
-            "eudamed": eudamed_result,
-            "rss_journaux": rss_journals,
-            "reglementaire_dm": rss_reglementaire,
-        }
+        return {"ok": True, "days": days, "total_inserted": total_inserted, **report}
     except HTTPException:
         raise
     except Exception as e:
@@ -396,15 +344,10 @@ def collect_fda(request: Request, days: int = Query(default=90, ge=1, le=365)):
     """
     _require_admin(request)
     try:
-        from app.fda_collector import collect_all_fda
-        results = collect_all_fda(days=days)
+        from app.collector import _collect_fda_pma, _collect_fda_510k
+        results = {"fda_pma": _collect_fda_pma(days=days), "fda_510k": _collect_fda_510k(days=days)}
         total_inserted = sum(r.get("inserted", 0) for r in results.values() if isinstance(r, dict))
-        return {
-            "ok": True,
-            "days": days,
-            "total_inserted": total_inserted,
-            "results": results,
-        }
+        return {"ok": True, "days": days, "total_inserted": total_inserted, "results": results}
     except HTTPException:
         raise
     except Exception as e:
@@ -422,13 +365,9 @@ def collect_eudamed(request: Request, days: int = Query(default=90, ge=1, le=365
     """
     _require_admin(request)
     try:
-        from app.eudamed_collector import collect_eudamed_devices
-        result = collect_eudamed_devices(days=days)
-        return {
-            "ok": True,
-            "days": days,
-            **result,
-        }
+        from app.collector import _collect_eudamed
+        result = _collect_eudamed(days=days)
+        return {"ok": True, "days": days, **result}
     except HTTPException:
         raise
     except Exception as e:

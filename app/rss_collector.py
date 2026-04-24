@@ -32,9 +32,7 @@ import httpx
 from app.collector_utils import build_candidate_row, insert_candidate
 from app.db import get_conn
 from app.llm_analysis import pre_filter_candidate, NOISY_SOURCES, _passes_jorf_whitelist
-from app.sources_pratique import ALL_PRATIQUE_FEEDS
-from app.sources_europe import ALL_EUROPE_FEEDS
-from app.sources_innovation import ALL_INNOVATION_FEEDS
+from app.sources import ALL_FEEDS, ALL_PRATIQUE_FEEDS
 from app.web_scraper import scrape_all_web
 from app.has_scraper import scrape_has_page, build_enriched_content
 
@@ -50,129 +48,7 @@ logger = logging.getLogger(__name__)
 # Toutes les URLs ont été vérifiées sur les sites officiels.
 # ---------------------------------------------------------------------------
 
-FEEDS: list[dict] = [
-
-    # ── HAS : recommandations de bonne pratique uniquement ──────────────
-    # Source : https://www.has-sante.fr/jcms/c_1771214/fr/nos-flux-d-information-rss
-    # Inclus  : RBP, recommandations vaccinales, guides parcours, outils
-    # Exclus  : avis médicaments (CT), avis DM, accès précoce, avis économiques
-    {
-        "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081452",
-        "label": "HAS — Recommandations et guides",
-        "source": "has_rbp",
-        "audience": ["medecins"],
-    },
-
-    # ── ANSM : alertes de sécurité médicaments ───────────────────────────
-    # Source : https://ansm.sante.fr/page/flux-rss
-    # Inclus  : pharmacovigilance, retraits AMM, nouvelles contre-indications,
-    #           restrictions d'utilisation, lettres aux professionnels de santé (DHPC)
-    # DHPC = "Direct Healthcare Professional Communication" — alerte la plus urgente
-    # Pertinent pour médecins (prescripteurs), pharmaciens ET infirmiers
-    # (ex. DHPC sur stylos injecteurs, dispositifs d'injection, cathéters)
-    {
-        "url": "https://ansm.sante.fr/rss/informations_securite",
-        "label": "ANSM — Informations de sécurité (pharmacovigilance + DHPC)",
-        "source": "ansm_securite",
-        "audience": ["medecins", "pharmaciens", "infirmiers"],
-    },
-    # Alertes sécurité filtrées médicaments uniquement
-    {
-        "url": "https://ansm.sante.fr/rss/informations_securite?produitsSante=medicaments",
-        "label": "ANSM — Sécurité médicaments",
-        "source": "ansm_securite_med",
-        "audience": ["medecins", "pharmaciens"],
-    },
-
-    # ── ANSM : sécurité dispositifs médicaux (chirurgiens, infirmières) ───
-    # Inclus : retraits d'implants, alertes matériel d'injection/perfusion,
-    #          instruments chirurgicaux défectueux, dispositifs de surveillance.
-    # NB : on n'applique PAS le filtre _ANSM_DM_EXCLUDE_PATTERNS sur cette source —
-    #      les alertes DM pour chirurgiens/IDEL ont un contenu clinique réel.
-    {
-        "url": "https://ansm.sante.fr/rss/informations_securite?produitsSante=dispositifs_medicaux",
-        "label": "ANSM — Sécurité dispositifs médicaux",
-        "source": "ansm_securite_dm",
-        "audience": ["medecins", "infirmiers"],
-    },
-
-    # ── ANSM : ruptures et tensions d'approvisionnement ──────────────────
-    # Pertinent principalement pharmaciens, mais médecins doivent adapter
-    # leurs prescriptions en cas de rupture d'un médicament courant
-    {
-        "url": "https://ansm.sante.fr/rss/disponibilite_produits_sante?produitsSante=medicaments",
-        "label": "ANSM — Ruptures/tensions médicaments",
-        "source": "ansm_ruptures_med",
-        "audience": ["pharmaciens", "medecins"],
-    },
-    {
-        "url": "https://ansm.sante.fr/rss/disponibilite_produits_sante?produitsSante=vaccins",
-        "label": "ANSM — Disponibilité vaccins",
-        "source": "ansm_ruptures_vaccins",
-        "audience": ["pharmaciens", "medecins"],
-    },
-
-    # ── Bulletins officiels ministères sociaux ────────────────────────────
-    # Source : https://bulletins-officiels.social.gouv.fr
-    # Contient les circulaires et instructions du ministère Santé
-    # non publiées au JORF mais opposables aux professionnels
-    {
-        "url": "https://bulletins-officiels.social.gouv.fr/rss.xml",
-        "label": "Bulletins officiels ministères sociaux",
-        "source": "bo_social",
-        "audience": ["medecins", "pharmaciens"],
-    },
-
-    # ── Santé publique France — articles (BEH inclus) ────────────────────
-    # Source : https://www.santepubliquefrance.fr/flux-rss
-    # RSS vérifié : flux général des articles SPF (inclut BEH, alertes, épidémiologie)
-    # Note légale : SPF est un organisme public ; usage professionnel de veille
-    #               couvert par la Loi République Numérique (2016, données publiques).
-    #               CGU SPF mentionnent "usage personnel" pour RSS — à surveiller.
-    # Contenu : données surveillance, alertes sanitaires, épidémies, vaccination
-    # Filtre LLM : min_llm_score=5 — seules les alertes actionnables passent
-    {
-        "url": "https://www.santepubliquefrance.fr/rss/types-de-documents/article.xml",
-        "label": "Santé publique France — Articles (BEH, alertes, épidémiologie)",
-        "source": "spf_beh",
-        "audience": ["medecins"],
-    },
-
-    # ── Ordre National des Médecins (CNOM) — déontologie, exercice ───────
-    # Source : https://www.conseil-national.medecin.fr
-    # RSS vérifié actif (mars 2026) : /rss.xml — contenu récent confirmé
-    # CGU (section 3.3) : RSS explicitement autorisé avec attribution de la source
-    # Contenu : déontologie médicale, exercice libéral, réglementation professionnelle
-    # Filtre LLM : require_whitelist=True + min_llm_score=5 — élimine le bruit institutionnel
-    {
-        "url": "https://www.conseil-national.medecin.fr/rss.xml",
-        "label": "CNOM — Ordre National des Médecins",
-        "source": "cnom",
-        "audience": ["medecins"],
-    },
-
-    # ── Sources exclues après audit (mars 2026) ───────────────────────────
-    # ameli_pro : login requis pour accès aux données professionnelles
-    # inca      : aucun RSS ; réutilisation requiert autorisation préalable (servicejuridique@institutcancer.fr)
-    # andpc     : aucun RSS (404) ; réutilisation digitale non autorisée par les CGU
-
-    # ── Sources pratiques — recommandations cliniques et bon usage ────────
-    # Importées depuis app/sources_pratique.py
-    *ALL_PRATIQUE_FEEDS,
-
-    # ── Sources européennes — agences réglementaires + sociétés savantes ──
-    # Importées depuis app/sources_europe.py
-    # Valeur médico-légale : un médecin peut se défendre sur ESC/ESMO/EULAR/ERS
-    # Guidelines → référentiels reconnus par la justice française et européenne
-    *ALL_EUROPE_FEEDS,
-
-    # ── Sources innovation — grands journaux internationaux ───────────────
-    # Importées depuis app/sources_innovation.py
-    # Couverture : JAMA Network (12), NEJM + Lancet + BMJ + Nature Medicine,
-    #              + 6 sources paramédicales (biologiste, kiné, sage-femme,
-    #                pharmacien, dentiste/orthodontiste, infirmiers)
-    *ALL_INNOVATION_FEEDS,
-]
+FEEDS: list[dict] = ALL_FEEDS
 
 
 # ---------------------------------------------------------------------------

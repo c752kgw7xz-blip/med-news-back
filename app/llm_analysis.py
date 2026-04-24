@@ -85,8 +85,9 @@ KNOWN_SOURCE_TYPES    = {"reglementaire", "recommandation", "innovation"}
 # ---------------------------------------------------------------------------
 SOURCE_TO_TYPE: dict[str, str] = {
     # Sources réglementaires
-    "legifrance_jorf":      "reglementaire",
-    "piste_kali":           "reglementaire",
+    "legifrance_jorf":              "reglementaire",
+    "legifrance_jorf_remboursement":"reglementaire",  # JORF remboursement/nomenclature/conventions
+    "piste_kali":                   "reglementaire",
     "piste_legi":           "reglementaire",
     "piste_circ":           "reglementaire",
     "ansm_securite":        "reglementaire",
@@ -94,7 +95,13 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "ansm_securite_dm":     "reglementaire",  # ANSM — Sécurité dispositifs médicaux
     "ansm_ruptures_med":    "reglementaire",
     "ansm_ruptures_vaccins":"reglementaire",
+    "ansm_actualites":      "reglementaire",  # ANSM — Points d'information, communiqués
     "bo_social":            "reglementaire",
+    # HAS — sources complémentaires
+    "has_acces_precoces":   "reglementaire",  # HAS — Décisions accès précoce (ex-ATU)
+    "has_bo":               "reglementaire",  # HAS — Bulletin officiel (décisions formelles)
+    # INCa — Recommandations nationales oncologie
+    "inca_recommandations": "recommandation",
     # Recommandations de pratique
     "has_rbp":              "recommandation",
     "has_fiches_memo":      "recommandation",
@@ -208,7 +215,6 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "pubmed_pidj":                "innovation",
     "pubmed_acta_paediatr":       "innovation",
     "pubmed_pediatr_neurol":      "innovation",
-    "has_pediatrie":              "recommandation",
     "gpip":                       "recommandation",
     "esr_radiologie":       "recommandation",  # radiologie
     "eos_ejo":              "recommandation",  # chirurgie orthopédique/colonne
@@ -235,7 +241,83 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "euretina_guidelines":  "recommandation",  # ophtalmologie
     "efp_guidelines":       "recommandation",  # dentisterie (parodontologie)
     "eahp_statements":      "recommandation",  # pharmacie hospitalière
+    # ── Sources innovation — journaux spécialisés hauts IF (RSS vérifiés) ──
+    # Cardiologie
+    "circulation_aha":          "innovation",   # Circulation (AHA, IF ~35)
+    "jaha":                     "innovation",   # JAHA (AHA open-access, IF ~5)
+    "jacc_rss":                 "innovation",   # JACC (Elsevier, IF ~24)
+    # Neurologie
+    "neurology_aan":            "innovation",   # Neurology (AAN, IF ~9)
+    "ann_neurol":               "innovation",   # Annals of Neurology (Wiley, IF ~11)
+    "stroke_aha":               "innovation",   # Stroke (AHA/ASA, IF ~8) — neuro + neurochir
+    # Oncologie
+    "jco_rss":                  "innovation",   # JCO (ASCO, IF ~45)
+    "ann_oncol_rss":            "innovation",   # Annals of Oncology (ESMO, IF ~51)
+    # Hématologie
+    "blood_rss":                "innovation",   # Blood (ASH/Elsevier, IF ~25)
+    "am_j_hematol":             "innovation",   # Am J Hematology (Wiley, IF ~12)
+    "leukemia_rss":             "innovation",   # Leukemia (Nature, IF ~12)
+    # Infectiologie
+    "eid_cdc":                  "innovation",   # Emerging Infect Diseases (CDC, IF ~12)
+    # Néphrologie
+    "kidney_int_rss":           "innovation",   # Kidney International (ISN/Elsevier, IF ~14)
+    # Ophtalmologie
+    "ophthalmology_aao":        "innovation",   # Ophthalmology (AAO/Elsevier, IF ~14)
+    "bjo_rss":                  "innovation",   # BJO (BMJ, IF ~5)
+    # ORL
+    "otohns_rss":               "innovation",   # Otolaryngology HNS (AAO-HNS/SAGE, IF ~3)
+    "laryngoscope_rss":         "innovation",   # Laryngoscope (ALA/Wiley, IF ~3)
+    "head_neck_rss":            "innovation",   # Head & Neck (Wiley, IF ~3)
+    # Médecine d'urgences
+    "ann_emerg_med_rss":        "innovation",   # Ann Emerg Med (ACEP, IF ~9)
+    "emj_rss":                  "innovation",   # EMJ (RCEM/BMJ, IF ~4)
+    "resuscitation_rss":        "innovation",   # Resuscitation (ERC/AHA, IF ~6)
+    # Radiologie
+    "eur_radiol_rss":           "innovation",   # European Radiology (Springer, IF ~7)
+    # Dermatologie
+    "jaad_rss":                 "innovation",   # JAAD (AAD/Elsevier, IF ~13)
+    "bjd_rss":                  "innovation",   # BJD (BAD/Wiley, IF ~11)
+    # Endocrinologie
+    "diabetes_care_rss":        "innovation",   # Diabetes Care (ADA, IF ~16)
+    # Rhumatologie
+    "arthritis_rheumatol_rss":  "innovation",   # Arthritis & Rheumatology (ACR/Wiley, IF ~14)
+    # Gériatrie
+    "jags_rss":                 "innovation",   # JAGS (AGS/Wiley, IF ~7)
+    # Gynécologie
+    "ajog_rss":                 "innovation",   # AJOG (Elsevier, IF ~10)
+    # Médecine interne
+    "ann_intern_med_rss":       "innovation",   # Ann Intern Med (ACP, IF ~51)
+    # Médecine générale
+    "cmaj_rss":                 "innovation",   # CMAJ (CMA, IF ~8)
+    "bjgp_rss":                 "innovation",   # BJGP (RCGP, IF ~5)
+    # Pneumologie
+    "chest_rss":                "innovation",   # Chest (ACCP, IF ~9)
+    # Chirurgie thoracique
+    "jto_rss":                  "innovation",   # JTO (IASLC, IF ~20)
+    # Chirurgie vasculaire
+    "jvs_rss":                  "innovation",   # JVS (SVS/Elsevier, IF ~4) — RSS direct
+    # Pharmacien
+    "br_j_clin_pharm_rss":      "innovation",   # BJCP (BPS/Wiley, IF ~4)
+    "ann_pharmacother_rss":     "innovation",   # Ann Pharmacotherapy (SAGE, IF ~4)
     # ── Sources innovation — grands journaux internationaux ───────────────
+    # Lancet specialty (10 flux — thelancet.com RSS)
+    "lancet_neurology":         "innovation",   # Lancet Neurology (IF ~57) → neurologie
+    "lancet_oncology":          "innovation",   # Lancet Oncology (IF ~51) → oncologie
+    "lancet_psychiatry":        "innovation",   # Lancet Psychiatry (IF ~65) → psychiatrie
+    "lancet_infect_dis":        "innovation",   # Lancet Infectious Diseases (IF ~40) → infectiologie
+    "lancet_diab_endo_rss":     "innovation",   # Lancet Diabetes & Endocrinology (IF ~44) → endocrinologie
+    "lancet_haematol":          "innovation",   # Lancet Haematology (IF ~27) → hématologie
+    "lancet_gastro_hepatol":    "innovation",   # Lancet Gastroenterology & Hepatology (IF ~35) → gastro
+    "lancet_respir_med":        "innovation",   # Lancet Respiratory Medicine (IF ~38) → pneumologie
+    "lancet_rheumatol":         "innovation",   # Lancet Rheumatology (IF ~25) → rhumatologie
+    "eclinmedicine":            "innovation",   # eClinicalMedicine (IF ~15) — Lancet OA, multi-spécialité
+    # BMJ specialty (6 flux — bmj.com RSS)
+    "bmj_heart":            "innovation",   # Heart / BCS (IF ~15) → cardiologie
+    "bmj_thorax":           "innovation",   # Thorax / BTS (IF ~10) → pneumologie
+    "bmj_gut":              "innovation",   # Gut / BSG (IF ~24) → gastro-entérologie
+    "bmj_ard":              "innovation",   # ARD / EULAR (IF ~27) → rhumatologie
+    "bmj_jnnp":             "innovation",   # JNNP (IF ~9) → neurologie
+    "bmj_adc":              "innovation",   # Archives Disease Childhood (IF ~5) → pédiatrie
     # JAMA Network (12 flux)
     "jama":                 "innovation",
     "jama_cardiology":      "innovation",
@@ -262,6 +344,36 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "jdr_dental":           "innovation",   # dentiste / orthodontiste
     "jan_nursing":          "innovation",   # infirmiers
 
+    # ── Presse clinique spécialisée — Healio (15 flux) + sociétés (5 flux) ───
+    # Journalisme médical clinique : comptes-rendus congrès, guidelines, pratique
+    # Même modèle que vascular_specialist / tctmd — PAS des abstracts de recherche
+    "healio_cardio":        "innovation",   # Healio Cardiology
+    "healio_nephro":        "innovation",   # Healio Nephrology
+    "healio_infect":        "innovation",   # Healio Infectious Disease
+    "healio_rhuma":         "innovation",   # Healio Rheumatology
+    "healio_endo":          "innovation",   # Healio Endocrinology
+    "healio_ophtalmo":      "innovation",   # Healio Ophthalmology
+    "healio_gastro":        "innovation",   # Healio Gastroenterology
+    "healio_hemato_onco":   "innovation",   # Healio Hematology-Oncology (multi-spé)
+    "healio_psy":           "innovation",   # Healio Psychiatry
+    "healio_neuro":         "innovation",   # Healio Neurology
+    "healio_ortho":         "innovation",   # Healio Orthopedics
+    "healio_pulmo":         "innovation",   # Healio Pulmonology
+    "healio_derma":         "innovation",   # Healio Dermatology
+    "healio_pedia":         "innovation",   # Healio Pediatrics
+    "healio_geria":         "innovation",   # Healio Geriatric Medicine
+    "aans_news":            "innovation",   # AANS Neurosurgeon News — neurochirurgie
+    "aaos_news":            "innovation",   # AAOS Now — chirurgie orthopédique
+    "aga_news":             "recommandation", # AGA News — guidelines gastro
+    "psychiatric_times":    "innovation",   # Psychiatric Times — psychiatrie
+    "urology_times":        "innovation",   # Urology Times — urologie
+    # ── ENTtoday + MedPage Today — gaps presse clinique (avril 2026) ─────
+    "enttoday":                 "innovation",   # ENTtoday (AAO-HNS) — ORL
+    "medpage_obgyn":            "innovation",   # MedPage Today OB/Gyn — gynécologie
+    "medpage_emergency":        "innovation",   # MedPage Today Emergency — urgences
+    "medpage_anesthesiology":   "innovation",   # MedPage Today Anesthesiology
+    "medpage_radiology":        "innovation",   # MedPage Today Radiology
+    "medpage_surgery":          "innovation",   # MedPage Today Surgery (multi-chir)
     # ── Presse spécialisée endovasculaire ────────────────────────────────
     "endovascular_today":   "innovation",   # Endovascular Today — périph. & endovasc.
     # ── Congrès vasculaires — désactivés (couvert via TCTMD + Vascular News) ──
@@ -329,6 +441,445 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "pubmed_wound_repair":         "innovation",    # Wound Repair and Regeneration — cicatrisation, substituts cutanés
     "pubmed_prs_guidelines":      "recommandation",# PRS — Guidelines ASPS / consensus plastique
     "pubmed_jpras_guidelines":    "recommandation",# JPRAS — Guidelines BAPRAS / ESPRAS
+    # ── PubMed — dermatologie ─────────────────────────────────────────────────
+    "pubmed_jaad":                "innovation",    # JAAD — Journal of the American Academy of Dermatology
+    "pubmed_bjd":                 "innovation",    # British Journal of Dermatology
+    "pubmed_jeadv":               "innovation",    # JEADV — journal officiel EADV
+    "pubmed_eur_j_derm":          "innovation",    # European Journal of Dermatology (IF ~3)
+    "pubmed_jama_derm":           "innovation",    # JAMA Dermatology (IF ~21)
+    "pubmed_acta_derm":           "innovation",    # Acta Dermato-Venereologica
+    "pubmed_dermatology_basel":   "innovation",    # Dermatology (Karger/Basel)
+    "pubmed_clin_exp_derm":       "innovation",    # Clinical and Experimental Dermatology
+    "pubmed_contact_derm":        "innovation",    # Contact Dermatitis — ESCD
+    "pubmed_melanoma_res":        "innovation",    # Melanoma Research
+    "pubmed_jddg":                "innovation",    # JDDG — Deutsche Dermatologische Gesellschaft
+    "pubmed_jid":                 "innovation",    # Journal of Investigative Dermatology
+    "pubmed_derm_therapy":        "innovation",    # Dermatologic Therapy
+    "pubmed_j_derm_treat":        "innovation",    # Journal of Dermatological Treatment
+    "pubmed_pediatr_derm":        "innovation",    # Pediatric Dermatology
+    "pubmed_int_j_derm":          "innovation",    # International Journal of Dermatology
+    # ── PubMed — endocrinologie, diabétologie, maladies métaboliques ──────────
+    "pubmed_diabetes_care":       "innovation",    # Diabetes Care (ADA, IF ~16)
+    "pubmed_lancet_diab_endo":    "innovation",    # Lancet Diabetes & Endocrinology (IF ~44)
+    "pubmed_diabetologia":        "innovation",    # Diabetologia (EASD, IF ~8)
+    "pubmed_jcem":                "innovation",    # J Clin Endocrinol Metab (ENDO, IF ~6.5)
+    "pubmed_thyroid":             "innovation",    # Thyroid (ATA, IF ~8.5)
+    "pubmed_eur_j_endo":          "innovation",    # European Journal of Endocrinology (ESE, IF ~5)
+    "pubmed_diabetes_obes_metab": "innovation",    # Diabetes Obesity & Metabolism (IF ~6.5)
+    "pubmed_osteoporos_int":      "innovation",    # Osteoporosis International (IOF/ESCEO, IF ~5)
+    "pubmed_bone":                "innovation",    # Bone (IF ~4)
+    "pubmed_clin_endo":           "innovation",    # Clinical Endocrinology (Oxf) (IF ~3.5)
+    "pubmed_endocr_pract":        "recommandation",# Endocrine Practice (AACE — consensus/guidelines)
+    "pubmed_diabetes_res_clin":   "innovation",    # Diabetes Research and Clinical Practice (IF ~6)
+    "pubmed_j_endo_invest":       "innovation",    # Journal of Endocrinological Investigation (SIE, IF ~4)
+    "pubmed_horm_metab_res":      "innovation",    # Hormone and Metabolic Research (Thieme, IF ~3)
+    "pubmed_endocrinology":       "innovation",    # Endocrinology (Endocrine Society, IF ~4.5)
+    "pubmed_ann_endo":            "recommandation",# Annales d'Endocrinologie (SFE — guidelines FR)
+    # ── gastro-entérologie ────────────────────────────────────────────────────
+    "pubmed_gut":                 "innovation",    # Gut (BMJ, IF ~24) — MICI, hépatologie, CCR
+    "pubmed_gastroenterology":    "innovation",    # Gastroenterology (AGA, IF ~29) — flagship
+    "pubmed_ajg":                 "innovation",    # Am J Gastroenterol (AGA, IF ~12)
+    "pubmed_hepatology":          "innovation",    # Hepatology (AASLD, IF ~12)
+    "pubmed_j_hepatol":           "innovation",    # J Hepatol (EASL, IF ~26) — hépatologie
+    "pubmed_lancet_gastro":       "innovation",    # Lancet GH (IF ~36) — essais pivots
+    "pubmed_apt":                 "innovation",    # Aliment Pharmacol Ther (IF ~8)
+    "pubmed_cgh":                 "innovation",    # Clin Gastroenterol Hepatol (AGA, IF ~12)
+    "pubmed_jcc":                 "innovation",    # J Crohns Colitis (ECCO, IF ~8) — MICI
+    "pubmed_endoscopy":           "recommandation",# Endoscopy (ESGE, IF ~11) — guidelines endo
+    "pubmed_gie":                 "innovation",    # Gastrointest Endosc (ASGE, IF ~7)
+    "pubmed_jhep_rep":            "innovation",    # JHEP Reports (EASL open-access, IF ~7)
+    "pubmed_liver_int":           "innovation",    # Liver International (IF ~7)
+    "pubmed_dig_endosc":          "innovation",    # Digestive Endoscopy (JGES, IF ~4)
+    "pubmed_ejgh":                "innovation",    # Eur J Gastroenterol Hepatol (IF ~3)
+    "pubmed_j_gastro_hepatol":    "innovation",    # J Gastroenterol Hepatol (IF ~4)
+    # ── gériatrie ─────────────────────────────────────────────────────────────
+    "pubmed_age_ageing":              "innovation",    # Age and Ageing (BGS, IF ~13)
+    "pubmed_jags":                    "innovation",    # J Am Geriatr Soc (AGS, IF ~7)
+    "pubmed_lancet_healthy_longev":   "innovation",    # Lancet Healthy Longevity (IF ~20)
+    "pubmed_alzheimers_dement":       "innovation",    # Alzheimer's & Dementia (IF ~14)
+    "pubmed_j_gerontol_med":          "innovation",    # J Gerontol: Medical Sciences (IF ~6)
+    "pubmed_jamda":                   "innovation",    # JAMDA (AMDA, IF ~6)
+    "pubmed_eur_geriatr_med":         "recommandation",# Eur Geriatr Med (EUGMS guidelines, IF ~4)
+    "pubmed_int_j_geriatr_psychiatry":"innovation",    # Int J Geriatr Psychiatry (IF ~4)
+    "pubmed_j_alzheimers_dis":        "innovation",    # J Alzheimer's Disease (IF ~4)
+    "pubmed_clin_interv_aging":       "innovation",    # Clin Interv Aging (Dove, IF ~3)
+    "pubmed_bmc_geriatr":             "innovation",    # BMC Geriatrics (IF ~4)
+    "pubmed_maturitas":               "innovation",    # Maturitas (IF ~4)
+    "pubmed_j_nutr_health_aging":     "innovation",    # J Nutr Health Aging (IF ~4)
+    "pubmed_aging_clin_exp_res":      "innovation",    # Aging Clin Exp Res (IF ~4)
+    "pubmed_geriatr_gerontol_int":    "innovation",    # Geriatr Gerontol Int (IF ~3)
+    "pubmed_gerontology":             "innovation",    # Gerontology / Karger (IF ~4)
+    # ── Gynécologie ──────────────────────────────────────────────────────────
+    "pubmed_ajog":                    "innovation",    # AJOG (IF ~10)
+    "pubmed_obstet_gynecol":          "recommandation", # Obstetrics & Gynecology / ACOG (IF ~7)
+    "pubmed_fertil_steril":           "innovation",    # Fertility & Sterility / ASRM (IF ~8)
+    "pubmed_bjog":                    "innovation",    # BJOG / RCOG (IF ~6)
+    "pubmed_ultrasound_og":           "recommandation", # Ultrasound OG / ISUOG (IF ~7)
+    "pubmed_gynecol_oncol":           "innovation",    # Gynecologic Oncology / SGO (IF ~6)
+    "pubmed_hum_reprod":              "innovation",    # Human Reproduction / ESHRE (IF ~6)
+    "pubmed_menopause_j":             "recommandation", # Menopause / NAMS (IF ~3)
+    "pubmed_ijgc":                    "innovation",    # Int J Gynecol Cancer / IGCS (IF ~4)
+    "pubmed_jmig":                    "innovation",    # J Minimally Invasive Gyn / AAGL (IF ~4)
+    "pubmed_ejogrb":                  "innovation",    # Eur J Obstet Gynecol Reprod Biol (IF ~3)
+    "pubmed_aogs":                    "innovation",    # Acta Obstet Gynecol Scand / NFOG (IF ~4)
+    "pubmed_jgohr":                   "recommandation", # J Gynecol Obstet Hum Reprod / CNGOF (IF ~2)
+    "pubmed_rbm_online":              "innovation",    # Reproductive BioMedicine Online (IF ~4)
+    "pubmed_arch_gynecol":            "innovation",    # Archives of Gynecology & Obstetrics (IF ~3)
+    "pubmed_gynecol_endocrinol":      "innovation",    # Gynecological Endocrinology (IF ~2)
+    # ── Hématologie ──────────────────────────────────────────────────────────
+    "pubmed_blood":                   "innovation",    # Blood (ASH, IF ~25)
+    "pubmed_leukemia":                "innovation",    # Leukemia / Nature (IF ~12)
+    "pubmed_haematologica":           "innovation",    # Haematologica / EHA (IF ~9)
+    "pubmed_am_j_hematol":            "innovation",    # American J Hematology (IF ~12)
+    "pubmed_lancet_haematol":         "innovation",    # Lancet Haematology (IF ~25)
+    "pubmed_br_j_haematol":           "innovation",    # British J Haematology / BSH (IF ~6)
+    "pubmed_blood_adv":               "innovation",    # Blood Advances / ASH open access (IF ~7)
+    "pubmed_j_hematol_oncol":         "innovation",    # J Hematology & Oncology (IF ~28)
+    "pubmed_bone_marrow_transplant":  "innovation",    # Bone Marrow Transplantation / EBMT (IF ~5)
+    "pubmed_thromb_haemost":          "innovation",    # Thrombosis & Haemostasis / ISTH (IF ~6)
+    "pubmed_j_thromb_haemost":        "innovation",    # J Thrombosis & Haemostasis / ISTH (IF ~7)
+    "pubmed_ann_hematol":             "innovation",    # Annals of Hematology (IF ~4)
+    "pubmed_leuk_lymphoma":           "innovation",    # Leukemia & Lymphoma (IF ~3)
+    "pubmed_eur_j_haematol":          "innovation",    # European J Haematology (IF ~4)
+    "pubmed_hematol_oncol":           "innovation",    # Hematological Oncology (IF ~3)
+    "pubmed_clin_lymphoma_myeloma_leuk": "innovation", # Clin Lymphoma Myeloma Leukemia (IF ~3)
+    # ── Infectiologie ─────────────────────────────────────────────────────────
+    "pubmed_cid":                     "innovation",    # Clinical Infectious Diseases / IDSA (IF ~20)
+    "pubmed_lancet_infect_dis":       "innovation",    # Lancet Infectious Diseases (IF ~36)
+    "pubmed_j_infect_dis":            "innovation",    # Journal of Infectious Diseases / IDSA (IF ~7)
+    "pubmed_aids_journal":            "innovation",    # AIDS / IAS (IF ~5)
+    "pubmed_aac":                     "innovation",    # Antimicrobial Agents & Chemotherapy / ASM (IF ~5)
+    "pubmed_jac":                     "innovation",    # J Antimicrobial Chemotherapy / BSAC (IF ~6)
+    "pubmed_emerg_infect_dis":        "innovation",    # Emerging Infectious Diseases / CDC (IF ~12)
+    "pubmed_ijaa":                    "innovation",    # Int J Antimicrobial Agents / ESCMID (IF ~7)
+    "pubmed_j_infect":                "innovation",    # Journal of Infection / BSID (IF ~18)
+    "pubmed_hiv_med":                 "recommandation", # HIV Medicine / BHIVA (IF ~4)
+    "pubmed_euro_surveill":           "recommandation", # Euro Surveillance / ECDC (IF ~11)
+    "pubmed_mycoses":                 "innovation",    # Mycoses (IF ~4)
+    "pubmed_med_mal_infect":          "recommandation", # Médecine et Maladies Infectieuses / SPILF (IF ~4)
+    "pubmed_infection":               "innovation",    # Infection / Springer (IF ~5)
+    "pubmed_eur_j_clin_microbiol":    "innovation",    # Eur J Clin Microbiology & Infect Dis / ESCMID (IF ~4)
+    "pubmed_plos_ntd":                "innovation",    # PLoS Neglected Tropical Diseases (IF ~4)
+    # ── Infirmiers ────────────────────────────────────────────────────────────
+    "pubmed_int_j_nurs_stud":         "innovation",    # Int J Nursing Studies (IF ~8)
+    "pubmed_j_adv_nurs":              "innovation",    # J Advanced Nursing (IF ~4)
+    "pubmed_j_clin_nurs":             "innovation",    # J Clinical Nursing (IF ~4)
+    "pubmed_nurse_educ_today":        "innovation",    # Nurse Education Today (IF ~4)
+    "pubmed_nurs_res":                "innovation",    # Nursing Research (IF ~3)
+    "pubmed_worldviews_ebn":          "innovation",    # Worldviews Evidence-Based Nursing (IF ~3)
+    "pubmed_int_wound_j":             "innovation",    # International Wound Journal (IF ~3)
+    "pubmed_j_wound_care":            "recommandation", # Journal of Wound Care / EWMA (IF ~2)
+    "pubmed_wound_repair":            "innovation",    # Wound Repair & Regeneration (IF ~4)
+    "pubmed_pain_manag_nurs":         "innovation",    # Pain Management Nursing (IF ~2)
+    "pubmed_appl_nurs_res":           "innovation",    # Applied Nursing Research (IF ~2)
+    "pubmed_j_nurs_manag":            "innovation",    # J Nursing Management (IF ~3)
+    "pubmed_eur_j_oncol_nurs":        "innovation",    # Eur J Oncology Nursing / EONS (IF ~3)
+    "pubmed_intensive_crit_care_nurs": "innovation",   # Intensive & Critical Care Nursing (IF ~3)
+    "pubmed_j_nurs_scholarsh":        "innovation",    # J Nursing Scholarship (IF ~3)
+    "pubmed_nurs_open":               "innovation",    # Nursing Open / Wiley OA (IF ~2)
+    # ── Kinésithérapie ────────────────────────────────────────────────────────
+    "pubmed_phys_ther":               "innovation",    # Physical Therapy / APTA (IF ~4)
+    "pubmed_jospt":                   "innovation",    # JOSPT (IF ~7)
+    "pubmed_j_physiother":            "innovation",    # J Physiotherapy / APA (IF ~8)
+    "pubmed_br_j_sports_med_kine":    "innovation",    # British J Sports Medicine (IF ~18)
+    "pubmed_clin_rehabil":            "innovation",    # Clinical Rehabilitation (IF ~4)
+    "pubmed_arch_phys_med_rehabil":   "innovation",    # Archives PMR / AAPM&R (IF ~4)
+    "pubmed_disabil_rehabil":         "innovation",    # Disability & Rehabilitation (IF ~3)
+    "pubmed_j_rehabil_med":           "innovation",    # J Rehabilitation Medicine / UEMS (IF ~3)
+    "pubmed_bmc_musculoskelet":       "innovation",    # BMC Musculoskeletal Disorders (IF ~3)
+    "pubmed_j_cardiopulm_rehabil":    "innovation",    # J Cardiopulmonary Rehab & Prevention (IF ~3)
+    "pubmed_neurorehabil_neural_repair": "innovation", # Neurorehabilitation & Neural Repair (IF ~5)
+    "pubmed_j_neuroeng_rehabil":      "innovation",    # J Neuroengineering & Rehabilitation (IF ~5)
+    "pubmed_ann_phys_rehabil_med":    "recommandation", # Annals Phys & Rehab Med / SOFMER (IF ~6)
+    "pubmed_eur_j_phys_rehabil_med":  "innovation",    # Eur J Physical & Rehab Med / ESPRM (IF ~4)
+    "arch_pmr_rss":                   "innovation",    # Archives of PMR (ACRM/Elsevier, IF ~4)
+    "pmrj_rss":                       "innovation",    # PM&R Journal (AAPM&R/Wiley, IF ~3)
+    "pubmed_gait_posture":            "innovation",    # Gait & Posture (IF ~3)
+    "pubmed_musculoskelet_sci_pract": "innovation",    # Musculoskeletal Science & Practice (IF ~3)
+    # ── Oncologie ─────────────────────────────────────────────────────────────
+    "pubmed_j_clin_oncol":            "recommandation", # J Clinical Oncology / ASCO (IF ~45)
+    "pubmed_ann_oncol":               "recommandation", # Annals of Oncology / ESMO (IF ~51)
+    "pubmed_lancet_oncol":            "innovation",    # Lancet Oncology (IF ~42)
+    "pubmed_eur_j_cancer":            "innovation",    # European J Cancer / ECCO (IF ~8)
+    "pubmed_clin_cancer_res":         "innovation",    # Clinical Cancer Research / AACR (IF ~11)
+    "pubmed_br_j_cancer":             "innovation",    # British J Cancer / CRUK (IF ~9)
+    "pubmed_cancer_acs":              "innovation",    # Cancer / ACS (IF ~7)
+    "pubmed_jnci":                    "innovation",    # J National Cancer Institute / NCI (IF ~11)
+    "pubmed_int_j_radiat_oncol":      "innovation",    # Int J Radiation Oncology / ASTRO (IF ~8)
+    "pubmed_radiother_oncol":         "recommandation", # Radiotherapy & Oncology / ESTRO (IF ~7)
+    "pubmed_support_care_cancer":     "innovation",    # Supportive Care in Cancer / MASCC (IF ~4)
+    "pubmed_cancer_treat_rev":        "recommandation", # Cancer Treatment Reviews (IF ~10)
+    "pubmed_oncologist":              "innovation",    # The Oncologist / ASCO (IF ~5)
+    "pubmed_esmo_open":               "innovation",    # ESMO Open (IF ~6)
+    "pubmed_cancer_med":              "innovation",    # Cancer Medicine / Wiley OA (IF ~4)
+    "pubmed_oncotarget":              "innovation",    # Oncotarget (IF ~4)
+    # ── Urologie ──────────────────────────────────────────────────────────────
+    "pubmed_eur_urol":               "innovation",    # European Urology / EAU (IF ~25)
+    "pubmed_eur_urol_oncol":         "innovation",    # European Urology Oncology / EAU (IF ~8)
+    "pubmed_j_urol":                 "innovation",    # Journal of Urology / AUA (IF ~6)
+    "pubmed_prostate_cancer":        "innovation",    # Prostate Cancer & Prostatic Diseases / Nature (IF ~6)
+    "pubmed_bjui":                   "innovation",    # BJUI / BAUS (IF ~5)
+    "pubmed_eur_urol_focus":         "recommandation", # European Urology Focus / EAU OA (IF ~4)
+    "pubmed_world_j_urol":           "innovation",    # World Journal of Urology / Springer (IF ~4)
+    "pubmed_j_endourol":             "innovation",    # Journal of Endourology / MAL (IF ~3)
+    "pubmed_neurourol_urodyn":       "innovation",    # Neurourology & Urodynamics / ICS (IF ~3)
+    "pubmed_urology":                "innovation",    # Urology / Elsevier (IF ~3)
+    "pubmed_int_j_urol":             "innovation",    # International Journal of Urology / JUA (IF ~3)
+    "pubmed_prog_urol":              "recommandation", # Progrès en Urologie / AFU ★ France (IF ~1)
+    # ── Sage-femme ────────────────────────────────────────────────────────────
+    "pubmed_midwifery":              "innovation",    # Midwifery / RCM-Elsevier (IF ~3)
+    "pubmed_birth":                  "innovation",    # Birth / Wiley-ICEA (IF ~3)
+    "pubmed_women_birth":            "innovation",    # Women and Birth / ACMI (IF ~3)
+    "pubmed_j_midwifery":            "recommandation", # J Midwifery & Women's Health / ACNM (IF ~2)
+    "pubmed_prenat_diagn":           "innovation",    # Prenatal Diagnosis / Wiley (IF ~3)
+    "pubmed_j_matern_fetal":         "innovation",    # J Matern Fetal Neonatal Med (IF ~3)
+    "pubmed_breastfeed_med":         "recommandation", # Breastfeeding Medicine / ABM (IF ~3)
+    "pubmed_j_hum_lact":             "innovation",    # Journal of Human Lactation / ILCA (IF ~3)
+    "pubmed_arch_womens_ment_health": "innovation",   # Archives Women's Mental Health / Springer (IF ~4)
+    "pubmed_matern_child_nutr":      "innovation",    # Maternal & Child Nutrition / Wiley (IF ~4)
+    "pubmed_int_breastfeed_j":       "recommandation", # International Breastfeeding Journal / BMC (IF ~3)
+    # ── Rhumatologie ──────────────────────────────────────────────────────────
+    "pubmed_ard":                    "innovation",    # Ann Rheum Dis / EULAR-BMJ (IF ~27)
+    "pubmed_arthritis_rheumatol":    "innovation",    # Arthritis & Rheumatology / ACR (IF ~14)
+    "pubmed_rheumatology_oxford":    "innovation",    # Rheumatology Oxford / BSR (IF ~6)
+    "pubmed_j_autoimmun":            "innovation",    # Journal of Autoimmunity (IF ~12)
+    "pubmed_osteoarthritis_cartilage":"innovation",   # Osteoarthritis & Cartilage / OARSI (IF ~8)
+    "pubmed_arthritis_res_ther":     "innovation",    # Arthritis Research & Therapy / BMC (IF ~5)
+    "pubmed_j_rheumatol":            "innovation",    # Journal of Rheumatology / JRheum (IF ~4)
+    "pubmed_rmd_open":               "recommandation", # RMD Open / EULAR OA (IF ~5)
+    "pubmed_semin_arthritis_rheum":  "recommandation", # Seminars in Arthritis & Rheumatism (IF ~5)
+    "pubmed_lupus":                  "innovation",    # Lupus / SAGE (IF ~4)
+    "pubmed_clin_rheumatol":         "innovation",    # Clinical Rheumatology / ILAR (IF ~4)
+    "pubmed_rev_rhum":               "recommandation", # Revue du Rhumatisme / SFR ★ France (IF ~2)
+    # ── Radiologie ────────────────────────────────────────────────────────────
+    "pubmed_radiology":              "innovation",    # Radiology / RSNA (IF ~12)
+    "pubmed_eur_radiology":          "innovation",    # European Radiology / ESR (IF ~7)
+    "pubmed_radiol_interv":          "innovation",    # Radiology — filtré interventionnel
+    "pubmed_jvir":                   "innovation",    # J Vasc Interv Radiol / SIR (IF ~3)
+    "pubmed_cvir":                   "recommandation", # Cardiovascular Interventional Radiology / CIRSE (IF ~3)
+    "pubmed_ajnr":                   "innovation",    # AJNR — Am J Neuroradiology / ASNR (IF ~3)
+    "pubmed_ajr":                    "innovation",    # Am J Roentgenology / ARRS (IF ~4)
+    "pubmed_radiographics":          "recommandation", # RadioGraphics / RSNA — formation continue (IF ~4)
+    "pubmed_ejnmmi":                 "innovation",    # Eur J Nucl Med Mol Imaging / EANM (IF ~9)
+    "pubmed_j_nucl_med":             "innovation",    # Journal of Nuclear Medicine / SNMMI (IF ~9)
+    "pubmed_insights_imaging":       "recommandation", # Insights into Imaging / ESR OA (IF ~4)
+    "pubmed_eur_j_radiol":           "innovation",    # European Journal of Radiology / Elsevier (IF ~3)
+    # ── Psychiatrie ───────────────────────────────────────────────────────────
+    "pubmed_am_j_psychiatry":        "innovation",    # Am J Psychiatry / APA (IF ~17)
+    "pubmed_jama_psychiatry":        "innovation",    # JAMA Psychiatry (IF ~22)
+    "pubmed_lancet_psychiatry":      "innovation",    # Lancet Psychiatry (IF ~65)
+    "pubmed_world_psychiatry":       "recommandation", # World Psychiatry / WPA (IF ~60)
+    "pubmed_br_j_psychiatry":        "innovation",    # British J Psychiatry / RCPsych (IF ~9)
+    "pubmed_acta_psychiatr_scand":   "innovation",    # Acta Psychiatrica Scandinavica (IF ~8)
+    "pubmed_schizophr_bull":         "innovation",    # Schizophrenia Bulletin / SRS (IF ~8)
+    "pubmed_bipolar_disord":         "innovation",    # Bipolar Disorders / ISBD (IF ~6)
+    "pubmed_neuropsychopharmacol":   "innovation",    # Neuropsychopharmacology / ACNP (IF ~7)
+    "pubmed_j_clin_psychiatry":      "recommandation", # J Clinical Psychiatry — guidelines CANMAT (IF ~5)
+    "pubmed_depress_anxiety":        "innovation",    # Depression and Anxiety / ADAA (IF ~5)
+    "pubmed_int_j_neuropsychopharmacol": "innovation", # Int J Neuropsychopharmacology / CINP (IF ~5)
+    "pubmed_encephale":              "recommandation", # L'Encéphale / SPF ★ France (IF ~2)
+    # ── Pneumologie ───────────────────────────────────────────────────────────
+    "pubmed_eur_respir_j":           "innovation",    # European Respiratory Journal / ERS (IF ~24)
+    "pubmed_ajrccm":                 "innovation",    # Am J Respir Crit Care Med / ATS (IF ~23)
+    "pubmed_lancet_respir":          "innovation",    # Lancet Respiratory Medicine (IF ~38)
+    "pubmed_eur_respir_rev":         "recommandation", # Eur Respir Review — guidelines ERS (IF ~10)
+    "pubmed_ann_am_thorac_soc":      "recommandation", # Annals ATS — guidelines & pratique (IF ~8)
+    "pubmed_jaci":                   "innovation",    # J Allergy Clin Immunol / AAAAI (IF ~14)
+    "pubmed_pulmonology":            "innovation",    # Pulmonology / SEPAR (IF ~8)
+    "pubmed_respirology":            "innovation",    # Respirology / APSR (IF ~5)
+    "pubmed_respir_med":             "innovation",    # Respiratory Medicine / Elsevier (IF ~4)
+    "pubmed_sleep":                  "innovation",    # Sleep / AASM-ESRS (IF ~7)
+    "pubmed_j_sleep_res":            "innovation",    # Journal of Sleep Research / ESRS (IF ~4)
+    "pubmed_rev_mal_respir":         "recommandation", # Revue des Maladies Respiratoires / SPLF (IF ~1.5)
+    # ── Pharmacien ────────────────────────────────────────────────────────────
+    "pubmed_clin_pharmacol_ther":     "innovation",    # Clin Pharmacol Ther / ASCPT (IF ~7)
+    "pubmed_ann_pharmacother":        "innovation",    # Annals of Pharmacotherapy (IF ~4)
+    "pubmed_br_j_clin_pharmacol":     "innovation",    # Br J Clinical Pharmacology / BPS (IF ~4)
+    "pubmed_pharmacotherapy":         "innovation",    # Pharmacotherapy / ACCP (IF ~3)
+    "pubmed_drug_safety":             "reglementaire", # Drug Safety / Springer (IF ~4)
+    "pubmed_pharmacoepidemiol_drug_saf": "reglementaire", # Pharmacoepidemiology Drug Safety / ISPE (IF ~3)
+    "pubmed_am_j_health_syst_pharm":  "innovation",    # Am J Health-System Pharmacy / ASHP (IF ~2)
+    "pubmed_eur_j_hosp_pharm":        "innovation",    # Eur J Hospital Pharmacy / EAHP (IF ~2)
+    "pubmed_int_j_clin_pharm":        "innovation",    # Int J Clinical Pharmacy / KNMP (IF ~3)
+    "pubmed_drugs":                   "recommandation", # Drugs / Springer — revues (IF ~4)
+    "pubmed_clin_pharmacokinet":      "innovation",    # Clinical Pharmacokinetics / Springer (IF ~4)
+    "pubmed_biodrugs":                "innovation",    # BioDrugs — biosimilaires (IF ~4)
+    "pubmed_eur_j_clin_pharmacol":    "innovation",    # Eur J Clinical Pharmacology / AGAH (IF ~3)
+    "pubmed_ann_pharm_fr":            "recommandation", # Annales Pharmaceutiques Françaises / SFPC (IF ~2)
+    "pubmed_ther_adv_drug_saf":       "reglementaire", # Ther Advances Drug Safety / SAGE (IF ~4)
+    "pubmed_j_clin_pharm_ther":       "innovation",    # J Clinical Pharmacy & Therapeutics / Wiley (IF ~2)
+    # ── ORL ───────────────────────────────────────────────────────────────────
+    "pubmed_otolaryngol_hns":         "innovation",    # Otolaryngology HNS / AAO-HNS
+    "pubmed_jama_otolaryngol":        "innovation",    # JAMA Otolaryngology HNS
+    "pubmed_laryngoscope":            "innovation",    # Laryngoscope / ALA
+    "pubmed_head_neck":               "innovation",    # Head & Neck / Wiley
+    "pubmed_oral_oncol":              "innovation",    # Oral Oncology — carcinomes T&C
+    "pubmed_eur_arch_orl":            "innovation",    # European Archives ORL / EUFOS
+    "pubmed_otol_neurotol":           "innovation",    # Otology & Neurotology / AOS
+    "pubmed_rhinology":               "innovation",    # Rhinology / ERS
+    "pubmed_clin_otolaryngol":        "innovation",    # Clinical Otolaryngology / BACO
+    "pubmed_int_forum_allergy_rhinol":"innovation",    # Int Forum Allergy Rhinology
+    "pubmed_thyroid":                 "innovation",    # Thyroid / ATA
+    "pubmed_acta_otolaryngol":        "innovation",    # Acta Oto-Laryngologica
+    "pubmed_audiol_neurootol":        "innovation",    # Audiology & Neuro-Otology / Karger
+    "pubmed_dysphagia":               "innovation",    # Dysphagia / Springer
+    "pubmed_j_voice":                 "innovation",    # Journal of Voice / Elsevier
+    "pubmed_epos_guidelines":         "recommandation", # EPOS Guidelines / Rhinology ERS
+    # ── Ophtalmologie ─────────────────────────────────────────────────────────
+    "pubmed_ophthalmology":           "innovation",    # Ophthalmology / AAO (IF ~14)
+    "pubmed_jama_ophthalmol":         "innovation",    # JAMA Ophthalmology (IF ~8)
+    "pubmed_br_j_ophthalmol":         "innovation",    # British J Ophthalmol / BMJ (IF ~5)
+    "pubmed_am_j_ophthalmol":         "innovation",    # American J Ophthalmol (IF ~5)
+    "pubmed_retina":                  "innovation",    # Retina / Wolters Kluwer (IF ~5)
+    "pubmed_jcrs":                    "innovation",    # J Cataract Refract Surg / ASCRS (IF ~4)
+    "pubmed_j_glaucoma":              "innovation",    # Journal of Glaucoma / WGA (IF ~3)
+    "pubmed_cornea":                  "innovation",    # Cornea / Wolters Kluwer (IF ~3)
+    "pubmed_graefes_arch":            "innovation",    # Graefe's Archive / Springer (IF ~3)
+    "pubmed_acta_ophthalmol":         "innovation",    # Acta Ophthalmologica / EUPO (IF ~3)
+    "pubmed_eye":                     "innovation",    # Eye / Nature-RCOphth (IF ~3)
+    "pubmed_surv_ophthalmol":         "innovation",    # Survey of Ophthalmology (IF ~6)
+    "pubmed_iovs":                    "innovation",    # IOVS / ARVO (IF ~4)
+    "pubmed_ocul_surf":               "innovation",    # Ocular Surface (IF ~8)
+    "pubmed_eur_j_ophthalmol":        "innovation",    # European J Ophthalmol / SOE (IF ~2)
+    "pubmed_prog_retin_eye_res":      "recommandation", # Prog Retinal Eye Res (IF ~20)
+    # ── Neurologie ────────────────────────────────────────────────────────────
+    "pubmed_neurology":               "recommandation", # Neurology / AAN (IF ~9)
+    "pubmed_lancet_neurol":           "innovation",    # Lancet Neurology (IF ~48)
+    "pubmed_brain":                   "innovation",    # Brain / Oxford-ABN (IF ~14)
+    "pubmed_ann_neurol":              "innovation",    # Annals of Neurology / ANA (IF ~11)
+    "pubmed_jnnp":                    "innovation",    # JNNP / BMJ (IF ~9)
+    "pubmed_eur_j_neurol":            "recommandation", # Eur J Neurology / EAN (IF ~5)
+    "pubmed_j_neurol":                "innovation",    # Journal of Neurology / DGN (IF ~4)
+    "pubmed_mov_disord":              "innovation",    # Movement Disorders / MDS (IF ~9)
+    "pubmed_epilepsia":               "innovation",    # Epilepsia / ILAE (IF ~6)
+    "pubmed_cephalalgia":             "innovation",    # Cephalalgia / IHS (IF ~5)
+    "pubmed_int_j_stroke":            "innovation",    # Int J Stroke / WSO (IF ~6)
+    "pubmed_cerebrovasc_dis":         "innovation",    # Cerebrovascular Diseases / ESO (IF ~4)
+    "pubmed_parkinsonism_relat_disord":"innovation",   # Parkinsonism & Related Disorders (IF ~4)
+    "pubmed_seizure":                 "innovation",    # Seizure / ILAE (IF ~3)
+    "pubmed_j_neurol_sci":            "innovation",    # J Neurological Sciences / WFN (IF ~4)
+    "pubmed_muscle_nerve":            "innovation",    # Muscle & Nerve / AANEM (IF ~3)
+    # ── Neurochirurgie ────────────────────────────────────────────────────────
+    "pubmed_j_neurosurg":             "innovation",    # Journal of Neurosurgery / AANS (IF ~5)
+    "pubmed_neurosurgery":            "innovation",    # Neurosurgery / CNS (IF ~5)
+    "pubmed_acta_neurochir":          "innovation",    # Acta Neurochirurgica / EANS (IF ~3)
+    "pubmed_world_neurosurg":         "innovation",    # World Neurosurgery / WFNS (IF ~2)
+    "pubmed_neuro_oncol":             "innovation",    # Neuro-Oncology / SNO (IF ~13)
+    "pubmed_j_neurooncol":            "innovation",    # Journal of Neuro-Oncology / SNO (IF ~4)
+    "pubmed_j_neurosurg_spine":       "innovation",    # J Neurosurgery Spine / AANS (IF ~3)
+    "pubmed_eur_spine_j_nc":          "innovation",    # European Spine Journal / EUROSPINE (IF ~3)
+    "pubmed_spine_j_nc":              "innovation",    # Spine Journal / NASS (IF ~4)
+    "pubmed_stroke":                  "innovation",    # Stroke / AHA-ASA (IF ~8)
+    "pubmed_neurocrit_care":          "recommandation", # Neurocritical Care / NCS (IF ~5)
+    "pubmed_j_neurosurg_pediatr":     "innovation",    # J Neurosurgery Pediatrics / AANS-CNS (IF ~2)
+    "pubmed_childs_nerv_syst":        "innovation",    # Child's Nervous System / ISPN (IF ~2)
+    "pubmed_neurosurg_rev":           "recommandation", # Neurosurgical Review / Springer (IF ~4)
+    "pubmed_clin_neurol_neurosurg":   "innovation",    # Clinical Neurology and Neurosurgery (IF ~2)
+    "pubmed_stereotact_funct_neurosurg": "innovation", # Stereotactic & Functional Neurosurgery (IF ~3)
+    "pubmed_oper_neurosurg":          "innovation",    # Operative Neurosurgery / CNS OA (IF ~2)
+    # ── Néphrologie ───────────────────────────────────────────────────────────
+    "pubmed_jasn":                    "innovation",    # J Am Soc Nephrol / ASN (IF ~14)
+    "pubmed_kidney_int":              "innovation",    # Kidney International / ISN (IF ~14)
+    "pubmed_am_j_kidney_dis":         "recommandation", # Am J Kidney Diseases / NKF-KDOQI (IF ~8)
+    "pubmed_nephrol_dial_transplant": "innovation",    # Nephrology Dialysis Transplantation / ERA (IF ~6)
+    "pubmed_cjasn":                   "recommandation", # Clinical JASN / ASN (IF ~9)
+    "pubmed_nephron":                 "innovation",    # Nephron / Karger (IF ~3)
+    "pubmed_nephrology_carlton":      "innovation",    # Nephrology / ANZSN (IF ~2.5)
+    "pubmed_bmc_nephrol":             "innovation",    # BMC Nephrology (IF ~3)
+    "pubmed_perit_dial_int":          "recommandation", # Peritoneal Dialysis Int / ISPD (IF ~3)
+    "pubmed_hemodial_int":            "innovation",    # Hemodialysis International (IF ~2)
+    "pubmed_transplantation":         "innovation",    # Transplantation / TTS (IF ~5)
+    "pubmed_am_j_transplant":         "innovation",    # Am J Transplantation / ASTS-AST (IF ~8)
+    "pubmed_transpl_int":             "innovation",    # Transplant International / ESOT (IF ~4)
+    "pubmed_j_nephrol":               "innovation",    # Journal of Nephrology / SIN (IF ~3)
+    "pubmed_clin_nephrol":            "innovation",    # Clinical Nephrology (IF ~2)
+    "pubmed_nephrol_ther":            "recommandation", # Nephrologie & Thérapeutique / SFNDT (IF ~1)
+    # ── Médecine d'urgences ───────────────────────────────────────────────────
+    "pubmed_ann_emerg_med":           "recommandation", # Annals of Emergency Medicine / ACEP (IF ~9)
+    "pubmed_resuscitation":           "innovation",    # Resuscitation / ERC-AHA (IF ~6)
+    "pubmed_am_j_emerg_med":          "innovation",    # American J Emergency Medicine (IF ~3)
+    "pubmed_acad_emerg_med":          "innovation",    # Academic Emergency Medicine / SAEM (IF ~4)
+    "pubmed_injury":                  "innovation",    # Injury / Elsevier (IF ~3)
+    "pubmed_emerg_med_j":             "innovation",    # Emergency Medicine Journal / RCEM (IF ~4)
+    "pubmed_j_trauma_acute_care_surg":"innovation",    # J Trauma Acute Care Surgery (IF ~3)
+    "pubmed_j_emerg_med":             "innovation",    # Journal of Emergency Medicine / AAEM (IF ~2)
+    "pubmed_scand_j_trauma_resusc":   "innovation",    # Scand J Trauma Resusc Emerg Med (IF ~3)
+    "pubmed_eur_j_emerg_med":         "recommandation", # Eur J Emergency Medicine / EUSEM (IF ~3)
+    "pubmed_prehosp_emerg_care":      "innovation",    # Prehospital Emergency Care / NAEMSP (IF ~3)
+    "pubmed_emerg_med_australas":     "innovation",    # Emergency Medicine Australasia / ACEM (IF ~2)
+    "pubmed_prehosp_disaster_med":    "innovation",    # Prehospital and Disaster Medicine (IF ~2)
+    "pubmed_clin_toxicol":            "innovation",    # Clinical Toxicology / EAPCCT-AACT (IF ~3)
+    "pubmed_j_crit_care_urg":         "innovation",    # Journal of Critical Care (IF ~4)
+    "pubmed_west_j_emerg_med":        "innovation",    # Western J Emergency Medicine (IF ~2)
+    # ── Médecine physique et de réadaptation ─────────────────────────────────
+    "pubmed_pm_r":                    "innovation",    # PM&R / AAPM&R (IF ~3)
+    "pubmed_spinal_cord":             "innovation",    # Spinal Cord / ISCoS (IF ~3)
+    "pubmed_brain_inj":               "innovation",    # Brain Injury (IF ~2)
+    "pubmed_top_stroke_rehabil":      "innovation",    # Topics in Stroke Rehabilitation (IF ~3)
+    "pubmed_j_head_trauma_rehabil":   "innovation",    # J Head Trauma Rehabilitation (IF ~4)
+    "pubmed_int_j_rehabil_res":       "innovation",    # Int J Rehabilitation Research (IF ~2)
+    "pubmed_neuropsychol_rehabil":    "innovation",    # Neuropsychological Rehabilitation (IF ~4)
+    "pubmed_prosthet_orthot_int":     "innovation",    # Prosthetics & Orthotics Int / ISPO (IF ~2)
+    "pubmed_j_spinal_cord_med":       "innovation",    # J Spinal Cord Medicine / ISCoS (IF ~2)
+    "pubmed_pain":                    "innovation",    # Pain / IASP (IF ~9)
+    "pubmed_eur_j_pain":              "innovation",    # Eur J Pain / EFIC (IF ~4)
+    "pubmed_pain_med":                "innovation",    # Pain Medicine / AAPM&R (IF ~3)
+    "pubmed_mult_scler":              "innovation",    # Multiple Sclerosis J / ECTRIMS (IF ~5)
+    "pubmed_mult_scler_relat_disord": "innovation",    # MS and Related Disorders (IF ~3)
+    "pubmed_toxins_mpr":              "innovation",    # Toxins (Basel) — spasticité botulinum (IF ~4)
+    "pubmed_j_neurol_phys_ther":      "innovation",    # J Neurologic Physical Therapy / ANPT (IF ~4)
+    # ── Médecine interne ─────────────────────────────────────────────────────
+    "pubmed_ann_intern_med":          "recommandation", # Annals of Internal Medicine / ACP (IF ~51)
+    "pubmed_am_j_med":                "innovation",    # American Journal of Medicine (IF ~4)
+    "pubmed_medicine_baltimore":      "innovation",    # Medicine (Baltimore) / Wolters Kluwer
+    "pubmed_bmc_med":                 "innovation",    # BMC Medicine (IF ~9)
+    "pubmed_eur_j_clin_invest":       "innovation",    # Eur J Clinical Investigation / EFIM (IF ~4)
+    "pubmed_postgrad_med_j":          "recommandation", # Postgraduate Medical Journal / RCP (IF ~3)
+    "pubmed_j_intern_med":            "innovation",    # Journal of Internal Medicine (IF ~8)
+    "pubmed_eur_j_intern_med":        "recommandation", # Eur J Internal Medicine / EFIM (IF ~5)
+    "pubmed_mayo_clin_proc":          "recommandation", # Mayo Clinic Proceedings (IF ~9)
+    "pubmed_intern_med_j":            "innovation",    # Internal Medicine Journal / ANZMJ (IF ~2.5)
+    "pubmed_qjm":                     "innovation",    # QJM: Oxford (IF ~4)
+    "pubmed_intern_emerg_med":        "innovation",    # Internal and Emergency Medicine / SIMI (IF ~5)
+    "pubmed_am_j_med_sci":            "innovation",    # American J Medical Sciences / SSCI (IF ~3)
+    "pubmed_swiss_med_wkly":          "innovation",    # Swiss Medical Weekly / EMH (IF ~3)
+    "pubmed_j_investig_med":          "innovation",    # Journal of Investigative Medicine (IF ~3)
+    "pubmed_rev_med_interne":         "recommandation", # Revue de Médecine Interne / SNFMI (IF ~2)
+    # ── Médecine générale ─────────────────────────────────────────────────────
+    "pubmed_j_gen_intern_med":        "innovation",    # J Gen Intern Med / SGIM (IF ~7)
+    "pubmed_j_hypertens":             "innovation",    # J Hypertension / ESH (IF ~4)
+    "pubmed_prev_med":                "innovation",    # Preventive Medicine (IF ~5)
+    "pubmed_int_j_clin_pract":        "innovation",    # Int J Clinical Practice (IF ~3)
+    "pubmed_bjgp":                    "recommandation", # Br J Gen Pract / RCGP (IF ~5)
+    "pubmed_am_j_prev_med":           "innovation",    # Am J Preventive Medicine (IF ~5)
+    "pubmed_cmaj":                    "recommandation", # CMAJ / CMA (IF ~8) — guidelines & reviews
+    "pubmed_fam_pract":               "innovation",    # Family Practice / Oxford (IF ~4)
+    "pubmed_bmc_fam_pract":           "innovation",    # BMC Family Practice (IF ~3)
+    "pubmed_ann_fam_med":             "innovation",    # Annals of Family Medicine (IF ~7)
+    "pubmed_prim_care_diabetes":      "innovation",    # Primary Care Diabetes (IF ~3)
+    "pubmed_j_am_board_fam_med":      "recommandation", # J Am Board Fam Med / ABFM (IF ~4)
+    "pubmed_scand_j_prim_health":     "innovation",    # Scand J Primary Health Care / WONCA (IF ~3)
+    "pubmed_bmc_prim_care":           "innovation",    # BMC Primary Care (IF ~3)
+    "pubmed_npj_prim_care_respir":    "innovation",    # NPJ Prim Care Respir Med (IF ~4)
+    "pubmed_eur_j_gen_pract":         "recommandation", # Eur J Gen Pract / WONCA Europe (IF ~3)
+    # ── PubMed — anesthésiologie / réanimation ────────────────────────────────
+    "pubmed_anesthesiology":          "innovation",    # Anesthesiology / ASA (IF ~9)
+    "pubmed_bja":                     "innovation",    # British Journal of Anaesthesia / RCoA (IF ~9)
+    "pubmed_anesth_analg":            "innovation",    # Anesthesia & Analgesia / IARS (IF ~5)
+    "pubmed_anaesthesia":             "innovation",    # Anaesthesia / AAGBI (IF ~10)
+    "pubmed_eja":                     "innovation",    # European Journal of Anaesthesiology / ESAIC (IF ~5)
+    "pubmed_accpm":                   "innovation",    # Anaesth Crit Care & Pain Med (SFAR, IF ~7)
+    "pubmed_sfar_guidelines":         "recommandation",# SFAR — guidelines (canal dédié)
+    "pubmed_reg_anesth":              "innovation",    # Regional Anesthesia & Pain Medicine / ASRA (IF ~5)
+    "pubmed_intensive_care_med":      "innovation",    # Intensive Care Medicine / ESICM (IF ~22)
+    "pubmed_crit_care_med":           "innovation",    # Critical Care Medicine / SCCM (IF ~9)
+    "pubmed_crit_care":               "innovation",    # Critical Care / Springer (IF ~9)
+    "pubmed_jcva":                    "innovation",    # J Cardiothoracic Vasc Anesth / SOCCA (IF ~5)
+    "pubmed_acta_anaesthesiol_scand": "innovation",    # Acta Anaesthesiol Scand / SSAI (IF ~4)
+    "pubmed_can_j_anaesth":           "innovation",    # Canadian Journal of Anesthesia / CAS (IF ~4)
+    "pubmed_pain_iasp":               "innovation",    # PAIN / IASP flagship (IF ~7)
+    "pubmed_j_pain_res":              "innovation",    # Journal of Pain Research (open-access)
+    "pubmed_paediatr_anaesth":        "innovation",    # Paediatric Anaesthesia / APAGBI (IF ~3)
 }
 
 
@@ -438,20 +989,33 @@ Champs de evidence_json :
 "follow_up_months" — durée de suivi en mois (entier) ou null
 
 "primary_endpoint" — type d'endpoint principal :
-  "mortality"          → mortalité toutes causes
-  "patency"            → perméabilité primaire/secondaire (vasculaire)
-  "limb-salvage"       → sauvetage de membre (CLTI, ischémie aiguë)
-  "stroke-TIA"         → AVC/AIT (carotide, aortique)
-  "reintervention"     → liberté de réintervention
-  "composite-MALE"     → composite d'événements membres (MALE) ou cardiovasculaires (MACE)
-  "composite-MACCE"    → MACCE cardiaque : mortalité + AVC + IDM + réintervention (cardio)
-  "LVEF-function"      → fraction d'éjection, remodelage ventriculaire, fonction valvulaire
-  "valve-durability"   → durabilité valvulaire, liberté de dégénérescence structurelle (SVD)
-  "AF-recurrence"      → récidive de fibrillation atriale post-procédure
-  "technical-success"  → succès technique ou anatomique
-  "quality-of-life"    → qualité de vie, symptômes fonctionnels (KCCQ, NYHA)
-  "other"              → autre endpoint
-  null                 → non applicable (guideline, éditorial)
+  ── Endpoints généraux (toutes spécialités) ──
+  "mortality"              → mortalité toutes causes ou cause-spécifique
+  "hospitalization-rate"   → taux d'hospitalisation, durée de séjour, réadmission (pédiatrie, MG, cardiologie)
+  "complication-free"      → survie sans complication majeure, morbidité postopératoire
+  "infection-rate"         → taux d'infection, infection-free survival (infectiologie, pédiatrie)
+  "neurodevelopmental"     → développement neurocognitif, score développemental, QI, BSID (pédiatrie, néonatologie)
+  "tumor-response"         → réponse tumorale (CR, PR, ORR), survie sans progression (PFS), survie globale (OS) — oncologie
+  "remission-rate"         → taux de rémission clinique ou biologique (hématologie, rhumatologie, MICI)
+  "pain-score"             → score douleur (EVA, NRS, WOMAC, HAQ) — rhumatologie, MPR, orthopédie
+  "functional-outcome"     → score fonctionnel (Oxford Hip/Knee, Lysholm, DASH, mRS, Rankin) — orthopédie, neurologie, MPR
+  "seizure-freedom"        → liberté de crises épileptiques, réduction ≥50% — neurologie
+  "graft-survival"         → survie du greffon, fonction rénale post-greffe — transplantation, néphrologie
+  "technical-success"      → succès technique ou anatomique
+  "quality-of-life"        → qualité de vie, symptômes fonctionnels (KCCQ, NYHA, SF-36, BREAST-Q)
+  ── Endpoints vasculaires & cardiaques ──
+  "patency"                → perméabilité primaire/secondaire (vasculaire)
+  "limb-salvage"           → sauvetage de membre (CLTI, ischémie aiguë)
+  "stroke-TIA"             → AVC/AIT (carotide, aortique)
+  "reintervention"         → liberté de réintervention
+  "composite-MALE"         → composite d'événements membres (MALE) ou cardiovasculaires (MACE)
+  "composite-MACCE"        → MACCE cardiaque : mortalité + AVC + IDM + réintervention
+  "LVEF-function"          → fraction d'éjection, remodelage ventriculaire, fonction valvulaire
+  "valve-durability"       → durabilité valvulaire, liberté de dégénérescence structurelle (SVD)
+  "AF-recurrence"          → récidive de fibrillation atriale post-procédure
+  ── Catch-all ──
+  "other"                  → autre endpoint non listé
+  null                     → non applicable (guideline, éditorial)
 
 "primary_endpoint_met" — true si l'endpoint primaire est atteint, false si non atteint, \
 null si non déterminable depuis le résumé. \
@@ -538,12 +1102,49 @@ utile mais pas nouvelle information pour un praticien averti
   "guideline_update"|"autorisation_temporaire"
 
 "guideline_body" — organisme émetteur du guideline :
-  null|"ESVS"|"EACTS"|"ESC"|"HAS"|"AHA-ACC"|"STS"|"AATS"|"SFC"|"SFCTCV"|"SFCV"|"SFMV"|"autre"
-  (EACTS = European Association for Cardio-Thoracic Surgery,
-   STS = Society of Thoracic Surgeons — Amérique du Nord,
-   AATS = American Association for Thoracic Surgery,
-   SFC = Société Française de Cardiologie,
-   SFCTCV = Société Française de Chirurgie Thoracique et Cardio-Vasculaire)
+  ── Vasculaire / Cardiaque ──
+  "ESVS"     → European Society for Vascular Surgery
+  "EACTS"    → European Association for Cardio-Thoracic Surgery
+  "ESC"      → European Society of Cardiology
+  "AHA-ACC"  → American Heart Association / American College of Cardiology
+  "STS"      → Society of Thoracic Surgeons (Amérique du Nord)
+  "AATS"     → American Association for Thoracic Surgery
+  "SFC"      → Société Française de Cardiologie
+  "SFCTCV"   → Société Française de Chirurgie Thoracique et Cardio-Vasculaire
+  "SFCV"     → Société Française de Chirurgie Vasculaire
+  "SFMV"     → Société Française de Médecine Vasculaire
+  ── Pédiatrie ──
+  "AAP"      → American Academy of Pediatrics
+  "SFP"      → Société Française de Pédiatrie
+  "IPEG"     → International Pediatric Endosurgery Group
+  "EUPSA"    → European Paediatric Surgeons' Association
+  "ESPGHAN"  → European Society for Paediatric Gastroenterology, Hepatology and Nutrition
+  "ESPID"    → European Society for Paediatric Infectious Diseases
+  "GPIP"     → Groupe de Pathologie Infectieuse Pédiatrique
+  ── Oncologie ──
+  "ESMO"     → European Society for Medical Oncology
+  "ASCO"     → American Society of Clinical Oncology
+  ── Rhumatologie ──
+  "EULAR"    → European Alliance of Associations for Rheumatology
+  "ACR"      → American College of Rheumatology
+  ── Neurologie ──
+  "EAN"      → European Academy of Neurology
+  "AAN"      → American Academy of Neurology
+  ── Pneumologie ──
+  "ERS"      → European Respiratory Society
+  "ATS"      → American Thoracic Society
+  ── Urologie ──
+  "EAU"      → European Association of Urology
+  ── Gastro-entérologie / Hépatologie ──
+  "ECCO"     → European Crohn's and Colitis Organisation
+  "EASL"     → European Association for the Study of the Liver
+  ── Orthopédie ──
+  "EFORT"    → European Federation of National Associations of Orthopaedics and Traumatology
+  ── Institutionnel FR ──
+  "HAS"      → Haute Autorité de Santé
+  ── Catch-all ──
+  "autre"    → tout autre organisme non listé
+  null       → non applicable (étude de recherche primaire, pas un guideline)
 
 "guideline_grade" — grade de recommandation si précisé dans l'article :
   null|"IA"|"IB"|"IIaA"|"IIaB"|"IIbA"|"IIbB"|"III"
@@ -1160,11 +1761,13 @@ def _build_user_prompt(
     source_hint: str | None = None,
     is_innovation: bool = False,
     is_press: bool = False,
+    specialty_hint: str | None = None,
 ) -> str:
     """
-    source_hint   : indication sur la provenance pour contextualiser Claude.
-    is_innovation : True → ajoute le bloc evidence_json dans le template JSON.
-    is_press      : True → source presse médicale (pas d'evidence_json, filtre différent).
+    source_hint    : indication sur la provenance pour contextualiser Claude.
+    is_innovation  : True → ajoute le bloc evidence_json dans le template JSON.
+    is_press       : True → source presse médicale (pas d'evidence_json, filtre différent).
+    specialty_hint : spécialité de la source → adapte les champs evidence_json spécifiques.
     """
     source_line = f"\nSOURCE : {source_hint}" if source_hint else ""
     content_section = ""
@@ -1175,27 +1778,51 @@ def _build_user_prompt(
     evidence_block = ""
     # is_press sources : pas de evidence_json — le journaliste ne fournit pas de design d'étude
     if is_innovation and not is_press:
-        evidence_block = """,
-  "evidence_json": {{
-    "study_design": "<RCT|meta-analysis|registry|prospective-cohort|retrospective-cohort|case-series|guideline|regulatory-decision|technique-paper|review|editorial>",
-    "phase": <"1"|"2"|"3"|"4"|null>,
-    "n_patients": <int|null>,
-    "multicentre": <true|false|null>,
-    "follow_up_months": <int|null>,
-    "primary_endpoint": "<mortality|patency|limb-salvage|stroke-TIA|reintervention|composite-MALE|technical-success|quality-of-life|other|null>",
-    "primary_endpoint_met": <true|false|null>,
-    "vascular_domain": "<aorte-abdominale|aorte-thoracique|aorte-thoraco-abdominale|carotide-TSA|AOMI-femoro-poplite|AOMI-sous-poplite|ischemie-aigue-membre|veineux-TVP-EP|veineux-varices|acces-vasculaire-dialyse|renovasculaire|traumatique|multi-domaine|non-vasculaire>",
-    "intervention_type": "<EVAR|TEVAR|FEVAR-BEVAR|CAS|TCAR|PTA-stent|DCB|atherectomie|thrombectomie-mecanique|thrombolyse-CDT|ablation-thermique|ablation-non-thermique|pontage|endarterectomie|reparation-ouverte|hybride|anticoagulation|antiplatelet|traitement-medical|strategie-diagnostique|surveillance|multi-modalite|autre>",
-    "comparator_type": "<vs-chirurgie-ouverte|vs-endovasculaire-autre|vs-traitement-medical|vs-placebo|vs-standard-of-care|aucun|null>",
-    "clinical_maturity": "<exploratory|preliminary|pivotal|confirmatory|practice-defining|regulatory-event>",
-    "actionability_horizon": "<immediate|1-3y|3-5y|exploratory>",
-    "regulatory_milestone": <"CE_mark"|"AMM_europe"|"FDA_approval"|"remboursement_HAS"|"CNAM_accord"|"guideline_update"|"autorisation_temporaire"|null>,
-    "guideline_body": <"ESVS"|"ESC"|"HAS"|"AHA-ACC"|"SFCV"|"SFMV"|"autre"|null>,
-    "guideline_grade": <"IA"|"IB"|"IIaA"|"IIaB"|"IIbA"|"IIbB"|"III"|null>,
-    "paradigm_shift": <bool>,
-    "negative_result": <bool>,
-    "safety_signal": <bool>
-  }}"""
+        # Champs spécifiques à la spécialité — insérés après primary_endpoint_met
+        _SPE_FIELDS: dict[str, str] = {
+            "chirurgie-vasculaire": (
+                '    "vascular_domain": "<aorte-abdominale|aorte-thoracique|aorte-thoraco-abdominale|carotide-TSA|AOMI-femoro-poplite|AOMI-sous-poplite|ischemie-aigue-membre|veineux-TVP-EP|veineux-varices|acces-vasculaire-dialyse|renovasculaire|traumatique|multi-domaine|non-vasculaire>",\n'
+                '    "intervention_type": "<EVAR|TEVAR|FEVAR-BEVAR|CAS|TCAR|PTA-stent|DCB|atherectomie|thrombectomie-mecanique|thrombolyse-CDT|ablation-thermique|ablation-non-thermique|pontage|endarterectomie|reparation-ouverte|hybride|anticoagulation|antiplatelet|traitement-medical|strategie-diagnostique|surveillance|multi-modalite|autre>",\n'
+            ),
+            "chirurgie-cardiaque": (
+                '    "cardiac_domain": "<coronaire-CABG|valvulaire-aortique|valvulaire-mitral|valvulaire-tricuspide|aorte-ascendante-arche|structural-heart|LVAD-assistance-circ|arythmie-Maze|congenital-adulte|transplantation-cardiaque|perikarde-tumeur|multi-domaine-cardiaque|non-cardiaque>",\n'
+                '    "cardiac_procedure": "<SAVR|TAVI-TAVR|Ross|Bentall|plastie-mitrale|remplacement-mitral|MitraClip-TEER|remplacement-tricuspide|plastie-tricuspide|CABG-CEC|CABG-off-pump|CABG-vs-PCI|remplacement-aorte-ascendante|intervention-arche|LVAD|ECMO-VA|fermeture-FOP-CIA|LAA-occlusion|Maze-Cox|cryoablation-epikardique|transplantation|autre>",\n'
+            ),
+            "chirurgie-plastique": (
+                '    "plastic_domain": "<reconstruction-mammaire|chirurgie-esthetique|microchirurgie|chirurgie-main|brulures|oncoplastique|cicatrices-cheloïdes|lipofilling|malformations-congenitales|couverture-cutanee|tete-cou-reconstruction|implants-protheses-mammaires>",\n'
+                '    "plastic_procedure": "<DIEP|TRAM|Grand-Dorsal-implant|implant-seul|expandeur-implant|lipofilling-sein|rhinoplastie|mammoplastie-augmentation|mammoplastie-reduction|abdominoplastie|liposuccion|lambeau-libre-ALT|replantation-digitale|LVA-lymphatique|VLNT|suture-tendon|greffe-nerveuse|arthroplastie-digitale|aponevrotomie-Dupuytren|liberation-canal-carpien|excision-autogreffe|substitut-Integra|RECELL|lambeau-local-regional|traitement-cheloïdes|autre>",\n'
+            ),
+            "chirurgie-pediatrique": (
+                '    "pediatric_domain": "<chirurgie-neonatale|chirurgie-digestive-pediatrique|urologie-pediatrique|oncologie-pediatrique|chirurgie-thoracique-pediatrique|hernie-paroi-pediatrique|traumatologie-pediatrique|chirurgie-mini-invasive-pediatrique|nutrition-perioperatoire-pediatrique>",\n'
+                '    "pediatric_procedure": "<anastomose-atrésie-oesophagienne|réparation-HDC|gastroschisis-silo|iléostomie-NEC|Ladd-malrotation|appendicectomie-laparoscopique|appendicectomie-ouverte|pyloromyotomie-Fredet|Soave-Hirschsprung|Duhamel-Hirschsprung|TERPT|fundoplicature-Nissen|Kasai-atrésie-biliaire|invagination-désinvagination|orchidopexie-1-temps|orchidopexie-Fowler-Stephens-2-temps|hypospadias-TIP-Snodgrass|pyéloplastie-Andersen-Hynes|réimplantation-urétérale-Cohen|STING-endoscopique-RVU|nephrectomie-Wilms|résection-CPAM-thoracoscopique|Nuss-pectus-excavatum|hernie-inguinale-PIRS-laparoscopique|autre>",\n'
+            ),
+            "pediatrie": (
+                '    "pediatric_domain": "<infectiologie-pediatrique|pneumologie-pediatrique|neonatologie|allergologie-pediatrique|neurologie-pediatrique|endocrinologie-pediatrique|gastro-pediatrique|cardiologie-pediatrique|nephrologie-pediatrique|dermatologie-pediatrique|vaccination|developpement-croissance|urgences-pediatriques>",\n'
+            ),
+        }
+        _spe_lines = _SPE_FIELDS.get(specialty_hint or "", "")
+        evidence_block = (
+            ',\n'
+            '  "evidence_json": {{\n'
+            '    "study_design": "<RCT|meta-analysis|registry|prospective-cohort|retrospective-cohort|case-series|guideline|regulatory-decision|technique-paper|review|editorial>",\n'
+            '    "phase": <"1"|"2"|"3"|"4"|null>,\n'
+            '    "n_patients": <int|null>,\n'
+            '    "multicentre": <true|false|null>,\n'
+            '    "follow_up_months": <int|null>,\n'
+            '    "primary_endpoint": "<mortality|hospitalization-rate|complication-free|neurodevelopmental|infection-rate|tumor-response|remission-rate|pain-score|functional-outcome|seizure-freedom|graft-survival|patency|limb-salvage|stroke-TIA|reintervention|composite-MALE|composite-MACCE|LVEF-function|valve-durability|AF-recurrence|technical-success|quality-of-life|other|null>",\n'
+            '    "primary_endpoint_met": <true|false|null>,\n'
+            + _spe_lines +
+            '    "comparator_type": "<vs-chirurgie-ouverte|vs-endovasculaire-autre|vs-traitement-medical|vs-placebo|vs-standard-of-care|aucun|null>",\n'
+            '    "clinical_maturity": "<exploratory|preliminary|pivotal|confirmatory|practice-defining|regulatory-event>",\n'
+            '    "actionability_horizon": "<immediate|1-3y|3-5y|exploratory>",\n'
+            '    "regulatory_milestone": <"CE_mark"|"AMM_europe"|"FDA_approval"|"remboursement_HAS"|"CNAM_accord"|"guideline_update"|"autorisation_temporaire"|null>,\n'
+            '    "guideline_body": <"ESVS"|"EACTS"|"ESC"|"HAS"|"AHA-ACC"|"STS"|"AATS"|"SFC"|"SFCTCV"|"SFCV"|"SFMV"|"AAP"|"SFP"|"IPEG"|"EUPSA"|"ESPGHAN"|"ESPID"|"GPIP"|"ESMO"|"ASCO"|"EULAR"|"ACR"|"EAN"|"AAN"|"ERS"|"ATS"|"EAU"|"ECCO"|"EASL"|"EFORT"|"autre"|null>,\n'
+            '    "guideline_grade": <"IA"|"IB"|"IIaA"|"IIaB"|"IIbA"|"IIbB"|"III"|null>,\n'
+            '    "paradigm_shift": <bool>,\n'
+            '    "negative_result": <bool>,\n'
+            '    "safety_signal": <bool>\n'
+            '  }}'
+        )
 
     return f"""\
 Analyse ce texte et retourne UNIQUEMENT le JSON demandé.
@@ -1235,8 +1862,9 @@ JSON attendu (strict, pas de markdown) :
 
 SOURCE_HINTS: dict[str, str] = {
     # Sources réglementaires
-    "legifrance_jorf":       "JORF — texte réglementaire (loi, décret, arrêté)",
-    "piste_kali":            "Convention collective / accord UNCAM — impact sur honoraires et pratique libérale",
+    "legifrance_jorf":                "JORF — texte réglementaire (loi, décret, arrêté)",
+    "legifrance_jorf_remboursement":  "JORF — arrêté/décret remboursement : inscription/modification liste spécialités pharmaceutiques remboursables, LPP, tarifs de responsabilité, prix de cession, convention médicale ou avenant, nomenclature NGAP/CCAM/NABM, accès précoce",
+    "piste_kali":                     "Convention collective / accord UNCAM — impact sur honoraires et pratique libérale",
     "piste_legi":            "Code de la santé publique — modification de texte codifié (CSP, CSS, CASF)",
     "piste_circ":            "Circulaire ou instruction ministérielle — directive santé ou social",
     "ansm_securite":         "ANSM — Information de sécurité (pharmacovigilance, matériovigilance)",
@@ -1244,7 +1872,13 @@ SOURCE_HINTS: dict[str, str] = {
     "ansm_securite_dm":      "ANSM — Alerte matériovigilance dispositif médical (implants, instruments chirurgicaux, DM soins infirmiers)",
     "ansm_ruptures_med":     "ANSM — Rupture ou tension d'approvisionnement médicament",
     "ansm_ruptures_vaccins": "ANSM — Disponibilité vaccins",
+    "ansm_actualites":       "ANSM — Point d'information ou communiqué (pharmacovigilance, signal émergent, bilan)",
     "bo_social":             "Bulletin officiel ministères sociaux — circulaire ou instruction ministère Santé",
+    # HAS — sources complémentaires
+    "has_acces_precoces":    "HAS — Décision d'accès précoce (ex-ATU cohorte) : médicament innovant autorisé avant AMM pour pathologie grave sans alternative — le médecin peut prescrire dès la publication",
+    "has_bo":                "HAS — Bulletin officiel : décision formelle numérotée (accès précoce, avis vaccin, certification, CEESP) — complémentaire aux flux has_rbp et has_ct",
+    # INCa
+    "inca_recommandations":  "INCa — Recommandation ou référentiel national en oncologie (cancers solides, hémato, soins de support)",
     # Recommandations de pratique
     "has_rbp":               "HAS — Recommandation de bonne pratique clinique (RBP)",
     "has_fiches_memo":       "HAS — Fiche mémo (synthèse pratique, directement actionnable en consultation)",
@@ -1387,7 +2021,37 @@ SOURCE_HINTS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     # ── Chirurgie vasculaire ───────────────────────────────────────────────
+    "jvs_rss":                 "chirurgie-vasculaire",  # RSS JVS (SVS/Elsevier, IF ~4)
     "pubmed_jvs":              "chirurgie-vasculaire",
+    # ── Presse clinique Healio — 15 spécialités ────────────────────────────
+    # healio_hemato_onco absent → prompt générique (multi-spé : hémato + onco)
+    "healio_cardio":           "cardiologie",
+    "healio_nephro":           "nephrologie",
+    "healio_infect":           "infectiologie",
+    "healio_rhuma":            "rhumatologie",
+    "healio_endo":             "endocrinologie",
+    "healio_ophtalmo":         "ophtalmologie",
+    "healio_gastro":           "gastro-enterologie",
+    "healio_psy":              "psychiatrie",
+    "healio_neuro":            "neurologie",
+    "healio_ortho":            "chirurgie-orthopedique",
+    "healio_pulmo":            "pneumologie",
+    "healio_derma":            "dermatologie",
+    "healio_pedia":            "pediatrie",
+    "healio_geria":            "geriatrie",
+    # ── Presse clinique sociétés savantes ─────────────────────────────────
+    "aans_news":               "neurochirurgie",
+    "aaos_news":               "chirurgie-orthopedique",
+    "aga_news":                "gastro-enterologie",
+    "psychiatric_times":       "psychiatrie",
+    "urology_times":           "urologie",
+    # ── ENTtoday + MedPage Today — gaps presse clinique (avril 2026) ──────
+    "enttoday":                    "orl",
+    "medpage_obgyn":               "gynecologie",
+    "medpage_emergency":           "medecine-urgences",
+    "medpage_anesthesiology":      "anesthesiologie",
+    "medpage_radiology":           "radiologie",
+    # medpage_surgery absent → comportement générique (multi-spé chirurgicale)
     "pubmed_ejves":            "chirurgie-vasculaire",
     "pubmed_ejves_guidelines": "chirurgie-vasculaire",
     "pubmed_jet":              "chirurgie-vasculaire",
@@ -1421,6 +2085,19 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "arch_cardiovasc_dis":        "chirurgie-cardiaque",  # RSS ScienceDirect — SFC officiel
     "eacts":                      "chirurgie-cardiaque",
     "sfctcv":                     "chirurgie-cardiaque",
+    # ── Chirurgie thoracique ───────────────────────────────────────────────────
+    "jto_rss":                    "chirurgie-thoracique",  # RSS JTO (IASLC/Elsevier, IF ~20)
+    "pubmed_jto":                 "chirurgie-thoracique",  # JTO — IASLC
+    "pubmed_lung_cancer_thorac":  "chirurgie-thoracique",  # Lung Cancer — NSCLC résécable
+    "pubmed_dis_esophagus":       "chirurgie-thoracique",  # Diseases of the Esophagus — ISDE
+    "pubmed_icvts":               "chirurgie-thoracique",  # ICVTS — EACTS
+    "pubmed_semin_thorac":        "chirurgie-thoracique",  # Seminars Thoracic & Cardiovasc Surg
+    "pubmed_chest":               "chirurgie-thoracique",  # Chest — ACCP
+    "pubmed_thorax_bts":          "chirurgie-thoracique",  # Thorax — BTS/BMJ
+    "pubmed_ejso_thorac":         "chirurgie-thoracique",  # EJSO — filtre thoracique
+    "pubmed_ann_surg_oncol_thorac":"chirurgie-thoracique", # Ann Surg Oncol — filtre thoracique
+    "pubmed_jtcvs_thorac":        "chirurgie-thoracique",  # JTCVS — filtre thoracique
+    "pubmed_ests_guidelines":     "chirurgie-thoracique",  # ESTS Guidelines via EJCTS
     # ── Chirurgie orthopédique ─────────────────────────────────────────────────
     "pubmed_jbjs":                "chirurgie-orthopedique",
     "pubmed_bone_joint_j":        "chirurgie-orthopedique",
@@ -1465,6 +2142,8 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_jpu_guidelines":    "chirurgie-pediatrique",
     "eupsa_pediatrique":              "chirurgie-pediatrique",
     # ── Pédiatrie générale ──────────────────────────────────────────────────
+    "bmj_adc":                        "pediatrie",  # RSS Archives of Disease in Childhood / RCPCH (IF ~5)
+    # eclinmedicine → spécialité variable, absent du dict → prompt générique (comportement voulu)
     "pubmed_pediatrics":              "pediatrie",
     "pubmed_pediatrics_guidelines":   "pediatrie",
     "pubmed_jama_peds":               "pediatrie",
@@ -1479,19 +2158,563 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "sfpediatrie":                    "pediatrie",
     "gpip":                           "pediatrie",
     "eap_pediatrie":                  "pediatrie",
-    "has_pediatrie":                  "pediatrie",
-    "nice_pediatrie":                 "pediatrie",
-    # ── Cardiologie (à activer quand le prompt cardiologie sera implémenté) ──
-    # "jama_cardiology":      "cardiologie",
-    # "sfc_recommandations":  "cardiologie",
-    # "sfhta":                "cardiologie",
-    # ── Oncologie ──────────────────────────────────────────────────────────
-    # "jama_oncology":        "oncologie",
-    # "esmo":                 "oncologie",
-    # ── Pneumologie ────────────────────────────────────────────────────────
-    # "splf":                 "pneumologie",
-    # "ers":                  "pneumologie",
-    # … (ajouter au fur et à mesure des prompts spécialité implémentés)
+    # ── Sources réglementaires françaises — toutes spécialités ─────────────────
+    # Ces sources sont collectées dans rss_collector.py et piste_routes.py.
+    # specialty_hint="tous" : le LLM addendum de chaque spécialité filtre ce qui est pertinent.
+    "legifrance_jorf":                "tous",        # JORF — lois, décrets, arrêtés santé
+    "legifrance_jorf_remboursement":  "tous",        # JORF remboursement / nomenclature / conventions
+    "piste_kali":                     "tous",        # Conventions collectives (UNCAM)
+    "piste_legi":                     "tous",        # Code de la santé publique (modifications)
+    "piste_circ":                     "tous",        # Circulaires ministérielles santé
+    "has_rbp":                        "tous",        # HAS — Recommandations de bonne pratique
+    "has_ct":                         "tous",        # HAS — Commission de Transparence (médicaments)
+    "has_dm":                         "tous",        # HAS — Avis dispositifs médicaux
+    "ansm_securite":                  "tous",        # ANSM — Informations de sécurité (global)
+    "ansm_securite_med":              "tous",        # ANSM — Sécurité médicaments
+    "ansm_securite_dm":               "tous",        # ANSM — Matériovigilance DM
+    "ansm_actualites":                "tous",        # ANSM — Points d'information, communiqués
+    "ansm_ruptures_med":              "tous",        # ANSM — Ruptures médicaments
+    "ansm_ruptures_vaccins":          "tous",        # ANSM — Disponibilité vaccins
+    "has_acces_precoces":             "tous",        # HAS — Accès précoce (ex-ATU) — cross-specialty
+    "has_bo":                         "tous",        # HAS — Bulletin officiel (décisions formelles)
+    "inca_recommandations":           "oncologie",   # INCa — Référentiels oncologie
+    # ── Cardiologie ───────────────────────────────────────────────────────────
+    "bmj_heart":                    "cardiologie",   # RSS Heart / BCS — cardiologie clinique (IF ~15)
+    "circulation_aha":              "cardiologie",   # RSS Circulation (AHA, IF ~35)
+    "jaha":                         "cardiologie",   # RSS JAHA (AHA open-access, IF ~5)
+    "jacc_rss":                     "cardiologie",   # RSS JACC (Elsevier, IF ~24)
+    "esc_guidelines":               "cardiologie",   # scraping ESC (déjà SOURCE_TO_TYPE)
+    "pubmed_ehj_cardio":            "cardiologie",
+    "pubmed_ejhf":                  "cardiologie",
+    "pubmed_jacc_medical":          "cardiologie",
+    "pubmed_jacc_hf":               "cardiologie",
+    "pubmed_jacc_ep":               "cardiologie",
+    "pubmed_heart_rhythm":          "cardiologie",
+    "pubmed_europace":              "cardiologie",
+    "pubmed_acvd":                  "cardiologie",
+    "pubmed_esc_guidelines_cardio": "cardiologie",
+    "pubmed_ehj_pharmacother":      "cardiologie",
+    # ── Biologie médicale ─────────────────────────────────────────────────────
+    "eflm_guidelines":              "biologiste",   # scraping EFLM (déjà SOURCE_TO_TYPE)
+    "pubmed_clin_chem":             "biologiste",
+    "pubmed_cclm":                  "biologiste",
+    "pubmed_eflm_guidelines_cclm":  "biologiste",
+    "pubmed_jcm":                   "biologiste",
+    "pubmed_cmi":                   "biologiste",
+    "pubmed_ann_clin_biochem":      "biologiste",
+    "pubmed_ajcp":                  "biologiste",
+    "pubmed_j_mol_diagn":           "biologiste",
+    "pubmed_transfusion":           "biologiste",
+    "pubmed_vox_sanguinis":         "biologiste",
+    # ── Anesthésiologie-Réanimation ───────────────────────────────────────────
+    "esicm":                        "anesthesiologie",  # RSS ESICM (déjà SOURCE_TO_TYPE)
+    "esaic":                        "anesthesiologie",  # RSS ESAIC (déjà SOURCE_TO_TYPE)
+    "sfar":                         "anesthesiologie",  # RSS SFAR (société savante FR)
+    "pubmed_anesthesiology":        "anesthesiologie",
+    "pubmed_bja":                   "anesthesiologie",
+    "pubmed_anesth_analg":          "anesthesiologie",
+    "pubmed_anaesthesia":           "anesthesiologie",
+    "pubmed_eja":                   "anesthesiologie",
+    "pubmed_accpm":                 "anesthesiologie",
+    "pubmed_sfar_guidelines":       "anesthesiologie",
+    "pubmed_reg_anesth":            "anesthesiologie",
+    "pubmed_intensive_care_med":    "anesthesiologie",
+    "pubmed_crit_care_med":         "anesthesiologie",
+    "pubmed_crit_care":             "anesthesiologie",
+    "pubmed_jcva":                  "anesthesiologie",
+    "pubmed_acta_anaesthesiol_scand": "anesthesiologie",
+    "pubmed_can_j_anaesth":         "anesthesiologie",
+    "pubmed_pain_iasp":             "anesthesiologie",
+    "pubmed_j_pain_res":            "anesthesiologie",
+    "pubmed_paediatr_anaesth":      "anesthesiologie",
+    # ── Dermatologie ──────────────────────────────────────────────────────────────
+    "eadv":                         "dermatologie",   # RSS EADV (déjà SOURCE_TO_TYPE)
+    "jaad_rss":                     "dermatologie",   # RSS JAAD (AAD/Elsevier, IF ~13)
+    "bjd_rss":                      "dermatologie",   # RSS BJD (BAD/Wiley, IF ~11)
+    "pubmed_jaad":                  "dermatologie",
+    "pubmed_bjd":                   "dermatologie",
+    "pubmed_jeadv":                 "dermatologie",
+    "pubmed_eur_j_derm":            "dermatologie",
+    "pubmed_jama_derm":             "dermatologie",
+    "pubmed_acta_derm":             "dermatologie",
+    "pubmed_dermatology_basel":     "dermatologie",
+    "pubmed_clin_exp_derm":         "dermatologie",
+    "pubmed_contact_derm":          "dermatologie",
+    "pubmed_melanoma_res":          "dermatologie",
+    "pubmed_jddg":                  "dermatologie",
+    "pubmed_jid":                   "dermatologie",
+    "pubmed_derm_therapy":          "dermatologie",
+    "pubmed_j_derm_treat":          "dermatologie",
+    "pubmed_pediatr_derm":          "dermatologie",
+    "pubmed_int_j_derm":            "dermatologie",
+    # ── endocrinologie ────────────────────────────────────────────────────────
+    "lancet_diab_endo_rss":         "endocrinologie",  # RSS Lancet Diabetes & Endocrinology (IF ~44)
+    "diabetes_care_rss":            "endocrinologie",  # RSS Diabetes Care (ADA, IF ~16)
+    "pubmed_diabetes_care":         "endocrinologie",
+    "pubmed_lancet_diab_endo":      "endocrinologie",
+    "pubmed_diabetologia":          "endocrinologie",
+    "pubmed_jcem":                  "endocrinologie",
+    "pubmed_thyroid":               "endocrinologie",
+    "pubmed_eur_j_endo":            "endocrinologie",
+    "pubmed_diabetes_obes_metab":   "endocrinologie",
+    "pubmed_osteoporos_int":        "endocrinologie",
+    "pubmed_bone":                  "endocrinologie",
+    "pubmed_clin_endo":             "endocrinologie",
+    "pubmed_endocr_pract":          "endocrinologie",
+    "pubmed_diabetes_res_clin":     "endocrinologie",
+    "pubmed_j_endo_invest":         "endocrinologie",
+    "pubmed_horm_metab_res":        "endocrinologie",
+    "pubmed_endocrinology":         "endocrinologie",
+    "pubmed_ann_endo":              "endocrinologie",
+    # ── gastro-entérologie ────────────────────────────────────────────────────
+    "lancet_gastro_hepatol":        "gastro-enterologie",  # RSS Lancet GH (IF ~35) — temps réel
+    "bmj_gut":                      "gastro-enterologie",  # RSS Gut / BSG (IF ~24) — temps réel
+    "pubmed_gut":                   "gastro-enterologie",
+    "pubmed_gastroenterology":      "gastro-enterologie",
+    "pubmed_ajg":                   "gastro-enterologie",
+    "pubmed_hepatology":            "gastro-enterologie",
+    "pubmed_j_hepatol":             "gastro-enterologie",
+    "pubmed_lancet_gastro":         "gastro-enterologie",
+    "pubmed_apt":                   "gastro-enterologie",
+    "pubmed_cgh":                   "gastro-enterologie",
+    "pubmed_jcc":                   "gastro-enterologie",
+    "pubmed_endoscopy":             "gastro-enterologie",
+    "pubmed_gie":                   "gastro-enterologie",
+    "pubmed_jhep_rep":              "gastro-enterologie",
+    "pubmed_liver_int":             "gastro-enterologie",
+    "pubmed_dig_endosc":            "gastro-enterologie",
+    "pubmed_ejgh":                  "gastro-enterologie",
+    "pubmed_j_gastro_hepatol":      "gastro-enterologie",
+    "snfge":                        "gastro-enterologie",  # RSS SNFGE (société savante FR)
+    "afef":                         "gastro-enterologie",  # RSS AFEF hépatologie (sous-spé gastro)
+    "snfcp":                        "gastro-enterologie",  # RSS SNFCP coloproctologie (sous-spé gastro)
+    # ── gériatrie ─────────────────────────────────────────────────────────────
+    "jags_rss":                     "geriatrie",   # RSS JAGS (AGS/Wiley, IF ~7)
+    "pubmed_age_ageing":            "geriatrie",
+    "pubmed_jags":                  "geriatrie",
+    "pubmed_lancet_healthy_longev": "geriatrie",
+    "pubmed_alzheimers_dement":     "geriatrie",
+    "pubmed_j_gerontol_med":        "geriatrie",
+    "pubmed_jamda":                 "geriatrie",
+    "pubmed_eur_geriatr_med":       "geriatrie",
+    "pubmed_int_j_geriatr_psychiatry": "geriatrie",
+    "pubmed_j_alzheimers_dis":      "geriatrie",
+    "pubmed_clin_interv_aging":     "geriatrie",
+    "pubmed_bmc_geriatr":           "geriatrie",
+    "pubmed_maturitas":             "geriatrie",
+    "pubmed_j_nutr_health_aging":   "geriatrie",
+    "pubmed_aging_clin_exp_res":    "geriatrie",
+    "pubmed_geriatr_gerontol_int":  "geriatrie",
+    "pubmed_gerontology":           "geriatrie",
+    # ── Gynécologie ──────────────────────────────────────────────────────────
+    "ajog_rss":                     "gynecologie",  # RSS AJOG (Elsevier, IF ~10)
+    "pubmed_ajog":                  "gynecologie",
+    "pubmed_obstet_gynecol":        "gynecologie",
+    "pubmed_fertil_steril":         "gynecologie",
+    "pubmed_bjog":                  "gynecologie",
+    "pubmed_ultrasound_og":         "gynecologie",
+    "pubmed_gynecol_oncol":         "gynecologie",
+    "pubmed_hum_reprod":            "gynecologie",
+    "pubmed_menopause_j":           "gynecologie",
+    "pubmed_ijgc":                  "gynecologie",
+    "pubmed_jmig":                  "gynecologie",
+    "pubmed_ejogrb":                "gynecologie",
+    "pubmed_aogs":                  "gynecologie",
+    "pubmed_jgohr":                 "gynecologie",
+    "pubmed_rbm_online":            "gynecologie",
+    "pubmed_arch_gynecol":          "gynecologie",
+    "pubmed_gynecol_endocrinol":    "gynecologie",
+    # ── Hématologie ──────────────────────────────────────────────────────────
+    "lancet_haematol":              "hematologie",   # RSS Lancet Haematology (IF ~27)
+    "blood_rss":                    "hematologie",   # RSS Blood (ASH/Elsevier, IF ~25)
+    "am_j_hematol":                 "hematologie",   # RSS Am J Hematology (Wiley, IF ~12)
+    "leukemia_rss":                 "hematologie",   # RSS Leukemia (Nature, IF ~12)
+    "pubmed_blood":                 "hematologie",
+    "pubmed_leukemia":              "hematologie",
+    "pubmed_haematologica":         "hematologie",
+    "pubmed_am_j_hematol":          "hematologie",
+    "pubmed_lancet_haematol":       "hematologie",
+    "pubmed_br_j_haematol":         "hematologie",
+    "pubmed_blood_adv":             "hematologie",
+    "pubmed_j_hematol_oncol":       "hematologie",
+    "pubmed_bone_marrow_transplant": "hematologie",
+    "pubmed_thromb_haemost":        "hematologie",
+    "pubmed_j_thromb_haemost":      "hematologie",
+    "pubmed_ann_hematol":           "hematologie",
+    "pubmed_leuk_lymphoma":         "hematologie",
+    "pubmed_eur_j_haematol":        "hematologie",
+    "pubmed_hematol_oncol":         "hematologie",
+    "pubmed_clin_lymphoma_myeloma_leuk": "hematologie",
+    # ── Infectiologie ─────────────────────────────────────────────────────────
+    "lancet_infect_dis":            "infectiologie",  # RSS Lancet Infectious Diseases (IF ~40)
+    "eid_cdc":                      "infectiologie",  # RSS Emerging Infect Diseases (CDC, IF ~12)
+    "pubmed_cid":                   "infectiologie",
+    "pubmed_lancet_infect_dis":     "infectiologie",
+    "pubmed_j_infect_dis":          "infectiologie",
+    "pubmed_aids_journal":          "infectiologie",
+    "pubmed_aac":                   "infectiologie",
+    "pubmed_jac":                   "infectiologie",
+    "pubmed_emerg_infect_dis":      "infectiologie",
+    "pubmed_ijaa":                  "infectiologie",
+    "pubmed_j_infect":              "infectiologie",
+    "pubmed_hiv_med":               "infectiologie",
+    "pubmed_euro_surveill":         "infectiologie",
+    "pubmed_mycoses":               "infectiologie",
+    "pubmed_med_mal_infect":        "infectiologie",
+    "pubmed_infection":             "infectiologie",
+    "pubmed_eur_j_clin_microbiol":  "infectiologie",
+    "pubmed_plos_ntd":              "infectiologie",
+    # ── Infirmiers ────────────────────────────────────────────────────────────
+    "pubmed_int_j_nurs_stud":       "infirmiers",
+    "pubmed_j_adv_nurs":            "infirmiers",
+    "pubmed_j_clin_nurs":           "infirmiers",
+    "pubmed_nurse_educ_today":      "infirmiers",
+    "pubmed_nurs_res":              "infirmiers",
+    "pubmed_worldviews_ebn":        "infirmiers",
+    "pubmed_int_wound_j":           "infirmiers",
+    "pubmed_j_wound_care":          "infirmiers",
+    "pubmed_wound_repair":          "infirmiers",
+    "pubmed_pain_manag_nurs":       "infirmiers",
+    "pubmed_appl_nurs_res":         "infirmiers",
+    "pubmed_j_nurs_manag":          "infirmiers",
+    "pubmed_eur_j_oncol_nurs":      "infirmiers",
+    "pubmed_intensive_crit_care_nurs": "infirmiers",
+    "pubmed_j_nurs_scholarsh":      "infirmiers",
+    "pubmed_nurs_open":             "infirmiers",
+    # ── Kinésithérapie ────────────────────────────────────────────────────────
+    "pubmed_phys_ther":             "kinesitherapie",
+    "pubmed_jospt":                 "kinesitherapie",
+    "pubmed_j_physiother":          "kinesitherapie",
+    "pubmed_br_j_sports_med_kine":  "kinesitherapie",
+    "pubmed_clin_rehabil":          "kinesitherapie",
+    "pubmed_arch_phys_med_rehabil": "kinesitherapie",
+    "pubmed_disabil_rehabil":       "kinesitherapie",
+    "pubmed_j_rehabil_med":         "kinesitherapie",
+    "pubmed_bmc_musculoskelet":     "kinesitherapie",
+    "pubmed_j_cardiopulm_rehabil":  "kinesitherapie",
+    "pubmed_neurorehabil_neural_repair": "kinesitherapie",
+    "pubmed_j_neuroeng_rehabil":    "kinesitherapie",
+    "pubmed_ann_phys_rehabil_med":  "kinesitherapie",
+    "pubmed_eur_j_phys_rehabil_med": "kinesitherapie",
+    "pubmed_gait_posture":          "kinesitherapie",
+    "pubmed_musculoskelet_sci_pract": "kinesitherapie",
+    # ── Neurologie ────────────────────────────────────────────────────────────
+    "lancet_neurology":               "neurologie",   # RSS Lancet Neurology (IF ~57)
+    "bmj_jnnp":                       "neurologie",   # RSS JNNP / BMJ (IF ~9)
+    "neurology_aan":                  "neurologie",   # RSS Neurology (AAN, IF ~9)
+    "ann_neurol":                     "neurologie",   # RSS Annals of Neurology (Wiley, IF ~11)
+    "stroke_aha":                     "neurologie",   # RSS Stroke (AHA/ASA, IF ~8) — neuro + neurochir
+    "pubmed_neurology":               "neurologie",
+    "pubmed_lancet_neurol":           "neurologie",
+    "pubmed_brain":                   "neurologie",
+    "pubmed_ann_neurol":              "neurologie",
+    "pubmed_jnnp":                    "neurologie",
+    "pubmed_eur_j_neurol":            "neurologie",
+    "pubmed_j_neurol":                "neurologie",
+    "pubmed_mov_disord":              "neurologie",
+    "pubmed_epilepsia":               "neurologie",
+    "pubmed_cephalalgia":             "neurologie",
+    "pubmed_int_j_stroke":            "neurologie",
+    "pubmed_cerebrovasc_dis":         "neurologie",
+    "pubmed_parkinsonism_relat_disord":"neurologie",
+    "pubmed_seizure":                 "neurologie",
+    "pubmed_j_neurol_sci":            "neurologie",
+    "pubmed_muscle_nerve":            "neurologie",
+    # ── Neurochirurgie ────────────────────────────────────────────────────────
+    "pubmed_j_neurosurg":             "neurochirurgie",
+    "pubmed_neurosurgery":            "neurochirurgie",
+    "pubmed_acta_neurochir":          "neurochirurgie",
+    "pubmed_world_neurosurg":         "neurochirurgie",
+    "pubmed_neuro_oncol":             "neurochirurgie",
+    "pubmed_j_neurooncol":            "neurochirurgie",
+    "pubmed_j_neurosurg_spine":       "neurochirurgie",
+    "pubmed_eur_spine_j_nc":          "neurochirurgie",
+    "pubmed_spine_j_nc":              "neurochirurgie",
+    "pubmed_stroke":                  "neurochirurgie",
+    "pubmed_neurocrit_care":          "neurochirurgie",
+    "pubmed_j_neurosurg_pediatr":     "neurochirurgie",
+    "pubmed_childs_nerv_syst":        "neurochirurgie",
+    "pubmed_neurosurg_rev":           "neurochirurgie",
+    "pubmed_clin_neurol_neurosurg":   "neurochirurgie",
+    "pubmed_stereotact_funct_neurosurg": "neurochirurgie",
+    "pubmed_oper_neurosurg":          "neurochirurgie",
+    # ── Néphrologie ───────────────────────────────────────────────────────────
+    "kidney_int_rss":                 "nephrologie",  # RSS Kidney International (ISN/Elsevier, IF ~14)
+    "pubmed_jasn":                    "nephrologie",
+    "pubmed_kidney_int":              "nephrologie",
+    "pubmed_am_j_kidney_dis":         "nephrologie",
+    "pubmed_nephrol_dial_transplant": "nephrologie",
+    "pubmed_cjasn":                   "nephrologie",
+    "pubmed_nephron":                 "nephrologie",
+    "pubmed_nephrology_carlton":      "nephrologie",
+    "pubmed_bmc_nephrol":             "nephrologie",
+    "pubmed_perit_dial_int":          "nephrologie",
+    "pubmed_hemodial_int":            "nephrologie",
+    "pubmed_transplantation":         "nephrologie",
+    "pubmed_am_j_transplant":         "nephrologie",
+    "pubmed_transpl_int":             "nephrologie",
+    "pubmed_j_nephrol":               "nephrologie",
+    "pubmed_clin_nephrol":            "nephrologie",
+    "pubmed_nephrol_ther":            "nephrologie",
+    # ── Médecine d'urgences ───────────────────────────────────────────────────
+    "ann_emerg_med_rss":              "medecine-urgences",  # RSS Ann Emerg Med (ACEP, IF ~9)
+    "emj_rss":                        "medecine-urgences",  # RSS EMJ (RCEM/BMJ, IF ~4)
+    "resuscitation_rss":              "medecine-urgences",  # RSS Resuscitation (ERC, IF ~6)
+    "pubmed_ann_emerg_med":           "medecine-urgences",
+    "pubmed_resuscitation":           "medecine-urgences",
+    "pubmed_am_j_emerg_med":          "medecine-urgences",
+    "pubmed_acad_emerg_med":          "medecine-urgences",
+    "pubmed_injury":                  "medecine-urgences",
+    "pubmed_emerg_med_j":             "medecine-urgences",
+    "pubmed_j_trauma_acute_care_surg":"medecine-urgences",
+    "pubmed_j_emerg_med":             "medecine-urgences",
+    "pubmed_scand_j_trauma_resusc":   "medecine-urgences",
+    "pubmed_eur_j_emerg_med":         "medecine-urgences",
+    "pubmed_prehosp_emerg_care":      "medecine-urgences",
+    "pubmed_emerg_med_australas":     "medecine-urgences",
+    "pubmed_prehosp_disaster_med":    "medecine-urgences",
+    "pubmed_clin_toxicol":            "medecine-urgences",
+    "pubmed_j_crit_care_urg":         "medecine-urgences",
+    "pubmed_west_j_emerg_med":        "medecine-urgences",
+    # ── Médecine physique et de réadaptation ─────────────────────────────────
+    "pubmed_pm_r":                    "medecine-physique",
+    "pubmed_spinal_cord":             "medecine-physique",
+    "pubmed_brain_inj":               "medecine-physique",
+    "pubmed_top_stroke_rehabil":      "medecine-physique",
+    "pubmed_j_head_trauma_rehabil":   "medecine-physique",
+    "pubmed_int_j_rehabil_res":       "medecine-physique",
+    "pubmed_neuropsychol_rehabil":    "medecine-physique",
+    "pubmed_prosthet_orthot_int":     "medecine-physique",
+    "pubmed_j_spinal_cord_med":       "medecine-physique",
+    "pubmed_pain":                    "medecine-physique",
+    "pubmed_eur_j_pain":              "medecine-physique",
+    "pubmed_pain_med":                "medecine-physique",
+    "pubmed_mult_scler":              "medecine-physique",
+    "pubmed_mult_scler_relat_disord": "medecine-physique",
+    "pubmed_toxins_mpr":              "medecine-physique",
+    "pubmed_j_neurol_phys_ther":      "medecine-physique",
+    "arch_pmr_rss":                   "medecine-physique",  # RSS Archives of PMR (ACRM/Elsevier)
+    "pmrj_rss":                       "medecine-physique",  # RSS PM&R Journal (AAPM&R/Wiley)
+    # ── Médecine interne ─────────────────────────────────────────────────────
+    "ann_intern_med_rss":           "medecine-interne",  # RSS Ann Intern Med (ACP, IF ~51)
+    "pubmed_ann_intern_med":        "medecine-interne",
+    "pubmed_am_j_med":              "medecine-interne",
+    "pubmed_medicine_baltimore":    "medecine-interne",
+    "pubmed_bmc_med":               "medecine-interne",
+    "pubmed_eur_j_clin_invest":     "medecine-interne",
+    "pubmed_postgrad_med_j":        "medecine-interne",
+    "pubmed_j_intern_med":          "medecine-interne",
+    "pubmed_eur_j_intern_med":      "medecine-interne",
+    "pubmed_mayo_clin_proc":        "medecine-interne",
+    "pubmed_intern_med_j":          "medecine-interne",
+    "pubmed_qjm":                   "medecine-interne",
+    "pubmed_intern_emerg_med":      "medecine-interne",
+    "pubmed_am_j_med_sci":          "medecine-interne",
+    "pubmed_swiss_med_wkly":        "medecine-interne",
+    "pubmed_j_investig_med":        "medecine-interne",
+    "pubmed_rev_med_interne":       "medecine-interne",
+    # ── Médecine générale ─────────────────────────────────────────────────────
+    "cmaj_rss":                     "medecine-generale",  # RSS CMAJ (CMA, IF ~8)
+    "bjgp_rss":                     "medecine-generale",  # RSS BJGP (RCGP, IF ~5)
+    "pubmed_j_gen_intern_med":      "medecine-generale",
+    "pubmed_j_hypertens":           "medecine-generale",
+    "pubmed_prev_med":              "medecine-generale",
+    "pubmed_int_j_clin_pract":      "medecine-generale",
+    "pubmed_bjgp":                  "medecine-generale",
+    "pubmed_am_j_prev_med":         "medecine-generale",
+    "pubmed_cmaj":                  "medecine-generale",
+    "pubmed_fam_pract":             "medecine-generale",
+    "pubmed_bmc_fam_pract":         "medecine-generale",
+    "pubmed_ann_fam_med":           "medecine-generale",
+    "pubmed_prim_care_diabetes":    "medecine-generale",
+    "pubmed_j_am_board_fam_med":    "medecine-generale",
+    "pubmed_scand_j_prim_health":   "medecine-generale",
+    "pubmed_bmc_prim_care":         "medecine-generale",
+    "pubmed_npj_prim_care_respir":  "medecine-generale",
+    "pubmed_eur_j_gen_pract":       "medecine-generale",
+    # ── ORL ───────────────────────────────────────────────────────────────────
+    "otohns_rss":                   "orl",  # RSS Otolaryngology HNS (AAO-HNS/SAGE, IF ~3)
+    "laryngoscope_rss":             "orl",  # RSS Laryngoscope (ALA/Wiley, IF ~3)
+    "head_neck_rss":                "orl",  # RSS Head & Neck (Wiley, IF ~3)
+    "pubmed_otolaryngol_hns":       "orl",
+    "pubmed_jama_otolaryngol":      "orl",
+    "pubmed_laryngoscope":          "orl",
+    "pubmed_head_neck":             "orl",
+    "pubmed_oral_oncol":            "orl",
+    "pubmed_eur_arch_orl":          "orl",
+    "pubmed_otol_neurotol":         "orl",
+    "pubmed_rhinology":             "orl",
+    "pubmed_clin_otolaryngol":      "orl",
+    "pubmed_int_forum_allergy_rhinol": "orl",
+    "pubmed_thyroid":               "orl",
+    "pubmed_acta_otolaryngol":      "orl",
+    "pubmed_audiol_neurootol":      "orl",
+    "pubmed_dysphagia":             "orl",
+    "pubmed_j_voice":               "orl",
+    "pubmed_epos_guidelines":       "orl",
+    # ── Ophtalmologie ─────────────────────────────────────────────────────────
+    "ophthalmology_aao":            "ophtalmologie",  # RSS Ophthalmology (AAO/Elsevier, IF ~14)
+    "bjo_rss":                      "ophtalmologie",  # RSS BJO (BMJ, IF ~5)
+    "pubmed_ophthalmology":         "ophtalmologie",
+    "pubmed_jama_ophthalmol":       "ophtalmologie",
+    "pubmed_br_j_ophthalmol":       "ophtalmologie",
+    "pubmed_am_j_ophthalmol":       "ophtalmologie",
+    "pubmed_retina":                "ophtalmologie",
+    "pubmed_jcrs":                  "ophtalmologie",
+    "pubmed_j_glaucoma":            "ophtalmologie",
+    "pubmed_cornea":                "ophtalmologie",
+    "pubmed_graefes_arch":          "ophtalmologie",
+    "pubmed_acta_ophthalmol":       "ophtalmologie",
+    "pubmed_eye":                   "ophtalmologie",
+    "pubmed_surv_ophthalmol":       "ophtalmologie",
+    "pubmed_iovs":                  "ophtalmologie",
+    "pubmed_ocul_surf":             "ophtalmologie",
+    "pubmed_eur_j_ophthalmol":      "ophtalmologie",
+    "pubmed_prog_retin_eye_res":    "ophtalmologie",
+    "egs_guidelines":               "ophtalmologie",   # EGS — glaucome (web scraping)
+    "euretina_guidelines":          "ophtalmologie",   # EURETINA — rétine (web scraping)
+    # ── Oncologie ─────────────────────────────────────────────────────────────
+    "lancet_oncology":              "oncologie",   # RSS Lancet Oncology (IF ~51)
+    "jco_rss":                      "oncologie",   # RSS JCO (ASCO, IF ~45)
+    "ann_oncol_rss":                "oncologie",   # RSS Ann Oncol (ESMO, IF ~51)
+    "pubmed_j_clin_oncol":          "oncologie",
+    "pubmed_ann_oncol":             "oncologie",
+    "pubmed_lancet_oncol":          "oncologie",
+    "pubmed_eur_j_cancer":          "oncologie",
+    "pubmed_clin_cancer_res":       "oncologie",
+    "pubmed_br_j_cancer":           "oncologie",
+    "pubmed_cancer_acs":            "oncologie",
+    "pubmed_jnci":                  "oncologie",
+    "pubmed_int_j_radiat_oncol":    "oncologie",
+    "pubmed_radiother_oncol":       "oncologie",
+    "pubmed_support_care_cancer":   "oncologie",
+    "pubmed_cancer_treat_rev":      "oncologie",
+    "pubmed_oncologist":            "oncologie",
+    "pubmed_esmo_open":             "oncologie",
+    "pubmed_cancer_med":            "oncologie",
+    "pubmed_oncotarget":            "oncologie",
+    "esmo":                         "oncologie",   # RSS ESMO guidelines
+    # ── Pharmacien ────────────────────────────────────────────────────────────
+    "br_j_clin_pharm_rss":           "pharmacien",  # RSS BJCP (BPS/Wiley, IF ~4)
+    "ann_pharmacother_rss":          "pharmacien",  # RSS Ann Pharmacotherapy (SAGE, IF ~4)
+    "pubmed_clin_pharmacol_ther":    "pharmacien",
+    "pubmed_ann_pharmacother":       "pharmacien",
+    "pubmed_br_j_clin_pharmacol":    "pharmacien",
+    "pubmed_pharmacotherapy":        "pharmacien",
+    "pubmed_drug_safety":            "pharmacien",
+    "pubmed_pharmacoepidemiol_drug_saf": "pharmacien",
+    "pubmed_am_j_health_syst_pharm": "pharmacien",
+    "pubmed_eur_j_hosp_pharm":       "pharmacien",
+    "pubmed_int_j_clin_pharm":       "pharmacien",
+    "pubmed_drugs":                  "pharmacien",
+    "pubmed_clin_pharmacokinet":     "pharmacien",
+    "pubmed_biodrugs":               "pharmacien",
+    "pubmed_eur_j_clin_pharmacol":   "pharmacien",
+    "pubmed_ann_pharm_fr":           "pharmacien",
+    "pubmed_ther_adv_drug_saf":      "pharmacien",
+    "pubmed_j_clin_pharm_ther":      "pharmacien",
+    "eahp_statements":               "pharmacien",  # EAHP Good Practice Statements (web scraping)
+    "fspf":                          "pharmacien",  # FSPF — Fédération syndicale pharmaciens France
+    # ── Pneumologie ───────────────────────────────────────────────────────────
+    "lancet_respir_med":             "pneumologie",  # RSS Lancet Respiratory Medicine (IF ~38)
+    "bmj_thorax":                    "pneumologie",  # RSS Thorax / BTS (IF ~10)
+    "chest_rss":                     "pneumologie",  # RSS Chest (ACCP, IF ~9)
+    "pubmed_eur_respir_j":           "pneumologie",
+    "pubmed_ajrccm":                 "pneumologie",
+    "pubmed_lancet_respir":          "pneumologie",
+    "pubmed_eur_respir_rev":         "pneumologie",
+    "pubmed_ann_am_thorac_soc":      "pneumologie",
+    "pubmed_jaci":                   "pneumologie",
+    "pubmed_pulmonology":            "pneumologie",
+    "pubmed_respirology":            "pneumologie",
+    "pubmed_respir_med":             "pneumologie",
+    "pubmed_sleep":                  "pneumologie",
+    "pubmed_j_sleep_res":            "pneumologie",
+    "pubmed_rev_mal_respir":         "pneumologie",
+    "ers":                           "pneumologie",   # RSS ERS (déjà SOURCE_TO_TYPE → recommandation)
+    "splf":                          "pneumologie",   # SPLF (déjà SOURCE_TO_TYPE → recommandation)
+    # ── Psychiatrie ───────────────────────────────────────────────────────────
+    "lancet_psychiatry":             "psychiatrie",  # RSS Lancet Psychiatry (IF ~65)
+    "pubmed_am_j_psychiatry":        "psychiatrie",
+    "pubmed_jama_psychiatry":        "psychiatrie",
+    "pubmed_lancet_psychiatry":      "psychiatrie",
+    "pubmed_world_psychiatry":       "psychiatrie",
+    "pubmed_br_j_psychiatry":        "psychiatrie",
+    "pubmed_acta_psychiatr_scand":   "psychiatrie",
+    "pubmed_schizophr_bull":         "psychiatrie",
+    "pubmed_bipolar_disord":         "psychiatrie",
+    "pubmed_neuropsychopharmacol":   "psychiatrie",
+    "pubmed_j_clin_psychiatry":      "psychiatrie",
+    "pubmed_depress_anxiety":        "psychiatrie",
+    "pubmed_int_j_neuropsychopharmacol": "psychiatrie",
+    "pubmed_encephale":              "psychiatrie",
+    "epa_psychiatrie":               "psychiatrie",   # RSS EPA (European Psychiatric Association)
+    "sfpsychiatrie":                 "psychiatrie",   # RSS SPF
+    # ── Radiologie ────────────────────────────────────────────────────────────
+    "eur_radiol_rss":                "radiologie",  # RSS European Radiology (Springer, IF ~7)
+    "pubmed_radiology":              "radiologie",
+    "pubmed_eur_radiology":          "radiologie",
+    "pubmed_radiol_interv":          "radiologie",
+    "pubmed_jvir":                   "radiologie",
+    "pubmed_cvir":                   "radiologie",
+    "pubmed_ajnr":                   "radiologie",
+    "pubmed_ajr":                    "radiologie",
+    "pubmed_radiographics":          "radiologie",
+    "pubmed_ejnmmi":                 "radiologie",
+    "pubmed_j_nucl_med":             "radiologie",
+    "pubmed_insights_imaging":       "radiologie",
+    "pubmed_eur_j_radiol":           "radiologie",
+    "esr_radiologie":                "radiologie",   # RSS ESR (European Society of Radiology)
+    "sfr_radiologie":                "radiologie",   # SFR (Société Française de Radiologie)
+    # ── Rhumatologie ──────────────────────────────────────────────────────────
+    "lancet_rheumatol":              "rhumatologie",  # RSS Lancet Rheumatology (IF ~25)
+    "bmj_ard":                       "rhumatologie",  # RSS ARD / EULAR-BMJ (IF ~27)
+    "arthritis_rheumatol_rss":       "rhumatologie",  # RSS Arthritis & Rheumatology (ACR/Wiley, IF ~14)
+    "pubmed_ard":                    "rhumatologie",
+    "pubmed_arthritis_rheumatol":    "rhumatologie",
+    "pubmed_rheumatology_oxford":    "rhumatologie",
+    "pubmed_j_autoimmun":            "rhumatologie",
+    "pubmed_osteoarthritis_cartilage": "rhumatologie",
+    "pubmed_arthritis_res_ther":     "rhumatologie",
+    "pubmed_j_rheumatol":            "rhumatologie",
+    "pubmed_rmd_open":               "rhumatologie",
+    "pubmed_semin_arthritis_rheum":  "rhumatologie",
+    "pubmed_lupus":                  "rhumatologie",
+    "pubmed_clin_rheumatol":         "rhumatologie",
+    "pubmed_rev_rhum":               "rhumatologie",
+    "ard_eular":                     "rhumatologie",   # RSS ARD/EULAR
+    "eular_recommendations":         "rhumatologie",   # web scraping EULAR guidelines
+    "sfrhumato":                     "rhumatologie",   # RSS SFR
+    # ── Sage-femme ────────────────────────────────────────────────────────────
+    "pubmed_midwifery":              "sage-femme",
+    "pubmed_birth":                  "sage-femme",
+    "pubmed_women_birth":            "sage-femme",
+    "pubmed_j_midwifery":            "sage-femme",
+    "pubmed_prenat_diagn":           "sage-femme",
+    "pubmed_j_matern_fetal":         "sage-femme",
+    "pubmed_breastfeed_med":         "sage-femme",
+    "pubmed_j_hum_lact":             "sage-femme",
+    "pubmed_arch_womens_ment_health": "sage-femme",
+    "pubmed_matern_child_nutr":      "sage-femme",
+    "pubmed_int_breastfeed_j":       "sage-femme",
+    "cnsf":                          "sage-femme",    # CNSF (Collège National des Sages-Femmes)
+    "bjog":                          "sage-femme",    # BJOG RSS (RCOG — obstétrique/maïeutique)
+    "eshre_guidelines":              "sage-femme",    # ESHRE guidelines (procréation, grossesse)
+    # ── Urologie ──────────────────────────────────────────────────────────────
+    "pubmed_eur_urol":               "urologie",
+    "pubmed_eur_urol_oncol":         "urologie",
+    "pubmed_j_urol":                 "urologie",
+    "pubmed_prostate_cancer":        "urologie",
+    "pubmed_bjui":                   "urologie",
+    "pubmed_eur_urol_focus":         "urologie",
+    "pubmed_world_j_urol":           "urologie",
+    "pubmed_j_endourol":             "urologie",
+    "pubmed_neurourol_urodyn":       "urologie",
+    "pubmed_urology":                "urologie",
+    "pubmed_int_j_urol":             "urologie",
+    "pubmed_prog_urol":              "urologie",
+    "eau_guidelines":                "urologie",     # web scraping EAU guidelines
+    "afu":                           "urologie",     # RSS AFU (déjà SOURCE_TO_TYPE → recommandation)
 }
 
 # ---------------------------------------------------------------------------
@@ -1889,6 +3112,32 @@ l'article donne un critère de recours direct pour le pédiatre de premier recou
 Rejeter aussi : pure épidémiologie sans conséquence pratique, études de cohorte \
 monocentriques N<200 sur pathologies communes, bibliométrie, opinion.
 
+FILTRES SPÉCIFIQUES PÉDIATRIE :
+→ RETENIR en priorité :
+  • RCTs ou méta-analyses sur infections pédiatriques courantes (ORL, urinaires, respiratoires, \
+méningites) modifiant le choix de l'antibiotique, la durée ou les critères d'hospitalisation.
+  • Guidelines AAP, SFP, ESPID, ESPGHAN, HCSP/DGS sur vaccination, dépistage, nutrition, \
+pathologies chroniques (asthme, TDAH, épilepsie, obésité).
+  • Études sur la bronchiolite, la fièvre sans foyer du nourrisson, la déshydratation aiguë — \
+population de premier recours, décision pratique claire.
+  • Alertes pharmacovigilance ou matériovigilance concernant des médicaments pédiatriques courants \
+(antibiotiques, antipyrétiques, antiépileptiques, corticoïdes inhalés).
+  • Résultats sur la prévention (nirsévimab RSV, LAIV, méningocoque B, HPV, introduction \
+précoce des allergènes) avec impact sur le calendrier vaccinal ou les pratiques de consultation.
+→ REJETER sans hésiter :
+  • Sous-spécialités à recours systématiquement spécialisé sans critère d'adressage pour le pédiatre \
+de premier recours : cardiopathies congénitales complexes (HTAP sévère, canal artériel chirurgical), \
+oncologie pédiatrique (sauf critères d'alerte et d'adressage), génétique (sauf conseil en consultation).
+  • Études portant exclusivement sur la réanimation pédiatrique (PICU) sans implication sur \
+la prise en charge de premier recours ou le critère d'admission.
+  • Études purement néonatales en maternité de niveau III (prématurité extrême < 28 SA, \
+ECMO, NO) sans lien avec le suivi ambulatoire du prématuré modéré.
+  • Résultats de pays à faibles revenus (sub-sahariens, Asie du Sud-Est) sans possibilité \
+d'extrapolation à la pratique française (épidémiologie, ressources, antibiogramme différents).
+  • Études comportementales/psychosociales sans endpoint clinique mesurable en consultation \
+(études d'attitude, de perception, de bien-être général sans outcome santé).
+  • Séries rétrospectives monocentriques N < 200 sur pathologies communes.
+
 TERMINOLOGIE — employer sans guillemets ni définition :
 RSV / VRS, bronchiolite, nirsévimab, palivizumab, haut débit nasal (HFT), \
 LAIV (vaccin vivant atténué intranasal grippe), ROR, DTPCaHibHepB (hexavalent), \
@@ -1940,13 +3189,4419 @@ nourrissons à risque (eczéma modéré-sévère ou allergie à l'œuf) — l'é
 préventive augmente le risque d'allergie et n'est plus recommandée."
 """
 
+_SPECIALTY_ADDENDUM_ANESTHESIOLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — ANESTHÉSIOLOGIE-RÉANIMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : médecin anesthésiste-réanimateur (MAR) exerçant en CHU ou \
+clinique privée, France / Europe. Double compétence : anesthésie péri-opératoire \
+(programmée et urgente) ET réanimation/soins intensifs (chirurgicale ou médicale). \
+Maîtrise : anesthésie générale (TIVA, volatils), anesthésie locorégionale (ALR — \
+rachianesthésie, péridurale, blocs nerveux périphériques écho-guidés), gestion des \
+voies aériennes (IOT, vidéolaryngoscope, intubation difficile), monitoring \
+hémodynamique (ETO, PiCCO, VPP), prise en charge du choc, du SDRA, de la \
+défaillance multiviscérale, analgésie multimodale et protocoles ERAS. \
+Référentiels actuels : SFAR recommandations 2022-2024, ESAIC guidelines, \
+ESICM guidelines, Surviving Sepsis Campaign 2021, ARDS Network, protocoles \
+ERAS Society (colorectal, orthopédique, urologique). \
+Essais pivots récents de référence : PROSEVA (décubitus ventral SDRA), \
+ANDROMEDA-SHOCK (microcirculation choc septique), SMART/SALT-ED (cristalloïdes), \
+PADIS (analgosédation ICU), POPULAR-ANAESTHESIA (TIVA vs volatils \
+en chirurgie carcinologique), REGAIN (rachianesthésie vs AG pour fracture col fémur).
+
+CRITÈRE DE PERTINENCE ANESTHÉSIOLOGIE :
+"Ce résultat va-t-il modifier un choix anesthésique, un protocole de réanimation \
+ou une stratégie péri-opératoire dans les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : résultats confirmatoires d'une pratique \
+déjà établie sans gain de précision clinique, études sur des populations de soins \
+intensifs médicaux sans transposabilité à la réanimation chirurgicale, études \
+pharmacologiques de phase 1-2 sans implication clinique directe, recherche \
+fondamentale sur mécanismes (inflammation, protéomique, biomarqueurs) sans \
+recommandation opérationnelle.
+
+FILTRES SPÉCIFIQUES ANESTHÉSIOLOGIE :
+→ RETENIR en priorité :
+  • RCTs ou méta-analyses modifiant le choix ou la séquence d'induction (agents, doses, \
+techniques ALR vs AG, vidéolaryngoscope systématique ou non).
+  • Études sur l'analgésie péri-opératoire multimodale (blocs écho-guidés TAP/ESP/serratus, \
+analgésie préemptive, opioïde-sparing) modifiant un protocole ERAS.
+  • Guidelines SFAR, ESAIC, ESICM sur voies aériennes, décurarisation, sécurité \
+anesthésique, monitorage neuromusculaire — directement opposables en France.
+  • Alertes pharmacovigilance sur agents anesthésiques (curares, hypnotiques, analgésiques \
+opioïdes, curares inverseurs) ou dispositifs médicaux de bloc opératoire (respirateurs, \
+moniteurs BIS, pompes TIVA, sondes IOT à ballonnet défectueux).
+  • Résultats en réanimation modifiant la stratégie de ventilation protectrice, \
+d'analgosédation (RASS cible, dexmedetomidine, kétamine), de décision de décubitus ventral, \
+ou de vasopresseur de choix (noradrénaline, vasopressine, angiotensine II).
+  • Études sur la récupération améliorée après chirurgie (ERAS) avec endpoints \
+durée d'hospitalisation, complications majeures, douleur J1, consommation d'opioïdes.
+  • Études sur la prévention de la douleur chronique post-opératoire (DCPO) : \
+kétamine, dexmédétomidine, analgésie préemptive, blocs nerveux prolongés.
+  • Recommandations sur le jeûne préopératoire (liquides clairs, délais) et la \
+prévention du réveil peropératoire (monitoring BIS/EEG, protocoles TIVA).
+→ REJETER sans hésiter :
+  • Études de réanimation médicale pure (sepsis médical, pneumonie communautaire, \
+insuffisance cardiaque décompensée) sans aucune transposabilité péri-opératoire ni \
+technique anesthésique — conserver si le résultat modifie un protocole de prise en \
+charge que le MAR applique aussi en réanimation chirurgicale.
+  • Études sur l'IA en anesthésie (algorithmes de prédiction, CDSS) sans RCT de \
+validation clinique avec endpoint patient.
+  • Articles sur l'organisation des soins, les ratios infirmiers en réanimation, \
+la gestion des lits — sans implication sur la pratique clinique du MAR.
+  • Études monocentriques sur techniques ALR rares (< 50 patients) sans comparateur actif.
+  • Pharmaco-économie et coûts hospitaliers sans impact sur la décision clinique.
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+IOT (intubation orotrachéale), VL (vidéolaryngoscope — McGrath, C-MAC, GlideScope), \
+masque laryngé (ML), DSI (delayed sequence intubation), CICO (cannot intubate cannot \
+oxygenate), RSI (rapid sequence induction), crush induction, TIVA (total intravenous \
+anaesthesia — propofol + rémifentanil TCI), anesthésie balancée (propofol + volatil), \
+MAC (minimum alveolar concentration), BIS (index bispectral — profondeur anesthésie), \
+TOF (train-of-four — monitorage curarisation), NMB (neuromuscular blockade), \
+sugammadex (antagoniste sélectif stéroïdiens), néostigmine, curarisation résiduelle, \
+T4/T1 ratio, ALR (anesthésie locorégionale), rachianesthésie, APD (analgésie \
+péri-durale), TAP block (transversus abdominis plane), ESP block (erector spinae plane), \
+serratus block, PECS I/II, bloc interscalénique, bloc fémoral, bloc poplité, \
+écho-guidage (guidage échographique ALR), ERAS (enhanced recovery \
+after surgery), préhabilitation, analgésie multimodale, opioïde-sparing, \
+PCA (patient-controlled analgesia), score NRS/EVA (douleur), CPOT (douleur ICU), \
+NAD/norépinéphrine (noradrénaline), vasopressine, phényléphrine, \
+VPP (variation de pression pulsée), ITV (intégrale temps-vitesse), \
+DC (débit cardiaque), ETO (échocardiographie transœsophagienne), PiCCO, \
+SDRA (syndrome de détresse respiratoire aiguë), P/F (PaO2/FiO2), VT (volume courant), \
+PPlat (pression plateau), PEEP (positive end-expiratory pressure), \
+décubitus ventral (DV — PROSEVA), pronation, ECMO-VV, ECMO-VA, \
+SOFA score, qSOFA, sepsis-3, choc septique (NAD ≥ 0,1 µg/kg/min + lactate ≥ 2 mmol/L), \
+RASS (Richmond Agitation Sedation Scale), CAM-ICU (delirium), \
+dexmedetomidine, kétamine, midazolam, propofol ICU, \
+ABCDEF bundle (analgésie/sédation/delirium/mobilisation/famille).
+
+SOURCES CONFIGURÉES POUR CETTE SPÉCIALITÉ (à titre d'information) :
+PubMed (17 sources) : Anesthesiology (ASA, IF ~9), Br J Anaesth (BJA, IF ~9), \
+Anesth Analg (IARS, IF ~5), Anaesthesia (AAGBI, IF ~10), Eur J Anaesthesiol \
+(ESAIC, IF ~6), Anaesth Crit Care Pain Med (SFAR/ACCPM), SFAR Guidelines \
+(RFE canal dédié), Reg Anesth Pain Med (ASRA, IF ~8), Intensive Care Med \
+(ESICM, IF ~30), Crit Care Med (SCCM, IF ~8), Crit Care (BioMed Central, IF ~15), \
+J Cardiothorac Vasc Anesth (SOCCA, IF ~5), Acta Anaesthesiol Scand (SSAI, IF ~4), \
+Can J Anaesth (CAS, IF ~4), PAIN (IASP, IF ~7), J Pain Res (open-access), \
+Paediatr Anaesth (APAGBI, IF ~3).
+RSS (2 sources) : ESICM (esicm.org), ESAIC (esaic.org).
+Note : les 5 journaux flagship (Anesthesiology, BJA, Anesth&Analg, Anaesthesia, EJA) \
+utilisent _PT_OR_TITLE pour capter les articles récents non encore tagués NLM.
+
+EXEMPLES DE RÉDACTION (style Anesthesiology / BJA / Intensive Care Medicine / \
+Annales Françaises d'Anesthésie et de Réanimation) :
+
+RCT technique anesthésique :
+  titre_court : "TIVA vs volatils en chirurgie colorectale carcinologique : POPULAR"
+  resume : "POPULAR-ANAESTHESIA (RCT, N=2 132, chirurgie colorectale pour cancer, \
+suivi 1 an) : survie sans récidive à 1 an 81,7 % (TIVA-propofol) vs 82,2 % \
+(sévoflurane) — HR 1,02 (IC95% 0,84–1,23 ; p=0,85). Aucune supériorité de la TIVA \
+sur la survie carcinologique. Mortalité à 30 j et complications majeures : équivalents \
+entre groupes. L'hypothèse immunoprotectrice du propofol n'est pas confirmée."
+  impact_pratique : "À retenir : le choix TIVA vs volatils peut reposer sur des \
+critères pratiques (NVPO, environnement, coût) — la survie carcinologique n'est \
+plus un argument différenciant."
+
+Guideline voies aériennes :
+  titre_court : "SFAR 2022 — vidéolaryngoscope en 1re ligne pour IOT programmée"
+  resume : "Recommandations SFAR sur la prise en charge des voies aériennes \
+difficiles (2022) : vidéolaryngoscope recommandé comme technique de 1re intention \
+pour toute intubation programmée (recommandation forte, grade 1+). \
+Algorithme CICO actualisé : oxygénation d'apnée systématique + kit de \
+cricothyroïdotomie immédiatement disponible. Déclaration obligatoire de tout \
+échec d'intubation difficile imprévue au registre NAP."
+  impact_pratique : "En pratique : équiper chaque salle d'opération d'un VL et \
+former l'ensemble du personnel — le laryngoscope direct en 1re intention n'est \
+plus la norme SFAR."
+
+Alerte pharmacovigilance :
+  titre_court : "ANSM : contamination lot rocuronium 50 mg — retrait immédiat"
+  resume : "ANSM (décision xx 2026) : retrait du lot xxxx de rocuronium bromure \
+50 mg/5 mL (Fresenius Kabi) après détection de particules visibles en contrôle \
+qualité. Environ 4 200 flacons distribués en France depuis janvier 2026. \
+Mesure conservatoire immédiate — aucun incident clinique déclaré à ce stade."
+  impact_pratique : "En pratique : identifier et mettre en quarantaine les flacons \
+du lot concerné dans les armoires de bloc et de réanimation — utiliser les stocks \
+non impactés ou basculer sur vécuronium."
+
+Résultat réanimation :
+  titre_court : "Décubitus ventral précoce hors SDRA : PROACT-K négatif"
+  resume : "PROACT-K (RCT, N=400, choc septique sans SDRA, P/F > 200) : mortalité \
+à J28 26,4 % (DV précoce 8h) vs 24,8 % (décubitus dorsal) — différence non \
+significative (OR 1,09 ; IC95% 0,72–1,64 ; p=0,68). Complications de positionnement \
+plus fréquentes dans le groupe DV (désextubation accidentelle 4,2 % vs 0,8 %). \
+Le bénéfice du DV reste réservé au SDRA sévère (P/F < 150)."
+  impact_pratique : "À retenir : ne pas élargir le DV au choc septique sans SDRA \
+sévère — le rapport bénéfice/risque ne le justifie pas hors critères PROSEVA."
+"""
+
+_SPECIALTY_ADDENDUM_BIOLOGISTE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — BIOLOGIE MÉDICALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : biologiste médical (PH hospitalier ou directeur de laboratoire \
+libéral), France / Europe. Responsable de la validation analytique et \
+interprétative des résultats, du management qualité (accréditation COFRAC \
+ISO 15189), et du conseil aux cliniciens sur le choix et l'interprétation des \
+examens. Compétences couvrant l'ensemble des disciplines du laboratoire : \
+biochimie clinique (enzymes, protéines, marqueurs cardiaques, rénaux, hépatiques, \
+tumoraux), hématologie (NFS-formule, coagulation, exploration des hémostases), \
+microbiologie (bactériologie, virologie, mycologie, parasitologie — cultures, \
+antibiogrammes, CMI, biologie moléculaire PCR/NGS), immunologie (auto-anticorps, \
+allergologie, immunophénotypage), génétique moléculaire (NGS panels oncogénétique, \
+FISH, CGH-array, PCR quantitative), et transfusion/immuno-hématologie (groupage, \
+RAI, produits sanguins labiles). \
+Référentiels actuels : GBEA (guide de bonne exécution des analyses de biologie \
+médicale, art. L6211), COFRAC SH REF 02 (ISO 15189 accréditation), \
+recommandations SFBMédecine, SFBC (biochimie), SFM (Société Française de Microbiologie), \
+EFLM (European Federation of Clinical Chemistry and Laboratory Medicine), \
+ESCMID guidelines antibiogramme/résistances, EUCAST breakpoints (actualisés \
+annuellement), CLSI standards, ANSM décisions réactifs/DM.
+
+CRITÈRE DE PERTINENCE BIOLOGIE MÉDICALE :
+"Ce résultat va-t-il modifier un seuil décisionnel, un algorithme diagnostique, \
+une technique d'analyse, une interprétation de résultat ou une procédure de \
+laboratoire dans les 1-3 ans ?" \
+Rejeter même une étude bien conduite si : pas de seuil clinique opérationnel \
+défini, biomarqueur encore en phase de découverte sans validation analytique \
+(coefficient de variation, stabilité préanalytique), étude sur \
+équipements non disponibles en France, ou résultats confirmant ce qui est déjà \
+intégré dans la pratique quotidienne sans gain de précision.
+
+FILTRES SPÉCIFIQUES BIOLOGIE MÉDICALE :
+→ RETENIR en priorité :
+  • Nouveaux seuils décisionnels validés cliniquement : hs-troponine (algorithmes \
+0h/1h/2h ESC), D-dimères âge-ajustés (âge × 10 µg/L > 50 ans — YEARS/ADJUST), \
+NT-proBNP âge-ajusté (seuil IC), HbA1c (cibles ADA/EASD révisées), \
+ferritine (nouvelles valeurs de référence femme), clairance cystatine C vs créatinine.
+  • Alertes résistances microbiologiques émergentes : nouvelles carbapénémases \
+(NDM, OXA-48, KPC), BLSE épidémiques, Candida auris résistant, BMR/BHR nouvelles \
+espèces — avec impact direct sur les antibiogrammes à réaliser et les antibiotiques \
+à tester.
+  • Recommandations analytiques EFLM/EUCAST/CLSI : pré-analytique (délais \
+centrifugation, tubes, conservation), valeurs de référence nouvelles populations, \
+performances analytiques (imprecision goals, bias allowable), contrôle qualité \
+interne et externe (EEQ/PT).
+  • Nouvelles techniques entrant en routine : PCR multiplexe (panels respiratoires, \
+sepsis, digestif), séquençage métagénomique clinique, NGS en hémato-oncologie \
+(panels somatiques), biopsie liquide (ctDNA), MALDI-TOF nouvelles identifications, \
+spectrométrie de masse couplée (LC-MS/MS stéroïdes, immunosuppresseurs, drogues).
+  • Alertes ANSM/EMA sur réactifs, calibrateurs, contrôles ou dispositifs médicaux \
+de diagnostic in vitro (DMDIV) : retraits de lot, performances insuffisantes, \
+interférences médicamenteuses ou analytiques identifiées.
+  • Interférences analytiques majeures : hémoglobines anormales sur HbA1c, \
+biotine sur immunodosages (surdosage > 5 mg/j), macro-prolactinémie, \
+facteur rhumatoïde sur immunodosages, hémolyse/ictère/lipémie (HIL) sur automates courants.
+→ REJETER sans hésiter :
+  • Études cliniques évaluant l'efficacité d'un traitement sans implication sur \
+l'interprétation biologique ou le choix d'examens.
+  • Biomarqueurs exploratoires de phase de découverte (protéomique, métabolomique) \
+sans seuil analytique ni validation multicentrique.
+  • Études in vitro sur modèles cellulaires ou animaux sans résultats analytiques \
+transposables au laboratoire clinique.
+  • Techniques disponibles uniquement dans quelques laboratoires de recherche \
+sans industrialisation en vue (< 3 ans).
+  • Épidémiologie descriptive des résistances sans recommandation sur les \
+antibiogrammes à réaliser ou les antibiotiques à tester.
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+NFS-formule (numération formule sanguine), réticulocytes, VGM, CCMH, \
+TP (taux de prothrombine), TCA (temps de céphaline activée), fibrinogène, \
+D-dimères, INR, antithrombine, Facteur V Leiden, APCR, \
+hs-troponine I/T (haute sensibilité — algorithmes 0h/1h ESC), \
+NT-proBNP/BNP (insuffisance cardiaque), CRP us (ultrasensible), \
+PCT (procalcitonine — seuil sepsis 0,5 µg/L), lactate, \
+créatinine (Jaffé vs enzymatique), DFGe CKD-EPI 2021 (cystatine C), \
+microalbuminurie (ratio albumine/créatinine), HbA1c (NGSP/IFCC), \
+bilan hépatique (ASAT/ALAT/GGT/PAL/bilirubine totale et conjuguée), \
+albumine, protéine C réactive, orosomucoïde, ferritine, transferrine, \
+TSH (3e génération), T4L, T3L, anti-TPO, anti-thyroglobuline, \
+PSA total/libre, AFP, ACE/CEA, CA 19-9, CA 125, CA 15-3, \
+β-hCG (total — UE), LDH, CK, CK-MB, myoglobine, \
+VPN/VPP (valeur prédictive négative/positive), ROC/AUC (aire sous la courbe), \
+sensibilité analytique/clinique, spécificité analytique/clinique, \
+CMI (concentration minimale inhibitrice), CMB, antibiogramme standardisé EUCAST, \
+BLSE (β-lactamase à spectre élargi), SARM (Staph aureus résistant méticilline), \
+ERV (entérocoque résistant vancomycine), EPC (entérobactérie productrice de carbapénémase), \
+NDM/OXA-48/KPC (carbapénémases), Candida auris, \
+MALDI-TOF (identification microbienne par spectrométrie de masse), \
+PCR quantitative (qPCR), PCR multiplexe (panel respiratoire/digestif/méningite), \
+NGS (next-generation sequencing — panel somatique/germinal), \
+FISH (fluorescence in situ hybridization), CGH-array, \
+biopsie liquide (ctDNA/ADN tumoral circulant), \
+LC-MS/MS (chromatographie liquide couplée spectrométrie de masse — stéroïdes, IS, \
+thérapeutiques), immunodosage (ELISA, ECLIA, CLIA, CLEIA), \
+interférence HIL (hémolyse/ictère/lipémie), interférence biotine, \
+macro-enzyme (macroprolactine, macro-CK), \
+COFRAC (accréditation ISO 15189), GBEA, EEQ (évaluation externe qualité), \
+CV (coefficient de variation — imprecision), biais analytique (bias), \
+valeur de référence, delta-check (variation entre deux résultats successifs), \
+valeur critique (panic value — délai notification obligatoire), \
+pré-analytique (délai centrifugation, tube sec/EDTA/citrate, conservation).
+
+EXEMPLES DE RÉDACTION (style Clinical Chemistry / CCLM / \
+Annales de Biologie Clinique / Journal de Biologie Médicale) :
+
+Nouveau seuil décisionnel validé :
+  titre_court : "D-dimères âge-ajustés : réduction des imageries inutiles sans perte de sécurité"
+  resume : "L'étude ADJUST-PE (cohorte prospective, N=3 346, suspicion d'EP) valide \
+le seuil D-dimères âge-ajusté (âge × 10 µg/L chez les > 50 ans) : sensibilité \
+maintenue à 97,0 % (IC95% 93,1–98,9), spécificité améliorée de 34 % à 46 % \
+(p < 0,001). Adoption de ce seuil éviterait 30 % des angioscanners thoraciques \
+chez les patients âgés sans augmenter le taux de diagnostics manqués (0/331 \
+patients faux-négatifs à 3 mois — 0 EP fatale)."
+  impact_pratique : "En pratique : adopter le seuil âge × 10 µg/L pour les \
+patients > 50 ans dans l'algorithme diagnostique EP — valider avec le service \
+d'urgence local et mettre à jour la fiche interprétative du compte-rendu."
+
+Alerte résistance microbiologique :
+  titre_court : "Candida auris résistant : première détection en France — protocole laboratoire"
+  resume : "Signal ECDC (avril 2026) : 12 cas de Candida auris résistant aux \
+échinocandines confirmés dans 4 établissements français (CHU Paris, Lyon, Bordeaux, \
+Montpellier). Identification MALDI-TOF insuffisante (confusion C. haemulonii) — \
+séquençage ITS obligatoire pour confirmation. CMI micafungine ≥ 4 mg/L, \
+CMI amphotéricine B ≥ 2 mg/L dans tous les cas. Mortalité à J30 : 58 %."
+  impact_pratique : "En pratique : tout isolat de Candida non-albicans atypique \
+doit être soumis à séquençage ITS et test de résistance aux échinocandines — \
+ne pas se fier au MALDI-TOF seul pour cette espèce."
+
+Recommandation analytique EFLM :
+  titre_court : "EFLM 2025 : nouvelles spécifications analytiques pour la hs-troponine"
+  resume : "Recommandation EFLM/IFCC 2025 sur les spécifications de performance \
+analytique (APS) pour la hs-troponine cardiaque T et I : CV < 10 % au 99e \
+percentile, biais analytique < 10 % vs méthode de référence LC-MS/MS, \
+commutabilité des matériaux de contrôle qualité requise. Application obligatoire \
+pour maintenir l'accréditation COFRAC ISO 15189 dans les laboratoires déclarant \
+utiliser les algorithmes 0h/1h ESC (N = ~280 laboratoires en France)."
+  impact_pratique : "En pratique : vérifier que la méthode hs-troponine de votre \
+automate respecte ces APS — si non, adapter le seuil 99e percentile en conséquence \
+et informer les cliniciens de l'impact sur l'interprétation."
+
+Nouvelle technique entrant en routine :
+  titre_court : "Métagénomique clinique (mNGS) vs culture : performances dans le sepsis"
+  resume : "Étude prospective multicentrique (N=521, sepsis documenté ou probable, \
+5 CHU européens) : sensibilité mNGS plasma 73 % vs 51 % pour les hémocultures \
+(p < 0,001), délai de rendu 18 h vs 48-72 h. Détection de résistances (gènes \
+blaCTX-M, mecA, vanA) concordante à 94 % avec antibiogramme phénotypique. \
+Coût par examen : 380 € vs 45 € hémoculture — rapport coût/efficacité positif \
+uniquement pour les sepsis graves en réanimation (SOFA ≥ 8)."
+  impact_pratique : "En pratique : réserver le mNGS aux sepsis graves en réanimation \
+chez les patients déjà traités ou immunodéprimés, en complément et non en \
+remplacement des hémocultures."
+"""
+
+_SPECIALTY_ADDENDUM_CARDIOLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — CARDIOLOGIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : cardiologue hospitalier (CHU/CH) ou libéral, France / Europe. \
+Exercice polyvalent ou spécialisé en : insuffisance cardiaque (IC — HFrEF, \
+HFmrEF, HFpEF), cardiologie interventionnelle (SCA, PCI, coronarographie), \
+rythmologie (FA, arythmies ventriculaires, ablation RF/cryo/PFA, PM/DAI/CRT), \
+prévention cardiovasculaire et lipidologie, échocardiographie et imagerie \
+cardiaque (IRM cardiaque, scanner coronarien), cardiopathies valvulaires \
+(suivi médical, TAVI côté cardiologue), cardiologie aiguë (SCA, OAP, choc \
+cardiogénique, tamponnade), cardiomyopathies (CMH, ARVC, amylose cardiaque), \
+hypertension artérielle pulmonaire (HTAP), cardio-oncologie. \
+Référentiels actuels : ESC guidelines 2022-2024 (IC, FA, SCA, valvulopathies, \
+HTA, dyslipidémies, MTEV, HTAP, cardiomyopathies), recommandations HAS, \
+EHRA guidelines (arythmies, FA), HRS/ACC/AHA guidelines. \
+Essais pivots de référence : EMPEROR-Reduced/Preserved/Pooled et DAPA-HF \
+(iSGLT2 en IC), DELIVER (dapagliflozine HFmrEF/HFpEF), STRONG-HF \
+(intensification post-hospitalisation IC), EAST-AFNET 4 (contrôle précoce \
+rythme FA), CABANA (ablation FA vs médical), CASTLE-AF (ablation FA + FEVG \
+altérée), ORION-10/VICTORION-2P (inclisiran LDL), CLEAR (bempédoïque acide), \
+REDUCE-IT (icosapentaénoïque EPA), COMPASS (rivaroxaban prévention CV), \
+ARISTOTLE/RELY/ROCKET-AF (NACO en FA), AFFIRM-AHF (fer IV IC décompensée).
+
+CRITÈRE DE PERTINENCE CARDIOLOGIE :
+"Ce résultat va-t-il modifier un traitement médicamenteux, une indication de \
+procédure interventionnelle (PCI, ablation, implantation PM/DAI/CRT), un protocole \
+de surveillance ou une stratégie de prévention cardiovasculaire dans les 1-3 ans ?"
+Rejeter même un RCT bien conduit si : résultats confirmatoires d'une classe déjà \
+établie sans nouvelle indication ni gain clinique, études en chirurgie cardiaque \
+(TAVI côté chirurgien, pontages — relèvent de chirurgie-cardiaque), recherche \
+fondamentale sur mécanismes (signalisation, remodelage cellulaire), études \
+uniquement épidémiologiques sans implication thérapeutique.
+
+FILTRES SPÉCIFIQUES CARDIOLOGIE :
+→ RETENIR en priorité :
+  • RCTs/méta-analyses modifiant le traitement de l'IC : nouvelles indications \
+iSGLT2 (IC à FEVG préservée, MRC), vericiguat, omecamtiv mecarbil, ARNi \
+(sacubitril/valsartan) nouvelles populations, mavacamten (CMH obstructive).
+  • Nouvelles recommandations ESC/EHRA/HRS directement opposables en France : \
+IC, FA (score ABC-bleeding, ablation en 1re ligne), SCA (stratégie PCI précoce), \
+valvulopathies, cardiomyopathies, HTAP.
+  • Résultats ablation FA : technologies nouvelles (ablation par impulsion de champ \
+PFA — PULSED AF, ADVENT), comparaisons ablation vs médical dans sous-groupes \
+(FEVG altérée, FA persistante longue durée), rechutes et re-procédures.
+  • Nouvelles indications PM/DAI/CRT, DAI sous-cutané (S-ICD), PM sans sonde \
+(Micra), resynchronisation cardiaque — résultats à long terme, sélection patient.
+  • Prévention CV : nouvelles classes ou nouvelles indications — PCSK9i \
+(évolocumab, alirocumab) prévention primaire, inclisiran (ARNsi bimenstriel), \
+acide bempédoïque, iSGLT2 prévention CV sans IC, GLP-1 (sémaglutide SELECT).
+  • Alertes pharmacovigilance cardiovasculaires : dronédarone (hépatotoxicité), \
+ivabradine (interactions), NACO (interactions médicamenteuses majeures), \
+statines (rhabdomyolyse, interactions CYP3A4), digoxine (fenêtre thérapeutique).
+  • Cardio-oncologie : myocardite sous inhibiteurs de checkpoint (ICI), \
+cardiotoxicité anthracyclines/trastuzumab (protocoles surveillance FEVG), \
+prise en charge fibrillation auriculaire sous thérapies ciblées.
+  • Biomarqueurs décisionnels : BNP/NT-proBNP guided therapy (stratégie de titration \
+IC), galectine-3, ST2 soluble (pronostic IC), troponine ultrasensible (SCA).
+→ REJETER sans hésiter :
+  • Chirurgie cardiaque : pontages (CABG), TAVI côté chirurgien, chirurgie \
+valvulaire — relèvent de la spécialité chirurgie-cardiaque.
+  • Réanimation cardiaque générale (arrêt cardiaque, ACR extra-hospitalier) \
+sans interface directe avec la prise en charge cardiologique médicale.
+  • Biologie fondamentale : mécanismes cellulaires cardiaques, physiopathologie \
+moléculaire IC, signalisation β-adrénergique — sans recommandation opérationnelle.
+  • Phase 1-2 sans endpoint clinique patient ou population non-transposable.
+  • Épidémiologie descriptive incidence/prévalence sans implication thérapeutique.
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+IC (insuffisance cardiaque), HFrEF (FEVG ≤ 40 %), HFmrEF (FEVG 41-49 %), \
+HFpEF (FEVG ≥ 50 %), FEVG (fraction d'éjection ventriculaire gauche), \
+remodelage ventriculaire inverse, VO₂max (test d'effort cardiopulmonaire), \
+BNP/NT-proBNP (peptides natriurétiques), IRM cardiaque (CMR — \
+strain longitudinal global, fibrose myocardique, T1/T2 mapping), \
+SCA (syndrome coronarien aigu), NSTEMI, STEMI, angor stable, \
+PCI (angioplastie coronarienne percutanée), stent actif (DES), \
+FFR (réserve fractionnelle de flux), iFR, OCT (tomographie cohérence optique), \
+IVUS (échographie intracoronaire), score SYNTAX, score GRACE, score TIMI, \
+FA (fibrillation auriculaire) — paroxystique/persistante/permanente, \
+flutter auriculaire, ESV/TVNS (extrasystoles ventriculaires/tachycardie \
+ventriculaire non soutenue), TV soutenue, FV (fibrillation ventriculaire), \
+score CHA₂DS₂-VASc, score HAS-BLED, score ABC-bleeding, \
+ablation par radiofréquence (RF), cryoablation, ablation par impulsion de \
+champ (PFA — pulsed-field ablation), isolation des veines pulmonaires (IVP), \
+PM (pacemaker), PM sans sonde (Micra), DAI (défibrillateur automatique \
+implantable), S-ICD (DAI sous-cutané), CRT-P/CRT-D (resynchronisation), \
+IEC (inhibiteur de l'enzyme de conversion), ARA2 (sartans), \
+ARNi (sacubitril/valsartan — Entresto), iSGLT2 (empagliflozine/dapagliflozine), \
+ivabradine, vericiguat, mavacamten (inhibiteur myosine CMH), \
+statines, PCSK9i (évolocumab — Repatha, alirocumab — Praluent), \
+inclisiran (ARNsi anti-PCSK9 — bimenstriel), acide bempédoïque, \
+NACO/AOD (apixaban/rivaroxaban/dabigatran/edoxaban), héparine (HNF/HBPM), \
+HTAP (hypertension artérielle pulmonaire), mPAP, RVP (résistances \
+vasculaires pulmonaires), antagonistes des récepteurs à l'endothéline \
+(macitentan, ambrisentan), iPDE5 (tadalafil, sildénafil), \
+prostacyclines (époprosténol, iloprost, tréprostinil), \
+sélexipag (agoniste sélectif du récepteur IP — prostacycline receptor agonist), \
+riociguat (sGC stimulateur), \
+CMH (cardiomyopathie hypertrophique — obstructive CMHO ou non-obstructive), \
+mavacamten (inhibiteur myosine cardiaque — CMHO avec gradient ≥ 30 mmHg), \
+amylose cardiaque TTR (tafamidis — Vyndaqel), ARVC (dysplasie arythmogène \
+ventriculaire droite), myocardite ICI (inhibiteurs de checkpoint immunitaire — \
+anti-PD1/PDL1/CTLA4), cardiotoxicité anthracyclines/trastuzumab/imatinib, \
+TAVI (remplacement valvulaire aortique transcathéter — côté cardiologue Heart Team), \
+échocardiographie transthoracique (ETT), ETO (transœsophagienne), \
+stress écho, échographie de contraste, GLS (global longitudinal strain).
+
+EXEMPLES DE RÉDACTION (style European Heart Journal / JACC / \
+Archives de Maladies du Cœur et des Vaisseaux / La Revue du Praticien Cardiologie) :
+
+RCT nouvelle indication IC :
+  titre_court : "Dapagliflozine dans l'IC à FEVG préservée : DELIVER confirme le bénéfice"
+  resume : "DELIVER (RCT, N=6 263, HFmrEF/HFpEF — FEVG > 40 %, NT-proBNP élevé, \
+suivi médian 2,3 ans) : dapagliflozine 10 mg/j réduit le critère composite \
+aggravation IC ou décès CV de 18 % vs placebo (HR 0,82 ; IC95% 0,73–0,92 ; \
+p < 0,001). Bénéfice homogène quelle que soit la FEVG (40-60 % et > 60 %). \
+Hospitalisations IC réduites de 23 % ; mortalité CV seule non significative \
+(HR 0,88 ; IC95% 0,74–1,05). Pas d'excès d'amputation ni de DKA."
+  impact_pratique : "En pratique : la dapagliflozine est désormais indiquée dans \
+l'IC à FEVG préservée — à initier dès le diagnostic, indépendamment du diabète, \
+en complément du traitement diurétique."
+
+Guideline ESC — nouvelle recommandation FA :
+  titre_court : "ESC 2023 FA : ablation en 1re ligne et nouveau score ABC-bleeding"
+  resume : "Recommandations ESC 2023 sur la fibrillation auriculaire : ablation \
+par cathéter recommandée en 1re ligne pour le contrôle du rythme chez les patients \
+symptomatiques (recommandation de classe I, niveau B), avant toute tentative par \
+antiarythmiques (renforcement vs 2020). Adoption du score ABC-bleeding (Age, \
+Biomarqueurs — NT-proBNP/hs-cTnT, Clinique — AVC/saignement antérieur) pour \
+stratifier le risque hémorragique sous NACO, en remplacement du score HAS-BLED \
+(meilleure discrimination AUC 0,72 vs 0,61 dans la cohorte de validation)."
+  impact_pratique : "En pratique : proposer l'ablation en 1re intention aux patients \
+FA symptomatiques éligibles — ne plus attendre l'échec des antiarythmiques pour \
+référer en rythmologie."
+
+Alerte pharmacovigilance :
+  titre_court : "Dronédarone : hépatotoxicité grave — nouvelles contre-indications ANSM"
+  resume : "ANSM/EMA (2026) : révision du RCP dronédarone (Multaq) après analyse \
+de 47 cas d'hépatotoxicité grave en France (dont 8 insuffisances hépatiques \
+fulminantes, 2 décès). Surveillance mensuelle des transaminases recommandée les \
+6 premiers mois (vs trimestrielle précédemment). Nouvelles CI absolues : \
+ALAT > 3N avant initiation, antécédent d'hépatite médicamenteuse, association \
+aux antifongiques azolés systémiques."
+  impact_pratique : "En pratique : bilan hépatique mensuel les 6 premiers mois \
+sous dronédarone, puis trimestriel — arrêt immédiat si ALAT > 3N ou symptômes \
+hépatiques (asthénie inexpliquée, ictère)."
+
+Cardio-oncologie :
+  titre_court : "Myocardite sous anti-PD1 : protocole de surveillance et prise en charge"
+  resume : "Étude de cohorte internationale (N=964 myocardites ICI, 20 centres, \
+2015-2025) : incidence 0,09 % de toutes les expositions aux ICI, mortalité \
+hospitalière 25,7 % — la plus haute de toutes les toxicités ICI. Anti-PD1 seuls \
+(46 %), anti-PD1 + anti-CTLA4 (35 %). Délai médian d'apparition : 34 jours \
+(IQR 21-75). Facteurs prédictifs de gravité : troponine > 1,5 µg/L, BAV du 3e \
+degré, FEVG < 50 % à l'admission."
+  impact_pratique : "En pratique : toute suspicion de myocardite sous ICI impose \
+un ECG, une troponine hs et une IRM cardiaque en urgence — arrêt immédiat de \
+l'immunothérapie et corticothérapie IV sans attendre la confirmation IRM."
+"""
+
+_SPECIALTY_ADDENDUM_THORACIQUE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — CHIRURGIE THORACIQUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : chirurgien thoracique (CHU / clinique, France / Europe), \
+maîtrisant résection pulmonaire (VATS/RATS lobectomie, segmentectomie, \
+pneumonectomie), chirurgie de l'œsophage (MIE, Ivor Lewis, McKeown), \
+chirurgie médiastinale (thymomectomie, tumeurs médiastinales), \
+gestion des épanchements pleuraux (drainage, pleurodèse, PleurX), \
+chirurgie des pneumothorax (bullectomie VATS), chirurgie trachéo-bronchique. \
+Référentiels actuels : ESTS guidelines, IASLC staging 8e éd. (2017), \
+ESMO guidelines cancer poumon résécable 2023-2024, HAS, INCa, \
+recommandations SFCTCV. \
+Essais pivots récents de référence : CALGB 140503 (segmentectomie vs \
+lobectomie NSCLC ≤ 2 cm, NEJM 2023), JCOG 0802 (idem population japonaise, \
+Lancet 2022), CheckMate 816 (nivolumab néoadjuvant NSCLC résécable IB-IIIA, \
+NEJM 2022), ADAURA (osimertinib adjuvant EGFR+ stade IB-IIIA, NEJM 2023), \
+ALINA (alectinib adjuvant ALK+ stade IB-IIIA, NEJM 2023), \
+IMpower010 (atézolizumab adjuvant PD-L1 ≥ 1%, Lancet 2021), \
+CROSS (radio-chimio néoadjuvante cancer œsophage, NEJM 2012 — standard actuel), \
+FLOT4 (FLOT péri-opératoire adénocarcinome EGJ/estomac — impacte chirurgie \
+œsophago-gastrique, Lancet 2019), NELSON (LDCT dépistage — réduction mortalité \
+24 % hommes, NEJM 2020).
+
+CRITÈRE DE PERTINENCE THORACIQUE :
+"Ce résultat va-t-il modifier une indication opératoire, l'étendue d'une \
+résection, la stratégie péri-opératoire (immuno/chimio néo-adjuvante/adjuvante), \
+ou la technique chirurgicale dans les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : oncologie médicale pure sans composante \
+chirurgicale, pneumologie médicale pure sans impact sur résécabilité ou technique, \
+radiothérapie exclusive sans comparaison avec la résection, \
+sous-groupe non pré-spécifié sur petits effectifs.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Étendue de la résection pulmonaire : segmentectomie vs lobectomie selon taille \
+  et stade TNM (stade IA ≤ 2 cm : données CALGB 140503, JCOG 0802), \
+  wedge resection (résection cunéiforme) vs segmentectomie anatomique
+→ Voie d'abord : VATS vs RATS vs thoracotomie — morbi-mortalité, \
+  LOS (durée de séjour), résultats oncologiques (marges R0, curage ganglionnaire)
+→ Immuno/chimio-thérapie péri-opératoire : impact sur timing chirurgical, \
+  taux de down-staging (pCR, MPR), complications post-op, résultats OS/DFS
+→ Biomarqueurs guidant la décision chirurgicale : EGFR, ALK, ROS1, KRAS G12C, \
+  MET exon 14 (adjuvant/néoadjuvant), PD-L1 TPS (immunothérapie néoadjuvante)
+→ Staging médiastinal N2/N3 : EBUS vs médiastinoscopie, valeur prédictive \
+  résécabilité cN2, prise en charge chirurgicale des N2 inattendus
+→ Cancer de l'œsophage : MIE vs chirurgie ouverte (morbi-mortalité, \
+  résultats oncologiques), gestion de l'anastomose œsophago-gastrique \
+  (fistule anastomotique), protocoles CROSS + chirurgie vs FLOT + chirurgie
+→ Mésothéliome pleural malin (MPM) : pleurectomie-décortication (P/D) \
+  vs exérèse pleuro-pneumonectomie élargie (EPP) — controverse actuelle \
+  (MARS2 trial, NICE 2024), immunothérapie de 1re ligne (nivolumab + ipilimumab)
+→ Thymome / tumeurs médiastinales : résultats thymectomie VATS vs sternotomie \
+  (oncologique + myasthénie gravis), classification WHO/Masaoka-Koga
+→ Épanchement pleural malin : cathéter PleurX ambulatoire vs pleurodèse talc \
+  hospitalisée (IPC vs talc slurry — données qualité de vie, durée de séjour, \
+  coût-efficacité ; recommandations BTS/ESTS 2023)
+→ ERAS thoracique : analgésie locorégionale (bloc serratus anterior, \
+  ESPB — Erector Spinae Plane Block, bloc intercostal) vs péridurale thoracique, \
+  mobilisation précoce, réduction durée de séjour
+→ Complications majeures : fistule bronchique post-pneumonectomie/lobectomie, \
+  empyème post-résection, chylothorax (traitement chirurgical vs conservateur \
+  vs embolisation thoracique ductale), paralysie récurrentielle
+→ Dépistage cancer poumon : résultats programmes LDCT (NELSON, DANTE, \
+  recommandations HAS/INCa) et impact sur résécabilité des cancers dépistés
+→ Alertes ANSM / FDA : agrafeuses endoscopiques pulmonaires/œsophagiennes \
+  défectueuses, instruments de curage médiastinal, endoscopes bronchiques
+
+REJETER :
+→ Oncologie médicale pure (chimio/immuno sans aucune composante chirurgicale \
+  ou staging chirurgical — relayer à oncologie)
+→ Pneumologie médicale pure (BPCO, asthme, fibrose pulmonaire sans impact \
+  sur résécabilité ou technique chirurgicale — relayer à pneumologie)
+→ Anesthésie-réanimation sans lien direct avec chirurgie thoracique
+→ Chirurgie cardiaque sans composante thoracique (CABG, valvulopathies \
+  — relayer à chirurgie-cardiaque)
+→ Radiothérapie/SBRT exclusive sans comparaison directe avec résection \
+  (études SBRT seules pour patients inopérables — relayer à radiologie/oncologie)
+→ Études endoscopiques digestives pures (œsophage — dilatations, POEM — sans \
+  composante chirurgicale thoracique ou résection)
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+VATS (Video-Assisted Thoracoscopic Surgery), RATS (Robot-Assisted — Da Vinci), \
+lobectomie / segmentectomie anatomique / résection cunéiforme (wedge), \
+pneumonectomie, bilobectomie, décortication pleurale, \
+NSCLC (Non-Small Cell Lung Cancer), SCLC (Small Cell Lung Cancer), \
+staging TNM 8e éd. (IASLC 2017) : T1a/b/c-T4, N0/N1/N2/N3, M0/M1a/b/c, \
+pCR (complete pathological response), MPR (Major Pathological Response — résidu \
+tumoral ≤ 10%), R0 (marges saines) / R1 (microscopique) / R2 (macroscopique), \
+curage ganglionnaire systématique vs échantillonnage (MLND/SLND), \
+EBUS (Endobronchial Ultrasound — staging médiastinal), médiastinoscopie, \
+EGFR / ALK / ROS1 / KRAS G12C / MET exon 14 (mutations driver), \
+PD-L1 TPS (Tumor Proportion Score — immunothérapie), \
+ICI (Immune Checkpoint Inhibitor — anti-PD1/PD-L1/CTLA-4), \
+DFS (Disease-Free Survival), OS (Overall Survival), \
+MIE (Minimally Invasive Esophagectomy — laparoscopie + thoracoscopie), \
+Ivor Lewis (thoracotomie + laparotomie, anastomose intrathoracique), \
+McKeown (3 voies + anastomose cervicale), transhiatal (sans thoracotomie), \
+fistule anastomotique (classification ISDE — grade A/B/C), \
+EPP (Exérèse Pleuro-Pneumonectomie élargie — mésothéliome), \
+P/D (Pleurectomie-Décortication — mésothéliome), MPM (Mésothéliome Pleural Malin), \
+thymome (WHO type A/AB/B1/B2/B3/C = carcinome thymique), \
+Masaoka-Koga (stade thymome : I/IIA/IIB/III/IVA/IVB), \
+myasthénie gravis (MG — indication thymectomie), \
+PleurX (cathéter pleural permanent ambulatoire), pleurodèse au talc, \
+empyème (stades ATS : exsudatif / fibrinopurulent / organisé — \
+  Light's criteria = diagnostic exsudat/transsudat, pas staging empyème), \
+LDCT (Low-Dose CT scan — dépistage), \
+ESPB (Erector Spinae Plane Block), bloc serratus anterior, \
+thoracoscore / STS score (risque mortalité résection pulmonaire), \
+SBRT / SABR (stéréotaxie — inopérables, comparaison chirurgie).
+
+EXEMPLES DE RÉDACTION (style JTO / EJCTS / Annals of Thoracic Surgery — format cible) :
+
+Essai clinique résection pulmonaire :
+  titre_court : "Segmentectomie non-inférieure à la lobectomie NSCLC ≤ 2 cm (CALGB 140503)"
+  resume : "CALGB 140503 (RCT, N=697, NSCLC stade IA ≤ 2 cm, suivi médian 7 ans) : \
+DFS à 5 ans 63,6 % (segmentectomie) vs 64,1 % (lobectomie) — HR 1,01 (IC95% 0,83–1,24), \
+non-infériorité établie. OS à 5 ans 80,3 % vs 78,9 % (NS). VATS utilisée dans 57 % \
+des cas. Marges R0 identiques (97 vs 98 %). Marge chirurgicale ≥ 2 cm imposée \
+dans le groupe segmentectomie."
+  impact_pratique : "En pratique : la segmentectomie anatomique devient le standard \
+pour tout NSCLC ≤ 2 cm stade IA — à condition de marges ≥ 2 cm et curage N1/N2 complet."
+
+Périopératoire / immuno-oncologie chirurgicale :
+  titre_court : "Nivolumab néoadjuvant NSCLC résécable : pCR 24 % (CheckMate 816)"
+  resume : "CheckMate 816 (RCT, N=358, NSCLC stade IB-IIIA résécable, \
+3 cycles nivolumab + chimio vs chimio seule) : pCR 24,0 % vs 2,2 % \
+(OR 13,94 ; IC95% 3,49–55,75 ; p<0,001). EFS médian non atteint vs 20,8 mois \
+(HR 0,63 ; IC95% 0,43–0,91). Résection R0 : 83,2 % vs 75,5 %. \
+Délai chirurgie non affecté. Profil de toxicité gérable."
+  impact_pratique : "En pratique : nivolumab néoadjuvant + chimio — nouveau standard \
+pour tout NSCLC stade IB-IIIA résécable avec PS 0-1, indépendamment du PD-L1."
+
+Guideline / recommandation :
+  titre_court : "ESTS 2024 : P/D préférée à l'EPP dans le mésothéliome pleural"
+  resume : "ESTS Guidelines mésothéliome 2024 (EJCTS suppl.) : pleurectomie-décortication \
+(P/D) recommandée en 1re intention vs EPP pour MPM épithélioïde résécable \
+(recommandation forte, niveau B). Basé sur méta-analyse (N=2 147) : OS médian \
+18,2 mois (P/D) vs 14,5 mois (EPP) — HR 0,79 (IC95% 0,64–0,98), mortalité \
+péri-opératoire EPP 6,8 % vs P/D 2,1 % (p<0,001). Confirmation données MARS2."
+  impact_pratique : "À retenir : abandon progressif de l'EPP sauf cas sélectionnés — \
+P/D systématiquement discutée en RCP avant tout MPM épithélioïde."
+
+Alerte sécurité dispositif :
+  titre_court : "FDA : alerte agrafeuse Ethicon Echelon 60 — risques fistule bronchique"
+  resume : "FDA Safety Communication (janv. 2026) : signalement de 42 cas de \
+dysfonctionnement de l'agrafeuse endoscopique Ethicon Echelon 60 (lot xxxx) \
+associés à 8 fistules bronchiques post-lobectomie (délai médian 4 jours post-op). \
+ANSM avertie — en attente de décision EU. Mécanisme : défaut d'agrafage sur \
+parenchyme pulmonaire épais (> 4 mm). Recommandation : vérification cartouche \
+avant chaque utilisation, renfort suture bronchique systématique si suspicion."
+  impact_pratique : "En pratique : signaler tout dysfonctionnement au fabricant, \
+renforcer systématiquement la suture de la bronche souche sur les résections majeures."
+"""
+
+_SPECIALTY_ADDENDUM_ORTHOPEDIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — CHIRURGIE ORTHOPÉDIQUE ET TRAUMATOLOGIQUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : chirurgien orthopédiste et traumatologue (CHU / clinique privée, \
+France / Europe), maîtrisant arthroplastie (hanche, genou, épaule), \
+chirurgie arthroscopique (LCA, coiffe des rotateurs, ménisques), \
+traumatologie (fractures hanche, tibia, radius distal, rachis), \
+chirurgie du rachis dégénératif et déformations, chirurgie du pied-cheville. \
+Référentiels actuels : SOFCOT recommandations 2022-2024, EFORT guidelines, \
+AAOS Clinical Practice Guidelines, NICE (UK), HAS recommandations. \
+Essais pivots récents de référence : FAITH (fixation vis cancelleux vs DHS — \
+fracture col fémoral non déplacée Garden I-II), \
+HEALTH (PTH vs hémiarthroplastie — fracture col déplacée, patient ambulatoire), \
+FLOW (acide tranexamique — fracture hanche, NEJM 2023), \
+MOON cohort (LCA — greffons et résultats fonctionnels à 10 ans), \
+RECORD 1-4 (rivaroxaban vs HBPM thromboprophylaxie arthroplastie), \
+VERTIGO (vertébroplastie vs cyphoplastie vs traitement médical).
+
+CRITÈRE DE PERTINENCE ORTHOPÉDIQUE :
+"Ce résultat va-t-il modifier une indication opératoire, le choix d'un implant, \
+un protocole ERAS, ou la stratégie de prise en charge dans les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : résultats confirmatoires d'une pratique \
+déjà établie (ex. supériorité déjà connue d'un matériau ou d'une technique), \
+population non représentative de la pratique FR/EU (cohorte mono-centrique asiatique \
+sans équivalent anatomique ou ethnique), sous-groupe non pré-spécifié sur \
+petits effectifs, études biomécaniques sans validation clinique.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Résultats fonctionnels et PROMs (Patient-Reported Outcome Measures) modifiant \
+  le choix d'une technique : Oxford Hip/Knee Score, WOMAC, KOOS, DASH, Constant, \
+  VISA-A, AOFAS, NRS douleur, PRWE (poignet)
+→ Nouvelles données sur survie implantaire (registres nationaux ≥ 5 ans : \
+  NJR, SKAR, AOANJRR, RNR France — arthroplastie hanche/genou/épaule)
+→ Complications majeures : infection sur prothèse (PJI — Periprosthetic Joint Infection), \
+  instabilité, descellement aseptique, fracture péri-prothétique, raideur post-op, \
+  NERV (névralgie / paralysie post-arthroplastie)
+→ ERAS orthopédique : protocoles analgésie multimodale, mobilisation précoce, \
+  réduction transfusion (acide tranexamique IV/topique)
+→ Thromboprophylaxie post-arthroplastie et fracture hanche : AOD vs HBPM, \
+  durée optimale, schémas ambulatoires
+→ Ligamentoplastie LCA : greffons (os-tendon-os vs gracilis-demi-tendineux vs \
+  quadricipital), augmentation interne (ILA), retour au sport, taux de re-rupture
+→ Prothèse épaule : prothèse inversée (PI) vs anatomique, indication rotator cuff \
+  arthropathy, résultats fonctionnels (Constant-Murley, ASES), chirurgie robotique
+→ Chirurgie du rachis : fusion vs non-fusion lombalgie dégénérative, \
+  chirurgie mini-invasive (MIS-TLIF, XLIF, OLIF), décompression endoscopique, \
+  implants dynamiques, résultats déformations adulte (scoliose)
+→ Fractures de fragilité : prise en charge fracture col fémoral (arthroplastie vs \
+  ostéosynthèse selon Garden), fracture vertébrale ostéoporotique (vertébroplastie \
+  vs cyphoplastie vs traitement médical), protocoles FLS (Fracture Liaison Service)
+→ Innovations implants : surfaces de glissement (céramique, polyéthylène hautement \
+  réticulé UHMWPE), tiges sans ciment, cupules trabéculaires, impression 3D implants \
+  sur-mesure, navigation/robotique (MAKO, ROSA, Stryker)
+→ Alertes ANSM / FDA : rappels matériaux (tête métal-métal, cupule DePuy ASR, \
+  implants défectueux), matériovigilance prothèses, instruments chirurgicaux
+
+REJETER :
+→ Articles purement fondamentaux (biologie osseuse, ostéogénèse, culture cellulaire) \
+  sans validation clinique dans les 3 ans
+→ Études animalières (modèles ovins, porcins, etc.) sans protocole clinique associé
+→ Réhabilitation/kinésithérapie pure sans composante décision chirurgicale \
+  (confier à médecine physique-réadaptation)
+→ Rhumatologie médicale pure (polyarthrite rhumatoïde sous biothérapie, \
+  lupus, vascularites — sauf si impact direct sur timing ou technique chirurgicale)
+→ Résultats d'arthroplastie dans des populations sans équivalent en France \
+  (ex. registres asiatiques avec anatomie fémoro-acétabulaire très différente)
+→ Études biomécaniques in vitro / sur cadavre confirmant ce qui est déjà en \
+  pratique courante (ex. nouvelle vis pédiculaire légèrement plus rigide)
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+PTH (prothèse totale de hanche), PTG (prothèse totale de genou), \
+PTE (prothèse totale d'épaule — inversée PI ou anatomique PA), \
+hémiarthroplastie (prothèse céphalique — col fémoral fracturé), \
+resurfaçage de hanche (Birmingham Hip Resurfacing — BHR), \
+PJI (Periprosthetic Joint Infection — infection sur prothèse), \
+DAIR (Débridement, Antibiotiques, Irrigation et Rétention d'implant), \
+descellement aseptique / septique, ostéolyse péri-prothétique, \
+fracture péri-prothétique (Vancouver B1/B2/B3 hanche, UCS/Unified Classification System épaule), \
+ligamentoplastie LCA (os-tendon-os OTO, gracilis-demi-tendineux GDT, \
+quadricipital QT), ILA (Internal Ligament Augmentation — Ligamys), \
+méniscectomie partielle / suture méniscale, chondropathie (grade Outerbridge I-IV), \
+microfractures / ACI (Autologous Chondrocyte Implantation) / MACI, \
+coiffe des rotateurs : rupture partielle / transfixiante, réinsertion arthroscopique, \
+tendon sus-épineux / sous-scapulaire / infra-épineux, \
+ERAS (Enhanced Recovery After Surgery — orthopédique), \
+acide tranexamique (ATX — antifibrinolytique per-op et post-op), \
+NRS / EVA (douleur), WOMAC / KOOS / Oxford (scores fonctionnels genou-hanche), \
+Constant-Murley / DASH / PRWE (scores épaule-poignet-main), \
+Oxford Hip/Knee Score, VISA-A (tendon d'Achille), AOFAS (pied-cheville), \
+registres nationaux : NJR (UK), SHAR/SKAR (Suède — hanche/genou), AOANJRR (Australie), RNR (France), \
+Garden I-IV (col fémoral), AO/OTA (classification fractures), \
+TLIF / PLIF / XLIF / MIS-TLIF / OLIF (arthrodèse lombaire voies d'abord), \
+scoliose adulte (SRS-Schwab), FLS (Fracture Liaison Service), \
+MAKO / ROSA (robots arthroplastie), navigation peropératoire, \
+UHMWPE (polyéthylène hautement réticulé), céramique d'alumine / zircone, \
+métal-métal (abandon — toxicité chrome-cobalt), cupule presse-fit / cimentée, \
+tige sans ciment / cimentée, implant 3D / trabéculaire (titane poreux).
+
+EXEMPLES DE RÉDACTION (style JBJS / Bone & Joint J / OTSR — format cible) :
+
+Essai clinique arthroplastie :
+  titre_court : "PTH sans ciment vs cimentée : résultats à 10 ans (NJR 120 000 PTH)"
+  resume : "Analyse du NJR (N=120 348 PTH primaires, suivi médian 10,2 ans) : \
+taux de révision à 10 ans 4,1 % (sans ciment) vs 3,6 % (cimentée) — \
+HR 1,15 (IC95% 1,08–1,22, p<0,001). Différence concentrée sur les < 65 ans \
+(HR 1,31 ; IC95% 1,19–1,44) ; effacée chez les ≥ 75 ans (HR 1,03 ; IC95% 0,94–1,13). \
+Résultats fonctionnels Oxford Hip Score comparables aux deux âges (delta 0,4 point, NS)."
+  impact_pratique : "En pratique : consolide la préférence pour la PTH cimentée \
+chez les patients < 65 ans actifs — à pondérer avec la qualité osseuse DXA."
+
+Chirurgie arthroscopique / ligamentoplastie :
+  titre_court : "Greffon quadricipital vs OTO pour LCA : re-rupture à 5 ans"
+  resume : "RCT multicentrique (N=344, âge moyen 26 ans, sportifs compétition, \
+suivi 5 ans) : re-rupture 6,9 % (QT) vs 8,1 % (OTO) — différence non significative \
+(p=0,54). Retour au sport niveau antérieur : 72 % (QT) vs 71 % (OTO) à 24 mois. \
+Douleur site de prélèvement significativement moindre avec QT à 6 mois \
+(NRS 1,2 vs 2,4 ; p=0,003). KOOS sport à 5 ans identiques (88 vs 87 points)."
+  impact_pratique : "En pratique : le QT s'impose comme alternative valide à l'OTO \
+avec moindre morbidité de prélèvement — intégrer dans le choix selon morphotype."
+
+Guideline / recommandation :
+  titre_court : "SOFCOT 2024 : prothèse cimentée recommandée fracture col ≥ 75 ans"
+  resume : "Recommandations SOFCOT 2024 (OTSR suppl.) : arthroplastie cimentée \
+recommandée en 1re intention pour toute fracture col fémoral déplacée (Garden III-IV) \
+chez les patients ≥ 75 ans (recommandation Grade A). Hémiarthroplastie vs PTH : \
+PTH recommandée si patient autonome et espérance de vie ≥ 5 ans (Grade B). \
+Basé sur méta-analyse (N=9 214) : révision à 5 ans 3,8 % (PTH) vs 9,1 % \
+(hémiarthroplastie) — OR 0,40 (IC95% 0,31–0,51)."
+  impact_pratique : "À retenir : arthroplastie cimentée systématique ≥ 75 ans — \
+fin du débat tige sans ciment en urgence traumatologique."
+
+Alerte matériovigilance :
+  titre_court : "ANSM : retrait prothèse hanche métal-métal DePuy Pinnacle lot xxxx"
+  resume : "ANSM (décision 8 mars 2026) : retrait du marché des prothèses \
+DePuy Pinnacle tête métal-métal (lot xxxx) après signalement de 23 cas \
+de pseudotumeurs (ALVAL — réaction aux débris métal-métal) en matériovigilance \
+(délai médian 6,3 ans post-implantation). Environ 1 200 prothèses implantées \
+en France depuis 2019. Surveillance recommandée : cobalt/chrome sanguin annuel \
++ IRM si symptômes."
+  impact_pratique : "En pratique : identifier les patients porteurs du lot concerné \
+et planifier dosage métal sanguin + consultation dans les 3 mois."
+"""
+
+_SPECIALTY_ADDENDUM_DERMATOLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — DERMATOLOGIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : dermatologue libéral ou hospitalier (CHU/CH), France / Europe. \
+Activité polyvalente ou spécialisée en : dermatologie inflammatoire \
+(psoriasis — plaques, pustuleux généralisé GPP, érythrodermique ; \
+dermatite atopique/eczéma — modérée à sévère ; pemphigus vulgaire/foliacé, \
+pemphigoïde bulleuse ; hidradénite suppurée — HS ; alopécie areata ; vitiligo), \
+dermato-oncologie (mélanome — adjuvant/métastatique, BRAF/NRAS/NF1 status ; \
+carcinome basocellulaire — CBC superficiel/nodulaire/avancé ; \
+carcinome épidermoïde cutané — CE/CSCC ; \
+lymphomes cutanés T — mycosis fongoïde MF, syndrome de Sézary SS, CD30+ ; \
+mélanome muqueux, mélanome uvéal), dermatologie infectieuse et IST \
+(HSV 1/2, VZV, HPV — condylomes, verrues, dysplasies cervicales suivi ; \
+syphilis, gonorrhée, Mpox ; gale — traitement de masse et contacts ; \
+dermatophyties, candidoses), acnéologie (acné vulgaire, acné conglobata, \
+isotrétinoïne — programme PPP obligatoire en France). \
+Référentiels actuels : EADV guidelines 2022-2024 (psoriasis, DA, mélanome, \
+pemphigus), HAS recommandations (remboursement biologiques psoriasis/DA, \
+protocole isotrétinoïne), SFD (Société Française de Dermatologie), \
+EADO guidelines (European Association of Dermato-Oncology), \
+European Consensus on Melanoma (ECM 2023), NCCN Melanoma/NMSC. \
+Essais pivots récents de référence : \
+DA : SOLO 1/2 (dupilumab NEJM 2016), BREEZE-AD1/2/7 (baricitinib), \
+JADE MONO-1/2 (abrocitinib), Measure Up 1/2 (upadacitinib), \
+ECZTRA 1/2 (tralokinumab), ADvocate 1/2 (lebrikizumab), \
+Heads Up (upadacitinib vs dupilumab head-to-head). \
+Psoriasis : UNCOVER-1/2/3 (ixekizumab), VOYAGE 1/2 (guselkumab), \
+UltIMMa-1/2 (risankizumab), BE VIVID/BE SURE (bimekizumab), \
+POETYK PSO-1/2 (deucravacitinib vs apremilast et adalimumab). \
+GPP : EFFISAYIL-1 (spesolimab). \
+Mélanome : CheckMate 238 (nivolumab adjuvant stade III), \
+KEYNOTE-716 (pembrolizumab adjuvant stade IIB-IIC), \
+RELATIVITY-047 (nivolumab+relatlimab mélanome avancé), COMBI-d/v \
+(dabrafenib+trametinib BRAF+). CBC avancé : ERIVANCE (vismodegib), \
+EMPOWER-BCC-1 (cemiplimab). CE cutané : EMPOWER-CSCC-1 (cemiplimab). \
+CTCL : MAVORIC (mogamulizumab MF/SS), ALCANZA (brentuximab CD30+).
+
+CRITÈRE DE PERTINENCE DERMATOLOGIE :
+"Ce résultat va-t-il modifier un choix thérapeutique (initiation/switch biologique, \
+séquence de ligne de traitement, seuil d'escalade), une indication de procédure \
+cutanée (exérèse, Mohs, curage), ou la surveillance d'un effet indésirable \
+dans les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : résultats confirmatoires d'une classe déjà \
+établie sans nouvelle indication ni gain clinique mesurable, études in vitro \
+sur mécanismes cutanés sans implication thérapeutique directe, \
+épidémiologie descriptive sans recommandation opérationnelle, \
+esthétique médicale (toxine botulique, acide hyaluronique injectables) \
+sauf complication grave ou changement de pratique majeur.
+
+FILTRES SPÉCIFIQUES DERMATOLOGIE :
+
+→ RETENIR EN PRIORITÉ :
+  Dermatologie inflammatoire :
+  • Head-to-head biologiques : comparaisons directes dupilumab vs JAK inhibiteurs \
+(abrocitinib, upadacitinib) dans la DA ; anti-IL-17 vs anti-IL-23 vs anti-IL-12/23 \
+dans le psoriasis — résultats PASI 90/100, IGA, durée de réponse, profil de sécurité.
+  • Nouvelles indications biologiques : dupilumab (HS, ABPA, prurigo nodulaire, \
+polypose nasosinusienne — indications hors DA/asthme) ; spesolimab \
+(anti-IL-36R — GPP flare, EFFISAYIL-1/2) ; bimekizumab (psoriasis ET DA en cours) ; \
+deucravacitinib (TYK2 inhibiteur oral, POETYK PSO-1/2 vs apremilast et adalimumab).
+  • Sécurité à long terme des JAK inhibiteurs : signal cardiovasculaire/thromboembolique \
+(ORAL Surveillance), restriction EMA/ANSM — impact sur la présélection des patients.
+  • Alertes ANSM sur immunosuppresseurs topiques (tacrolimus/pimecrolimus — \
+réévaluation du signal lymphome ; corticoïdes topiques haute puissance ; \
+fluorouracil 5-FU crème — alertes récentes EU sur effets systémiques) ; \
+isotrétinoïne (PPP — modifications réglementaires programme grossesse).
+  • Guidelines EADV mises à jour : psoriasis, DA, acné, mélanome, GPP.
+  Dermato-oncologie :
+  • Mélanome adjuvant stade II/III : pembrolizumab (KEYNOTE-716 stade IIB-IIC), \
+nivolumab (CheckMate 238 stade III), nivolumab+ipilimumab vs nivolumab, \
+adjuvant BRAF+ (dabrafenib+trametinib vs immunothérapie — séquence).
+  • Mélanome métastatique : RELATIVITY-047 (nivolumab+relatlimab — anti-LAG3), \
+combinaisons quadruples (anti-PD1+anti-CTLA4+anti-LAG3+anti-TIGIT), \
+résultats OS finaux essais anti-BRAF/MEK (COMBI-d/v, coBRIM).
+  • BCE avancé : cemiplimab (EMPOWER-BCC-1/2), vismodegib (ERIVANCE) ; \
+résistance aux inhibiteurs de SMO (voie Hedgehog) et stratégies de recours.
+  • CE cutané avancé (CSCC) : cemiplimab (EMPOWER-CSCC-1), pembrolizumab.
+  • Lymphomes cutanés T : mogamulizumab (MAVORIC — MF/SS), \
+brentuximab vedotin (ALCANZA — CD30+ CTCL), pembrolizumab dans le MF, \
+nouvelles classifications WHO/ICC 2022 impactant la prise en charge.
+  • Technique chirurgicale : marges d'exérèse mélanome (mise à jour guidelines), \
+chirurgie de Mohs (CBC/CE — indications sur zones à risque), ganglion sentinelle \
+mélanome (actualisation après DeCOG-SLT et MSLT-II).
+  Réglementaire :
+  • Modifications remboursement HAS biologiques dermatologie (critères d'accès \
+dupilumab, baricitinib, upadacitinib, abrocitinib pour DA ; anti-IL-23/IL-17 psoriasis).
+  • Alertes ANSM matériovigilance : lasers dermatologiques, photothérapie UVB, \
+appareils dermatoscopie connectée.
+  • JORF : arrêtés de remboursement nouveaux biologiques, modifications du PPP isotrétinoïne.
+
+→ REJETER SANS HÉSITER :
+  • Biologie fondamentale cutanée (immunologie mécanistique, génomique du kératinocyte, \
+axe microbiome-peau) sans implication thérapeutique dans les 2 ans.
+  • Phase 1-2 sans efficacité clinique démontrée sur endpoint patient.
+  • Études monocentriques sur cohortes < 100 patients sans comparateur actif.
+  • Médecine esthétique et injectables (toxine, AH, fillers) sauf signal de sécurité grave.
+  • Épidémiologie descriptive incidence/prévalence sans recommandation opérationnelle.
+  • Études in vitro sur modèles cellulaires cutanés sans transposabilité clinique immédiate.
+  • Photoprotection, cosmétologie et soins hydratants — sauf essai comparatif de qualité \
+modifiant un protocole de prévention ou de traitement adjuvant.
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+PASI (Psoriasis Area and Severity Index) — PASI 75/90/100, IGA (Investigator's Global \
+Assessment) 0/1, BSA (body surface area), DLQI (Dermatology Life Quality Index), \
+EASI (Eczema Area and Severity Index), IGA-AD, PP-NRS (peak pruritus NRS), POEM, \
+DA (dermatite atopique), HS (hidradénite suppurée), GPP (psoriasis pustuleux généralisé), \
+dupilumab (anti-IL-4Rα — bloque IL-4 et IL-13 ; Dupixent), \
+tralokinumab (anti-IL-13 ; Adtralza), lebrikizumab (anti-IL-13 ; Ebglyss), \
+baricitinib (JAK1/JAK2 inhibiteur ; Olumiant), abrocitinib (JAK1 sélectif ; Cibinqo), \
+upadacitinib (JAK1 sélectif ; Rinvoq), \
+secukinumab (anti-IL-17A ; Cosentyx), ixekizumab (anti-IL-17A ; Taltz), \
+bimekizumab (anti-IL-17A et IL-17F ; Bimzelx), brodalumab (anti-IL-17RA ; Kyntheum), \
+ustékinumab (anti-IL-12/23 ; Stelara), guselkumab (anti-IL-23 ; Tremfya), \
+risankizumab (anti-IL-23 ; Skyrizi), tildrakizumab (anti-IL-23 ; Ilumetri), \
+deucravacitinib (inhibiteur TYK2 — oral ; Sotyktu), apremilast (IPD4 ; Otezla), \
+spesolimab (anti-IL-36R ; Spevigo — GPP), \
+mélanome : BRAF V600E/K mutation, NRAS, NF1, c-KIT, \
+dabrafenib + trametinib (anti-BRAF + anti-MEK ; COMBI-d/v), \
+vemurafenib + cobimetinib (anti-BRAF + anti-MEK), \
+nivolumab (anti-PD1 ; Opdivo), pembrolizumab (anti-PD1 ; Keytruda), \
+ipilimumab (anti-CTLA4 ; Yervoy), relatlimab (anti-LAG3 ; Opdualag — combo nivolumab), \
+cemiplimab (anti-PD1 ; Libtayo — CBC avancé, CE cutané avancé), \
+vismodegib (inhibiteur SMO — voie Hedgehog ; Erivedge), \
+sonidegib (inhibiteur SMO ; Odomzo), \
+mogamulizumab (anti-CCR4 ; Poteligeo — MF/SS), \
+brentuximab vedotin (anti-CD30 ; Adcetris — CTCL CD30+), \
+SLNB (ganglion sentinelle — sentinel lymph node biopsy), \
+Mohs (chirurgie micrographique), marges R0 / chirurgie large, \
+curage ganglionnaire (CLND — complete lymph node dissection), \
+MF (mycosis fongoïde), SS (syndrome de Sézary), \
+photothérapie NB-UVB (narrowband UVB), PUVA, \
+isotrétinoïne (Curacné / Acnétane — PPP obligatoire), \
+PPP (programme de prévention des grossesses — ANSM), \
+5-FU topique (fluorouracil — kératoses actiniques, CE superficiels), \
+imiquimod (Aldara — CBC superficiel, verrues anogénitales), \
+cryothérapie, dermoscopie, réflectance confocale (RCM), \
+MSLT (Multicenter Selective Lymphadenectomy Trial), \
+ganglion sentinelle (SLNB), \
+TIL (tumour-infiltrating lymphocytes — thérapie adoptive mélanome).
+
+EXEMPLES DE RÉDACTION (style JAAD / BJD / JEADV / La Revue du Praticien Dermatologie) :
+
+RCT biologique DA (head-to-head) :
+  titre_court : "Upadacitinib vs dupilumab dans la DA sévère : Heads Up à 24 semaines"
+  resume : "Heads Up (RCT, N=692, DA modérée-sévère, EASI ≥ 16, suivi 24 semaines) : \
+EASI-75 à S16 : 71,0 % (upadacitinib 30 mg) vs 61,1 % (dupilumab 300 mg / 2 semaines) \
+— p=0,006. IGA 0/1 : 50,5 % vs 38,7 % (p=0,002). PP-NRS ≥ 4 points : 50,7 % vs \
+41,3 % (p=0,013). Infections graves : 1,7 % (upadacitinib) vs 0,3 % (dupilumab). \
+Pas de différence mortalité ni événement thromboembolique à 24 semaines."
+  impact_pratique : "En pratique : upadacitinib surpasse dupilumab sur les critères \
+composites à 16 semaines — à pondérer avec un profil d'infection légèrement moins \
+favorable et l'absence de données long terme (> 2 ans) vs dupilumab."
+
+Guideline EADV psoriasis — mise à jour :
+  titre_court : "EADV 2024 : bimekizumab et deucravacitinib intégrés en 1re ligne psoriasis"
+  resume : "Mise à jour EADV guidelines psoriasis modéré-sévère (JEADV, 2024) : \
+bimekizumab (anti-IL-17A et IL-17F) rejoint ixekizumab et guselkumab en 1re ligne \
+systémique (recommandation forte, niveau A) sur la base de BE SURE et BE VIVID \
+(PASI 90 ≥ 80 %, PASI 100 ≥ 65 % à 16 semaines vs adalimumab et ustekinumab). \
+Deucravacitinib (TYK2 inhibiteur oral) introduit en alternative orale aux anti-IL-17/23 \
+chez les patients refusant les injections (POETYK PSO-1/2, PASI 75 : 53-58 % vs \
+placebo 7-8 %, vs apremilast 30 %). Méthotrexate et ciclosporine reclassés en \
+traitement relais/pont plutôt qu'en 1re ligne biologique."
+  impact_pratique : "En pratique : le choix entre anti-IL-17A/F, anti-IL-23 et TYK2 \
+oral peut maintenant se faire selon le profil patient (mode d'administration, \
+comorbidités, préférence) — tous niveau A selon les nouvelles guidelines."
+
+Mélanome adjuvant stade IIB-IIC :
+  titre_court : "Pembrolizumab adjuvant stade IIB-IIC : KEYNOTE-716 OS à 4 ans"
+  resume : "KEYNOTE-716 (RCT, N=976, mélanome résécable stade IIB-IIC, suivi médian \
+4 ans) : survie sans récidive (RFS) à 4 ans 72,1 % (pembrolizumab) vs 64,2 % \
+(placebo) — HR 0,64 (IC95% 0,50–0,84 ; p=0,001). Survie globale à 4 ans : 89,4 % vs \
+86,2 % (HR 0,73 ; IC95% 0,50–1,07 ; p non significatif au seuil prédéfini). \
+Effets indésirables immunologiques grade ≥ 3 : 15,5 % (pembrolizumab)."
+  impact_pratique : "En pratique : le pembrolizumab adjuvant est indiqué et remboursé \
+(AMM EMA, août 2023) dans les mélanomes stade IIB-IIC réséqués — réduire de 36 % \
+le risque de récidive, à peser contre le profil de toxicité immunologique."
+
+Alerte ANSM :
+  titre_court : "ANSM : fluorouracil 5 % crème (Efudix) — risque systémique, restrictions prescripteurs"
+  resume : "ANSM/EMA (2021, rappel mars 2026) : restriction d'utilisation du \
+fluorouracil 5 % crème (Efudix) après 25 cas d'effets systémiques graves en Europe \
+(cardiotoxicité, diarrhée, mucite) chez des patients porteurs d'un déficit en \
+dihydropyrimidine déshydrogénase (DPD — prévalence 3-5 % en population générale). \
+Désormais : test DPD obligatoire avant initiation, prescription réservée aux \
+spécialistes (dermatologue, oncologue), contre-indication absolue si déficit DPD \
+complet (homozygote)."
+  impact_pratique : "En pratique : tester le statut DPD (uracilémie plasmatique) \
+avant toute prescription de 5-FU topique — le déficit partiel (hétérozygote) impose \
+une réduction de dose ou un traitement alternatif (imiquimod, cryothérapie)."
+"""
+
+_SPECIALTY_ADDENDUM_ENDOCRINOLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — ENDOCRINOLOGIE, DIABÉTOLOGIE ET MALADIES MÉTABOLIQUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : endocrinologue-diabétologue (CHU / cabinet libéral, France / Europe), \
+prenant en charge diabète de type 1 et 2, obésité, thyroïde, surrénales, hypophyse, \
+parathyroïdes, ostéoporose, SOPK et troubles gonadiques.
+Référentiels actuels : recommandations SFE (Société Française d'Endocrinologie), \
+consensus EASD/ADA (Standards of Care in Diabetes 2025), ESE Clinical Practice \
+Guidelines, guidelines ETA (European Thyroid Association) 2023-2024, recommandations \
+HAS (diabète, obésité, thyroïde), ESC/EASD guidelines on Diabetes and CVD 2023, \
+IOF/ESCEO ostéoporose 2023.
+Essais pivots récents de référence — diabète/obésité : EMPA-REG OUTCOME \
+(empagliflozine CV), CANVAS (canagliflozine), DECLARE-TIMI 58 (dapagliflozine), \
+LEADER (liraglutide CV), SUSTAIN-6 (sémaglutide CV), SELECT (sémaglutide 2,4 mg \
+obésité sans diabète — réduction MACE), SURMOUNT-1/2/3/4 (tirzepatide obésité), \
+SURPASS-CVOT (tirzepatide CV), STEP 1-5 (sémaglutide obésité), DAPA-HF, \
+EMPEROR-Reduced/Preserved (iSGLT2 insuffisance cardiaque), DELIVER (dapagliflozine IC), \
+FLOW (sémaglutide néphroprotection — réduction DFG et CV), FIDELIO-DKD / \
+FIGARO-DKD (finerenone IRC+DT2), ONWARDS 1-6 (insuline icodec hebdomadaire).
+Essais pivots récents de référence — ostéoporose : FREEDOM + Extension (dénosumab), \
+ARCH (romosozumab vs alendronate — réduction fractures vertébrales 48 %), \
+FRAME (romosozumab vs placebo), VERO (tériparatide vs risédronate), \
+TULIP (abaloparatide vs tériparatide).
+Essais pivots récents de référence — hypophyse / surrénales : LINC-3/4 \
+(osilodrostat — syndrome de Cushing), SONICS (osilodrostat open-label), \
+ACROBAT / GRAVITATE (lanréotide + pegvisomant — acromégalie), \
+LIBRETTO-531 (selpercatinib — cancer médullaire RET-muté).
+
+CRITÈRE DE PERTINENCE ENDOCRINOLOGIE :
+"Ce résultat va-t-il modifier un choix thérapeutique, un objectif glycémique, \
+un critère de substitution hormonal ou une stratégie de suivi dans les 1-3 ans ?" \
+Rejeter même un RCT bien conduit si : confirmateur d'une pratique établie sans \
+gain de précision clinique, sous-groupe non pré-spécifié sur < 200 patients, \
+population asiatique sans validation EU (ex. IMC moyen 25 kg/m² incompatible \
+avec obésité FR), bénéfice uniquement biologique sans endpoint clinique \
+(HbA1c seul sans endpoint CV/rénal ni QdV pour une molécule déjà commercialisée).
+
+DOMAINES PRIORITAIRES :
+  Diabète de type 2 et obésité :
+  • Nouveaux agonistes GLP-1 et double/triple agonistes (tirzepatide GLP-1/GIP — \
+Mounjaro/Zepbound ; retatrutide, mazdutide GLP-1/GIP/glucagon — essais phase 3) : \
+données MACE, perte de poids, néphroprotection, effets indésirables GI, \
+abandon de traitement.
+  • iSGLT2 : nouvelles extensions d'indication AMM EU (IC à FEVG préservée \
+EMPEROR-Preserved, IRC stade G3-G4 DAPA-CKD), séquences iSGLT2 + GLP-1 selon \
+comorbidité CV/rénale/obésité (algorithme EASD/ADA 2025).
+  • Obésité : essais phase 3 oraux (orforglipron — GLP-1 oral non peptidique, \
+cagrilintide — analogue amyline), résultats long terme chirurgie bariatrique \
+(5-10 ans : sleeve vs bypass Roux-en-Y), remboursement Wegovy/Mounjaro FR.
+  • Insulinothérapie : icodec hebdomadaire (Awiqli — AMM EU 2023, ONWARDS 1-6), \
+systèmes closed-loop hybrides DT1 (780G, Control-IQ, CamAPS Fx — données vie réelle \
+HbA1c + TIR + sécurité).
+  • ANSM / HAS : alertes pénuries GLP-1 agonistes, rappels CGM (FreeStyle Libre, \
+Dexcom G7), remboursement nouvelles molécules.
+
+  Thyroïde :
+  • Cancer différencié : déescalade surveillance active (cancer papillaire bas risque \
+< 1 cm), cibles TSH post-thyroïdectomie selon risque ATA/ETA 2023, thérapies ciblées \
+(selpercatinib Retsevmo — LIBRETTO-531, RET-muté / réarrangé).
+  • Cancer médullaire : vandetanib, cabozantinib, selpercatinib.
+  • Cancer anaplasique (ATC) : dabrafenib + trametinib (BRAF V600E muté — AMM FDA \
+2018, accès compassionnel EU).
+  • Hypothyroïdie : LT4 seule vs LT4+LT3 (données méta-analyses sur QdV), \
+cibles TSH selon l'âge (> 65 ans : TSH haute normale acceptable).
+  • Maladie de Basedow : durée optimale antithyroïdiens (ATD 18-24 mois, \
+taux de rémission à 5 ans), ophtalmopathie de Basedow \
+(téprotumumab Tepezza — pas AMM EU à ce jour ; rituximab OB en accès ART).
+  • Nodules : EU-TIRADS 2023, hémithyroïdectomie vs totalisation, classification \
+Bethesda + tests moléculaires (Afirma, ThyroSeq).
+
+  Surrénales :
+  • Syndrome de Cushing endogène : osilodrostat (Isturisa — inhibiteur 11β-OHD, \
+LINC-3/4/SONICS), métyrapone, pasireotide (Signifor — maladie de Cushing centrale), \
+radiochirurgie Gamma Knife post-adénomectomie.
+  • Hyperaldostéronisme primaire (syndrome de Conn) : cathétérisme veineux surrénalien \
+(CVS — latéralisation avant surrénalectomie), finerenone (Kerendia — FIDELIO/FIGARO), \
+lorundrostat (inhibiteur CYP11B2 sélectif — essais phase 3).
+  • Incidentalome surrénalien : algorithme sécrétoire (CLU, TFD 1 mg, RAR), \
+surveillance vs chirurgie selon taille/caractéristiques TDM (critères ESE 2023).
+  • Insuffisance surrénalienne : hydrocortisone dual-release (Plenadren) vs \
+conventionnelle, éducation thérapeutique crise addisonienne (carte d'urgence SFE).
+  • Phéochromocytome / paragangliome : 177Lu-DOTATATE (NETSPOT — thérapie PRRT), \
+classification WHO 2022 (tous les phéo considérés à potentiel malin).
+
+  Hypophyse :
+  • Acromégalie : analogues somatostatine (lanréotide Somatuline, octréotide LAR) + \
+pegvisomant (Somavert) en combinaison (ACROBAT/GRAVITATE — IGF-1 normalisation \
+> 80 % en combinaison vs 55 % mono), pasireotide LAR (Signifor LAR — résistants \
+aux SSA classiques). Critères de guérison post-chirurgie transsphénoïdale.
+  • Prolactinome : résistance à la cabergoline (critères ESE 2023), prolactinome \
+géant agressif (témozolomide, immunothérapie — données de cohorte).
+  • Adénomes non fonctionnels : surveillance IRM vs chirurgie transsphénoïdale \
+(critères EAONO 2023).
+  • Maladie de Cushing centrale : remission criteria (CLU, cortisol matinal) \
+post-opératoire, osilodrostat en 2e ligne.
+
+  Ostéoporose :
+  • Romosozumab (Evenity — anti-sclérostine, 210 mg/mois sc) : ARCH (réduction \
+fractures vertébrales −48 % vs alendronate), indication post-ménopausique très \
+haut risque fracturaire (≥ 2 fractures ou T-score ≤ −3,5).
+  • Tériparatide (Forsteo) et abaloparatide (Eladynos) : durée max 24 mois, \
+transition obligatoire vers antirésorbeur (dénosumab ou bisphosphonate).
+  • Dénosumab (Prolia) : rebond osseux à l'arrêt — séquencement \
+bisphosphonate obligatoire. Dénosumab extension 10 ans (FREEDOM Extension).
+  • Ostéoporose masculine : données post-ADT (androgen deprivation therapy — \
+cancer prostate), dénosumab, tériparatide.
+  • HAS 2019 / IOF-ESCEO 2023 : score FRAX, indications remboursement, \
+séquencement anabolique → antirésorbeur.
+
+  Réglementaire :
+  • HAS : recommandations prise en charge médicamenteuse DT2 (2024), obésité (2022), \
+cancer thyroïde différencié (2022), ostéoporose post-ménopausique.
+  • ANSM : alertes pénuries insulines / GLP-1 agonistes, rappels dispositifs CGM, \
+interactions médicamenteuses GLP-1 + anticoagulants.
+  • JORF : arrêtés de remboursement (tirzepatide, icodec, osilodrostat, selpercatinib, \
+romosozumab).
+
+→ REJETER SANS HÉSITER :
+  • HbA1c seul comme endpoint primaire sans endpoint CV/rénal ni QdV si la molécule \
+est commercialisée depuis > 5 ans.
+  • Études pharmacocinétiques / PK-PD sans endpoint clinique patient-relevant.
+  • Diabète T2 phase 1-2 sans efficacité démontrée sur endpoint clinique.
+  • Études transversales épidémiologiques incidence/prévalence sans recommandation \
+opérationnelle.
+  • Analogues insuline existants sans nouveau signal (sécurité, formulation, indication).
+  • Cohortes monocentriques < 100 patients sur molécules connues sans signal sécurité.
+  • Endocrinologie reproductive (SOPK, ménopause) — sauf modification majeure de \
+guidelines SFE/ESE ou signal de sécurité important.
+  • Études in vitro ou modèles animaux sans transposabilité clinique < 2 ans.
+  • Supplémentation en vitamine D seule (sans impact fracturaire ou CV démontré \
+sur endpoint primaire).
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+DT1 / DT2 (diabète de type 1 / 2), HbA1c (hémoglobine glyquée), \
+TIR (Time In Range — % temps 70-180 mg/dL), TAR (Time Above Range), \
+TBR (Time Below Range), GMI (Glucose Management Indicator), \
+CGM (Continuous Glucose Monitoring — FreeStyle Libre, Dexcom G7), \
+SAP (Sensor-Augmented Pump), closed-loop (boucle fermée hybride), \
+DFG (débit de filtration glomérulaire — mL/min/1,73 m²), \
+MACE (Major Adverse Cardiovascular Events — IDM non fatal + AVC + décès CV), \
+IC-FEr / IC-FEp / IC-FEm (insuffisance cardiaque à FEVG réduite / préservée / midrange), \
+IMC (indice de masse corporelle, kg/m²), \
+bariatrique (sleeve gastrectomy / bypass Roux-en-Y, BPG), \
+MODY (Maturity-Onset Diabetes of the Young), \
+iSGLT2 : empagliflozine (Jardiance), dapagliflozine (Forxiga), \
+canagliflozine (Invokana), ertugliflozine (Steglatro), \
+agonistes GLP-1 : sémaglutide (Ozempic 0,5-2 mg sc / Wegovy 2,4 mg sc / \
+Rybelsus oral), liraglutide (Victoza 1,8 mg / Saxenda 3 mg), \
+dulaglutide (Trulicity), exénatide LAR (Bydureon), \
+GLP-1/GIP dual agoniste : tirzepatide (Mounjaro 2,5-15 mg / Zepbound 2,5-15 mg), \
+insuline dégludec hebdomadaire : icodec (Awiqli), \
+insulines basales : dégludec (Tresiba U100/U200), glargine U100 (Lantus) / \
+U300 (Toujeo), dégludec+liraglutide (Xultophy), \
+iDPP4 : sitagliptine, vildagliptine, saxagliptine, alogliptine, linagliptine, \
+TSH (thyréostimuline), T4L / T3L, anti-TPO / anti-TG, \
+eu-/hypo-/hyperthyroïdie, maladie de Basedow, \
+OB (ophtalmopathie de Basedow — TAO, Thyroid-Associated Orbitopathy), \
+EU-TIRADS (classification échographique nodule — 2023), \
+BRAF V600E (mutation cancer papillaire thyroïdien), \
+RET (proto-oncogène — cancer médullaire / cancer thyroïde RET-muté), \
+selpercatinib (Retsevmo — inhibiteur RET sélectif), \
+vandetanib (Caprelsa), cabozantinib (Cometriq / Cabometyx), \
+CLU (cortisol libre urinaire), TFD (test de freination à la dexaméthasone 1 mg / 2×2 mg), \
+ACTH plasmatique, RAR (ratio aldostérone/rénine), CVS (cathétérisme veineux surrénalien), \
+osilodrostat (Isturisa — inhibiteur 11β-hydroxylase), \
+finerenone (Kerendia — antagoniste MR non stéroïdien), \
+GH (growth hormone), IGF-1 (insulin-like growth factor-1), \
+lanréotide (Somatuline Autogel 60-120 mg), octréotide LAR (Sandostatin LAR 10-30 mg), \
+pegvisomant (Somavert — antagoniste GH-R), \
+pasireotide LAR (Signifor LAR — SSA pan-somatostatine), \
+FRAX (Fracture Risk Assessment Tool), \
+DXA (absorptiométrie biphotonique — T-score / Z-score), \
+romosozumab (Evenity — anti-sclérostine, 210 mg/mois sc), \
+tériparatide (Forsteo — PTH 1-34, 20 µg/j sc), \
+abaloparatide (Eladynos — PTHrP analogue), \
+dénosumab (Prolia — anti-RANKL, 60 mg / 6 mois), \
+ADT (androgen deprivation therapy — cancer prostate, ostéoporose masculine), \
+177Lu-DOTATATE (NETSPOT — thérapie PRRT phéo/paragangliome).
+
+EXEMPLES DE RÉDACTION (style Diabetes Care / Lancet Diabetes Endocrinol / JCEM / \
+Ann Endocrinol — résultat d'abord, chiffres en contexte) :
+
+RCT iSGLT2 insuffisance cardiaque à FEVG préservée :
+  titre_court : "Empagliflozine dans l'IC-FEp : EMPEROR-Preserved, 26 mois"
+  resume : "EMPEROR-Preserved (RCT, N=5 988, IC-FEp/IC-FEm FEVG ≥ 40 %, suivi médian \
+26 mois) : réduction de 21 % du critère combiné hospitalisation CV pour IC + décès CV \
+sous empagliflozine vs placebo (HR 0,79 ; IC95% 0,69–0,90 ; p < 0,001), chez DT2 et \
+non-DT2 (bénéfice similaire). Réduction des hospitalisations pour IC : HR 0,73 \
+(IC95% 0,61–0,88). Pas de bénéfice significatif sur la mortalité CV isolée."
+  impact_pratique : "En pratique : empagliflozine (et dapagliflozine — DELIVER) \
+disposent d'une AMM EU dans l'IC-FEp — à initier en coordination avec le cardiologue \
+chez tout DT2 avec IC-FEp documentée, indépendamment du contrôle glycémique."
+
+Guideline EASD/ADA 2025 — algorithme DT2 avec obésité :
+  titre_court : "EASD/ADA 2025 : tirzepatide en 1re intention chez DT2 avec obésité"
+  resume : "Mise à jour du consensus de gestion hyperglycémique EASD/ADA (Diabetes Care, \
+2025) : chez le patient DT2 avec obésité (IMC ≥ 30 kg/m²), le tirzepatide \
+(GLP-1/GIP dual agoniste) devient une option de 1re intention aux côtés du \
+sémaglutide 2 mg, avec une perte de poids médiane supérieure (SURPASS-2 : −2,3 points \
+d'HbA1c et −7,8 kg vs sémaglutide 1 mg à 40 semaines). L'algorithme intègre la \
+comorbidité dominante : IC → iSGLT2 en premier ; IRC avec DFG 20-45 mL/min → \
+finerenone si UACR ≥ 30 mg/g ; athérosclérose établie → sémaglutide / dulaglutide."
+  impact_pratique : "En pratique : le choix du premier agent après metformine est \
+désormais guidé par la comorbidité dominante (CV, rénal, obésité) — le consensus \
+EASD/ADA 2025 rend cet algorithme opposable en consultation."
+
+Essai pivot insuline hebdomadaire — icodec :
+  titre_court : "Insuline icodec 1/semaine : ONWARDS 1-6 — non-infériorité vs dégludec"
+  resume : "Programme ONWARDS (6 RCTs, N ~ 4 500 au total, DT1 et DT2, suivi \
+26-52 semaines) : icodec 1 injection/semaine vs insuline basale quotidienne (dégludec \
+ou glargine U100). Non-infériorité atteinte dans 5/6 essais sur HbA1c ; supériorité \
+dans ONWARDS 1 (DT2, Δ HbA1c −0,19 % ; p=0,002) et ONWARDS 3 (sans insuline basale \
+préalable). TBR < 54 mg/dL légèrement augmenté dans ONWARDS 1 \
+(0,53 % vs 0,22 % ; Δ +0,31 %). AMM EMA octroyée (Awiqli, août 2023)."
+  impact_pratique : "En pratique : icodec simplifie l'initiation insuline basale chez le \
+DT2 avec faible observance quotidienne — à proposer en priorité lorsque l'oubli de \
+dose est le principal frein à l'insulinisation."
+
+Alerte ANSM — pénurie GLP-1 :
+  titre_court : "ANSM/HAS : priorisation GLP-1 agonistes — tensions d'approvisionnement 2025"
+  resume : "ANSM (communication jan. 2025) : face aux tensions persistantes sur \
+sémaglutide (Ozempic, Wegovy) et liraglutide (Victoza, Saxenda), la HAS recommande \
+de réserver la prescription aux DT2 avec indication CV ou rénale documentée \
+(MACE ≥ 1, IRC stade G3+, obésité IMC > 35 kg/m²) et de ne pas initier dans les \
+formes non compliquées sans enjeu CV/rénal. Tirzepatide (Mounjaro) disponible hors \
+rupture — alternative recommandée. Prescription hors-AMM à visée pondérale seule \
+formellement déconseillée en période de tension."
+  impact_pratique : "En pratique : identifier les patients sous GLP-1 sans indication \
+CV/rénale et proposer un basculement vers tirzepatide ou dulaglutide \
+(disponibles) — conserver sémaglutide pour les indications prioritaires documentées."
+"""
+
+_SPECIALTY_ADDENDUM_GASTROENTEROLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — GASTROENTÉROLOGIE, HÉPATOLOGIE ET ENDOSCOPIE DIGESTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : gastroentérologue-hépatologue (CHU / cabinet libéral, France / Europe), \
+prenant en charge MICI (maladie de Crohn + colite ulcéreuse), maladies hépatiques \
+(MASLD/MASH, CBP, PSC, hépatites virales, CH, cirrhose), cancers digestifs (CCR, CH, \
+pancréas, estomac, œsophage), endoscopie diagnostique et interventionnelle, RGO, \
+maladies fonctionnelles (SII, dyspepsie).
+Référentiels actuels : ECCO guidelines 2023-2024 (MICI), EASL Clinical Practice \
+Guidelines 2023-2024 (hépatologie), ESGE guidelines 2023-2024 (endoscopie), \
+recommandations SNFGE/HAS (France), consensus Maastricht VI/Florence 2022 (H. pylori), \
+ASCO/ESMO guidelines CCR et cancers digestifs, AASLD Practice Guidance 2023-2024.
+Essais pivots récents de référence — MICI : VARSITY (vedolizumab vs adalimumab RCT CU — \
+réponse clinique 31,3 % vs 22,5 % à 52 sem), GEMINI 1/2/3 (vedolizumab), \
+UNIFI (ustekinumab CU), ADVANCE/MOTIVATE (risankizumab MC induction), \
+STARDUST (risankizumab MC), LUCENT-1/2 (mirikizumab CU — rémission clinique 24,2 % \
+vs 13,3 % à 52 sem), VIVID-1 (mirikizumab MC), U-ACHIEVE (upadacitinib CU), \
+U-EXCEL/U-EXCEED (upadacitinib MC), TRUE NORTH (ozanimod CU), \
+ELEVATE UC 12/52 (etrasimod CU), SELECTION (filgotinib CU), OCTAVE (tofacitinib CU), \
+CALM (MC tight control treat-to-target), SONIC (infliximab + azathioprine MC).
+Essais pivots récents de référence — hépatologie / MASH : \
+MAESTRO-NASH (resmetirom — Rezdiffra — 1er traitement approuvé FDA mars 2024 MASH F2-F3 : \
+réduction fibrothique ≥1 stade sans aggravation MASH 25,9 % vs 14,2 %), \
+POISE (obeticholic acid CBP — amélioration ALP > 15 % et < ULN), \
+ELATIVE (elafibranor CBP — PPARα/δ — ALP normalisation 15,7 % vs 2,7 %), \
+RESPONSE (seladelpar CBP — PPARδ), IMbrave150 (atezolizumab + bevacizumab CH \
+avancé vs sorafenib — SG 19,2 vs 13,4 mois), HIMALAYA (tremelimumab 300 mg \
+dose unique + durvalumab CH — STRIDE regimen), PRODIGE 24 (FOLFIRINOX adjuvant \
+pancréas vs gemcitabine — SG 54,4 vs 35,0 mois), TOPAZ-1 (durvalumab + gemcitabine \
+voies biliaires avancées), KEYNOTE-590 (pembrolizumab + CT œsophage/JOG).
+Essais pivots récents de référence — cancers colorectaux : \
+MOSAIC (FOLFOX adjuvant CCR — référence stade III), OPTIMOX (FOLFOX intermittent), \
+FIRE-3 / CALGB 80405 (cetuximab vs bevacizumab 1re ligne RAS-WT), \
+BEACON (encorafenib + cetuximab BRAF V600E mCCR), \
+KEYNOTE-177 (pembrolizumab MSI-H/dMMR CCR — SG médiane non atteinte vs CT).
+
+CRITÈRE DE PERTINENCE GASTROENTÉROLOGIE :
+"Ce résultat va-t-il modifier un choix de biothérapie, un algorithme de séquençage \
+thérapeutique, un critère de surveillance ou une stratégie endoscopique dans les 1-3 ans ?" \
+Rejeter même un RCT bien conduit si : comparaison de deux molécules déjà séquencées \
+sans nouvelle indication, étude de cohorte monocentrique < 80 patients sur une molécule \
+commercialisée, endpoint biologique seul sans endpoint clinique (ex. calprotectine seule \
+sans rémission endoscopique), épidémiologie descriptive sans recommandation opérationnelle.
+
+DOMAINES PRIORITAIRES :
+
+  MICI — maladie de Crohn et colite ulcéreuse :
+  • Biothérapies et petites molécules — séquençage post-anti-TNF :
+    Vedolizumab (Entyvio — anti-α4β7 intégrine, sc et IV), ustekinumab (Stelara — \
+    anti-IL-12/IL-23 p40), risankizumab (Skyrizi — anti-IL-23 p19, MC), \
+    mirikizumab (Omvoh — anti-IL-23 p19, CU), guselkumab (Tremfya — anti-IL-23 p19, \
+    en évaluation MICI), ozanimod (Zeposia — modulateur S1P, CU), \
+    etrasimod (Velsipity — modulateur S1P, CU), filgotinib (Jyseleca — JAK1, CU), \
+    upadacitinib (Rinvoq — JAK1, MC et CU), tofacitinib (Xeljanz — JAK1/3, CU).
+  • Treat-to-target (T2T) : cible — rémission endoscopique (absence d'ulcères MC, \
+    Mayo endoscopique ≤ 1 CU) + rémission biologique (calprotectine fécale < 150-250 µg/g \
+    + CRP normale) ; monitoring trimestriel en phase d'induction, semestriel en entretien.
+  • Thérapies combinées (biothérapie + IMM) et positionnement des biosimilaires \
+    (infliximab CT-P13, adalimumab ABP 501 — données switch). \
+    Chirurgie MC : résection iléo-cæcale vs traitement médical (LIRIC trial), \
+    résection prophylactique anastomose (proctocolectomie CU — pouchite, IPAA).
+  • ANSM/HAS : alertes biothérapies (PML natalizumab, réactivation HBV, lymphomes JAKi), \
+    remboursement mirikizumab (CU) et upadacitinib (MC), biosimilaires.
+
+  MASLD / MASH (ex-NAFLD / NASH) :
+  • Resmetirom (Rezdiffra — agoniste TRβ sélectif, 80-100 mg/j po) : \
+    AMM FDA mars 2024 — MASH avec fibrose significative (F2-F3) ; réduction fibrose \
+    ≥ 1 stade sans aggravation MASH 25,9 % vs 14,2 % (MAESTRO-NASH) ; \
+    EMA en évaluation 2024-2025. Critère diagnostic : biopsie ou FibroScan + MRI-PDFF.
+  • Critères MASLD (2023) : stéatose hépatique + ≥1 facteur métabolique (IMC, HTA, \
+    DT2, TG élevés, HDL bas) ; MASH = MASLD avec activité nécro-inflammatoire ≥ grade 1.
+  • Autres molécules en phase 3 : lanifibranor (IVA337 — pan-PPAR agoniste), \
+    semaglutide 2,4 mg sc (ESSENCE — résultats attendus 2025-2026), \
+    pegozafermin (FGF21 analogue).
+  • Fibrose hépatique : FibroScan (LSM — kPa), FIB-4, APRI, ELF test ; \
+    biopsie réservée aux cas ambigus. Référentiel EASL 2023.
+
+  Hépatologie :
+  • Cirrhose biliaire primitive (CBP) : obeticholic acid / acide obéticholique \
+    (Ocaliva — agoniste FXR, 5-10 mg/j), elafibranor (Iqirvo — agoniste PPARα/δ, \
+    80 mg/j — AMM FDA/EU 2024), seladelpar (Livdelzi — agoniste PPARδ — AMM FDA 2024) \
+    en 2e ligne après AUDC (acide ursodéoxycholique) insuffisant.
+  • Cholangite sclérosante primitive (PSC) : aucun traitement modifiant la maladie à \
+    ce jour — données norUDCA (acide norursodéoxycholique), vancomycine orale pédiatrique \
+    (données préliminaires). Surveillance cholangiocarcinome (bili-IRM ann., Ca19-9).
+  • Hépatite B chronique : ténofovir alafénamide (TAF — Vemlidy 25 mg), entécavir \
+    (Baraclude 0,5 mg) ; VHD (hépatite delta) : bulevirtide (Hepcludex 2 mg sc — \
+    AMM EU 2020, seul traitement approuvé).
+  • Hépatite C : traitement par DAA (sofosbuvir/velpatasvir — Epclusa, \
+    glécaprévir/pibrentasvir — Maviret) — RVS > 95-98 % ; plus de nouveaux essais \
+    majeurs, focus sur les populations difficiles (cirrhose décompensée, \
+    retraitement après échec).
+  • Carcinome hépatocellulaire (CH) : atezolizumab + bevacizumab (Tecentriq + \
+    Avastin — IMbrave150, 1re ligne avancée — SG 19,2 mois vs 13,4 mois sorafenib), \
+    tremelimumab 300 mg + durvalumab (HIMALAYA — STRIDE, SG 16,4 mois vs 13,8 mois), \
+    sorafenib (Nexavar — 2e ligne si CI immunothérapie), lenvatinib (Lenvima — non-inf \
+    sorafenib). Indications transplantation : critères de Milan (1 nodule ≤ 5 cm ou \
+    ≤ 3 nodules ≤ 3 cm) vs critères étendus (UCSF, up-to-7).
+
+  Cancers digestifs :
+  • Cancers colorectaux (CCR) : dépistage (FIT biannuel 50-74 ans, coloscopie si \
+    positif), polypectomie endoscopique (guidelines ESGE 2022 polypes), \
+    traitement stade III adjuvant (FOLFOX 12 cycles), stade IV (FOLFOX/FOLFIRI + \
+    bevacizumab ou cétuximab/panitumumab si RAS-WT), BRAF V600E : encorafenib + \
+    cetuximab (BEACON), MSI-H/dMMR : pembrolizumab 1re ligne (KEYNOTE-177) ou \
+    nivolumab. Syndrome de Lynch : surveillance coloscopique tous les 1-2 ans.
+  • Cancer du pancréas : FOLFIRINOX adjuvant 12 cycles (PRODIGE 24, SG 54,4 mois), \
+    nab-paclitaxel + gemcitabine si FOLFIRINOX contre-indiqué. Localement avancé : \
+    FOLFIRINOX → chirurgie si downstaging (PREOPANC-2).
+  • Voies biliaires : durvalumab + gemcitabine (TOPAZ-1, 1re ligne cholangiocarcinome \
+    avancé — SG 12,8 vs 11,5 mois). Altérations IDH1/FGFR2 : ivosidenib (Tibsovo) / \
+    pemigatinib (Pemazyre).
+  • Œsophage et jonction œsogastrique (JOG) : pembrolizumab + CT (KEYNOTE-590, \
+    œsophage avancé — SG 12,4 vs 9,8 mois), nivolumab (CheckMate 649, adénoK JOG \
+    CPS ≥ 5). Barrett : RFA (radiofréquence ablation) si dysplasie LG/HG.
+
+  Endoscopie digestive :
+  • ESGE guidelines 2023-2024 : polypectomie / mucosectomie (EMR/ESD), CPRE \
+    (prophylaxie pancréatite post-CPRE : indométacine rectale + hydratation IV), \
+    surveillance coloscopique post-polypectomie (intervalles selon risque).
+  • Nouvelles techniques : coloscopie assistée par IA (détection polypes — CADe/CADx, \
+    données poolées sensitivity > 92 %), chromo-endoscopie virtuelle (BLI, LCI, NBI).
+  • Entéroscopie : capsule vidéo (hémorragie digestive obscure), double ballon.
+  • Hémorragie digestive haute : stratégie endoscopique précoce (< 24 h), PPI IV \
+    haute dose, Rockford score, hemospray (TC-325).
+
+  RGO / œsophage fonctionnel / H. pylori :
+  • RGO réfractaire aux IPP : pH-impédancemétrie 24h, évaluation chirurgicale \
+    (fundoplication) — guidelines ESGE/EAES 2022. Vonoprazan (Voquezna — \
+    inhibiteur P-CAB) : AMM FDA 2023 érosive oesophagitis, Europe en évaluation.
+  • H. pylori : éradication — quadrithérapie bismuthée (PYLERA — Maastricht VI \
+    recommandée en 1re ligne dans les zones à résistance clarithromycine > 15 %, \
+    dont France), ou quadrithérapie concomitante sans bismuth. Contrôle post-éradication \
+    obligatoire (test respiratoire 4 semaines après arrêt IPP).
+  • SII : linaclotide (Constella — agoniste GC-C, SII-C), rifaximine \
+    (Xifaxan — SIBO, SII-D), éluxadoline (non disponible EU), \
+    sécrétines (ténapanor — inhibiteur NHE3), prébiotiques/probiotiques \
+    (données limitées — Lactobacillus rhamnosus GG niveau preuve modéré).
+
+  Réglementaire :
+  • HAS : recommandation prise en charge MICI 2024, dépistage CCR (FIT), \
+    obésité et chirurgie bariatrique 2022, hépatites virales (VHC — dépistage universel).
+  • ANSM : alertes immunosuppresseurs (natalizumab — PML, JAKi — thromboses/cancers), \
+    ruptures d'approvisionnement azathioprine/mercaptopurine, biosimilaires infliximab.
+  • JORF : arrêtés remboursement biothérapies MICI (mirikizumab, etrasimod, \
+    upadacitinib MC), resmetirom (décision EU/France attendue 2025), elafibranor CBP.
+
+→ REJETER SANS HÉSITER :
+  • Études de biomarqueurs (calprotectine, lactoferrine, CRP) sans endpoint clinique \
+    ni rémission endoscopique comme critère primaire.
+  • Cohortes rétrospectives monocentriques < 80 patients sur biothérapies en entretien \
+    sans signal de sécurité nouveau.
+  • Épidémiologie descriptive MICI / MASLD (prévalence, incidence) sans recommandation \
+    opérationnelle.
+  • Études PK-PD / pharmacocinétique seules sans endpoint clinique patient-relevant.
+  • Études MASH sur modèles animaux ou in vitro sans données phase 2+ humaines.
+  • SII — études sur régimes alimentaires (FODMAP, gluten) sans RCT avec contrôle \
+    adéquat (sham-diet) et ≥ 6 mois de suivi.
+  • Hépatite C — nouvelles combinaisons DAA sans population cible identifiable en France \
+    (ex. populations hyperendémiques Afrique sub-saharienne sans transposabilité FR/EU).
+  • Gastroentérologie pédiatrique — sauf signal de sécurité majeur ou modification \
+    de guidelines SFP/ESPGHAN (sinon → spécialité pédiatrie).
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+MICI (maladies inflammatoires chroniques de l'intestin), MC (maladie de Crohn), \
+CU (colite ulcéreuse / rectocolite hémorragique), RCH,
+MASLD (Metabolic dysfunction-Associated Steatotic Liver Disease — ex-NAFLD), \
+MASH (Metabolic dysfunction-Associated Steatohepatitis — ex-NASH), \
+LSM (liver stiffness measurement — kPa, FibroScan), FIB-4, APRI, MRI-PDFF, \
+CBP (cirrhose biliaire primitive), PSC (cholangite sclérosante primitive), \
+AUDC (acide ursodéoxycholique), VHB / VHC / VHD (virus hépatites B, C, D), \
+DAA (antiviraux à action directe — sofosbuvir, glécaprévir), \
+RVS (réponse virologique soutenue à 12 semaines), \
+CH (carcinome hépatocellulaire), ALAT / ASAT / PAL / GGT / bilirubine / TP (INR), \
+MELD score (Model for End-stage Liver Disease), \
+Child-Pugh A/B/C (score de cirrhose), ascite / encéphalopathie hépatique (EH), \
+rifaximine (Xifaxan — EH + SII-D), lactulose,
+anti-TNF : infliximab (Remicade / CT-P13 Remsima / SB2 Flixabi), \
+adalimumab (Humira / ABP 501 Amjevita), \
+vedolizumab (Entyvio — anti-α4β7 intégrine sc/IV), \
+ustekinumab (Stelara — anti-IL-12/IL-23 p40), \
+risankizumab (Skyrizi — anti-IL-23 p19), mirikizumab (Omvoh — anti-IL-23 p19), \
+guselkumab (Tremfya — anti-IL-23 p19), \
+ozanimod (Zeposia — modulateur S1P), etrasimod (Velsipity — modulateur S1P), \
+filgotinib (Jyseleca — JAK1), upadacitinib (Rinvoq — JAK1), \
+tofacitinib (Xeljanz — JAK1/3), \
+resmetirom (Rezdiffra — agoniste TRβ sélectif), \
+obeticholic acid / acide obéticholique (Ocaliva — agoniste FXR), \
+elafibranor (Iqirvo — agoniste PPARα/δ), seladelpar (Livdelzi — agoniste PPARδ), \
+bulevirtide (Hepcludex — inhibiteur polypeptide cotransporteur sodium/taurocholate), \
+atezolizumab (Tecentriq) + bevacizumab (Avastin) — CH 1re ligne, \
+sorafenib (Nexavar), lenvatinib (Lenvima), tremelimumab + durvalumab (HIMALAYA), \
+encorafenib (Braftovi) + cetuximab (Erbitux) — CCR BRAF V600E, \
+pembrolizumab (Keytruda) — MSI-H/dMMR 1re ligne, \
+ivosidenib (Tibsovo) — cholangiocarcinome IDH1-muté, \
+pemigatinib (Pemazyre) — cholangiocarcinome FGFR2-réarrangé, \
+FOLFIRINOX (oxaliplatine + irinotécan + fluorouracile + leucovorine), \
+FOLFOX / FOLFIRI, capécitabine (Xeloda), \
+IPP (inhibiteurs de la pompe à protons), vonoprazan (P-CAB), \
+linaclotide (Constella — agoniste GC-C), \
+FIT (test immunologique fécal — dépistage CCR), \
+EMR (mucosectomie endoscopique), ESD (dissection sous-muqueuse endoscopique), \
+CPRE (cholangio-pancréatographie rétrograde endoscopique), \
+CADe/CADx (Computer-Aided Detection/Characterization — IA coloscopie), \
+RFA (radiofréquence ablation — Barrett).
+
+EXEMPLES DE RÉDACTION (style Gut / Gastroenterology / J Hepatol / Lancet GH — \
+résultat d'abord, chiffres en contexte) :
+
+RCT biothérapie MICI — mirikizumab CU (LUCENT) :
+  titre_court : "Mirikizumab dans la CU modérée à sévère : LUCENT-1/2, 52 semaines"
+  resume : "LUCENT-1/2 (deux RCTs, N=1 279, CU modérée-sévère, dont échecs anti-TNF) : \
+à 52 semaines, la rémission clinique atteint 24,2 % sous mirikizumab vs 13,3 % placebo \
+(p < 0,001) ; rémission endoscopique 36,3 % vs 23,3 %. Bénéfice maintenu chez les \
+patients anti-TNF-naïfs et les échecs d'anti-TNF (rémission clinique 19,4 % vs 10,7 %)."
+  impact_pratique : "En pratique : mirikizumab (Omvoh) positionné en 2e ou 3e ligne après \
+échec anti-TNF ou vedolizumab — à préférer à upadacitinib JAK1 si risque cardiovasculaire \
+ou thrombo-embolique ; remboursement FR en cours."
+
+MASH — premier traitement approuvé FDA (resmetirom) :
+  titre_court : "Resmetirom dans la MASH avec fibrose F2-F3 : MAESTRO-NASH, 52 semaines"
+  resume : "MAESTRO-NASH (RCT, N=966, MASH + fibrose F2-F3, IMC médian 35,7 kg/m²) : \
+réduction fibrose ≥ 1 stade sans aggravation MASH : 25,9 % (100 mg) vs 14,2 % placebo \
+(p < 0,001) ; résolution MASH sans aggravation fibrose : 29,9 % vs 9,7 %. AMM FDA \
+accordée en mars 2024 (Rezdiffra). Évaluation EMA en cours."
+  impact_pratique : "En pratique : premier traitement médicamenteux ciblant directement \
+la fibrose MASH — à considérer chez tout patient MASLD + MASH histologiquement confirmé \
+(ou probabilité élevée NIT) avec fibrose significative (F2-F3). Accès compassionnel \
+ou ATU possible en France en attente décision EMA."
+
+CH avancé — 1re ligne (IMbrave150 vs HIMALAYA) :
+  titre_court : "CH avancé 1re ligne : atézo+béva vs tremelimumab+durvalumab — positionnement"
+  resume : "IMbrave150 (RCT, N=501, CH avancé, Child-Pugh A) : atezolizumab 1 200 mg + \
+bevacizumab 15 mg/kg q3S — SG 19,2 vs 13,4 mois vs sorafenib (HR 0,66) ; devient \
+standard de 1re ligne. HIMALAYA (RCT, N=1 171) : tremelimumab 300 mg dose unique + \
+durvalumab — SG 16,4 vs 13,8 mois vs sorafenib (HR 0,78) ; alternative si CI bevacizumab \
+(hémorragie variqueuse récente, varices non traitées)."
+  impact_pratique : "En pratique : atézo+béva reste la 1re ligne de référence dans \
+le CH avancé Child-Pugh A avec varices traitées ; HIMALAYA (STRIDE) est la \
+1re alternative si bevacizumab contre-indiqué — sorafenib rélégué en dernier recours."
+
+Alerte ANSM / sécurité biothérapie MICI :
+  titre_court : "ANSM : risque thrombo-embolique et cancers sous inhibiteurs JAK (tofacitinib, filgotinib, upadacitinib)"
+  resume : "ANSM / EMA (communication de sécurité 2023) : données poolées confirmant un \
+risque majoré d'événements thrombo-emboliques veineux, de cancers et d'infections \
+opportunistes sous inhibiteurs JAK chez les patients MICI > 65 ans, fumeurs actifs, \
+ou avec antécédent cardiovasculaire. Restriction d'usage confirmée par l'EMA : contre-indication \
+chez les patients ≥ 65 ans, tabagiques actifs ou à haut risque CV/oncologique, \
+sauf si aucun traitement alternatif disponible."
+  impact_pratique : "En pratique : avant toute initiation JAKi (filgotinib, upadacitinib, \
+tofacitinib), évaluer systématiquement l'âge, le statut tabagique et le risque CV. \
+Privilégier vedolizumab ou biothérapie anti-IL-23 chez les profils à risque."
+"""
+
+_SPECIALTY_ADDENDUM_GERIATRIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — GÉRIATRIE ET GÉRONTOLOGIE CLINIQUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : gériatre (CHU / hôpital de proximité / consultation mémoire, France), \
+prenant en charge patients ≥ 75 ans avec multimorbidité, fragilité, troubles neurocognitifs, \
+polymédication, chutes, dénutrition, prise en charge en EHPAD et transitions de soins.
+Référentiels actuels : SFGG (Société Française de Gériatrie et Gérontologie) — \
+recommandations nationales, EUGMS guidelines (fragilité, STOPP/START v3 2023), \
+AGS Beers Criteria 2023, HAS recommandations (fragilité 2022, prévention chutes 2022, \
+maladie d'Alzheimer et démences apparentées — révision 2024), NIA-AA criteria 2024 \
+(maladie d'Alzheimer stade préclinique, MCI, démence), EWGSOP2 2019 (sarcopénie), \
+critères GLIM 2019 (dénutrition), ESPEN guidelines nutrition âgé 2023.
+Essais pivots récents de référence — démences et prévention cognitive : \
+CLARITY AD (lecanemab 10 mg/kg biW, N=1 795, MA prodromale/légère — réduction \
+déclin CDR-SB de 27 % vs placebo à 18 mois ; ARIA-E 12,6 % ; AMM FDA jan 2023, \
+avis NÉGATIF CHMP EU nov 2024), \
+TRAILBLAZER-ALZ 2 (donanemab, N=1 736, tau faible/intermédiaire — réduction \
+déclin iADRS 35 % à 76 semaines ; AMM FDA juil 2024 ; EMA en évaluation 2025), \
+FINGER (multidomain — régime, exercice, entraînement cognitif, contrôle CV — \
+Finlande, N=1 260, maintien fonction cognitive à 2 ans : NTB +0,14 SD vs contrôle), \
+MAPT (multidomain + acides gras oméga-3, N=1 680, INSERM Toulouse — non-infériorité \
+déclin MMSE/ADAS-Cog, bénéfice sous-groupe APOE4), \
+SPRINT MIND (HTA intensive < 120 mmHg, N=9 361, suivi 3,3 ans — réduction probable \
+MCI de 19 % HR 0,81 IC95% 0,69-0,95 ; tendance démence non significative).
+Essais pivots récents de référence — cardiovasculaire et multimorbidité du sujet âgé : \
+HYVET (HTA > 80 ans, indapamide ± périndopril, N=3 845 — réduction AVC −30 %, \
+mortalité totale −21 %, bénéfice maintenu jusqu'à 90 ans), \
+SENIORS (nébivolol IC sujets âgés), \
+AFFIRM-AHF (vanlafaxine IV décompensation IC + anémie ferriprive âgé).
+
+CRITÈRE DE PERTINENCE GÉRIATRIE :
+"Ce résultat modifie-t-il la prise en charge d'un patient âgé fragile ou poly-pathologique : \
+choix médicamenteux, adaptation posologique, stratégie de déprescription, \
+critère de sécurité ou organisation des soins dans les 1-3 ans ?" \
+Rejeter même un RCT bien conduit si : population < 65 ans sans extrapolation justifiée \
+au sujet âgé, endpoint intermédiaire sans lien démontré avec critère clinique patient-relevant \
+(indépendance fonctionnelle, institutionnalisation, mortalité, QdV), \
+sous-groupe posthoc < 150 patients âgés sans pré-spécification, \
+mécanismes du vieillissement sans transposabilité clinique < 3 ans.
+
+DOMAINES PRIORITAIRES :
+
+  Troubles neurocognitifs et démences :
+  • Maladie d'Alzheimer (MA) — biothérapies anti-amyloïdes :
+    Lecanemab (Leqembi 10 mg/kg IV biW) et donanemab (Kisunla) — anticorps anti-amyloïde β : \
+    ralentissement du déclin cognitif (≠ arrêt de la progression) ; contre-indication \
+    APOE4/4 homozygotes (risque ARIA majeur) ; nécessite IRM de surveillance (mois 1, 3, 6) ; \
+    AMM FDA obtenue, pas d'AMM EU pour lecanemab (CHMP négatif nov 2024). \
+    En France : pas de remboursement ni d'ATU généralisée — usage compassionnel très limité.
+  • Biomarqueurs diagnostics MA : p-tau 217 plasmatique (seuil diagnostique ≥ 0,39 pg/mL — \
+    AUC 0,95), Aβ42/40 ratio plasma, neurofilaments NfL ; PET amyloïde/tau (critères \
+    NIA-AA 2024 — biomarqueurs A/T/N).
+  • Antidémentiels disponibles : inhibiteurs de l'acétylcholinestérase (donépézil \
+    Aricept 5-10 mg/j, rivastigmine Exelon 9,5-13,3 mg/24h patch, galantamine Reminyl \
+    16-24 mg/j), mémantine Ebixa 20 mg/j — efficacité modérée sur cognition/ADL, \
+    pas de modification de la progression. À maintenir si bénéfice fonctionnel perçu.
+  • Démence vasculaire / mixte : contrôle facteurs CV (HTA < 130/80 mmHg, statines, \
+    anticoagulation FA). Démence à corps de Lewy : rivastigmine (meilleur profil), \
+    éviter antipsychotiques conventionnels (risque chute/décès ++).
+  • Troubles du comportement (SCPD) : approche non-pharmacologique en 1re intention \
+    (programme DICE, musicothérapie, stimulation sensorielle) ; médicaments : \
+    mélatonine, mirtazapine (insomnie), rispéridone 0,5 mg si agitation sévère \
+    (AMM spécifique SCPD — Black Box Warning décès ++).
+
+  Fragilité et sarcopénie :
+  • Phénotype de Fried (5 critères) : perte de poids involontaire, fatigue, faiblesse \
+    musculaire (grip strength < 27 kg H / < 16 kg F), lenteur (vitesse marche < 0,8 m/s), \
+    activité physique réduite. Fragile = ≥ 3 critères, pré-fragile = 1-2.
+  • Sarcopénie (EWGSOP2 2019) : étape 1 — faible force musculaire (grip < 27 kg H / \
+    < 16 kg F, chair stand > 15 s) ; étape 2 — faible masse musculaire (DEXA ou BIA — \
+    appendicular skeletal muscle mass index : ASMI < 7,0 kg/m² H / < 5,5 kg/m² F) ; \
+    sévère si performance physique altérée (SPPB ≤ 8, vitesse marche < 0,8 m/s, TUG > 20 s).
+  • Interventions validées : exercice de résistance progressive (12-16 semaines, \
+    2-3×/semaine — augmentation force +20-30 %) + apports protéiques ≥ 1,2 g/kg/j \
+    (leucine 2,5-3 g/repas). Vitamine D ≥ 800 UI/j si carence documentée (25-OH-D < 30 ng/mL).
+
+  Chutes et fractures :
+  • Évaluation multifactorielle obligatoire post-chute : médicaments (psychotropes, \
+    antihypertenseurs, hypoglycémiants) → déprescription ; hypotension orthostatique ; \
+    trouble de l'équilibre / marche (Timed Up and Go > 20 s) ; vue et audition ; \
+    environnement domicile (tapis, éclairage, salle de bain). HAS 2022.
+  • Médicaments à risque de chute majeur (STOPP v3 / Beers 2023) : benzodiazépines, \
+    Z-drugs, antipsychotiques sédatifs, antihistaminiques H1, antidépresseurs \
+    tricycliques, opioïdes, alpha-bloquants urologiques.
+  • Fracture du col fémoral : chirurgie dans les 48 h (NNT ~35 pour éviter 1 décès), \
+    liaison ortho-gériatrique (co-management) — réduction mortalité à 1 an −20 %. \
+    Prévention secondaire fracturaire : traitement ostéoporose systématique \
+    (cf. addendum endocrinologie pour romosozumab/dénosumab/tériparatide).
+
+  Polymédication et iatrogénie :
+  • STOPP/START v3 (2023, O'Mahony et al., Age & Ageing) : \
+    STOPP = 133 critères de médicaments inappropriés ≥ 65 ans ; \
+    START = 34 médicaments potentiellement sous-prescrit ; outil à systématiser \
+    à chaque admission gériatrique.
+  • AGS Beers Criteria 2023 : liste américaine — anticholinergiques, benzodiazépines, \
+    AINS ≥ 65 ans, hypoglycémiants (glibenclamide, glipizide), digoxine > 0,125 mg/j, \
+    PPI > 8 semaines sans indication.
+  • Déprescription : approche structurée STOPPFrail (fragilité sévère / fin de vie) ; \
+    objectif < 5 médicaments actifs chez le sujet très âgé sans comorbidité aiguë.
+  • ANSM : alertes iatrogénie (médicaments à marge thérapeutique étroite, \
+    ajustement rénal systématique CKD-EPI ≥ 65 ans), interactions médicamenteuses.
+
+  Dénutrition et nutrition :
+  • Critères GLIM 2019 : ≥ 1 critère phénotypique (perte poids > 5 % en 6 mois, \
+    faible IMC < 22 kg/m² si ≥ 70 ans, réduction masse musculaire) + \
+    ≥ 1 critère étiologique (réduction apports, malabsorption/inflammation).
+  • Dépistage : MNA (Mini Nutritional Assessment) — screening 6 items, évaluation \
+    18 items ; MUST (Malnutrition Universal Screening Tool).
+  • Supplémentation : CNO (compléments nutritionnels oraux) ≥ 400 kcal + 30 g protéines/j ; \
+    NE (nutrition entérale) si ingesta < 50 % besoins > 7 jours. \
+    Pas de NP systématique en fin de vie (consensus ESPEN 2023).
+
+  Onco-gériatrie :
+  • EGA pré-thérapeutique systématique : score G8 (≤ 14/17 → EGA complète), \
+    évaluation ADL/IADL, cognition (MoCA ≥ 26/30 = normal), nutrition (MNA), \
+    comorbidités (CIRS-G), polymédication, support social. SIOG/ESMO guidelines 2023.
+  • Adaptation des protocoles chimiothérapie (posologie selon DFGe CKD-EPI, \
+    G-CSF systématique si âge > 70 ans et schéma myélosuppresseur), chirurgie \
+    (pré-habilitation — exercice + nutrition 4-6 semaines avant J0).
+
+  Réglementaire :
+  • HAS 2022 : recommandation prévention chutes personne âgée à domicile et en EHPAD.
+  • HAS 2022 : repérage de la fragilité en soins primaires (outil Géron'impact, \
+    questionnaire FIND — 5 items).
+  • HAS 2024 : révision recommandations maladie d'Alzheimer et démences apparentées \
+    (prise en charge médicale et médico-sociale).
+  • ANSM : mise en garde prescription psychotropes personne âgée (déremboursement \
+    partiels, Black Box Warning antipsychotiques).
+  • JORF : arrêtés tarification EHPAD (réforme 2024), décrets financement soins \
+    palliatifs / HAD gériatrique.
+
+→ REJETER SANS HÉSITER :
+  • Études sur traitements anti-amyloïdes sans statut AMM EU précisé (ne pas présenter \
+    lecanemab/donanemab comme disponibles en France sans préciser l'absence d'AMM EU).
+  • Biomarqueurs du vieillissement (télomères, sirtuines, sénolytiques) sans essai \
+    clinique phase 2+ chez l'humain > 65 ans.
+  • Épidémiologie descriptive prévalence/incidence démences sans recommandation opérationnelle.
+  • Études nutriments / suppléments (oméga-3, resvératrol, curcumine) sans RCT ≥ 200 \
+    patients âgés avec endpoint cognitif ou fonctionnel primaire.
+  • Résultats de modèles animaux du vieillissement (souris, levures) sans données humaines.
+  • Gériatrie pédiatrique ou pathologies rares du vieillissement prématuré \
+    (progéria, Werner) sans signal thérapeutique transposable.
+  • Études monocentriques < 100 patients sur médicaments déjà évalués dans de larges RCTs.
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+EGA (évaluation gérontologique approfondie, = CGA comprehensive geriatric assessment), \
+ADL (Activities of Daily Living — Katz), IADL (Instrumental ADL — Lawton), \
+MMSE (Mini-Mental State Examination /30), MoCA (Montreal Cognitive Assessment /30), \
+CDR (Clinical Dementia Rating), CDR-SB (CDR Sum of Boxes), \
+GDS (Geriatric Depression Scale), MNA (Mini Nutritional Assessment), \
+TUG (Timed Up and Go — secondes), SPPB (Short Physical Performance Battery /12), \
+vitesse de marche (m/s — seuil < 0,8 m/s), grip strength (dynamomètre, kg), \
+fragilité (phénotype de Fried), pré-fragilité, robustesse, \
+sarcopénie (EWGSOP2), ASMI (appendicular skeletal muscle mass index, kg/m²), \
+DEXA / DXA, BIA (impédancemétrie), \
+dénutrition (critères GLIM 2019), CNO (compléments nutritionnels oraux), \
+polypharmacie (≥ 5 médicaments actifs), STOPP/START v3, AGS Beers Criteria 2023, \
+STOPPFrail (déprescription sujet très âgé fragile), \
+MA (maladie d'Alzheimer), DFT (démence fronto-temporale), DCL (démence à corps de Lewy), \
+DV (démence vasculaire), MCI (mild cognitive impairment), SCPD (symptômes comportementaux \
+et psychologiques de la démence), \
+p-tau 217 (phospho-tau 217 plasmatique), NfL (neurofilaments light chain), \
+Aβ42/40 (ratio amyloïde plasmatique), PET amyloïde / PET tau, \
+ARIA-E / ARIA-H (amyloid-related imaging abnormalities — œdème / hémorragies), \
+lecanemab (Leqembi — anti-Aβ, AMM FDA, pas AMM EU), \
+donanemab (Kisunla — anti-Aβ, AMM FDA, EMA en évaluation), \
+donépézil (Aricept), rivastigmine (Exelon), galantamine (Reminyl), mémantine (Ebixa), \
+rispéridone (Risperdal), mirtazapine (Norset), mélatonine, \
+G8 score (onco-gériatrie — seuil ≤ 14/17), CIRS-G (comorbidités), \
+HO (hypotension orthostatique), \
+DFGe (débit de filtration glomérulaire estimé — CKD-EPI), \
+EHPAD (établissement hébergement personnes âgées dépendantes), \
+HAD (hospitalisation à domicile), SSR (soins de suite et réadaptation), USLD.
+
+EXEMPLES DE RÉDACTION (style Age & Ageing / JAGS / Lancet Healthy Longevity / \
+Alzheimer's & Dementia — résultat fonctionnel d'abord, impact vie quotidienne) :
+
+Essai pivot anti-amyloïde — lecanemab :
+  titre_court : "Lecanemab dans la MA prodromale : CLARITY AD, 18 mois — AMM FDA, pas d'AMM EU"
+  resume : "CLARITY AD (RCT, N=1 795, MA prodromale ou légère confirmée biomarqueurs, \
+MMSE 20-30) : réduction du déclin CDR-SB de 27 % à 18 mois sous lecanemab 10 mg/kg IV \
+biW vs placebo (Δ −0,45 point ; p < 0,001). ARIA-E chez 12,6 % (symptomatique 2,8 %) ; \
+risque majoré APOE4/4 homozygotes. AMM FDA obtenue jan 2023 ; avis CHMP négatif \
+nov 2024 — pas d'AMM EU, accès en France hors AMM/ATU très limité."
+  impact_pratique : "En pratique : le ralentissement du déclin est statistiquement \
+significatif mais modeste (0,45 CDR-SB sur 18 mois) ; sans AMM EU, pas d'indication \
+en France — surveiller l'évolution réglementaire EMA 2025 pour donanemab. \
+Prérequis si accès futur : confirmation biomarqueurs (p-tau 217 ou PET amyloïde), \
+IRM sans micro-hémorragies, stade prodromal/léger."
+
+STOPP/START v3 — iatrogénie du sujet âgé :
+  titre_court : "STOPP/START v3 (2023) : 133 critères de déprescription chez ≥ 65 ans"
+  resume : "Mise à jour STOPP/START (O'Mahony et al., Age & Ageing 2023) : 133 critères \
+STOPP (médicaments potentiellement inappropriés) et 34 critères START (sous-prescription) \
+chez le sujet ≥ 65 ans. Nouveautés v3 : ajout des inhibiteurs JAK (risque CV/infections), \
+des GLP-1 agonistes (nausées/dénutrition), critères spécifiques insuffisance rénale \
+et fragilité sévère. Réduction des prescriptions inappropriées de 40 % et des EIM de \
+35 % dans les études d'implémentation."
+  impact_pratique : "En pratique : appliquer STOPP/START à chaque admission gériatrique \
+et en consultation annuelle chez tout patient ≥ 75 ans sous ≥ 5 médicaments — \
+réduire en priorité les benzodiazépines, Z-drugs, AINS et anticholinergiques."
+
+Essai prévention multidomain — FINGER :
+  titre_court : "Prévention déclin cognitif multidomain : FINGER, 2 ans (N=1 260)"
+  resume : "FINGER (RCT, N=1 260, sujets 60-77 ans à risque cognitif — Finlande) : \
+intervention multidomain (régime nordique, exercice supervisé 2×/sem, entraînement \
+cognitif, contrôle CV) vs conseils généraux — amélioration NTB composite de +0,14 SD \
+vs contrôle à 2 ans (p = 0,030) ; bénéfice sur mémoire, vitesse traitement et \
+fonction exécutive. Programme MIND-AD en cours (MA légère)."
+  impact_pratique : "En pratique : proposer un programme multidomain structuré \
+(activité physique + nutrition + stimulation cognitive + contrôle CV) dès le stade \
+pré-fragile ou MCI — pas de médicament validé pour la prévention primaire, \
+cette intervention est la seule avec un niveau de preuve suffisant."
+
+Alerte HAS — prévention chutes :
+  titre_court : "HAS 2022 : prévention des chutes de la personne âgée — recommandation complète"
+  resume : "HAS (recommandation 2022) : chez tout patient ≥ 65 ans ayant chuté une fois \
+ou à risque (antécédent de chute, troubles équilibre, polymédication psychotrope), \
+l'évaluation multifactorielle systématique est recommandée en grade B : révision \
+médicamenteuse (STOPP/START), bilan orthopédique et neurologique, évaluation vision/audition, \
+adaptation domicile (grade C). Programme d'exercice équilibre-renforcement (12 semaines \
+minimum, Otago ou Tai Chi adapté) — réduction chutes −35 % à −50 % dans les méta-analyses."
+  impact_pratique : "En pratique : déclencher l'évaluation multifactorielle HAS 2022 \
+après toute chute chez un patient ≥ 65 ans — identifier et agir sur au moins \
+3 facteurs modifiables (médicaments, équilibre, environnement) pour réduire le risque \
+de récidive fracturaire."
+"""
+
+_SPECIALTY_ADDENDUM_GYNECOLOGIE = """\
+CONTEXTE SPÉCIALITÉ — GYNÉCOLOGIE-OBSTÉTRIQUE ET MÉDECINE DE LA REPRODUCTION
+
+PUBLIC CIBLE : gynécologues-obstétriciens, gynécologues médicaux, sages-femmes (hospitaliers \
+et libéraux). CRITÈRE D'INCLUSION : ne retenir QUE les études qui changent ou affinent une \
+décision clinique concrète (choix d'une molécule, d'une voie d'abord, d'un protocole de suivi, \
+d'une indication opératoire). Exclure les études purement fondamentales, génomiques sans \
+application clinique immédiate, épidémiologiques descriptives sans intervention.
+
+═══════════════════════════════════════════════════════════════════
+I. GYNÉCOLOGIE ONCOLOGIQUE
+═══════════════════════════════════════════════════════════════════
+CANCER DE L'ENDOMÈTRE :
+• Pembrolizumab+chimio (KEYNOTE-158 / KEYNOTE-775 Study 309) : lenvatinib 20 mg + pembrolizumab \
+200 mg → AMM FDA 2021 + EMA 2022 dans l'endomètre avancé/récidivant pMMR (OS : 18,3 vs 11,4 mois). \
+Dostarlimab+chimio (RUBY/ENGOT-EN6) → OS bénéfice dMMR/MSI-H ET pMMR → AMM EMA 2023. \
+Retenir tout essai PARP inhibiteurs, immunothérapie, ADC en 1re/2e ligne endomètre avancé.
+• Chirurgie : LACC trial (laparotomie > cœlioscopie/robot pour col utérin stade précoce) — \
+référence pour les comparaisons de voie d'abord. Lymphœdème iatrogène post-curage pelvien : \
+études sur sentinel lymph node biopsy (SENTICOL-3).
+CANCER DU COL UTÉRIN :
+• Pembrolizumab+chimio±bevacizumab (KEYNOTE-826) → PFS 10,4 vs 8,2 mois, OS 24,4 vs 16,5 mois \
+dans col persistant/métastatique HPV+/HPV-indépendant → AMM FDA 2021 + EMA 2022. \
+Standard de soin 1re ligne métastatique/récidivante.
+• Nivolumab (CheckMate 358), cemiplimab (EMPOWER-Cervical 1) : AMM FDA 2021/2022, retenir.
+• Bevacizumab + chimio (GOG-240) : bénéfice OS 3,7 mois → référence add-back bevacizumab.
+CANCER DE L'OVAIRE :
+• PARP inhibiteurs en maintenance : olaparib (SOLO-1 : 60 % DFS à 5 ans chez BRCA1/2), \
+niraparib (PRIMA/ENGOT-OV26), bevacizumab+olaparib (PAOLA-1 : HR 0,33 chez HRD+/BRCA) → \
+AMM EMA disponibles. Retenir tout update OS à long terme de ces essais.
+• Bevacizumab 1re ligne (GOG-0218, ICON7) → bénéfice PFS, pas OS global → référence.
+• Mirvetuximab soravtansine (ADC anti-FRα) : MIRASOL trial → AMM FDA 2022, EMA soumis.
+• Score HRD (homologous recombination deficiency) : Myriad myChoice / FoundationOne CDx → \
+biomarqueur prédictif PARP — retenir études validant ces tests en pratique clinique.
+SCORE DE PERTINENCE : augmenter de +2 pts toute étude/guideline avec AMM EMA/HAS ou changement \
+de standard de soin en gynéco-oncologie.
+
+═══════════════════════════════════════════════════════════════════
+II. ENDOMÉTRIOSE
+═══════════════════════════════════════════════════════════════════
+• ESHRE Endometriosis Guideline 2022 (mise à jour majeure) : retenir toute étude validant ou \
+contredisant ses recommandations (suppression ovarienne, chirurgie 1re vs 2e ligne, fertilité).
+• Antagonistes GnRH + add-back therapy :
+  — Relugolix 40 mg + E2 1 mg + noréthisterone acétate 0,5 mg (Ryeqo®) → AMM EMA 2022 \
+    fibromes ET endométriose (UF-FORWARD, SPIRIT 1&2 trials). Impact pratique : alternative \
+    aux agonistes GnRH avec moins d'effets osseux, prise orale quotidienne.
+  — Linzagolix 100/200 mg (Yselty®) → AMM EMA 2022 fibromes (PRIMROSE 1&2). Hors AMM \
+    endométriose pour l'instant mais données d'extension à retenir.
+  — Elagolix (Orilissa®) : AMM FDA 2018, NON AMM EU.
+• Dienogest (Visanne®, Klaira® composante) : référence progestatif dans l'endométriose.
+• Endométriose profonde (DIE) : résection chirurgicale vs traitement médical → retenir \
+  toute étude sur récidive, fertilité post-opératoire, QoL.
+• Endométriose et PMA : FIV directe vs chirurgie ovarienne préalable → retenir méta-analyses.
+
+═══════════════════════════════════════════════════════════════════
+III. PMA / MÉDECINE DE LA REPRODUCTION
+═══════════════════════════════════════════════════════════════════
+• FIV/ICSI : transfert frais vs cryo-transfert (FRESH trial : résultats comparables sauf \
+  SOPK où TEC supérieur), segmentation universelle — retenir toute étude impactant le \
+  protocole standard.
+• PGT-A (Preimplantation Genetic Testing for Aneuploidy) : bénéfice ou non chez pronostic \
+  intermédiaire (débat en cours) — retenir essais randomisés.
+• Stimulation ovarienne : antagonistes GnRH vs agonistes, déclencement aux agonistes, \
+  cycles naturels modifiés — retenir RCTs multicentriques ESHRE-endorsés.
+• SOPK : létrozole > clomifène (méta-analyse Cochrane 2022) → référence en induction \
+  de l'ovulation. Metformine adjuvante.
+• Insuffisance ovarienne prématurée (IOP) : substitution hormonale, don d'ovocytes, \
+  cryopréservation cortex ovarien (désormais plus expérimental — ESHRE 2020).
+• Registre EIM (European IVF Monitoring) — données épidémiologiques annuelles ESHRE.
+
+═══════════════════════════════════════════════════════════════════
+IV. MÉNOPAUSE ET TRAITEMENT HORMONAL DE MÉNOPAUSE (THM)
+═══════════════════════════════════════════════════════════════════
+• NAMS Position Statement 2022 + Menopause Society (IMS) Statement 2023 : THM bénéfice \
+  établi chez <60 ans / <10 ans post-ménopause pour symptômes vasomoteurs. Référence à citer.
+• Progestérone naturelle (Utrogestan®) vs progestatifs de synthèse : données E3N montrent \
+  risque sein moindre avec progestérone naturelle + E2 transdermique. Retenir toute étude \
+  confirmant ou infirmant ce signal.
+• THM et risque cardiovasculaire : WHI réanalyse (timing hypothesis), KEEPS, ELITE trials → \
+  bénéfice CV chez <60 ans débutant THM en fenêtre thérapeutique. Référence.
+• THM et cancer du sein : données CGHFBC (méta-analyse); risque E2 seul vs combiné.
+• Ménopause précoce (<40 ans) : THM indispensable jusqu'à 51 ans — retenir études sur \
+  cardioprotection, densité osseuse, cognition.
+• Tibolone, SERM (ospémifène, raloxifène) : dans atrophie vulvo-vaginale symptomatique / \
+  prévention fracturaire — retenir nouvelles données efficacité/sécurité.
+• Fézolinetant (Veozah®) : antagoniste NK3R non hormonal → AMM FDA 2023 + EMA 2023 pour \
+  bouffées de chaleur. Retenir études d'efficacité et comparaisons vs THM.
+
+═══════════════════════════════════════════════════════════════════
+V. MYOMES UTÉRINS ET ADÉNOMYOSE
+═══════════════════════════════════════════════════════════════════
+• Relugolix+add-back (Ryeqo®) → AMM EMA 2022 myomes : UF-FORWARD 1&2 (réduction \
+  saignements ≥50 % chez ≥70 % patientes). Traitement médical de courte durée \
+  pré-opératoire ou alternative à la chirurgie. Impact praticien direct.
+• Linzagolix 100 mg (Yselty®) → AMM EMA 2022 : PRIMROSE 1&2. Alternative relugolix.
+• Ulipristal acétate (Esmya®) : suspension EMA depuis 2020 (hépatotoxicité) → ne plus retenir.
+• Embolisation artérielle (UAE) vs myomectomie vs hystérectomie : revues systématiques \
+  Cochrane/NICE → retenir nouvelles méta-analyses.
+• HIFU (ultrasons focalisés guidés par IRM) pour myomes : données sur réduction de volume, \
+  retentissement fertilité — retenir essais contrôlés.
+• Adénomyose : pas de consensus international établi → retenir toute étude clinique sur \
+  traitement médical (progestatifs, DIU-LNG) ou chirurgie conservatrice.
+
+═══════════════════════════════════════════════════════════════════
+VI. PROLAPSUS GÉNITAL ET INCONTINENCE URINAIRE
+═══════════════════════════════════════════════════════════════════
+• Prolapsus : sacropexie laparoscopique/robot vs voie vaginale prothétique vs voie \
+  vaginale native tissue — retenir RCTs et méta-analyses récentes (EAU/IUGA guidelines 2022).
+• Bandelettes sous-urétrales (BSU/TVT/TOT) : résultats à long terme (10 ans), taux de \
+  révision, complications (extrusion prothétique) — retenir cohortes de registre.
+• Alternatives BSU : Burch, autologues — données comparatives vs BSU.
+• Incontinence urinaire par impériosité (IUE/IUU) : anticholinergiques vs mirabégron — \
+  retenir toute méta-analyse sur efficacité/tolérance cognitive (anticholinergiques chez >65 ans).
+• Neuromodulation sacrée, PTNS : retenir essais contrôlés.
+
+═══════════════════════════════════════════════════════════════════
+VII. CONTRACEPTION ET DÉPISTAGE
+═══════════════════════════════════════════════════════════════════
+• CONTRACEPTION : Recommandations HAS 2019-2022 (critères médicaux d'éligibilité OMS) → \
+  référence réglementaire française. DIU cuivre vs DIU-LNG (Mirena®, Jaydess®, Kyleena®) : \
+  données de durée, efficacité, tolérance — retenir nouvelles études de cohorte.
+• Contraception progestative seule (implant, mini-pilule désogestrel) : retenir données vie réelle.
+• Contraception d'urgence : ulipristal (Ellaone®) vs lévonorgestrel — retenir méta-analyses sur \
+  efficacité par délai et BMI.
+• DÉPISTAGE HPV/CIN : dépistage HPV primaire vs cytologie conventionnelle — ATHENA, FOCAL, \
+  ARTISTIC trials → standard de soin 2025 en France (programme HAS 2023-2025). Retenir tout \
+  article sur p16/Ki67, génotypage HPV 16/18, colposcopie en triage.
+• Vaccination HPV : retenir études d'impact populationnel (Australie, Écosse, Suède : \
+  élimination CIN2+ en vue).
+
+═══════════════════════════════════════════════════════════════════
+VIII. OBSTÉTRIQUE CONNEXE (GROSSESSE PATHOLOGIQUE)
+═══════════════════════════════════════════════════════════════════
+• Prééclampsie : dépistage 1er trimestre combiné (sFlt1/PlGF, PAPP-A, IP artères utérines) → \
+  ASPRE trial (aspirine 150 mg/j réduit prééclampsie précoce de 62 %) → recommandation CNGOF/HAS.
+• Ratio sFlt1/PlGF (test Roche/Thermo) : règle de décision à 37 SA (PROGNOSIS) — retenir \
+  études validant seuils en pratique clinique.
+• Fausse couche à répétition (FCR) : progesterone vaginale (PROMISE/PRISM trials : \
+  bénéfice marginal mais retenu RCOG 2023) — retenir nouvelles données, études thrombophilie.
+• Prématurité : cervicométrie + progestérone vaginale (OPPTIMUM) → retenir méta-analyses.
+• HELLP syndrome, éclampsie : sulfate de magnésium (MAGPIE trial) → référence.
+• Diabète gestationnel : seuils IADPSG (OMS 2013) → retenir études médico-économiques, \
+  méta-analyses sur cibles glycémiques.
+
+═══════════════════════════════════════════════════════════════════
+IX. RÈGLES DE SCORING SPÉCIFIQUES
+═══════════════════════════════════════════════════════════════════
+• Score ≥8 : essai randomisé ou méta-analyse modifiant un standard de soin national/européen \
+  (CNGOF, ESHRE, ESMO, EAU), AMM EMA avec impact praticien immédiat.
+• Score 6-7 : RCT ou cohorte multicentrique ≥200 patientes avec endpoint clinique pertinent \
+  (grossesse, survie, récidive, qualité de vie), guidelines société savante.
+• Score ≤5 (exclure) : série rétrospective monocentrique <100 cas, études sur modèles animaux, \
+  génomique sans application thérapeutique, dépistage sans validation clinique solide.
+• Contexte FRANÇAIS : privilégier les études dont les conclusions sont applicables en France : \
+  AMM EMA > FDA seule, pratiques CNGOF/HAS > guidelines US exclusivement, \
+  données de vie réelle françaises (SNDS, registres FRANCIM/GynecoMat/FIGO-France)."
+"""
+
+_SPECIALTY_ADDENDUM_HEMATOLOGIE = """\
+CONTEXTE SPÉCIALITÉ — HÉMATOLOGIE CLINIQUE ADULTE
+
+PUBLIC CIBLE : hématologues hospitaliers, internistes avec compétence hématologique. \
+CRITÈRE D'INCLUSION : ne retenir QUE les études modifiant une ligne de traitement, un standard \
+de soin, une indication de greffe/CAR-T, ou apportant une nouvelle AMM utilisable en France. \
+Exclure les études purement biologiques/mécanistiques sans impact thérapeutique direct.
+
+═══════════════════════════════════════════════════════════════════
+I. LEUCÉMIES AIGUËS
+═══════════════════════════════════════════════════════════════════
+LAM (Leucémie aiguë myéloïde) :
+• Venetoclax+azacitidine (VIALE-A) : 14,7 vs 9,6 mois OS chez >75 ans/inéligibles \
+→ AMM EMA 2021. Standard de soin LAM non éligible chimio intensive. Retenir tout \
+update OS, résistance, données de registre.
+• Inhibiteurs FLT3 : midostaurine (RATIFY → AMM EU 2017 LAM FLT3+, chimio intensive), \
+gilteritinib (ADMIRAL → AMM EU 2019 rechute/réfractaire FLT3+), quizartinib (QUANTUM-R) \
+— retenir comparaisons directes et nouvelles données de survie.
+• Inhibiteurs IDH1/IDH2 : ivosidenib (AMM FDA 2018 + EMA 2023), enasidenib (AMM FDA 2017).
+• CPX-351 (daunorubicine+cytarabine liposomale) : LAM-MRC/therapy-related → AMM EMA 2018.
+• Gemtuzumab ozogamicine (GO) — rechute et induction favorable — retenir nouvelles études.
+LAL (Leucémie aiguë lymphoblastique) :
+• Blinatumomab (BiTE anti-CD19xCD3) : BLAST trial (MRD-négativation), Tower trial rechute/\
+réfractaire → AMM EMA 2015/2016. Retenir données pédiatriques/adultes et MRD.
+• Inotuzumab ozogamicine (INO-VATE) : 80,7 vs 29,4 % réponse → AMM EMA 2017.
+• CAR-T anti-CD19 : tisagenlecleucel (Kymriah® → AMM EMA 2018 pédiatrie+adultes), \
+brexucabtagene autoleucel (Tecartus® → AMM EMA 2021 LAL adultes rechute/réfractaire).
+• Ponatinib, dasatinib dans LAL Ph+ : retenir essais comparatifs vs imatinib.
+• MRD (Minimal Residual Disease) : retenir études validant l'utilisation clinique comme \
+  guide de décision thérapeutique (escalade/désescalade traitement post-induction).
+
+═══════════════════════════════════════════════════════════════════
+II. HÉMOPATHIES LYMPHOÏDES CHRONIQUES
+═══════════════════════════════════════════════════════════════════
+LLC (Leucémie lymphoïde chronique) :
+• Ibrutinib (RESONATE, RESONATE-2, iLLUMINATE) : BTK inhibiteur 1ère génération → référence.
+• Acalabrutinib (ELEVATE-TN, ASCEND) : AMM EMA 2020. Meilleure tolérance cardiaque.
+• Zanubrutinib (ALPINE — supériorité PFS vs ibrutinib en rechute) : AMM EMA 2022.
+• Venetoclax+obinutuzumab (CLL14) → AMM EMA 2020 ; venetoclax+ibrutinib (GLOW, VISION).
+• Ibrutinib+venetoclax (GLOW, CAPTIVATE) — traitement limité dans le temps — retenir.
+• Nouvelles cibles : pirtobrutinib (BRUIN) — non-covalent BTK, actif résistance BTK C481S \
+→ AMM FDA 2023, EMA soumis — retenir AMM EU.
+LYMPHOMES (LNH agressifs — DLBCL) :
+• R-CHOP toujours standard DLBCL première ligne. Polatuzumab vedotin-R-CHP (POLARIX) : \
+PFS supérieure (76,7 vs 70,2 % à 2 ans) → AMM EMA 2022. Retenir données de vie réelle.
+• CAR-T 2ème ligne DLBCL : axi-cel (ZUMA-7 → supérieur à chimio salvage), \
+tisa-cel (BELINDA — résultats neutres), liso-cel (TRANSFORM → AMM EMA 2023). \
+Retenir études comparatives et critères de sélection des patients.
+• Anticorps bispécifiques : glofitamab (MAXIMINO → AMM EMA 2023), \
+mosunetuzumab (AMM EMA 2022 FL), epcoritamab (EPCORE NHL-1) — impact en rechute/réfractaire.
+LYMPHOMES FOLLICULAIRES ET DE HODGKIN :
+• LF : obinutuzumab, lénalidomide+rituximab (AUGMENT). Anticorps bispécifiques \
+(mosunetuzumab, glofitamab) → AMM EMA 2022/2023 en rechute ≥2 lignes.
+• LH : brentuximab vedotin+AVD (ECHELON-1 → AMM EMA 2018 stades III-IV) ; \
+pembrolizumab/nivolumab en rechute après greffe.
+• Lymphome à cellules du manteau : ibrutinib, acalabrutinib, zanubrutinib, CAR-T \
+(KTE-X19 brexucabtagene autoleucel → AMM EMA 2020).
+
+═══════════════════════════════════════════════════════════════════
+III. HÉMOPATHIES PLASMOCYTAIRES (MYÉLOME MULTIPLE)
+═══════════════════════════════════════════════════════════════════
+• Daratumumab+VMP (ALCYONE → AMM EMA 2019), dara+VTd (CASSIOPEIA → AMM EMA 2019), \
+dara+Rd (MAIA → AMM EMA 2019 inéligibles autogreffe) : standard avec daratumumab 1ère ligne.
+• Carfilzomib+Rd (ASPIRE) ; ixazomib+Rd (TOURMALINE-MM1) en rechute.
+• Isatuximab+KPd (IKEMA → AMM EMA 2020), isa+VRd (GMMG-HD7).
+• CAR-T anti-BCMA : idecabtagene vicleucel (ide-cel, KarMMa → AMM EMA 2021), \
+ciltacabtagene autoleucel (cilta-cel, CARTITUDE-1 → AMM EMA 2022). \
+Retenir tout essai comparant CAR-T anti-BCMA vs standard.
+• Teclistamab (anticorps bispécifique BCMA×CD3, MajesTEC-1 → AMM EMA 2022) ; \
+talquetamab (GPRC5D×CD3) : nouvelles données.
+• Maintenance lénalidomide post-autogreffe (MYELOMA XI, FIRST) → référence.
+
+═══════════════════════════════════════════════════════════════════
+IV. SYNDROMES MYÉLODYSPLASIQUES (SMD) ET NMP
+═══════════════════════════════════════════════════════════════════
+SMD :
+• Luspatercept (Reblozyl®) : MEDALIST (SMD RS) → AMM EMA 2020 ; \
+COMMANDS (SMD faible risque, luspatercept > érythropoïétine) → AMM EMA 2023 extension. \
+Retenir nouvelles données, usage en pratique réelle.
+• Azacitidine : standard SMD haut risque. Décitabine+cédazuridine (oral) — retenir.
+• Imetelstat (télomèrase) : nouvelles données en SMD de faible risque réfractaires.
+NÉOPLASIES MYÉLOPROLIFÉRATIVES (NMP) :
+• Ruxolitinib (JAK1/2) : COMFORT-I/II (MF) → AMM EU ; RESPONSE 1&2 (PV) → AMM EU. \
+Référence JAK inhibiteur. Retenir nouvelles données survie à long terme.
+• Pacritinib (MF thrombopénie sévère, PERSIST-2) : AMM FDA 2022.
+• Fedratinib (JAKARTA → AMM EU 2021 MF 1ère/2e ligne).
+• Ropéginterféron alfa-2b (AOP2014, PROUD-PV → AMM EMA 2019 PV) : \
+données moléculaires et survie vs hydroxyurée.
+• SMD-NMP chevauchants (CMML) : azacitidine, allogreffe — retenir essais randomisés.
+
+═══════════════════════════════════════════════════════════════════
+V. MALADIE THROMBOEMBOLIQUE VEINEUSE (MTEV) ET COAGULOPATHIES
+═══════════════════════════════════════════════════════════════════
+MTEV :
+• AOD en cancer : apixaban (ADAM VTE), rivaroxaban (SELECT-D), edoxaban (HOKUSAI Cancer) \
+vs HBPM → méta-analyses → privilégier AOD sauf saignement digestif/urologique actif. \
+Retenir nouvelles données sur sélection des patients et sous-types cancers.
+• MTEV et anticorps antiphospholipides (SAPS) : warfarine > AOD en APS triple positif \
+(TRAPS, ASTRO-APS) — retenir toute mise à jour guidelines ISTH/EULAR.
+• Thrombopénie induite par l'héparine (TIH/HIT) : argatroban, danaparoïde, fondaparinux \
+→ guidelines ASH 2019 — retenir études nouveaux anticoagulants en HIT.
+• Thrombose cérébrale (TSVC) : anticoagulation curative même si infarctus hémorragique.
+HÉMOPHILIE :
+• Emicizumab (Hemlibra®, anticorps bispécifique FIXa×FX) : HAVEN 1-4 → \
+AMM EMA 2018 hémophilie A avec/sans inhibiteurs. Retenir données de vie réelle, registres.
+• Thérapie génique Hémophilie A/B : valoctocogene roxaparvovec (Roctavian®, BioMarin) → \
+AMM EMA 2022 hémophilie A sévère. Fitusiran (ARNi anti-antithrombine). Retenir tout.
+• Nouvelles thérapies sous-cutanées : mim8 (anticorps bispécifique FVIIIm), marstacimab.
+AUTRES COAGULOPATHIES :
+• Maladie de von Willebrand : guidelines EHA/ISTH 2021. Recombinant VWF (vonicog alfa).
+• Hémoglobinopathies (drépanocytose, β-thalassémie) : voxelotor (Oxbryta® → AMM EMA 2020), \
+crizanlizumab (Adakveo® → AMM EMA 2020), thérapie génique (betibeglogene, \
+exagamglogene — CRISPR, AMM FDA 2023/EMA soumis) — retenir.
+
+═══════════════════════════════════════════════════════════════════
+VI. ALLOGREFFE ET RÉACTIONS DU GREFFON (GVH)
+═══════════════════════════════════════════════════════════════════
+• GVH aiguë réfractaire stéroïdes : ruxolitinib (REACH2 → AMM EMA 2021) → standard.
+• GVH chronique : ibrutinib (iGVHD) AMM FDA 2017/EMA ; belumosudil (KD025) AMM FDA 2021/\
+EMA 2022 en ≥2 lignes ; axatilimab (AGAVE-201) données préliminaires.
+• Plateaux TCRαβ déplété haploidentique (résultats EBMT) : retenir données pédiatrie/adultes.
+• Prévention GVH : post-cyclophosphamide haploidentique, sirolimus+tacrolimus, abatacept.
+• Infections post-greffe : CMV prophylaxie letermovir (ACTG P1078) → AMM EMA 2018 → \
+retenir nouvelles données observationnelles.
+
+═══════════════════════════════════════════════════════════════════
+VII. RÈGLES DE SCORING SPÉCIFIQUES
+═══════════════════════════════════════════════════════════════════
+• Score ≥8 : essai pivot de phase 3 avec AMM EMA/FDA obtenue ou en cours, \
+changement de standard de soin (1ère ligne, maintenance, indication CAR-T), \
+guidelines EHA/ASH/ESMO/BSH modifiant la pratique.
+• Score 6-7 : essai phase 2/3 multicentrique avec endpoint OS ou PFS pertinent, \
+méta-analyse ≥500 patients, données de registre EBMT/EUTOS/FIM modifiant la pratique.
+• Score ≤5 (exclure) : études monocentriques <50 patients, analyses biologiques sans \
+endpoint clinique, corrélations génomiques sans traduction thérapeutique directe.
+• Contexte FRANÇAIS : AMM EMA > FDA seule ; données de registre françaises (FIMCRE, \
+LYSA, IFM, FIM) privilégiées ; mention des ATU/AC (Accès Compassionnel) si pertinent."
+"""
+
+_SPECIALTY_ADDENDUM_INFECTIOLOGIE = """\
+CONTEXTE SPÉCIALITÉ — INFECTIOLOGIE ET MALADIES INFECTIEUSES
+
+PUBLIC CIBLE : infectiologues hospitaliers, internistes avec compétence infectiologique, \
+microbiologistes cliniques. CRITÈRE D'INCLUSION : ne retenir QUE les études qui changent ou \
+affinent une décision thérapeutique (choix molécule, durée, stratégie de désescalade, \
+indication de prophylaxie), une politique de santé publique, ou apportent une AMM utilisable \
+en France. Exclure les études in vitro sans validation clinique, les études purement \
+génomiques/mécanistiques, les épidémiologies descriptives sans intervention.
+
+═══════════════════════════════════════════════════════════════════
+I. VIH / SIDA ET PrEP
+═══════════════════════════════════════════════════════════════════
+ART et nouveaux schémas :
+• Bictegravir/TAF/emtricitabine (BIC/TAF/FTC, Biktarvy®) : essais GS-US-380-1490/1489 \
+→ non-infériorité vs comparateurs, très haute barrière génétique → standard de soin actuel.
+• Dolutegravir+rilpivirine (Juluca®) bithérapie orale (SWORD-1/2) → AMM EMA 2017.
+• Doravirine (INNTI 3e génération, Pifeltro®) : DRIVE-FORWARD/AHEAD/SHIFT → \
+AMM EMA 2018 : option switch avec moins d'interactions enzymatiques.
+• Lenacapavir (Sunlenca®, inhibiteur capside — mécanisme unique) : CAPELLA (rechute), \
+ATLAS-2M (injection semestrielle en maintenance) → AMM EMA 2022 multi-résistants.
+• Cabotegravir LA + rilpivirine LA (Cabenuva®) : ATLAS, FLAIR, ATLAS-2M → \
+bithérapie injectable mensuelle puis bimestrielle → AMM EMA 2020. \
+Retenir études de vie réelle, compliance, extension aux naïfs (CUSTOMIZE).
+• Islatravir (NRTTI) + lenacapavir : essais phase 3 en cours — retenir résultats.
+PrEP :
+• CAB-LA (cabotegravir injectable 2 mois, HPTN 083/084) → supérieur TDF/FTC voie orale \
+dans groupes à haut risque → AMM FDA 2021, EMA en évaluation → retenir tout update EMA.
+• TDF/FTC oral : standard PrEP confirmé (iPrEx, PROUD, IPERGAY). Données F/TAF/FTC.
+Comorbidités VIH :
+• Risque cardiovasculaire (D:A:D, SMART), complications rénales (TDF vs TAF), \
+cancer (Antiretroviral Therapy Cohort Collaboration) — retenir méta-analyses et cohortes.
+
+═══════════════════════════════════════════════════════════════════
+II. HÉPATITES VIRALES
+═══════════════════════════════════════════════════════════════════
+VHC (Hépatite C) :
+• Pan-génotypiques : sofosbuvir/velpatasvir (SOF/VEL, Epclusa®, 12 semaines), \
+glécaprévir/pibrentasvir (GLE/PIB, Maviret®, 8 semaines naïfs sans cirrhose). \
+SOF/VEL/voxilaprévir (Vosevi®, 12 semaines retraitement pan-génotypique). SVR12 >95 %.
+• Cirrhose décompensée : SOF/VEL ± ribavirine. Retenir données RVS et amélioration \
+fibrose/fonction hépatique post-SVR12 (ASTRAL-4, ALLY-1).
+VHB (Hépatite B) :
+• Ténofovir alafénamide (TAF 25 mg, Vemlidy®) vs TDF : moins néphrotoxique/osseux, \
+non-infériorité virologique (GS-US-320-0108/0110). Standard actuel chez >60 ans/IR/ostéoporose.
+• Tenofovir disoproxil : toujours référence grossesse VHB (prévention transmission materno-fœtale).
+• Durée traitement, arrêt des analogues (perte AgHBs) : retenir méta-analyses ESCMID 2023.
+VHD (Hépatite Delta) :
+• Bulevirtide (Hepcludex®, inhibiteur NTCP) : MYR204, MYR301 → AMM EMA 2020 (conditionnelle) \
+→ confirmation 2023. Seul traitement AMM VHD. Retenir toutes nouvelles données.
+VHE (Hépatite E) :
+• Ribavirine dans VHE chronique immunodéprimé : retenir études de cohorte.
+
+═══════════════════════════════════════════════════════════════════
+III. ANTIBIORÉSISTANCE ET ANTIBIOTHÉRAPIE DES BMR
+═══════════════════════════════════════════════════════════════════
+Entérobactéries résistantes :
+• Ceftazidime-avibactam (CAZ-AVI, Avycaz®/Zavicefta®) : actif KPC + OXA-48 \
+mais PAS MBL (NDM/VIM/IMP). REPRISE trial, RECLAIM → AMM EMA 2016.
+• Aztreonam-avibactam (ATM-AVI, Aztreonam+Avycaz® combinaison) : actif MBL + KPC + OXA-48 \
+→ AMM FDA 2023 (REVISIT trial), EMA soumis → retenir toute publication sur usage.
+• Imipénème-cilastatine-relebactam (IMR, Recarbrio®) : actif KPC, pas MBL → AMM EMA 2020.
+• Cefidérocol (Fetroja®, sidérophore céphalosporine) : actif sur gram- MDR dont MBL \
+→ AMM EMA 2020 (APEKS-NP). Retenir données comparatives en vie réelle.
+Pseudomonas aeruginosa / PABL :
+• Ceftolozane-tazobactam (C/T, Zerbaxa®) : actif PABL mais pas entérobactéries KPC \
+→ AMM EMA 2015, ASPECT-NP extension. Retenir données résistance acquise en cours de traitement.
+SARM et coques gram-positifs :
+• Ceftaroline (Teflaro®/Zinforo®) : SARM communautaire, pneumocoque multi-résistant \
+→ AMM EMA 2012. Daptomycine (endocardite droite SARM). Retenir essais comparatifs.
+• Oritavancine, télavancine, dalbavancine (glycopeptides longue durée) : \
+dose unique ou bi-hebdomadaire → retenir données de pratique réelle (IOA, endocardite).
+Clostridium difficile :
+• Fidaxomicine (Dificlir®) > vancomycine orale pour prévention récidive → AMM EMA 2011. \
+Bézlotoxumab (Zinplava®, anti-toxine B) pour prévention récidive → AMM EMA 2016. \
+Microbiome fécal (FMT) → remboursement en France 2024 — retenir tout guideline.
+EUCAST / ECDC :
+• Retenir systématiquement les nouvelles données de surveillance EARS-Net publiées dans \
+Eurosurveillance ou Clin Microbiol Infect modifiant les probabilités de résistance.
+
+═══════════════════════════════════════════════════════════════════
+IV. INFECTIONS FONGIQUES INVASIVES
+═══════════════════════════════════════════════════════════════════
+• Échinocandines : caspofungine, micafungine, anidulafungine — standard candidose invasive \
+(ESCMID 2023). Rezafungin (échinocandine longue durée — 1 fois/semaine) : AMM FDA 2023, \
+EMA soumis — retenir essais comparatifs (STRIVE) et résultats EMA.
+• Ibrexafungerp (Brexafemme®, glucan synthase inhibiteur oral) : AMM FDA 2021 \
+vulvo-vaginite candidosique — retenir données efficacité, résistances échinocandines.
+• Olorofim (inhibiteur DHODH oral) : actif Aspergillus résistants azolés → \
+essai phase 3 en cours — retenir résultats (AMM attendue).
+• Aspergillose invasive : voriconazole vs isavuconazole (VITALS) — non-infériorité + \
+meilleure tolérance isavuconazole → AMM EMA 2015. Standard actuel immunodéprimé.
+• Mucormycose : isavuconazole (IsAspA) → alternative liposomal amphotéricine B → AMM EMA.
+• Guidelines ESCMID 2022 candidoses invasives, 2023 aspergilloses : retenir.
+
+═══════════════════════════════════════════════════════════════════
+V. SEPSIS ET INFECTIONS SÉVÈRES
+═══════════════════════════════════════════════════════════════════
+• Surviving Sepsis Campaign (SSC) 2021 : bundle 1h (hémocultures, lactate, ATB dans 1h, \
+remplissage 30ml/kg cristalloïdes si lactate ≥4 ou hypotension, vasopresseurs si PAS<65mmHg) \
+→ référence réglementaire mondiale. Retenir toute étude validant/modifiant ce bundle.
+• Endocardite infectieuse : guidelines ESC 2023 (mise à jour majeure) → retenir.
+• Traitement antibiotique oral dans les IOA (OVIVA trial → non-infériorité IV vs oral \
+après 7j) — retenir nouvelles méta-analyses confirmant ce résultat.
+• Antibiothérapie désescalade guidée par microbiologie/biomarqueurs (PCT) : \
+retenir essais randomisés sur durée et désescalade.
+• Antibioprophylaxie chirurgicale : retenir guidelines SFAR/SPILF actualisées.
+
+═══════════════════════════════════════════════════════════════════
+VI. TUBERCULOSE ET MYCOBACTÉRIOSES
+═══════════════════════════════════════════════════════════════════
+• TB MDR/XDR :
+  — BPaL (Bédaquiline 400mg/200mg + Prétomanid 200mg + Linézolide 1200mg/600mg) : \
+    TB-PRACTECAL, ZeNix → 90 % succès XDR en 6 mois → AMM FDA 2019 / EMA 2020 prétomanid \
+    exclusivement dans ce régime. Retenir tout update doses linézolide (600mg).
+  — Bédaquiline (Sirturo®, AMM EMA 2014) seul dans les régimes courts (STREAM, endTB).
+  — Délamanid (Deltyba®, AMM EMA 2014) comme alternative dans les régimes BDQ-contenant.
+• TB sensible : rifampicine (RIFAPENTIN, TBTC Study 26) schémas courts 4 mois. \
+  Pyrazinamide (toxicité hépatique dose-dépendante) — retenir études optimisation PK/PD.
+• Mycobactéries non tuberculeuses (MNT) : MAC pulmonaire (amikacine liposomale inhalée \
+Arikayce® → AMM EMA 2020, CONVERT trial) — retenir données vie réelle.
+
+═══════════════════════════════════════════════════════════════════
+VII. IST, PALUDISME, MALADIES TROPICALES
+═══════════════════════════════════════════════════════════════════
+IST :
+• Gonorrhée résistante : ceftriaxone 1g IM seul (pas de combinaison azithromycine en routine \
+car résistance → IUSTI 2022/EUCAST) — retenir études résistances et nouveaux traitements \
+(zoliflodacin, gepotidacin — phase 3 en cours).
+• Syphilis : benzathine pénicilline G 2,4 MU IM toujours standard. Retenir guidelines \
+IUSTI 2022, nouvelles données sur doxycycline doxyprophylaxie (DoxyPEP) post-exposition IST \
+(DOXYVAC, IPERGAY OLE) → AMM FDA non encore obtenue.
+• Chlamydia/LGV : doxycycline 21j dans LGV (IUSTI 2022). Retenir données azithromycine \
+résistance partielle (traitement dose unique toujours efficace Ct).
+Paludisme :
+• Artéméther-luméfantrine : toujours 1re ligne Plasmodium falciparum non compliqué dans \
+la majorité des pays. Résistances artémisinine (Cambodge, Afrique de l'Est K13) — retenir.
+• RTS,S/AS01E (Mosquirix®, GSK) : AMM EMA 2015, recommandé OMS oct 2021 pour P. falciparum \
+en Afrique subsaharienne — vaccin 4 doses, réduction paludisme 40 % enfants. Retenir \
+données de mise en œuvre, R21/Matrix-M (efficacité 75 % — OMS soumission).
+• Tafénoquine (Krintafelone®/Arakoda®) : prophylaxie + traitement radical vivax \
+→ AMM FDA 2018/EMA 2022 — retenir données activité hépatique.
+COVID-19 et viroses émergentes :
+• Nirmatrelvir/ritonavir (Paxlovid®) : EPIC-HR → 89 % réduction hospitalisations patients \
+à risque. Standard antiviral COVID-19 oral. Retenir données résistances, variants.
+• Monkeypox/Mpox : tecovirimat (TPOXX®) → données PALM007, retenir études.
+CMV / infections opportunistes :
+• Letermovir (Prevymis®) prophylaxie CMV allogreffe → AMM EMA 2017 → retenir études \
+extension sur traitement CMV maladie.
+
+═══════════════════════════════════════════════════════════════════
+VIII. RÈGLES DE SCORING SPÉCIFIQUES
+═══════════════════════════════════════════════════════════════════
+• Score ≥8 : essai randomisé ou méta-analyse modifiant un standard de soin SPILF/IDSA/ESCMID/ESC, \
+AMM EMA avec impact praticien immédiat, guideline de société savante nationale/internationale.
+• Score 6-7 : RCT multicentrique ≥200 patients avec endpoint clinique (mortalité, guérison, \
+récidive, SVR), méta-analyse ESCMID/IDSA, données de registre national modifiant la pratique.
+• Score ≤5 (exclure) : études in vitro/ex vivo sans validation clinique, étude de prévalence \
+de résistance sans impact thérapeutique direct, modèles prédictifs non validés cliniquement, \
+cas cliniques/séries <20 patients.
+• Contexte FRANÇAIS : AMM EMA > FDA seule ; recommandations SPILF/HAS/CMIT obligatoires ; \
+données françaises SNDS/registres RAISIN-BMR ; signalement ANSM ATU/AC si pertinent."
+"""
+
+_SPECIALTY_ADDENDUM_INFIRMIERS = """\
+CONTEXTE SPÉCIALITÉ — INFIRMIERS ET INFIRMIÈRES (IDE)
+
+PUBLIC CIBLE : infirmiers et infirmières diplômés d'État (IDE), infirmiers en pratique avancée \
+(IPA), infirmiers de bloc opératoire (IBODE), infirmiers anesthésistes (IADE), puéricultrices. \
+CRITÈRE D'INCLUSION : ne retenir QUE les études qui modifient ou valident une pratique infirmière \
+concrète (protocole de soin, technique, outil d'évaluation, formation). Exclure les études \
+purement médicales sans rôle infirmier, les études sociologiques sans implications pratiques.
+
+═══════════════════════════════════════════════════════════════════
+I. PLAIES, CICATRISATION ET SOINS DE PEAU
+═══════════════════════════════════════════════════════════════════
+• Prévention et traitement des escarres : classification EPUAP/NPIAP/PPPIA 2019 (stades I-IV + \
+non classable + tissu profond) — référence réglementaire. Échelle de Braden ≤18 = à risque. \
+Matelas à air dynamique, repositionnements toutes les 2h, protection proéminences osseuses. \
+Retenir tout essai sur prévention (nouveaux dispositifs, protocoles repositionnement, nutrition).
+• Plaies chroniques : ulcère veineux (compression multicouche, débridement) ; \
+ulcère artériel (pas de compression si IPS <0,6) ; pied diabétique (classification Wagner, \
+Texas — décharge, revascularisation, antibiothérapie locale). Framework TIME. \
+Retenir méta-analyses sur types de pansements (hydrocolloïde, hydrogel, alginate, mousse, PHMB, \
+argent, iode, miel médical, fibres d'hydrofibre).
+• Thérapie par pression négative (TPN/VAC) : retenir RCTs sur efficacité par type de plaie.
+• Prévention des lésions cutanées péristomiales et des dermites incontinence (IAD) : \
+produits barrières, classification EPUAP/IAD — retenir.
+• Cicatrices hypertrophiques / chéloïdes : retenir essais sur compression et silicone.
+
+═══════════════════════════════════════════════════════════════════
+II. DOULEUR ET SOINS PALLIATIFS
+═══════════════════════════════════════════════════════════════════
+• Évaluation de la douleur : EVA/EN (patients communicants), DOLOPLUS-2, Algoplus (personnes \
+âgées), EVENDOL/FLACC (enfants), BPS/CPOT (non communicants REA) — retenir études de \
+validation et comparaison des échelles.
+• Douleurs procédurales : MEOPA (mélange équimolaire O2/N2O), crème EMLA, saccharose \
+nourrisson, distraction (hypnoanalgésie) — retenir RCTs par type de soin (pansement, \
+ponction, mobilisation).
+• Protocoles de titration morphinique : retenir études sur protocoles IDE de titration \
+rapide dans la douleur aiguë sévère.
+• Soins palliatifs et fin de vie : loi Claeys-Leonetti 2016 (directives anticipées, \
+sédation profonde et continue jusqu'au décès SPC) — retenir études sur confort du mourant, \
+prise en charge infirmière de l'agonie, soins de bouche.
+• Gestion de la douleur chronique : retenir études sur rôle IDE dans l'accompagnement \
+des douleurs cancéreuses (patch fentanyl, rotation opioïdes, hypnose, TENS).
+
+═══════════════════════════════════════════════════════════════════
+III. PRÉVENTION DES INFECTIONS NOSOCOMIALES
+═══════════════════════════════════════════════════════════════════
+• Hygiène des mains : OMS 5 moments (avant contact patient, avant geste aseptique, \
+après risque d'exposition, après contact patient, après contact environnement) — \
+retenir études sur compliance et efficacité des programmes d'amélioration.
+• PAVM (pneumonie associée à la ventilation mécanique) : bundle PAVM (position \
+demi-assise ≥30°, pression ballonnet 25-30 cmH2O, hygiène buccale chlorhexidine 0,12%, \
+arrêt quotidien sédation) — retenir RCTs composantes du bundle.
+• Infections sur cathéter veineux central (CRBSI/CLABSI) : bundle pose \
+(précautions maximales d'asepsie, site sous-clavière > jugulaire > fémorale), \
+entretien (changement voies et robinets) — retenir études sur durée de port, verrous \
+antibiotiques, nouveaux pansements (CHG-gel, CHG-éponge).
+• Infections urinaires sur sonde (CAUTI) : retrait précoce, soins de méat, sondes \
+imprégnées antibiotiques/argent — retenir méta-analyses.
+• Entérobactéries résistantes en milieu de soins (EBLSE/EPC) : précautions contact \
+complémentaires, cohorting, dépistage rectal — retenir études d'impact organisationnel \
+sur la transmission.
+
+═══════════════════════════════════════════════════════════════════
+IV. SOINS CRITIQUES ET RÉANIMATION (RÔLE INFIRMIER)
+═══════════════════════════════════════════════════════════════════
+• Délire en réanimation : CAM-ICU (outil de dépistage infirmier), modèle ABCDEF bundle \
+(Awakening, Breathing, Coordination, Delirium, Early mobility, Family) → retenir RCTs \
+sur implémentation et résultats (durée ventilation, LOS, fonctions cognitives).
+• Mobilisation précoce en réanimation : retenir essais sur protocoles IDE de \
+mobilisation et résultats (force musculaire, qualité de vie post-REA).
+• Soins de confort en réanimation / humanisation : lumière naturelle, rythme \
+circadien, présence famille, communication patient intubé — retenir études.
+• Gestion des alarmes monitorage : alarm fatigue — retenir études sur protocoles \
+de paramétrage et impact sur sécurité.
+
+═══════════════════════════════════════════════════════════════════
+V. ÉDUCATION THÉRAPEUTIQUE ET SUIVI (ETP)
+═══════════════════════════════════════════════════════════════════
+• ETP en maladies chroniques (diabète, ICC, BPCO, oncologie, stomies) : HAS 2007 \
+(programme autorisé ARS, bilan éducatif partagé). Retenir méta-analyses sur efficacité \
+des programmes ETP infirmiers sur critères cliniques (HbA1c, hospitalisations).
+• Adhérence thérapeutique : interventions infirmières brèves, entretien motivationnel, \
+outils numériques (télé-suivi) — retenir RCTs multicentriques.
+• Stomies (colostomie, iléostomie, urétérostomie) : éducation pré- et post-opératoire, \
+types d'appareillage, complications péristomiales — retenir guidelines WOCN/ASCRS.
+• Insuffisance cardiaque : prise en charge infirmière (pesée quotidienne, régime \
+hyposodé, adaptation diurétiques sur protocole) — retenir essais sur télé-suivi IDE.
+
+═══════════════════════════════════════════════════════════════════
+VI. SÉCURITÉ DES SOINS, FORMATION ET ORGANISATION
+═══════════════════════════════════════════════════════════════════
+• Erreurs médicamenteuses : double contrôle, code-barres, systèmes automatisés \
+(dispensation nominative, piluliers) — retenir études d'impact sur taux d'erreur.
+• Événements indésirables associés aux soins (EIAS) : checklist HAS / OMS bloc \
+opératoire, déclaration des EIG (ANSM/HAS), culture sécurité équipe — retenir.
+• Ratio IDE/patients (RN4CAST) : retenir études de cohorte sur mortalité et qualité \
+des soins selon ratio. Burnout infirmier et turn-over : retenir méta-analyses récentes.
+• Simulation en soins infirmiers : haute-fidélité (mannequin, standardized patient), \
+débriefing, impact sur compétences techniques — retenir RCTs.
+• Tenue de la dossier infirmier / transmissions : retenir études sur traçabilité \
+et continuité des soins.
+
+═══════════════════════════════════════════════════════════════════
+VII. RÈGLES DE SCORING SPÉCIFIQUES
+═══════════════════════════════════════════════════════════════════
+• Score ≥8 : méta-analyse modifiant un protocole de soins infirmiers validé HAS/SFAP/ \
+EPUAP/EWMA, guideline internationale applicable en France, RCT multicentrique ≥500 patients \
+sur critère de résultat clinique (infection, escarre, douleur, mortalité).
+• Score 6-7 : RCT ou cohorte ≥100 patients avec endpoint clinique infirmier pertinent, \
+étude de validation d'une échelle d'évaluation infirmière, étude d'implémentation de bundle.
+• Score ≤5 (exclure) : études qualitatives seules, études d'opinion/satisfaction \
+sans critère clinique, études monocentriques <50 patients, articles de formation pure \
+sans validation clinique.
+• Contexte FRANÇAIS : recommandations HAS/SFAP/SRLF applicables en France ; données \
+françaises (IQSS, SIPAQSS) ; décrets et textes réglementaires IDE (exercice professionnel)."
+"""
+
+_SPECIALTY_ADDENDUM_KINESITHERAPIE = """\
+CONTEXTE SPÉCIALITÉ — KINÉSITHÉRAPIE ET RÉÉDUCATION FONCTIONNELLE
+
+PUBLIC CIBLE : masseurs-kinésithérapeutes (MK), kinésithérapeutes spécialisés (sport, \
+neurologie, cardio-respiratoire, périnéal, pédiatrie). CRITÈRE D'INCLUSION : ne retenir QUE \
+les études qui modifient ou valident une technique, un protocole de rééducation ou un outil \
+d'évaluation utilisable en pratique kinésithérapeutique. Exclure les études purement \
+chirurgicales sans comparaison avec la rééducation, les études fondamentales, les approches \
+sans validation clinique.
+
+═══════════════════════════════════════════════════════════════════
+I. RÉÉDUCATION MUSCULO-SQUELETTIQUE (MSK)
+═══════════════════════════════════════════════════════════════════
+Lombalgie :
+• Lombalgie commune aiguë : conseils d'activité + AINS > repos strict. Guidelines ESC/HAS 2019.
+• Lombalgie chronique : approche biopsychosociale = référence (modèle de peur-évitement, \
+thérapie cognitive-fonctionnelle CFT, reconditionnement à l'effort, éducation neurophysiologique \
+de la douleur PNE, stabilisation lombaire) — retenir méta-analyses comparatives. \
+Éviter terme "core stability" sans précision. Pilates : données modérées.
+• Lombalgie et chirurgie : rééducation seule non-inférieure pour la plupart des hernies \
+discales — retenir RCTs.
+Cervicalgie / épaule :
+• Cervicalgie mécanique : mobilisation cervicale + exercices actifs > passive seule. \
+Manipulation cervicale haute : efficace douleur aiguë, contre-indiquée si risque artère \
+vertébrale (tests cliniques — IFOMPT 2020). Retenir nouvelles données sur sécurité.
+• Syndrome d'accrochage sous-acromial (SAS) : exercices actifs seuls = corticoïdes locaux \
+à 3 mois (GRASP trial, CODA trial) → pas de supériorité de la chirurgie par arthroscopie \
+pour la plupart des cas (Cochrane 2019). Retenir confirmations.
+• Coiffe des rotateurs : rééducation guidée > simple watching and waiting pour rupture \
+partielle. Instabilité glénohumérale : exercices de stabilisation dynamique.
+Genou / hanche / cheville :
+• Tendinopathie achilléenne : programme excentrique (Alfredson, 3×15 deux fois/jour) = \
+référence (Cochrane). HEAVY SLOW RESISTANCE (HSR) non-inférieure, meilleure tolérance. \
+Retenir nouvelles données (NICE, JOSPT 2022 CPG).
+• Tendinopathie patellaire : exercices excentriques + isométriques (pour analgésie \
+immédiate avant compétition). Retenir données HSR.
+• Genou post-PTG/LCA : protocoles de réhabilitation accélérée (ERAS) → retenir RCTs. \
+Critères de retour au sport post-LCA : force, tests fonctionnels.
+• Entorse LLE cheville : protocole PEACE & LOVE (2020) — Protect/Elevate/Avoid-NSAID/ \
+Compress/Educate puis Load/Optimism/Vascularisation/Exercise. Retenir études sur \
+prophylaxie rechute (exercices proprioception).
+• Syndrome fémoro-patellaire : renforcement VMO, contrôle neuromusculaire (JOSPT 2019 CPG).
+Arthrose :
+• Gonarthrose/coxarthrose : exercices thérapeutiques = traitement 1re ligne (EULAR, OARSI 2019). \
+Retenir méta-analyses sur type/intensité optimale d'exercice.
+
+═══════════════════════════════════════════════════════════════════
+II. RÉÉDUCATION NEUROLOGIQUE
+═══════════════════════════════════════════════════════════════════
+AVC :
+• Fenêtre thérapeutique précoce : rééducation intensive précoce (≤72h) améliore pronostic \
+fonctionnel. Soins intensifs de rééducation (SUNR) — retenir études sur modèles organisationnels.
+• Thérapie par contrainte induite du mouvement (TCI/CIMT) : EXCITE trial → supérieure \
+à la rééducation conventionnelle pour le membre supérieur en phase chronique. \
+mCIMT (modified CIMT) adapté phase subaiguë — retenir méta-analyses récentes.
+• Thérapies robotiques et exosquelettes (Lokomat, Armeo) : retenir RCTs vs kiné conventionnelle.
+• Stimulation non invasive (TMS, tDCS) en rééducation AVC : retenir méta-analyses.
+• Réalité virtuelle (VR/AR) : retenir RCTs multicentriques sur équilibre et membre supérieur.
+Maladie de Parkinson :
+• LSVT BIG (amplification du mouvement) : RCTs sur vitesse de marche, volume mouvement, \
+UPDRS — retenir nouvelles données et variantes (PD-WEBB, HiBalance).
+• Danse thérapeutique (tango argentin) et tai-chi : retenir méta-analyses équilibre/chute.
+• Treadmill training avec ou sans poids corporel supporté : retenir études sur freezing of gait.
+SEP (Sclérose en plaques) :
+• Exercices aérobies + résistance : retenir méta-analyses sur fatigue, marche, spasticité.
+• Fatigue SEP : exercices en piscine (moins de thermorégulation), thérapies cognitives. \
+Fampridine améliore la marche mais n'est pas un outil kiné.
+• FES (Functional Electrical Stimulation) pour drop foot (ODFS, WalkAide) : retenir RCTs.
+Blessés médullaires :
+• FES locomotion, stimulation épidurale (STIMO, Louisville) — nouvelles données retenir.
+
+═══════════════════════════════════════════════════════════════════
+III. RÉÉDUCATION CARDIO-RESPIRATOIRE
+═══════════════════════════════════════════════════════════════════
+BPCO :
+• Réhabilitation respiratoire : améliore capacité d'effort (test 6MWT), dyspnée (MRC), QoL \
+(SGRQ) sans modifier VEMS — GOLD 2024 recommandation A. Maintien bénéfice à 12 mois si \
+programme de maintenance. Retenir tout RCT sur format, durée, lieu (hôpital/domicile).
+• Drainage bronchique : ELTGOL (Expiration Lente Totale Glotte Ouverte en Latéral), AFE \
+(Augmentation du Flux Expiratoire), DAA (Drainage Autogène Assisté) > aspirations \
+trachéobronchiques. Recommandations HAS/SPLF.
+• Ventilation non invasive (VNI) : kinésithérapeute acteur clé mise en place et surveillance \
+— retenir études sur interface, synchronisation, sevrage.
+Insuffisance cardiaque :
+• Réhabilitation cardiaque post-IDM / ICC : réduction mortalité CV et hospitalisations \
+(Cochrane 2021). Retenir données sur format haute intensité (HIIT vs MICT), téléréhabilitation.
+Mucoviscidose :
+• Kinésithérapie respiratoire quotidienne (Flutter, Acapella, gilet à haute fréquence) : \
+retenir études comparatives. Décongestionnants osmotiques (sérum hypertonique 7%) : \
+retenir guidelines ELF/ECFS.
+Périnéal et pelvi-périnéal :
+• Incontinence urinaire d'effort (IUE) : rééducation périnéale (Kegel + biofeedback EMG) \
+= traitement 1re ligne HAS 2003 / Cochrane 2018 (43 RCTs). Retenir études sur intensité \
+et durée optimale du programme.
+• Rééducation post-prostatectomie totale : démarrage précoce (J1 post-op) — retenir RCTs.
+
+═══════════════════════════════════════════════════════════════════
+IV. NOUVELLES TECHNOLOGIES ET TÉLÉRÉÉDUCATION
+═══════════════════════════════════════════════════════════════════
+• Télérééducation (telerehabilitation) : COVID-19 a accéléré l'adoption — retenir RCTs \
+comparant télé vs présentiel sur lombalgie, PTG, AVC. Non-infériorité pour la plupart des \
+pathologies stable (Cochrane 2022).
+• Intelligence artificielle en kinésithérapie : analyse de mouvement automatisée, \
+feedback visuel — retenir premières études cliniques randomisées.
+• Réalité virtuelle (VR) pour équilibre et rééducation neurologique : retenir méta-analyses.
+• Biofeedback EMG et sEMG : retenir RCTs dans incontinence, périnée, MSK.
+• TENS / neuromodulation : retenir méta-analyses sur douleur chronique (lombalgie, fibromyalgie).
+
+═══════════════════════════════════════════════════════════════════
+V. RÈGLES DE SCORING SPÉCIFIQUES
+═══════════════════════════════════════════════════════════════════
+• Score ≥8 : méta-analyse Cochrane ou méta-analyse réseau (NMA) sur technique kiné avec \
+endpoint clinique (VAS, WOMAC, MRC, 6MWT, FIM, BI), Clinical Practice Guideline JOSPT/HAS/ \
+SOFMER modifiant la pratique, RCT multicentrique ≥300 patients.
+• Score 6-7 : RCT ≥60 patients avec outcome clinique pertinent (douleur, fonction, retour \
+au travail/sport), revue systématique ≥10 études, guideline société savante nationale.
+• Score ≤5 (exclure) : études in vitro/animal, études biomécanique pure sans application \
+clinique, études sur <20 patients, études d'opinion sans validation clinique.
+• Contexte FRANÇAIS : recommandations HAS (lombalgie, rééducation AVC, incontinence, \
+réhabilitation BPCO) ; recommandations SOFMER/SPLF/SFC applicables en France ; données \
+françaises PMSI-MPR, registres SOFMER. Décret d'actes kinésithérapiques (nomenclature NGAP)."
+"""
+
+_SPECIALTY_ADDENDUM_NEUROLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — NEUROLOGIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : neurologue (CHU / clinique privée / libéral, France), \
+prenant en charge : sclérose en plaques (SEP), maladie de Parkinson et \
+syndromes parkinsoniens, épilepsie, AVC/AIT, céphalées et migraine, \
+maladies neurodégénératives (Alzheimer, DFT, MCL), maladies neuromusculaires \
+(SLA, myopathies, neuropathies), neuroimmunologie (NMOSD, MOGAD, encéphalites \
+auto-immunes). Référentiels : recommandations EAN (European Academy of Neurology), \
+AAN Practice Guidelines, recommandations SFSEP (SEP), ANAES/HAS (AVC, épilepsie), \
+recommandations SFN (Société Française de Neurologie).
+
+ESSAIS ET RECOMMANDATIONS DE RÉFÉRENCE (connus du lecteur) :
+• Sclérose en plaques (SEP-RR) : ocrelizumab (OPERA I/II, ORATORIO) ; \
+ofatumumab (ASCLEPIOS I/II) ; ozanimod (SUNBEAM, RADIANCE) ; \
+ponesimod (OPTIMUM) ; ublituximab (ULTIMATE I/II) ; \
+cladribine (CLARITY, CLARITY-EXT) ; natalizumab (AFFIRM) ; \
+alemtuzumab (CARE-MS I/II) ; fenebrutinib/tolebrutinib (BTK inhibiteurs SEP) ; \
+recommandations SFSEP 2023 ; haute efficacité précoce vs escalade thérapeutique.
+• SEP-SP/PP : siponimod (EXPAND SEP-SP) ; ofatumumab SEP-PP ; \
+résultats décevants SEP progressive (INFORMS, OLYMPUS rituximab).
+• Parkinson et syndromes parkinsoniens : levodopa/carbidopa, agonistes \
+dopaminergiques (pramipexole, rotigotine, ropinirole) ; MAO-B inhibiteurs \
+(rasagiline ADAGIO, safinamide) ; amantadine dyskinésies ; \
+DBS STN vs GPi (VA-DEST) ; pompe à apomorphine/duodopa ; \
+synucleine-targeting (prasinezumab — PASADENA) ; GDNF gene therapy.
+• AVC ischémique : NINDS (altéplase IV <3h) ; ECASS-3 (altéplase 3-4,5h) ; \
+DAWN/DEFUSE-3 (thrombectomie mécanique jusqu'à 24h) ; \
+ARUBA/COSS (MAV/occlusion carotide) ; CHANCE-2 (ticagrélor + aspirine AIT/AVC mineur \
+porteurs CYP2C19 LOF) ; SAMMPRIS (stenting intracrânien) ; \
+POINT/CHANCE (double antiplaquettaire précoce AIT) ; \
+hémorragie cérébrale : TICH-2 (TXA), INTERACT-2/ATACH-2 (contrôle TA).
+• Épilepsie : brivaracétam, perampanel, lacosamide, cenobamate \
+(X-TOLE — épilepsie partielle réfractaire) ; SANAD II (lamotrigine vs \
+levetiracétam vs valproate APC focale/généralisée) ; recommandations EAN 2022 \
+(monothérapie 1ère intention, anti-NMDA épilepsie auto-immune) ; \
+chirurgie épilepsie (ILAE guidelines) ; SUDEP prévention.
+• Migraine : gepants (ubrogepant, rimegepant, atogepant) anti-CGRP aigus ; \
+anti-CGRP préventifs (erenumab ARISE/STRIVE, fremanezumab HALO, \
+galcanezumab EVOLVE/REGAIN, eptinezumab PROMISE) ; \
+lasmiditan (SAMURAI, SPARTAN) ; recommandations EHF/IHS 2023.
+• Maladies neurodégénératives / Alzheimer : lecanemab (CLARITY AD) — \
+approbation FDA accélérée 2023 ; donanemab (TRAILBLAZER-ALZ-2) ; \
+aducanumab (ENGAGE/EMERGE — controversé) ; tau-targeting ; \
+critères AT(N) biomarqueurs LCR/PET-amyloïde/PET-tau.
+• Maladies neuromusculaires : nusinersen (ENDEAR, CHERISH) SMA ; \
+risdiplam (FIREFISH, SUNFISH) SMA oral ; onasemnogène abeparvovec (SMA-1) ; \
+tofersen (VALOR/OLE — SOD1 SLA antisens) ; riluzole/edaravone SLA ; \
+ravulizumab/eculizumab NMOSD AQP4+ ; inebilizumab (N-MOMENTUM NMOSD) ; \
+satralizumab (SAkuraStar/SAkuraSky NMOSD).
+
+CRITÈRE DE PERTINENCE NEUROLOGIE :
+"Ce résultat va-t-il modifier le choix d'un traitement de fond, \
+une décision de mise sous traitement ou de changement de ligne \
+thérapeutique pour un patient neurologique suivi en France ?" \
+Rejeter : études fondamentales sans endpoint clinique, biomarqueurs \
+exploratoires non validés en pratique courante, résultats de phase 2 \
+sans implication immédiate, confirmations de pratiques déjà établies.
+
+SCORES :
+• Score 8-9 : essai pivot ou guideline EAN/AAN modifiant un standard \
+thérapeutique majeur (nouveau traitement de fond SEP haute efficacité, \
+extension de fenêtre thérapeutique AVC, nouvel antiépileptique changeant \
+l'algorithme, anti-CGRP préventif) ; nouveau biomarqueur cliniquement validé \
+(neurofilaments NfL plasma).
+• Score 6-7 : RCT ≥100 patients avec endpoint fonctionnel validé (EDSS, \
+UPDRS, mRS, réduction crises) nuançant une pratique établie, méta-analyse \
+sur choix de traitement en épilepsie ou Parkinson, nouvelle molécule en \
+phase 3 prometteuse mais non encore approuvée.
+• Score ≤5 (exclure) : études biomarqueurs <50 patients, études \
+neuroimagerie sans corrélat clinique, confirmations de pratiques intégrées \
+dans les guidelines actuels.
+• Contexte FRANÇAIS : disponibilité et remboursement en France \
+(anticorps monoclonaux SEP/migraine, onabotulinumtoxinA migraine, \
+RTU/AAP/ATU si pertinent), réseau filières AVC/SEP/Parkinson, \
+recommandations HAS/SFSEP/SFN."
+"""
+
+_SPECIALTY_ADDENDUM_NEUROCHIRURGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — NEUROCHIRURGIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : neurochirurgien (CHU / clinique privée, France), \
+prenant en charge : neuro-oncologie (gliomes, méningiomes, métastases \
+cérébrales, tumeurs hypophysaires), neurochirurgie vasculaire (anévrismes \
+intracrâniens, MAV, cavernomes, hemorragies sous-arachnoïdiennes HSA), \
+chirurgie rachidienne (sténose lombaire, hernie discale, tumeurs rachidiennes, \
+déformations), neurochirurgie fonctionnelle (DBS, stimulation médullaire, \
+chirurgie épilepsie, radiochirurgie gamma-knife), traumatologie crânio-rachidienne, \
+neurochirurgie pédiatrique (hydrocéphalie, craniosynostoses). \
+Référentiels : AANS/CNS guidelines, EANS recommendations, SNO guidelines \
+(tumeurs cérébrales), BTF guidelines (traumatisme crânien sévère), \
+recommandations SNCLF/SFNC (Société Française de Neurochirurgie).
+
+ESSAIS ET RECOMMANDATIONS DE RÉFÉRENCE (connus du lecteur) :
+• Glioblastome (GBM) : EORTC-22981/26981 (Stupp — temozolomide + RT \
+standard of care) ; EF-14 (TTFields / Optune + TMZ) ; CATNON (TMZ RT-IDH1 \
+non codelé) ; essais IDH inhibiteurs (ivosidenib INDIGO — IDH1 astrocytome \
+de grade 2-3) ; vorasidenib (INDIGO IDH1/2 gliome bas grade) ; \
+MGMT (méthylation — prédicteur réponse TMZ) ; TERT/EGFR/CDKN2A.
+• Méningiomes : chirurgie (score Simpson) + surveillance ; radiochirurgie \
+(gamma knife GKRS) méningiomes grade 1 <3 cm, sinus caverneux ; \
+méningiomes grade 2/3 : RT adjuvante (RTOG 0539/NRG BN003).
+• Métastases cérébrales : SRS (radiosurgery) vs chirurgie ; WBRT vs SRS \
+(QUARTZ) ; anti-PD1 cérébral (melanome, NSCLC) ; DESTINY-Lung04 \
+(T-DXd métastases HER2) ; association SRS + immunothérapie.
+• Anévrismes intracrâniens : ISAT (coiling vs clipping anévrisme rompu) ; \
+ISUIA (prévalence et risque rupture anévrismes non rompus) ; \
+flow-diverters (Pipeline) anévrismes non rompus large/giant ; \
+HSA / vasosoarme (CONSCIOUS-3 clazosentan).
+• Neurochirurgie rachidienne : SPORT (hernie discale, sténose lombaire) ; \
+ACDF vs prothèse discale cervicale (PRESTIGE, ProDisc-C) ; \
+laminoplastie vs laminectomie myélopathie cervicale ; \
+cimentoplastie vertébrale (VERTOS IV) ; TLIF/LLIF vs PLIF.
+• Neurochirurgie fonctionnelle : DBS thalamus/GPi/NST \
+(Parkinson, tremblement essentiel, dystonie) ; \
+SANTE trial (DBS ANT épilepsie) ; gamma-knife névralgie trijumeau ; \
+chirurgie résective épilepsie (résection temporale mésiale) ; \
+SEEG (stéréo-EEG).
+• Traumatisme crânien : BTF guidelines 4th edition 2016 (PIC, \
+craniectomie décompressive DECRA/RESCUEicp) ; CRASH-3 (TXA TC modéré-sévère) ; \
+IMPACT prognostic score.
+• Neurochirurgie pédiatrique : hydrocéphalie (dérivation VP vs ETV/CPC) ; \
+ETV score ETVSS ; médulloblastome (chirurgie + RT + CT selon groupe de risque).
+
+CRITÈRE DE PERTINENCE NEUROCHIRURGIE :
+"Ce résultat va-t-il modifier l'indication opératoire, le choix de technique \
+chirurgicale, le protocole adjuvant (RT/CT) ou la surveillance d'une pathologie \
+neurochirurgicale en France ?" \
+Rejeter : études fondamentales, résultats in vitro/animaux, études \
+radiologiques sans corrélat chirurgical, séries de cas < 20 patients \
+sans endpoint fonctionnel validé.
+
+SCORES :
+• Score 8-9 : essai pivot modifiant un standard en neuro-oncologie \
+(survie GBM, nouveaux agents IDH), nouvelle technique invasive validée \
+en phase 3 (DBS nouvelle cible, flow-diverter), guideline AANS/CNS/SNO \
+de grade A modifiant la pratique.
+• Score 6-7 : RCT ou méta-analyse ≥100 patients apportant un résultat \
+nouveau sur une technique chirurgicale (rachis, vasculaire, tumeurs), \
+validation d'un score pronostique ou d'un biomarqueur moléculaire \
+(MGMT, IDH, TERT) en pratique courante.
+• Score ≤5 (exclure) : séries rétrospectives monocentriques <50 patients, \
+études techniques sans comparateur actif, résultats confirmant des pratiques \
+déjà établies sans information nouvelle.
+• Contexte FRANÇAIS : accessibilité France (AMM TTFields, disponibilité \
+ivosidenib/vorasidenib, financement MIGAC/INCa), réseau neuro-oncologique \
+(RCP nationale INCa) ; recommandations SNCLF/HAS."
+"""
+
+_SPECIALTY_ADDENDUM_NEPHROLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — NÉPHROLOGIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : néphrologue (CHU / CH / centre de dialyse / consultation \
+privée, France), prenant en charge : maladie rénale chronique (MRC stades 1-5), \
+glomérulonéphrites (néphrotique, néphritique), néphropathies diabétiques, \
+hypertension artérielle rénovasculaire, troubles hydroélectrolytiques, \
+dialyse (hémodialyse, dialyse péritonéale), transplantation rénale. \
+Référentiels : KDIGO guidelines 2022-2024 (CKD, GN, AKI, DM), \
+recommandations ERA (ERBP), SFNDT (Société Francophone de Néphrologie \
+Dialyse et Transplantation), recommandations HAS transplantation.
+
+ESSAIS ET RECOMMANDATIONS DE RÉFÉRENCE (connus du lecteur) :
+• MRC / protection rénale : DAPA-CKD (dapagliflozine MRC stades 2-4, \
+diabète ou non) ; CREDENCE (canagliflozine DKD) ; FIDELIO-DKD / \
+FIGARO-DKD (finérénone — antagoniste non stéroïdien MR, DKD T2) ; \
+EMPA-KIDNEY (empagliflozine MRC élargie) — iSGLT2 en première ligne MRC ; \
+RENAAL/IDNT/IRMA-2 (sartans — DKD type 2, standard de référence) ; \
+SPRINT (contrôle tensionnel intensif <120 mmHg) ; ALTITUDE (aliskiren \
+double blocage SRA — négatif, abandonné).
+• Glomérulonéphrites : TESTING 2 (méthylprednisolone IV nephropathie à IgA) ; \
+PROTECT (sparsentan — GN IgA) ; DUPLEX (sparsentan FSGS) ; \
+rituximab (GEMRITUX, MENTOR) syndrome néphrotique idiopathique cortico-dépendant \
+et FSGS ; voclosporine + MMF (lupus néphrite) ; avacopan (ADVOCATE) vascularite ANCA.
+• AKI : KDIGO AKI guidelines 2012 (classification AKIN/RIFLE→KDIGO) ; \
+STARRT-AKI (épuration extra-rénale précoce vs tardive) ; AKIKI-2 (stratégie \
+très tardive EER) ; furosémide forte dose ; prévention néphrotoxicité \
+produits de contraste (hydratation, arrêt IEC).
+• Dialyse hémodialyse : ESHD (flux convectif hémofiltration en ligne HDF vs HD) ; \
+fréquence dialyse (HEMO study, FHN nocturne) ; membranes haute perméabilité ; \
+cathéters tunnelisés vs FAV (KoMO-study) ; calcimimétiques (cinacalcet EVOLVE) ; \
+EPO/ASE (TREAT, CREATE — cible Hb 10-11 g/dL) ; DOPPS registry.
+• Dialyse péritonéale : ISPD guidelines 2022 (péritonites, adéquation) ; \
+DP automatisée APD vs DPCA ; biocompatibles solutions neutres pH.
+• Transplantation rénale : belatacept (BENEFIT) vs ciclosporine ; \
+évérolimus (ASCERTAIN) + réduction CNI ; induction (basiliximab vs \
+anti-thymocytes) ; désensibilisation (rituximab, éculizumab, Bortézomib) ; \
+rejet humoral (DSA, C4d) — recommandations HAS/SFNDT 2018 ; \
+ticagrélor thrombose vasculaire transplant ; immunosuppression (tacrolimus \
+niveaux résiduels 5-8 ng/mL à 1 an) ; dépistage CMV/BKV post-transplant.
+• Troubles hydroélectrolytiques : hyponatrémie (SALT-1/SALT-2 tolvaptan SIADH) ; \
+hyperkaliémie : patiromer (OPAL-HK) et sodium zirconium cyclosilicate \
+(ZS-9 / HARMONIZE) — AMM EU 2015/2018.
+
+CRITÈRE DE PERTINENCE NÉPHROLOGIE :
+"Ce résultat va-t-il modifier la prescription d'un néphroprotecteur, \
+le protocole de dialyse, le suivi d'une glomérulopathie ou l'immunosuppression \
+d'un transplanté rénal en France ?" \
+Rejeter : études fondamentales sans endpoint clinique validé, résultats \
+uniquement en modèle murin ou cellulaire, épidémiologie sans implication \
+thérapeutique, confirmations de pratiques KDIGO déjà intégrées.
+
+SCORES :
+• Score 8-9 : essai pivot ou guidelines KDIGO/ERA/SFNDT modifiant un standard \
+thérapeutique (nouveau néphroprotecteur, protocole dialyse, induction transplant) ; \
+nouveau guideline KDIGO avec recommandations de grade 1A-1B.
+• Score 6-7 : RCT ≥100 patients ou méta-analyse modifiant le suivi d'une \
+glomérulopathie, d'un transplanté ou d'un dialysé ; validation d'un biomarqueur \
+(NGAL, KIM-1) en pratique clinique.
+• Score ≤5 (exclure) : études rétrospectives <50 patients, études sur \
+des biomarqueurs expérimentaux sans application clinique immédiate.
+• Contexte FRANÇAIS : disponibilité AMM en France (patiromer, sparsentan non \
+encore remboursés), réseau REIN (registre dialyse/greffe France), \
+SFNDT recommandations, HAS avis remboursement."
+"""
+
+_SPECIALTY_ADDENDUM_URGENCES = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — MÉDECINE D'URGENCES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : médecin urgentiste (SAU / SAMU-SMUR / UHCD, France), \
+prenant en charge toutes pathologies aiguës : arrêt cardiaque, syndromes \
+coronariens aigus, AVC, sepsis/choc septique, traumatismes, intoxications, \
+détresse respiratoire, urgences neurologiques, obstétricales, pédiatriques. \
+Référentiels : guidelines ERC/AHA 2021 réanimation cardiopulmonaire, \
+Surviving Sepsis Campaign 2021, recommandations SFMU (Société Française \
+de Médecine d'Urgence), SAMU de France, EUSEM guidelines.
+
+ESSAIS ET RECOMMANDATIONS DE RÉFÉRENCE (connus du lecteur) :
+• Arrêt cardiaque : ERC/AHA guidelines 2021 (RCP haute qualité, DEA précoce, \
+hypothermie thérapeutique TTM2 — abandon protocole 33°C, ROC/ALPS lidocaïne \
+vs amiodarone) ; PARAMEDIC2 (adrénaline vs placebo ACR OHCA) ; \
+compressions thoraciques mécaniques (LINC, PARAMEDIC, CIRC) ; \
+ECMO-RCP (ARREST, PRAGUE-OHCA) extracorporeal CPR.
+• Sepsis / choc septique : SSC bundle 2021 (antibiotiques 1h, lactate, \
+prélèvements, vasopresseurs si PAM<65) ; SMART (Ringer lactate vs sérum \
+physiologique cristalloïdes) ; ANDROMEDA-SHOCK (réévaluation capillaire \
+vs lactate) ; CLOVERS/CLASSIC (stratégie restrictive remplissage) ; \
+procalcitonine pour désescalade antibiotique.
+• Analgésie/sédation : protocole 3x3 douleur SFMU ; kétamine faible dose \
+(Sub-dissociative ketamine) ; PAIN-FREE (morphine vs kétamine douleur modérée-sévère) ; \
+méthoxyflurane ; infiltrations locorégionales (fascia iliaca, TAP block) \
+aux urgences.
+• Traumatologie / damage control : CRASH-2 (acide tranexamique <3h traumatisme \
+hémorragique) ; TARN/MTC (Major Trauma Centre) ; protocole massive transfusion \
+ratio 1:1:1 (CGR:PFC:plaquettes) ; tourniquet militaire en civil.
+• AVC/AIT : DAWN/DEFUSE-3 (thrombectomie étendue jusqu'à 24h) ; \
+ENCHANTED (altéplase faible dose) ; tenectéplase vs altéplase thrombolyse \
+(NOR-TEST, ATTEST-2) ; CHANCE/CHANCE-2 (dual antiplaquettaire AIT/AVC mineur).
+• Dyspnée / IRA : VNI/CPAP (3CPO, FLORALI) ; VNI vs oxygène haut débit \
+(OPTIFLOW/Thrive) ; FRESH-AIR (air ambiant vs O₂ BPCO) ; \
+algorithme SAMU bronchospasme/OAP.
+• Intoxications : charbon actif (délai <1h, dose unique) ; antidotes \
+(naloxone opioïdes, flumazénil BZD, N-acétylcystéine paracétamol, \
+diazépam organophosphorés) ; hydroxocobalamine intox CO/cyanure.
+• Outils décision : HEART score (douleur thoracique) ; Ottawa knee/ankle rules \
+(traumatologie) ; Wells/YEARS (EP/TVP) ; ABCD2 score (AIT) ; \
+triage Manchester (MTS) ; scores NEWS2/qSOFA.
+
+CRITÈRE DE PERTINENCE URGENCES :
+"Ce résultat va-t-il modifier une décision de prise en charge immédiate, \
+un protocole de réanimation ou un algorithme décisionnel aux urgences \
+ou au SAMU/SMUR en France ?" \
+Rejeter : études épidémiologiques sans impact sur la prise en charge aiguë, \
+résultats de réanimation en ICU sans pertinence en porte (tri ou déclenchement), \
+recherche fondamentale, études en milieu non-urgentiste.
+
+SCORES :
+• Score 8-9 : essai pivot ou guidelines ERC/AHA/SFMU/SSC modifiant un \
+protocole de réanimation standard (RCP, sepsis, trauma, AVC) ou validant \
+un outil de triage/décision à fort impact pratique immédiat.
+• Score 6-7 : RCT ≥100 patients sur une thérapeutique aiguë, méta-analyse \
+modifiant le choix d'une analgésie, d'un vasopresseur ou d'une stratégie \
+de remplissage, validation prospective d'un score décisionnel.
+• Score ≤5 (exclure) : études rétrospectives <50 patients, études dans \
+des populations non représentatives des SAU français, confirmations de \
+pratiques déjà établies.
+• Contexte FRANÇAIS : disponibilité en France (AMM, accès SAU, \
+protocoles SAMU), réglementation CRRA-15/SMUR, financement MERRI/UHCD."
+"""
+
+_SPECIALTY_ADDENDUM_MPR = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — MÉDECINE PHYSIQUE ET DE RÉADAPTATION (MPR)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : médecin spécialiste en MPR (CHU / SSR / ESSR, France), \
+prenant en charge la rééducation fonctionnelle de patients adultes après : \
+AVC (rééducation motrice et cognitive, spasticité), traumatisme crânien (TCC), \
+lésion médullaire (SCI — paraplégie/tétraplégie), sclérose en plaques (SEP), \
+douleurs chroniques (CETD, douleurs neuropathiques, SDRC), amputations, \
+pathologies neuromusculaires, réhabilitation oncologique. \
+Référentiels : recommandations SOFMER (Société Française de MPR), \
+ESPRM guidelines, ISNCSCI pour classification SCI, NIHSS/mRS post-AVC, \
+ASIA impairment scale, critères de Budapest SDRC, recommandations SFETD douleur.
+
+ESSAIS ET RECOMMANDATIONS DE RÉFÉRENCE (connus du lecteur) :
+• Rééducation post-AVC : EXCITE (CIMT — thérapie par contrainte induite), \
+tDCS/TMS répétitive (rTMS) récupération motrice post-AVC (recommandations \
+HAS 2012 rééducation AVC) ; GRASP (GRASP graded repetitive arm supplementary \
+programme) ; FES (functional electrical stimulation) pied tombant ; \
+robotique (Lokomat, Armeo, LOPES) — méta-analyses 2020-2024.
+• Traumatisme crânien (TCC) : TRACK-TBI (biomarqueurs GFAP/UCH-L1 prédiction \
+pronostic TCC) ; recommandations Brain Trauma Foundation 2023 ; \
+réhabilitation cognitive (attention, mémoire de travail) — télérééducation.
+• Lésion médullaire (SCI) : SCIM III (Spinal Cord Independence Measure) ; \
+stimulation électrique épidurale (STIMO, Louisville — récupération motrice \
+AIS B/C partielle) ; fampridine (ENERGIZE) marche SEP/SCI ; \
+Zephyr stimulateur diaphragmatique ; recommandations ISCoS/EAU SCI neurogène.
+• Spasticité : toxine botulinique type A (onabotulinumtoxinA DYSPORT, \
+BOTOX ; abobotulinumtoxinA) — recommandations SOFMER/SFMR spasticité 2022, \
+protocoles injections écho-guidées ; baclofène intrathécal (ITB — PIP protocole) ; \
+tizanidine, dantrolène.
+• Sclérose en plaques (SEP) : siponimod, ozanimod, ponesimod dans SEP-SP ; \
+ocrelizumab (ORATORIO, OPERA), ofatumumab (ASCLEPIOS) ; \
+progrès en neurorééducation SEP (fatigue, Ashworth, EDSS) ; \
+recommandations RMR SEP 2023.
+• Douleur chronique / neuropathique : prégabaline, duloxétine (RCP, cibles NRS) ; \
+neuromodulation (SCS — spinal cord stimulation ; BURST, HF10) essais SENZA-RCT, \
+ACCURATE, COMBO ; TENS (transcutaneous electrical nerve stimulation) ; \
+recommandations SFETD 2021 douleurs neuropathiques ; SDRC (syndrome douloureux \
+régional complexe) — criteria Budapest, kétamine IV, sympathectomie chimique.
+• Réhabilitation oncologique : fatigue cancéreuse (activité physique adaptée APA, \
+essais EXCAP) ; lymphœdème secondaire — recommandations lymphœdème SOFMER 2022, \
+DLM (drainage lymphatique manuel) ; réhabilitation post-mastectomie.
+• Appareillage / prothèses : prothèses myoélectriques membres supérieurs (PROPRIO FOOT) ; \
+orthèses releveurs pied tombant (SAFO, WalkAide FES) ; \
+orthèses de genou post-LCA.
+
+CRITÈRE DE PERTINENCE MPR :
+"Ce résultat va-t-il modifier un protocole de rééducation, le choix d'un \
+traitement de la spasticité, d'une technique analgésique ou d'un appareillage \
+pour un patient en SSR ou en consultation MPR en France ?" \
+Rejeter : études fondamentales (mécanismes cellulaires), épidémiologie \
+descriptive sans implication de rééducation, études sur <20 patients sans \
+point de comparaison, résultats déjà intégrés dans les protocoles SOFMER actuels.
+
+SCORES :
+• Score 8-9 : essai pivot ou guideline SOFMER/ESPRM modifiant un protocole \
+de rééducation majeur (AVC, TCC, SCI), nouvelle indication toxine botulinique \
+(RCP AMM modifié), nouvelle technique de neuromodulation validée en phase 3.
+• Score 6-7 : RCT ≥60 patients sur une technique de rééducation avec outcome \
+fonctionnel validé (Barthel, FIM, NIHSS, 6MWT, 10MWT), méta-analyse sur \
+traitement de la spasticité, douleur neuropathique, rééducation cognitive.
+• Score ≤5 (exclure) : études observationnelles rétrospectives <30 patients, \
+études sur des prototypes non commercialisés, résultats biomécanique pur.
+• Contexte FRANÇAIS : disponibilité en France (LPPR pour appareillage, \
+remboursement SS, autorisation AMM botox par indication), réseau SSR/ESSR, \
+nomenclature SOFMER-HAS."
+"""
+
+_SPECIALTY_ADDENDUM_MEDECINE_INTERNE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — MÉDECINE INTERNE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : interniste (médecin spécialiste en médecine interne, CHU / CH / \
+clinique privée, France), prenant en charge des maladies systémiques complexes : \
+maladies auto-immunes (lupus, vascularites ANCA, myosites, syndrome de Sjögren, \
+sclérodermie, myélodysplasies), maladies inflammatoires multisystémiques, \
+amylose (AL/ATTR), sarcoïdose, fièvres récurrentes, pathologies rares. \
+Référentiels actuels : recommandations SNFMI (Société Nationale Française de \
+Médecine Interne), EFIM guidelines, ACR/EULAR pour les connectivites, \
+protocoles nationaux de diagnostic et de soins (PNDS) maladies rares (HAS), \
+SCORE2 risque CV, ESC/EULAR guidelines selon organe atteint.
+
+ESSAIS ET RECOMMANDATIONS DE RÉFÉRENCE (connus du lecteur) :
+• Lupus (LES) : essais voclosporine (AURORA-1/2), belimumab (BLISS-52/76), \
+anifrolumab (TULIP-1/2) — indication LES modéré-sévère réfractaire ; \
+recommandations EULAR LES 2023 (objectifs thérapeutiques, hydroxychloroquine maintenu \
+en fond) ; lupus nephrite (voclosporine + MMF + rituximab).
+• Vascularites ANCA (GPA/PAM) : avacopan (ADVOCATE) — alternative prednisone \
+dans induction rémission vascularites ANCA ; rituximab vs cyclophosphamide \
+(RITUXVAS, RAVE) — standard remission induction GPA ; \
+recommandations ACR/EULAR vascularites 2022.
+• Myosites inflammatoires (DM/PM/MNAI) : EULAR/ACR criteria 2017 ; \
+anticorps MSA/MAA (anti-Jo1, anti-MDA5, anti-TIF1γ, anti-SRP, anti-HMGCR) — \
+stratification pronostique ; IVIg (ProDERM trial) dans DM réfractaire.
+• Sarcoïdose : recommandations ERS/ATS/JRS/ALAT 2022 (corticoïdes, \
+méthotrexate, hydroxychloroquine, biothérapies anti-TNF dans cas réfractaires).
+• Amylose : daratumumab + CyBorD (ANDROMEDA) amylose AL ; tafamidis \
+(ATTR-ACT) et patisiran/inotersen ATTR héréditaire cardiaque — \
+recommandations ESC 2023 amylose cardiaque.
+• Syndrome des antiphospholipides (SAPL) : essais rivaroxaban (RAPS, TRAPS) — \
+anticoagulation directe non supérieure aux AVK dans thrombose SAPL ; \
+HCQ en prévention obstétricale ; recommandations EULAR SAPL 2023.
+• Maladies auto-inflammatoires / fièvres récurrentes : anakinra/canakinumab \
+dans syndromes CAPS/TRAPS/FCAS ; colchicine péricardite récurrente (COPE, \
+CORP, ICAP) ; rilonacept (RHAPSODY) récidives péricardite.
+• Maladie de Still : tocilizumab, anakinra, canakinumab dans Still adulte \
+réfractaire — recommandations SNFMI 2020.
+• Multimorbidité / polypharmacie : STOPP/START v3 2023 (critères de \
+déprescription chez le sujet âgé) ; interactions médicamenteuses \
+immunosuppresseurs (azathioprine + allopurinol, MTX + cotrimoxazole).
+• Diagnostics différentiels complexes : maladies rares (PNDS HAS), fièvres \
+prolongées inexpliquées (TEP-TDM 18F-FDG, biopsie ostéomédullaire), \
+syndrome d'activation macrophagique (SAM — critères HLH-2004).
+
+CRITÈRE DE PERTINENCE MÉDECINE INTERNE :
+"Ce résultat va-t-il modifier la prise en charge d'une maladie systémique, \
+auto-immune ou rare, ou affiner un critère diagnostique / pronostique utilisé \
+au quotidien en médecine interne en France ?" \
+Rejeter : études épidémiologiques sans implication diagnostique ou thérapeutique, \
+recherche fondamentale sur mécanismes cellulaires, publications en sous-groupes \
+très étroits sans pertinence clinique, lettres/éditoriaux.
+
+SCORES :
+• Score 8-9 : essai de phase 3 ou méta-analyse pivot modifiant un standard \
+dans une maladie systémique courante (lupus, vascularite, amylose, péricardite) ; \
+nouvelle recommandation EULAR/SNFMI/ACR modifiant un algorithme diagnostique ou \
+thérapeutique de premier plan.
+• Score 6-7 : RCT ou cohorte ≥100 patients apportant une information nouvelle \
+sur une pathologie systémique (bénéfice d'un traitement de fond, pronostic d'un \
+sous-groupe, valeur d'un biomarqueur MSA/MAA en clinique), revue systématique \
+modifiant la pratique sur un point précis.
+• Score ≤5 (exclure) : études rétrospectives <50 patients sans comparateur, \
+séries de cas descriptives sans impact sur la prise en charge, publications \
+dans des maladies rarissimes sans aucune applicabilité.
+• Contexte FRANÇAIS : applicabilité aux autorisations AMM en France, \
+disponibilité des biothérapies (RTU, ATU/AAP si pertinent), réseau filières \
+maladies rares (FRRM), prise en charge ALD."
+"""
+
+_SPECIALTY_ADDENDUM_MEDECINE_GENERALE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — MÉDECINE GÉNÉRALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : médecin généraliste libéral (secteur 1/2/3, France), \
+exercice de premier recours : consultations courantes, maladies chroniques, \
+prévention, urgences non programmées, coordination avec spécialistes. \
+Référentiels actuels : HAS (recommandations pratique clinique, fiches mémo, \
+parcours de soins), SPILF 2021 (antibiothérapie de ville), ADA 2024/ESC-ESH 2023/\
+GINA 2023/GOLD 2024, calendrier vaccinal France 2024, SCORE2/SCORE2-OP.
+
+ESSAIS ET RECOMMANDATIONS DE RÉFÉRENCE (connus du lecteur, ne pas surexpliquer) :
+• HTA : ESC/ESH guidelines 2023 (objectifs tensionnels, bithérapie initiale) ; \
+STEP trial (amlodipine + IC vs tétraméthylpyrazine PA ≥140 chez >60 ans, n=8 511) ; \
+recommandation SFHTA 2022.
+• Diabète type 2 : ADA Standards of Care 2024 ; GLP-1 RA (sémaglutide, liraglutide) \
+et iSGLT2 (empagliflozine, dapagliflozine) — bénéfice CV/rénal indépendant HbA1c ; \
+PIONEER/SURPASS series, SELECT (sémaglutide 2,4 mg surpoids sans diabète) ; \
+recommandations HAS 2023 mise à jour.
+• Dépistage : programme national dépistage cancer sein (mammographie biennale 50-74 ans) ; \
+dépistage CCR (FIT/coloscopie), col utérin (frottis+HPV dépistage ASC-US+) ; \
+recommandations HAS 2022-2023.
+• Vaccination : calendrier vaccinal France 2024 (grippe, COVID, HPV garçons, \
+méningocoque ACWY/B, RSV ≥75 ans, zona HZ/su ≥65 ans, coqueluche stratégie cocooning).
+• Asthme : GINA 2023 — stratégie step-up/step-down, traitement de fond \
+CSI-formotérol (voie unique), place des biothérapies (dupilumab, mépolizumab, \
+tézépélumab) chez l'asthme sévère.
+• BPCO : GOLD 2024 — exacerbations, réhabilitation respiratoire, triple thérapie \
+(CSI+LABA+LAMA) si ≥2 exacerbations/an ou éosinophiles ≥300/µL.
+• Antibiothérapie de ville : SPILF/HAS 2021 — TDR angine (éviter pénicilline si TDR−) ; \
+cystite simple femme (fosfomycine monodose ou pivmécillinam 5j) ; \
+otite moyenne aiguë enfant (critères d'abstention) ; sinusite (abstention si symptômes \
+<10 j) ; pneumonie communautaire (amoxicilline 1g×3/j si non sévère) ; \
+résistance antibiotique (E. coli BLSE, pneumocoque résistant pénicilline).
+• Santé mentale / dépression : HAS 2017 mise à jour — TCC (thérapie cognitivo-comportementale), \
+antidépresseurs ISRS/IRSN (critères indication, durée 6-12 mois) ; \
+anxiété généralisée (duloxétine, venlafaxine, escitalopram) ; \
+burnout / épuisement professionnel (diagnostic différentiel dépression).
+• Sevrage tabagique : bupropion, varénicline (retiré/réintroduit), TNS combinés ; \
+recommandations HAS 2014 révisées ; e-cigarette/vapotage (ANSM).
+• Lombalgie : recommandations HAS 2019 — prise en charge active (maintien activité, \
+kinésithérapie guidée), déprescription antalgiques pallier I-II sauf phase aiguë, \
+pas d'IRM systématique <6 semaines.
+• Activité physique sur ordonnance (APO) : loi Sport Santé 2016 (article L.1172-1 CSP), \
+HAS 2023 parcours APO ; FITT-VP (fréquence, intensité, temps, type, volume, progression).
+• Polypharmacie / multimorbidité : critères STOPP/START v3 2023, déprescription \
+benzodiazépines, IPP, statines chez sujet très âgé ; cadre PCMH (Patient-Centered \
+Medical Home) / soins primaires coordonnés.
+• Risque cardiovasculaire global : SCORE2/SCORE2-OP (ESC 2021) en France, \
+statines et prévention primaire (rosuvastatine/atorvastatine), objectifs LDL.
+
+CRITÈRE DE PERTINENCE MÉDECINE GÉNÉRALE :
+"Ce résultat va-t-il concrètement modifier une décision de consultation, \
+un choix de prescription ou un message délivré au patient lors d'une consultation \
+de médecine générale en France dans les 1-3 ans ?" \
+Rejeter : études fondamentales, biomarqueurs exploratoires, résultats en sous-groupes \
+sans application immédiate, confirmations de pratiques déjà bien établies sans \
+information nouvelle, épidémiologie purement descriptive.
+
+SCORES :
+• Score 8-9 : guideline nationale/européenne modifiant un standard de prescription \
+courant (HTA, DT2, antibiothérapie), essai de phase 3 modifiant le schéma \
+thérapeutique d'une pathologie chronique très fréquente (DT2, asthme, HTA).
+• Score 6-7 : méta-analyse ou RCT de grande envergure nuançant une pratique \
+établie, nouvelle indication ou contre-indication pour un médicament très utilisé \
+en ville (IEC, ISRS, statine, IPP, AINS, antibiotique).
+• Score ≤5 (exclure) : études dans des populations non représentatives du \
+cabinet généraliste, études sans bras de comparaison actif, résultats déjà intégrés \
+dans les guides de pratique actuels.
+• Contexte FRANÇAIS : applicabilité aux patients en France (remboursement SS, \
+accès en ville, HAS/CNAM, CMU-C/ALD) ; signaler si molécule non disponible ou \
+non remboursée en France."
+"""
+
+_SPECIALTY_ADDENDUM_ORL = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — ORL ET CHIRURGIE CERVICO-FACIALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : oto-rhino-laryngologiste et chirurgien cervico-facial \
+(CHU / clinique / cabinet, France / Europe), maîtrisant otologie (implants \
+cochléaires, otospongiose, vertiges), rhinologie (RSC, FESS, polypose), \
+laryngologie (phonochirurgie, paralysie laryngée), oncologie cervico-faciale \
+(CECTC — carcinomes épidermoïdes tête-cou, thyroïde, parathyroïde), \
+chirurgie pédiatrique ORL (amygdalectomie, ADK, otites séromuqueuses). \
+Référentiels actuels : EPOS 2020 (rhinosinusite chronique), AAO-HNS guidelines, \
+ESMO guidelines carcinomes tête-cou 2023, INCa thésaurus cancers ORL, \
+HAS recommandations (thyroïde, surdité, 100% Santé audioprothèse). \
+Essais pivots de référence : LIBERTY NP (dupilumab polypose — NEJM 2019), \
+SINUS-52 (dupilumab RSC avec polypose sévère), \
+KEYNOTE-048 (pembrolizumab CECTC récurrent/métastatique — Lancet 2019), \
+EXTREME (cétuximab + platine 1re ligne CECTC — NEJM 2008 — standard historique), \
+CLARITY (SLT — non-ORL, référence croisée), \
+études IC (implants cochléaires) : HEARRING, BCS multicentric cohort.
+
+CRITÈRE DE PERTINENCE ORL :
+"Ce résultat va-t-il modifier une indication chirurgicale, un protocole médical, \
+le choix d'un implant ou d'une biothérapie dans les 1-3 ans ?" \
+Rejeter même un RCT bien conduit si : audiologie pure sans composante ORL, \
+orthophonie / logopédie sans décision ORL, allergologie sans rhinite/RSC, \
+recherche fondamentale cellules ciliées ou génétique exploratoire sans essai clinique.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Rhinosinusite chronique / polypose naso-sinusienne : biothérapies \
+  (dupilumab anti-IL-4Rα, mépolizumab anti-IL-5, omalizumab anti-IgE), FESS \
+  résultats fonctionnels à 1-2 ans, lavages, corticoïdes locaux
+→ Surdité / audiologie clinique : implants cochléaires (IC — nouveaux critères \
+  d'implantation, résultats < 65 dB HL, résultats enfants sourds congénitaux), \
+  BAHA / Osia, prothèses auditives (100% Santé — résultats observationnels), \
+  surdité brusque (corticostéroïdes systémiques vs intratympaniques)
+→ Vertiges / troubles vestibulaires : VPPB (manœuvres repositionnement — \
+  résultats RCT), maladie de Ménière (injection intratympanique gentamicine / \
+  corticoïdes, chirurgie du sac endolymphatique), névrite vestibulaire
+→ Oncologie cervico-faciale : immunothérapie (pembrolizumab PD-L1+ 1re ligne, \
+  nivolumab 2e ligne), déescalade radiothérapie HPV+ oropharynx, TORS \
+  (chirurgie robotique transorale), reconstruction lambeau libre (ALT, RFAP), \
+  cancer du nasopharynx (NPC)
+→ Thyroïde / parathyroïde : thyroïdectomie vidéo-assistée / transoral (TOETVA), \
+  thérapies ciblées (lenvatinib/sorafénib CTD réfractaire à l'iode), \
+  carcinome anaplasique (dabrafénib + tramétinib BRAF V600E), \
+  hyperparathyroïdie primaire (chirurgie mini-invasive guidée MIBI/écho)
+→ Paralysie laryngée / cordes vocales : réinnervation sélective, laryngoplastie \
+  d'injection (collagène, hydroxyapatite), laryngoplastie de médialisation
+→ Paralysie faciale périphérique : corticostérapie ± antiviral (Bell's palsy \
+  — valaciclovir ± prednisolone), score House-Brackmann, électroneuronographie
+→ Apnées du sommeil / SAOS en lien ORL : chirurgie pharyngée (UPPP), \
+  stimulation nerf hypoglosse (INSPIRE — résultats AHI, qualité de vie)
+→ Alertes ANSM / FDA : implants cochléaires (risque méningite, migration), \
+  prothèses vocales (valves trachéo-œsophagiennes), instruments chirurgicaux ORL
+
+REJETER :
+→ Audiologie pure (réglages prothèse, tests audiométriques) sans décision médicale ORL
+→ Orthophonie / logopédie sans indication chirurgicale ou médicale ORL associée
+→ Allergologie médicale pure (immunothérapie spécifique, rhinite allergique sans \
+  polypose) — relayer à médecine interne ou pneumologie
+→ Dermatologie cervico-faciale sans composante ORL
+→ Recherche fondamentale (modèles murins cochléaires, régénération cellules ciliées)
+→ Odontologie / chirurgie maxillo-faciale pure hors pathologie ORL
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+RSC (Rhinosinusite Chronique) avec PNS (polypose naso-sinusienne) / sans PNS, \
+FESS / CES (Chirurgie Endoscopique des Sinus — Functional Endoscopic Sinus Surgery), \
+EPOS (European Position Paper on Rhinosinusitis and Nasal Polyps — 2020), \
+SNOT-22 (Sino-Nasal Outcome Test — score qualité de vie rhinosinusite), \
+biothérapies : dupilumab (anti-IL-4Rα) / mépolizumab (anti-IL-5) / omalizumab \
+  (anti-IgE) — polypose réfractaire à la chirurgie, \
+CECTC / HNSCC (Carcinomes Épidermoïdes des Voies Aéro-Digestives Supérieures / \
+  Head and Neck Squamous Cell Carcinoma), \
+HPV (Human Papillomavirus — oropharynx p16+), stade TNM AJCC 8e éd., \
+TORS (Transoral Robotic Surgery), TLM (Transoral Laser Microsurgery), \
+lambeau libre : ALT (antéro-latéral cuisse) / RFAP (avant-bras radial), \
+lambeau pédiculé (pectoral, grand dorsal), \
+CTD (Carcinome Thyroïdien Différencié) : papillaire CTP / folliculaire CTF, \
+carcinome anaplasique / médullaire / carcinome de Hürthle, \
+TOETVA (Thyroïdectomie Endoscopique Transoral Vestibulaire), \
+IC (Implant Cochléaire), BAHA (Bone-Anchored Hearing Aid), \
+HL (Hearing Loss) : CHL (conductive) / SNHL (sensorineural), \
+audiogramme tonal — seuils 500/1000/2000/4000 Hz, \
+VPPB (Vertige Paroxystique Positionnel Bénin) : canalolithiase cupulolithiase, \
+manœuvre d'Epley (canal postérieur) / BBQ roll (canal horizontal), \
+hydrops endolymphatique / maladie de Ménière, \
+OSM (Otite Séromuqueuse / glue ear), aérateurs transtympaniques, \
+PFP (Paralysie Faciale Périphérique) : score House-Brackmann I-VI, \
+Bell's palsy (paralysie faciale a frigore), zona auriculaire (Ramsay Hunt), \
+SAOS (Syndrome d'Apnées Obstructives du Sommeil) — AHI (Apnea-Hypopnea Index), \
+UPPP (Uvulo-Palato-Pharyngoplastie), stimulation nerf hypoglosse, \
+DISE (Drug-Induced Sleep Endoscopy — exploration sous sédation).
+
+EXEMPLES DE RÉDACTION (style JAMA Otolaryngology / Otolaryngology HNS / Oral Oncology) :
+
+Biothérapie rhinologie :
+  titre_court : "Dupilumab polypose réfractaire : réduction volume et olfaction (LIBERTY NP)"
+  resume : "LIBERTY NP SINUS-52 (RCT, N=448, RSC + polypose sévère SNOT-22 ≥ 20, \
+FESS préalable dans 74 %) : score polypose NPS −1,8 pts (dupilumab) vs −0,1 (placebo) \
+à 24 sem. — différence −1,7 (IC95% −2,1 à −1,4 ; p<0,001). Olfaction : +8,98 pts \
+UPSIT. SNOT-22 : −24,4 vs −8,6 pts. Corticoïdes systémiques évités dans 70 % vs \
+32 % des cas."
+  impact_pratique : "En pratique : dupilumab en 3e ligne après chirurgie + corticoïdes \
+locaux insuffisants — critères HAS : ≥ 1 chirurgie + SNOT-22 ≥ 20 + éosinophiles \
+élevés ou atopie associée."
+
+Oncologie cervico-faciale / immunothérapie :
+  titre_court : "Pembrolizumab 1re ligne CECTC PD-L1+ : OS +3,2 mois (KEYNOTE-048)"
+  resume : "KEYNOTE-048 (RCT, N=882, CECTC récurrent/métastatique, 1re ligne) : \
+pembrolizumab seul vs EXTREME (cétuximab + platine + 5-FU). Sous-groupe PD-L1 CPS ≥ 1 \
+(N=543) : OS médian 12,3 mois (pembrolizumab) vs 10,3 mois (EXTREME) — \
+HR 0,74 (IC95% 0,61–0,90 ; p=0,002). CPS ≥ 20 : OS 14,9 vs 10,7 mois (HR 0,61). \
+Pembrolizumab + chimio non-inférieur toutes populations. Toxicité grade ≥ 3 : \
+54 % (mono) vs 85 % (EXTREME)."
+  impact_pratique : "À retenir : tester PD-L1 CPS systématiquement avant 1re ligne \
+CECTC métastatique — pembrolizumab seul si CPS ≥ 20, pembrolizumab + chimio si CPS < 20."
+
+Implant cochléaire :
+  titre_court : "Implantation cochléaire < 65 dB HL : résultats non-inférieurs à > 70 dB"
+  resume : "Méta-analyse (N=1 847, 14 études, IC adultes, seuils 50–90 dB HL) : \
+reconnaissance vocale dans le silence à 12 mois — 76 % (groupe 50–65 dB) vs \
+72 % (groupe 65–80 dB) — différence non significative (p=0,34). Satisfaction \
+subjective (APHAB) significativement meilleure chez les implantés à seuil \
+intermédiaire (p=0,02). Pas de complication supérieure dans le groupe seuil réduit."
+  impact_pratique : "En pratique : les critères d'implantation peuvent être élargis \
+aux patients à 65 dB HL en cas d'inadaptation prothétique — à discuter en RCP."
+"""
+
+_SPECIALTY_ADDENDUM_OPHTALMOLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — OPHTALMOLOGIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : ophtalmologiste (CHU / cabinet / clinique, France / Europe), \
+maîtrisant anti-VEGF intravitréens (IVT), chirurgie de la cataracte (phaco + IOL), \
+laser (SLT, laser thermique, PDT), chirurgie vitréo-rétinienne (vitrectomie), \
+chirurgie du glaucome (trabéculectomie, MIGS), greffes de cornée (DSAEK, DMEK), \
+chirurgie réfractive (LASIK, SMILE), prise en charge des uvéites. \
+Référentiels actuels : EURETINA guidelines (rétine, DMLA, RD, œdème maculaire), \
+EGS guidelines 6e éd. 2024 (glaucome), AAO Preferred Practice Patterns, \
+HAS fiches de bon usage IVT anti-VEGF, recommandations SNOF (France). \
+Essais pivots de référence : ANCHOR/MARINA (ranibizumab DMLA humide), \
+VIEW 1/2 (aflibercept DMLA humide), HAWK/HARRIER (brolucizumab vs aflibercept), \
+TENAYA/LUCERNE (faricimab vs aflibercept DMLA humide), \
+OAKS/DERBY (avacincaptad pegol DMLA atrophique géographique), \
+BOULEVARD/YOSEMITE/RHINE (faricimab œdème maculaire diabétique), \
+CLARITY (SLT vs collyres glaucome 1re intention), \
+LIGHT (SLT vs prostaglandines), FAME (implant fluocinolone œdème maculaire).
+
+CRITÈRE DE PERTINENCE OPHTALMOLOGIQUE :
+"Ce résultat va-t-il modifier un protocole d'injection, le choix d'un implant, \
+une indication chirurgicale, ou la surveillance d'un patient dans les 1-3 ans ?" \
+Rejeter même un RCT bien conduit si : recherche fondamentale (modèles animaux, \
+cellules, génomique) sans validation clinique accessible, résultats chez des \
+populations sans équivalent anatomique en France, sous-groupe non pré-spécifié.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Anti-VEGF / IVT : nouveaux agents (faricimab bispecifique anti-VEGF-A/Ang-2, \
+  aflibercept HD 8 mg, brolucizumab), schémas d'injection (treat-and-extend, \
+  pro-re-nata), intervalles prolongés, switch thérapeutique, résultats 3-5 ans
+→ DMLA atrophique / géographique : thérapies anti-complément (avacincaptad pegol, \
+  pegcetacoplan/APL-2), thérapie génique (CPCB-RPE1, GT005)
+→ Glaucome : nouvelles classes thérapeutiques (rho-kinase inhibiteur — \
+  nétarsudil/latanoprostène bunod), MIGS (iStent inject W, Hydrus, goniotomie \
+  ab-interno, CPC micropulse), SLT en 1re intention, trabeculectomie augmentée
+→ Cataracte : nouvelles IOL (EDOF — Extended Depth of Focus, toriques ajustables \
+  lumière RxSight LAL), FLACS (laser femtoseconde), résultats qualité visuelle
+→ Rétinopathie diabétique : dépistage par IA (IDx-DR/EyeArt en France), \
+  anti-VEGF préventifs stade sévère non proliférante, photocoagulation panrétinienne \
+  (PPR) vs anti-VEGF, vitrectomie diabétique
+→ Cornée / sécheresse oculaire : cross-linking cornéen (CXL — kératocône), \
+  greffes lamellaires postérieures (DSAEK/DMEK vs PKP), sécheresse oculaire \
+  (cyclosporine A, lifitégrast, ikervis, facteurs de croissance NGF)
+→ Uvéites : biothérapies (adalimumab — VISUAL 1/2, tocilizumab, implant \
+  dexaméthasone Ozurdex, fluocinolone Iluvien), classifications SUN
+→ Chirurgie réfractive : SMILE 2e génération, ICL (implant collamer), LASIK — \
+  résultats 10 ans, ectasie post-LASIK
+→ Neuropathies optiques : NORB (névrite optique rétrobulbaire — SEP), NOIA \
+  (neuropathie optique ischémique antérieure artéritique/non-artéritique), \
+  Leber (thérapie génique lenadogene nolparvovec — LUMEVOQ)
+→ Alertes ANSM : lots d'anti-VEGF défectueux, matériovigilance implants IOL/MIGS, \
+  collyres rappelés, contamination injections intravitréennes
+
+REJETER :
+→ Recherche fondamentale (modèles murins/porcins, cultures cellulaires, \
+  génomique exploratoire) sans essai clinique associé dans les 2 ans
+→ Études de prévalence épidémiologique sans composante thérapeutique
+→ Chirurgie oculoplastique pure (paupières, orbite, voies lacrymales) sauf si \
+  résultats modifiant la pratique ophtalmologique courante
+→ Strabisme pédiatrique (relayer à ophtalmologie pédiatrique / orthoptie)
+→ Résultats d'études observationnelles monocentriques sur petit effectif (N < 100) \
+  pour une technique déjà en pratique courante
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+DMLA (Dégénérescence Maculaire Liée à l'Âge) humide (néovasculaire) / sèche \
+  (atrophique / géographique — GA), \
+anti-VEGF : ranibizumab (Lucentis) / aflibercept (Eylea) / brolucizumab (Beovu) / \
+  faricimab (Vabysmo) / bevacizumab (Avastin hors-AMM), \
+IVT (Injection IntraVitréenne), TEP (Treat-and-Extend Protocol), PRN (pro-re-nata), \
+BCVA (Best-Corrected Visual Acuity — lettres ETDRS ou décimale), \
+OCT (Optical Coherence Tomography), OCT-A (angiographie OCT), \
+CSFT (Central Subfield Thickness — épaisseur maculaire centrale), \
+SRF (Subretinal Fluid) / IRF (Intraretinal Fluid) / PED (Pigment Epithelium Detachment), \
+RD (Rétinopathie Diabétique) : non proliférante légère/modérée/sévère / \
+  proliférante / OMD (Œdème Maculaire Diabétique), \
+PPR (Photo-Coagulation Pan-Rétinienne), \
+OVCR (Occlusion Veineuse Centrale de la Rétine) / OBVR (branche), \
+glaucome primitif à angle ouvert (GPAO), pression intra-oculaire (PIO mmHg), \
+trabéculectomie, MIGS (Micro-Invasive Glaucoma Surgery) : iStent / Hydrus / \
+  goniotomie / CPC (cyclophotocoagulation), SLT (Selective Laser Trabeculoplasty), \
+C/D (Cup-to-Disk ratio — excavation papillaire), \
+IOL (Intraocular Lens) : monofocale / torique / multifocale / EDOF, \
+FLACS (Femtosecond Laser-Assisted Cataract Surgery), phacoemulsification, \
+DSAEK / DMEK (greffe endothélium cornéen — lamellaire postérieure), \
+PKP (Penetrating Keratoplasty — greffe transfixiante), \
+CXL (Corneal Cross-Linking — kératocône), \
+LASIK / SMILE / ICL (chirurgie réfractive), \
+NORB (Névrite Optique Rétrobulbaire), NOIA (Neuropathie Optique Ischémique \
+  Antérieure artéritique — Horton / non-artéritique), \
+uvéite antérieure / intermédiaire / postérieure / panuvéite (classification SUN).
+
+EXEMPLES DE RÉDACTION (style Ophthalmology / JAMA Ophthalmology / EURETINA) :
+
+Essai anti-VEGF (DMLA) :
+  titre_court : "Faricimab vs aflibercept DMLA humide : intervalles 16 sem. (TENAYA/LUCERNE)"
+  resume : "TENAYA + LUCERNE (RCT poolé, N=1 329, DMLA humide naive, suivi 2 ans) : \
+BCVA gain +6,6 lettres ETDRS (faricimab) vs +6,6 lettres (aflibercept 2 mg q8w) à \
+48 sem. — non-infériorité confirmée (différence −0,04 lettre ; IC95% −1,17–1,09). \
+45 % des patients faricimab atteignent un intervalle ≥ 16 semaines à 2 ans vs 34 % \
+aflibercept. CSFT similaire. Profil de sécurité comparable."
+  impact_pratique : "En pratique : faricimab permet d'espacer les IVT à 16 semaines \
+chez près d'un patient sur deux — alternative à l'aflibercept pour réduire la \
+charge d'injections en pratique libérale."
+
+Glaucome / laser :
+  titre_court : "SLT en 1re intention non-inférieur aux collyres (CLARITY RCT)"
+  resume : "CLARITY (RCT, N=718, GPAO et HTO naïfs, suivi 36 mois) : \
+succès thérapeutique (PIO ≤ 21 mmHg et réduction ≥ 20 %) à 3 ans : 74,2 % (SLT) \
+vs 78,7 % (collyres prostaglandines) — non-infériorité établie (marge 10 %). \
+Qualité de vie significativement meilleure dans le groupe SLT (charge médicamenteuse \
+nulle). SLT répétable dans 25 % des cas avec maintien de l'efficacité."
+  impact_pratique : "À retenir : proposer le SLT en 1re intention au patient \
+nouvellement diagnostiqué — efficacité équivalente aux collyres, sans contrainte \
+d'observance ni effets locaux."
+
+Guideline / recommandation :
+  titre_court : "EURETINA 2024 : faricimab et aflibercept 8 mg — 1res lignes OMD"
+  resume : "EURETINA Guidelines œdème maculaire diabétique 2024 (site EURETINA / \
+Graefe's Arch) : faricimab et aflibercept 8 mg HD ajoutés comme options de 1re ligne pour \
+l'OMD (Grade A — niveau de preuve 1). Basé sur YOSEMITE/RHINE (faricimab, N=940) \
+et PHOTON (aflibercept 8 mg, N=660) : gain BCVA +10,7 et +9,2 lettres resp. à \
+52 sem., avec intervalles ≥ 16 sem. obtenus chez 51 % et 57 % des patients."
+  impact_pratique : "En pratique : les deux nouvelles molécules permettent un \
+traitement d'induction + espacement rapide — à intégrer dans les protocoles dès \
+disponibilité en France (remboursement attendu S2 2026)."
+"""
+
+_SPECIALTY_ADDENDUM_ONCOLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — ONCOLOGIE MÉDICALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : oncologue médical (CHU / clinique, France / Europe), \
+maîtrisant chimiothérapie, immunothérapie (ICI), thérapies ciblées, \
+hormonothérapie, décision pluridisciplinaire en RCP, soins de support. \
+Référentiels actuels : ESMO Clinical Practice Guidelines (tous types tumoraux), \
+ASCO guidelines, INCa thésaurus national de cancérologie, HAS fiches de bon usage. \
+Essais pivots de référence : KEYNOTE-522 (pembrolizumab néoadjuvant TNBC), \
+DESTINY-Breast04 (T-DXd HER2-low), MONALEESA-7 (ribociclib sein HR+/HER2-), \
+SOLO-1 (olaparib maintenance OC BRCA+), ADAURA (osimertinib adjuvant NSCLC EGFR+), \
+CheckMate 816 (nivolumab néoadjuvant NSCLC résécable), LIBRETTO-001 (selpercatinib \
+RET), TOPAZ-1 (durvalumab cholangiocarcinome), PROfound (olaparib PCa HRR+), \
+VISION (lutetium-177-PSMA-617 PCa métastatique), CHECKMATE-901 (nivolumab urothélial).
+
+CRITÈRE DE PERTINENCE ONCOLOGIQUE :
+"Ce résultat va-t-il modifier le standard de traitement, la sélection des patients \
+(biomarqueur), ou l'accès à une thérapie en France dans les 1-3 ans ?" \
+Rejeter même un RCT bien conduit si : phase 1 d'escalade de dose seule, \
+translationnel sans essai clinique associé au stade pratique, type tumoral \
+rarissime (< 1 000 cas/an en France) sans impact sur pratique commune, \
+confirmation sans gain clinique net d'une supériorité déjà adoptée par l'ESMO.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Essais de phase 3 ou méta-analyses modifiant le standard dans les types tumoraux \
+  fréquents (sein, poumon NSCLC/SCLC, côlon-rectum, prostate, ovaire, gastrique, \
+  mélanome, col utérin, rein, vessie, foie/CHC, cholangiocarcinome, pancréas, \
+  tête-cou, thyroïde, GIST, sarcome, lymphome, myélome)
+→ Nouveaux biomarqueurs prédictifs de réponse impactant la sélection des patients : \
+  PD-L1 TPS/CPS, TMB, MSI-H/dMMR, HRR/BRCA, BRAF V600E, KRAS G12C, \
+  EGFR/ALK/RET/ROS1/NTRK/MET exon 14, HER2 (IHC/FISH/NGS), CLDN18.2, FGFR
+→ Nouveaux ADC (Antibody-Drug Conjugates) : mécanisme, résultats pivots, profil EI \
+  (T-DXd, SG sacituzumab govitécan, disitamab védotin, mirvetuximab soravtansine)
+→ CAR-T dans de nouveaux types tumoraux : résultats OS/PFS, toxicités CRS/ICANS
+→ Accès précoce France / ATU/AAP ANSM-HAS : molécules prescriptibles avant AMM
+→ Cardio-oncologie : cardiotoxicité anthracyclines/HER2/ICI/RTE, myocardite sous ICI, \
+  surveillance FEVG, prévention primaire/secondaire
+→ Soins de support modifiant la pratique : G-CSF (réduction délai), CIPN prévention, \
+  nausées/vomissements chimio-induits (CINV — schémas antiémétiques), fatigue, \
+  mucite — uniquement résultats de phase 3
+→ Dépistage : résultats programmes organisés (sein/CCR/col) et ciblés \
+  (LDCT poumon à risque, IRM multiparamétrique prostate PI-RADS)
+→ Alertes ANSM/FDA : nouvelles contre-indications thérapies ciblées/ICI, \
+  modifications AMM, retraits de lots, REMS
+
+REJETER :
+→ Études de phase 1 d'escalade de dose sans données d'efficacité exploitables
+→ Études translationnelles / biomarqueurs exploratoires sans essai clinique associé \
+  accessible en pratique
+→ Confirmations sans gain clinique (méta-analyse validant une supériorité déjà \
+  intégrée aux guidelines ESMO/ASCO depuis > 2 ans)
+→ Études de qualité de vie seules, sans bras de traitement actif ni décision thérapeutique
+→ Chirurgie oncologique pure (résection, marges, reconstruction — relayer chirurgie \
+  thoracique, digestive, urologie, gynécologie selon localisation)
+→ Radiobiologie fondamentale, physique des particules sans résultats cliniques
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+ICI (Immune Checkpoint Inhibitor), anti-PD1 (pembrolizumab / nivolumab / \
+  cemiplimab), anti-PDL1 (atézolizumab / durvalumab / avélumab), \
+  anti-CTLA4 (ipilimumab / trémelimumab), \
+PD-L1 TPS (Tumor Proportion Score) / CPS (Combined Positive Score), \
+TMB (Tumor Mutational Burden — mut/Mb), MSI-H / dMMR, \
+NGS (Next Generation Sequencing — panel tumoral), \
+EGFR (osimertinib 3e gén), ALK (alectinib / lorlatinib), KRAS G12C \
+  (sotorasib / adagrasib), RET (selpercatinib / pralsetinib), \
+  NTRK (larotrectinib / entrectinib), HER2 (trastuzumab / T-DXd / tucatinib), \
+  BRAF V600E (dabrafénib + tramétinib), MET exon 14 (capmatinib / tépotinib), \
+ADC (Antibody-Drug Conjugate) : T-DXd (trastuzumab-deruxtecan), \
+  SG (sacituzumab govitécan), mirvetuximab soravtansine, bélantamab mafodotin, \
+PARP inhibiteurs : olaparib / niraparib / rucaparib / talazoparib (BRCA / HRR), \
+CDK4/6 inhibiteurs : palbociclib / ribociclib / abémaciclib (sein HR+/HER2-), \
+CAR-T : tisagénlecleucel / axicabtagène ciloleucel / idécabtagène vicleucel, \
+ORR (Objective Response Rate), PFS (Progression-Free Survival), \
+OS (Overall Survival), DFS (Disease-Free Survival), EFS, iDFS, \
+RECIST v1.1, iRECIST (immunothérapie), \
+irAE (immune-related Adverse Events — colite / pneumopathie / thyroïdite / \
+  hépatite / myocardite / insuffisance surrénalienne), \
+CTCAE grade 1-5, ECOG PS (0-4), Karnofsky, \
+ATU / AAP (Autorisation d'Accès Précoce — ANSM/HAS France), \
+RCP (Réunion de Concertation Pluridisciplinaire — obligatoire), \
+SBRT / SABR (stéréotaxie), protonthérapie (hadronthérapie) — sociétés ASTRO/ESTRO, \
+G-CSF (filgrastim / pegfilgrastim — support hématologique), \
+CIPN (Chimio-Induced Peripheral Neuropathy — neuropathie périphérique), \
+CINV (Chimio-Induced Nausea and Vomiting — échelle MASCC/ASCO).
+
+EXEMPLES DE RÉDACTION (style JCO / Annals of Oncology / Lancet Oncology) :
+
+Essai pivot (nouvelle thérapie ciblée) :
+  titre_court : "T-DXd vs chimio : HER2-low sein métastatique (DESTINY-Breast04)"
+  resume : "DESTINY-Breast04 (RCT, N=557, sein métastatique HER2-low IHC 1+ ou \
+2+/ISH-, ≥ 1 ligne préalable) : PFS médiane 9,9 mois (T-DXd) vs 5,1 mois (chimio \
+médecin-choix) — HR 0,50 (IC95% 0,40–0,63 ; p<0,001). OS médian 23,4 vs 16,8 mois \
+(HR 0,64 ; IC95% 0,49–0,84 ; p=0,001). ORR 52,3 % vs 16,3 %. Pneumopathie \
+interstitielle grade ≥ 3 : 0,8 %."
+  impact_pratique : "En pratique : T-DXd redéfinit le HER2-low comme une entité \
+actionnable — bilan IHC HER2 systématique indispensable avant 2e ligne, y compris \
+tumeurs auparavant considérées HER2-négatives."
+
+Guideline ESMO :
+  titre_court : "ESMO 2024 : olaparib maintenance 1re ligne OC BRCA+ (7 ans SOLO-1)"
+  resume : "ESMO Guidelines OC 2024 (Ann Oncol suppl.) : olaparib maintenance \
+recommandé en 1re ligne pour tout carcinome séreux de haut grade BRCA1/2-muté \
+(germinal OU somatique) — Grade IA. Données SOLO-1 à 7 ans : PFS médiane non \
+atteinte (olaparib) vs 13,8 mois (placebo) — HR 0,33 (IC95% 0,25–0,43). 44 % \
+des patientes BRCA+ sans progression à 7 ans."
+  impact_pratique : "À retenir : test BRCA tumoral ET germinal systématique avant \
+toute 1re ligne OC avancé séreux haut grade — le résultat conditionne la maintenance."
+
+Accès précoce France :
+  titre_court : "AAP ANSM : selpercatinib en 1re ligne cancer thyroïde RET-muté"
+  resume : "HAS (fiche AAP, mars 2026) : selpercatinib (Retevmo, Eli Lilly) reçoit \
+une autorisation d'accès précoce en 1re ligne pour les carcinomes thyroïdiens \
+différenciés réfractaires à l'iode RET-muté. Basé sur LIBRETTO-001 (N=162 \
+thyroïde) : ORR 79 % (IC95% 72–86 %), DOR médiane 22,1 mois. Disponible en France \
+via protocole AAP à compter du 1er avril 2026."
+  impact_pratique : "En pratique : tester systématiquement RET dans tout carcinome \
+thyroïdien différencié métastatique — l'AAP permet l'accès immédiat avant AMM."
+"""
+
+_SPECIALTY_ADDENDUM_UROLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — UROLOGIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : urologue (CHU / clinique, France / Europe), maîtrisant chirurgie \
+urologique ouverte et laparoscopique/robotique (prostatectomie radicale, \
+cystectomie totale, néphro-urétérectomie, résection partielle), endourologie \
+(URS souple, NLPC, laser HoLEP/ThuLEP), oncologie urologique, prise en charge \
+de l'incontinence et des troubles mictionnels. \
+Référentiels actuels : EAU Guidelines 2024 (cancer prostate, vessie, rein, testicule, \
+lithiase, incontinence, HBP), recommandations AFU (mises à jour annuelles), \
+ANSM guides bon usage hormonothérapie prostatique. \
+Essais pivots de référence : ENZAMET (enzalutamide CSPC métastatique), \
+LATITUDE (abiratérone + prednisone CSPC métastatique), \
+STAMPEDE (docétaxel / abiratérone — CSPC non-métastatique et métastatique), \
+TITAN (apalutamide CSPC), PROSPER (enzalutamide nmCRPC), ARAMIS (darolutamide nmCRPC), \
+PROfound (olaparib CRPC HRR+), VISION (lutetium-177-PSMA-617 CRPC post-AR/taxane), \
+EV-302/KEYNOTE-A39 (enfortumab védotine + pembrolizumab — urothélial métastatique \
+1re ligne), NIAGARA (durvalumab péri-opératoire TVIM), \
+CheckMate-9ER (nivolumab + cabozantinib CCR 1re ligne), \
+ProtecT (survie identique PR/RT/surveillance active — CaP localisé à 15 ans), \
+HoLEP vs TURP (laser Holmium vs résection électrique HBP — méta-analyses), \
+CombAT (dutastéride + tamsulosine — HBP).
+
+CRITÈRE DE PERTINENCE UROLOGIQUE :
+"Ce résultat va-t-il modifier une indication opératoire, un choix de traitement \
+systémique, une stratégie de surveillance, ou un protocole de suivi dans ma \
+pratique dans les 1-3 ans ?" \
+Rejeter même un RCT solide si : séries chirurgicales rétrospectives mono-centriques \
+sans comparateur actif, données de courbe d'apprentissage (robot vs laparoscope) \
+sans résultat oncologique, biomarqueurs exploratoires sans dossier AMM associé, \
+oncologie extérieure au champ urologique (cancers non génito-urinaires), \
+études animalières sans essai clinique phase 2/3.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Cancer de la prostate localisé et localement avancé : nouvelles données \
+  biopsie guidée par IRM (ciblée + systématique — recommandation EAU 2024), \
+  surveillance active (PRIAS, PROTECT 15 ans — critères sortie), \
+  prostatectomie radicale robotique vs laparoscopique (résultats fonctionnels \
+  continence/érection à 12 mois), radiothérapie hypofractionnée (PACE-B, HYPO-RT-PC), \
+  curiethérapie LDR/HDR, traitements focaux (HIFU, cryoablation, — données phase 3), \
+  nouveaux biomarqueurs (PHI — Prostate Health Index, SelectMDx, Stockholm3, \
+  IsoPSA) pour éviter biopsies inutiles
+→ Cancer de la prostate métastatique hormono-sensible (CSPC) : \
+  intensification thérapeutique — triplet (docétaxel + ARPI + ADT : ARASENS, \
+  PEACE-1), doublet (ARPI + ADT : ENZAMET, TITAN, LATITUDE), place du docétaxel \
+  selon volume métastatique (CHAARTED — haut vs faible volume), \
+  métastases oligosymptomatic/oligométastatiques (radiothérapie prostate PEACE-1)
+→ Cancer de la prostate résistant à la castration (CRPC) : \
+  ARPIs (enzalutamide / apalutamide / darolutamide) en nmCRPC, \
+  olaparib / rucaparib (PARP inhibiteurs — mutations HRR/BRCA — PROfound/TRITON), \
+  177Lu-PSMA-617 (Pluvicto — VISION trial, TheraP : OS/PFS vs cabazitaxel), \
+  cabazitaxel 2e/3e ligne, pembrolizumab (MSI-H/dMMR), radioligand therapy \
+  (nouveau standard post-AR/taxane 2023)
+→ Cancer de la vessie : TVNIM (tumeur de la vessie non infiltrant le muscle) — \
+  résection transurétrale complète (TURBT de qualité — second look), \
+  instillations BCG (protocole maintenance SWOG 3 ans — données survie), \
+  gemcitabine + docétaxel en cas de BCG-unresponsive, pembrolizumab \
+  (KEYNOTE-057 — BCG-unresponsive CIS), nadofaragene (adénovirus rAd-IFNα — \
+  instillations). TVIM : cystectomie radicale + curage iliaque étendu vs \
+  préservation vésicale (rTRT — recommandations EAU sélectionnées), \
+  chimiothérapie néoadjuvante (GemCis — recommandée EAU IA), \
+  durvalumab péri-opératoire (NIAGARA — données OS)
+→ Cancer du rein (CCR) : néphron-sparing (indications absolues/relatives, \
+  voie robotique vs ouverte — marges), tumeurs cT1a (surveillance active vs \
+  ablation thermique percutanée vs chirurgie), CCR métastatique 1re ligne \
+  (nivolumab+ipilimumab CheckMate-214 : SG à 8 ans, nivolumab+cabozantinib \
+  CheckMate-9ER, pembrolizumab+axitinib KEYNOTE-426, avélumab+axitinib \
+  JAVELIN-100), sunitinib (relégué 2e ligne hors populations cibles)
+→ Lithiase urinaire : urétéroscopie souple (URS) + laser Holmium HiP (haute \
+  puissance) vs laser Thulium fiber (TFL — SOLTIVE) — comparaisons fragmentation, \
+  NLPC mini/ultra-mini, lithotritie extra-corporelle (LEC — indications révisées), \
+  métaphylaxie (citrate de potassium — oxalate de calcium ; allopurinol — urique), \
+  scanner faible dose dans le bilan de première pierre
+→ HBP / LUTS : HoLEP (laser Holmium — résection transurétrale enucléation, \
+  gold standard EAU volumétrique), ThuLEP (laser Thulium fiber — données \
+  non-infériorité), Rezum (vapeur d'eau — données 5 ans LUTS modéré), \
+  Urolift (rétraction) vs TURP dans HBP modérée, médicaments (tamsulosine, \
+  dutastéride, combinaison CombAT, tadalafil, antimuscariniques/β3 pour \
+  syndrome d'hyperactivité vésicale — HAV)
+→ Incontinence urinaire et plancher pelvien : TVT/TOT à long terme (données \
+  sécurité bandelettes sous-urétrales — FDA advisory 2019 retrait marché EU/US), \
+  ballonnet ACT/ProACT (IU de stress post-PR), sphincter artificiel AMS-800 \
+  (survie du dispositif, révisions), neuromodulation sacrée (SNM — Medtronic \
+  InterStim, nouvelles indications), injections de Botox vésical 100 UI \
+  (HAV réfractaire aux antimuscariniques)
+→ Alertes ANSM/EMA : nouvelles CI hormonothérapie prostatique (risque \
+  cardiovasculaire ARPI — enzalutamide/apalutamide : convulsions, chutes), \
+  retraits de dispositifs (bandelettes maille, valves urétrales), matériovigilance \
+  implants urologiques (sphincter, prothèse pénienne)
+
+REJETER :
+→ Séries chirurgicales rétrospectives mono-centriques (< 100 patients) sans \
+  comparateur actif ni résultat oncologique à 2 ans minimum
+→ Courbes d'apprentissage robot vs laparoscopie sans résultat clinique validé \
+  sur population consécutive
+→ Biomarqueurs sériques/urinaires sans études de validation externe prospective \
+  et sans accès commercial ou dossier AMM
+→ Oncologie extérieure au champ génito-urinaire (côlon, sein, poumon — relayer \
+  oncologie ou chirurgie digestive)
+→ Études animalières (modèles murins cancer prostate, lithiase vésicale) sans \
+  extension à l'essai clinique de phase 2 ou 3
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+CaP (cancer de la prostate), PSA (Prostate Specific Antigen), PHI (Prostate \
+  Health Index), biopsie ciblée + systématique (IRM fusion), Gleason score / \
+  Grade Group 1-5 (ISUP), T2a-T3b (classification TNM 8e), \
+ADT (Androgen Deprivation Therapy — castration chirurgicale ou analogues LHRH / \
+  antagonistes LHRH : dégarelix, rélugolix), \
+ARPI (Androgen Receptor Pathway Inhibitor : enzalutamide / apalutamide / \
+  darolutamide / abiratérone), \
+CSPC (cancer prostate hormono-sensible), nmCRPC (non-métastatique résistant \
+  à la castration), mCRPC (métastatique résistant), \
+HRR (Homologous Recombination Repair) — BRCA1/2, CDK12, ATM, \
+PARP inhibiteurs (olaparib / rucaparib / niraparib), \
+177Lu-PSMA-617 (Pluvicto — radioligand therapy), PSMA-TEP (staging/récidive), \
+TVNIM (tumeur de la vessie non infiltrant le muscle), TVIM (infiltrant), \
+TURBT (Transurethral Resection of Bladder Tumor — résection transurétrale), \
+BCG (Bacille Calmette-Guérin — instillations intravésicales), \
+CIS (carcinome in situ — pT1 / CIS — haut risque TVNIM), \
+BCG-unresponsive (échec BCG ≥ 1 induction + 1 maintenance à 6 mois), \
+GemCis (gemcitabine + cisplatine — chimiothérapie néoadjuvante TVIM), \
+CCR (carcinome à cellules rénales) — cellules claires / papillaires / chromophobes, \
+IMDC (critères pronostiques CCR métastatique — risque favorable/intermédiaire/pauvre), \
+IPI (nivolumab + ipilimumab — CheckMate-214), \
+HBP (hyperplasie bénigne de la prostate), LUTS (Lower Urinary Tract Symptoms), \
+IPSS (International Prostate Symptom Score — léger 0-7, modéré 8-19, sévère 20-35), \
+HoLEP (Holmium Laser Enucleation of the Prostate), \
+ThuLEP (Thulium Laser Enucleation), TURP (Transurethral Resection of Prostate), \
+HAV (hyperactivité vésicale), \
+IU (incontinence urinaire) de stress / urgence / mixte, \
+TVT (Tension-free Vaginal Tape) / TOT (Transobturator Tape), \
+SNM (Sacral Nerve Modulation — neuromodulation sacrée), \
+URS (urétéroscopie souple — flexible ureterorenoscopy), \
+NLPC (néphro-lithotomie percutanée) mini / standard, \
+LEC (lithotritie extra-corporelle), TFL (Thulium Fiber Laser — laser à fibre Thulium), \
+SFR (stone-free rate — taux de vacuité lithiasique), \
+AMS-800 (sphincter artificiel urinaire).
+
+EXEMPLES DE RÉDACTION (style European Urology / J Urology / Eur Urol Oncol) :
+
+Essai pivot — cancer prostate métastatique (résultat centré) :
+  titre_court : "177Lu-PSMA-617 vs cabazitaxel : OS supérieure en mCRPC post-AR \
+(TheraP)"
+  resume : "TheraP (RCT, N=291, mCRPC PSMA-TEP positif après docétaxel + AR, \
+2 centres australiens) : 177Lu-PSMA-617 vs cabazitaxel — PSA-réponse ≥ 50 % \
+(PSA50) 66 % vs 37 % (p<0,001). PFS radiologique 7,1 vs 4,4 mois \
+(HR 0,60 ; IC95% 0,40–0,90 ; p=0,002). OS médiane 19,1 vs 19,6 mois \
+(HR 0,97 — non significatif). Toxicités grade 3-4 : 33 % (Lu-PSMA) vs 53 % \
+(cabazitaxel). Xerostomie grade ≥ 1 : 39 %."
+  impact_pratique : "En pratique : 177Lu-PSMA-617 (Pluvicto) offre une PSA-réponse \
+supérieure et un profil de tolérance favorable vs cabazitaxel en 2e/3e ligne \
+mCRPC PSMA-positif — éligibilité conditionnée au TEP-PSMA préalable (SUVmax > 10 \
+sur lésion dominante, absence de lésions PSMA-négatives volumineuses)."
+
+Guideline EAU — cancer de la prostate localisé :
+  titre_court : "EAU 2024 : biopsie ciblée + systématique obligatoire si IRM \
+PI-RADS ≥ 3"
+  resume : "EAU Guidelines Cancer Prostate 2024 (Eur Urol suppl.) : révision majeure \
+du protocole de biopsie. La biopsie ciblée seule est abandonnée — la combinaison \
+biopsie ciblée (lésion PI-RADS ≥ 3) + biopsie systématique (12 carottes) est \
+désormais recommandée en 1re intention (Grade de recommandation Fort). \
+Basé sur méta-analyse (N=9 251, 16 études) : la biopsie combinée détecte 8 % de \
+cancers Gleason Grade Group ≥ 2 supplémentaires vs ciblée seule, et réduit de \
+14 % les détections de CSIP (cancer significatif pour l'impuissance) vs \
+systématique seule."
+  impact_pratique : "À retenir : revoir le protocole de biopsie si votre centre \
+pratique encore la biopsie ciblée seule — la recommandation EAU est désormais \
+Grade Fort pour la combinaison, avec implication médico-légale en cas d'omission."
+
+Alerte matériovigilance :
+  titre_court : "ANSM : retrait bandelettes sous-urétrales Advantage Fit \
+(Boston Scientific) — lot XXXX"
+  resume : "ANSM (décision de police sanitaire, fév. 2026) : suspension de \
+la mise sur le marché des bandelettes sous-urétrales Advantage Fit (Boston \
+Scientific, lot XXXX) après 14 cas de fistules vésico-vaginales documentés \
+en matériovigilance EU (délai médian 8 mois post-implantation). \
+Environ 2 300 dispositifs implantés en France depuis 2023. Surveillance renforcée \
+des patientes porteuses — aucun retrait chirurgical préventif recommandé \
+en l'absence de symptômes."
+  impact_pratique : "En pratique : identifier les patientes porteuses du lot \
+concerné et les convoquer pour une consultation de contrôle — toute symptomatologie \
+(dyspareunie, fuites, infections récidivantes) doit être déclarée en \
+matériovigilance via le portail ANSM Signal."
+"""
+
+_SPECIALTY_ADDENDUM_SAGE_FEMME = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — SAGE-FEMME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : sage-femme (maternité CHU / niveau 1-3 / libéral / PMI, France), \
+maîtrisant suivi de grossesse physiologique, accouchement normal et eutocique, \
+délivrance et prévention HPP, suivi post-natal et allaitement, dépistage \
+périnatal (T21, morphologie, diabète gestationnel), planification familiale \
+(contraception, IVG médicamenteuse), gynécologie de prévention (frottis, HPV). \
+Référentiels actuels : HAS guide suivi de grossesse (2016, maj. 2023), \
+recommandations CNGOF (accouchement voie basse, césarienne, HPP, prééclampsie), \
+protocoles CNSF, recommandations OMS/UNICEF (allaitement maternel exclusif 6 mois), \
+protocoles ABM (Academy of Breastfeeding Medicine), réglementation ANSM \
+(médicaments de la grossesse — thalidomide/valproate interdits, aspirine, \
+progestérone), décret de compétences sage-femme (Code Santé Publique art. R.4127-318). \
+Essais pivots de référence : ASPRE (aspirine 150 mg T1 — réduction prééclampsie \
+précoce chez haut risque dépistage T1), MAGPIE (sulfate de magnésium — prévention \
+éclampsie en prééclampsie sévère), WOMAN (acide tranexamique — réduction mortalité \
+HPP), DOMINO (naissance à domicile vs maternité de niveau 1 — Pays-Bas), \
+OPTIMUM (vitamine D 1 000 UI/j en grossesse — résultats osseux néonatals), \
+PROMISE (progestérone vaginale — utérus bicorne et col court ≤ 25 mm), \
+EPDS validation (Edinburgh Postnatal Depression Scale — seuil ≥ 13).
+
+CRITÈRE DE PERTINENCE SAGE-FEMME :
+"Ce résultat va-t-il modifier une surveillance anténatale, un geste lors de \
+l'accouchement, un conseil à la sortie de maternité, ou une prescription dans \
+le champ de compétences de la sage-femme dans les 1-3 ans ?" \
+Rejeter même une étude solide si : chirurgie obstétricale complexe (césarienne \
+compliquée, chirurgie utérine — relayer gynécologie), pathologie pédiatrique \
+au-delà de l'examen de naissance (relayer pédiatrie), médecine fœtale \
+interventionnelle spécialisée (shunt, laser — relayer gynécologie/pédiatrie), \
+pharmaco-épidémiologie sans résultat applicable à la prescription sage-femme, \
+nutrition générale sans lien grossesse/allaitement/nourrisson.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Grossesse normale : entretien prénatal précoce (EPP — dépistage vulnérabilités), \
+  calendrier de suivi HAS (7 consultations + 1 écho par trimestre), dépistage \
+  cfADN (ADN fœtal libre — recommandations HAS 2023, passage en 1re intention T21), \
+  dépistage infectieux (toxoplasmose, CMV, streptocoque B — nouvelles données), \
+  supplémentation recommandée (folates 0,4 mg/j dès J1 conception, vitamine D, \
+  iode, DHA), prévention prééclampsie (aspirine 100-150 mg/j si haut risque — \
+  dépistage T1 par sFlt-1/PlGF + vélocimétrie utérine)
+→ Accouchement : analgésie péridurale (nouvelles données durée travail, mode \
+  d'accouchement), positions alternatives (accouchement en décubitus latéral, \
+  position verticale — données BUMPES/upright birth), délivrance dirigée \
+  (oxytocine 5-10 UI IV — protocoles HPP), acide tranexamique (WOMAN trial — \
+  administration dès diagnostic HPP ≤ 3 h), épisiotomie (données restrictive vs \
+  systématique), massage périnéal anténatal
+→ Hémorragie du post-partum (HPP) : définition (pertes > 500 mL accouchement \
+  voie basse / > 1 000 mL césarienne), utérotoniques de 2e ligne (sulprostone IV, \
+  misoprostol sublingual), tamponnement utérin (ballonnet de Bakri — données \
+  comparatives), embolisation artérielle (coordination avec radiologue)
+→ Prééclampsie et HTA gravidique : critères ISSHP 2018 (TA ≥ 140/90 + protéinurie \
+  ≥ 300 mg/24h OU critères sévérité sans protéinurie), nicardipine IV/labetalol en \
+  poussée hypertensive, sulfate de magnésium 4 g IV (MAGPIE — prévention éclampsie), \
+  décision d'accouchement selon terme et sévérité
+→ Diabète gestationnel (DG) : dépistage ciblé vs universel (HGPO 75 g à 24-28 SA — \
+  seuils IADPSG/ANAES), objectifs glycémiques (GAJ < 0,95 g/L ; G2h < 1,20 g/L), \
+  insulinothérapie de grossesse vs metformine (données EMERGE/MiTy), suivi post-partum \
+  (HPGO à 3 mois — risque diabète de type 2)
+→ Menace d'accouchement prématuré (MAP) : tocolyse (nifédipine vs atosiban — \
+  ATOSIBAM trial, efficacité comparable), corticothérapie anténatale (bétaméthasone \
+  12 mg × 2 IM — maturation pulmonaire 24-34 SA), progestérone vaginale (col court \
+  ≤ 25 mm — PROMISE/PROGRESS), cerclage (données MAVRIC), cérite (progestérone \
+  micronisée 200 mg/j vaginale — récidive MAP)
+→ Post-partum et allaitement : dépistage dépression périnatale (EPDS à J3, M1, M2 — \
+  recommandation HAS), suivi post-natal à 6-8 semaines (compétences sage-femme \
+  depuis 2023), allaitement maternel exclusif (recommandation OMS 6 mois), \
+  IHAB (Initiative Hôpital Ami des Bébés — critères certification), galactogènes \
+  (dompéridone — données et restrictions ANSM), crèmes mamelons, \
+  positionnement/prise sein, tire-lait, lactation induite
+→ Contraception et planification familiale : DIU cuivre/hormonal post-partum \
+  immédiat (insertion ≤ 48h), implant sous-cutané, pilule oestroprogestative \
+  (délai après allaitement — J21), contraception progestative seule et allaitement, \
+  IVG médicamenteuse en ville (sage-femme prescripteur depuis 2020 — mifépristone \
+  600 mg + misoprostol 400 µg), délai légal 14 SA
+→ Dépistage gynécologique : frottis cervico-vaginal (FCT — recommandations HAS \
+  2019 : tous les 3 ans 25-65 ans après 2 FCT normaux à 1 an d'intervalle), \
+  vaccination HPV (gardasil 9 — nouvelles recommandations 2023 jusqu'à 26 ans \
+  femme non vaccinée)
+→ Réglementation et compétences : nouvelles missions sage-femme (décret 2023 : \
+  suivi gynécologique de prévention élargi, prescription adaptations médicaments \
+  en urgence), arrêtés ANSM sur prescriptions autorisées, conditions de télésuivi \
+  de grossesse (téléconsultation HAS)
+
+REJETER :
+→ Chirurgie obstétricale complexe (hystérectomie d'hémostase, césarienne avec \
+  plasties, chirurgie utérine — relayer gynécologie)
+→ Médecine fœtale interventionnelle (laser jumeaux, shunt vésico-amniotique, \
+  chirurgie fœtale in utero — relayer gynécologie/pédiatrie)
+→ Pathologie néonatale au-delà de l'adaptation à la vie extra-utérine et de \
+  l'examen clinique de naissance (relayer pédiatrie/néonatologie)
+→ Oncologie gynécologique (cancer col, endomètre, ovaire — relayer gynécologie)
+→ PMA (FIV, ICSI, don d'ovocytes) et infertilité — relayer gynécologie
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+SA (semaines d'aménorrhée), DPA (date prévue d'accouchement), \
+EPP (entretien prénatal précoce — 1re/2e trimestre), \
+cfADN (ADN fœtal libre circulant — dépistage trisomie 21 en 1re intention), \
+T21 / trisomie 21 (syndrome de Down), TN (translucence nucale — > 3,5 mm = risque élevé), \
+CPDPN (Centre Pluridisciplinaire de Diagnostic Prénatal), \
+PlGF / sFlt-1 (biomarqueurs prééclampsie — ratio sFlt-1/PlGF > 38 = risque élevé), \
+MAP (menace d'accouchement prématuré), prématuré (< 37 SA), grande prématurité (< 32 SA), \
+RCIU (retard de croissance intra-utérin — biométries < 10e percentile + \
+  anomalies Doppler), \
+DG (diabète gestationnel), HPGO (hyperglycémie provoquée par voie orale — \
+  75 g, seuils IADPSG), GAJ (glycémie à jeun), G2h (glycémie 2h post-charge), \
+HPP (hémorragie du post-partum — > 500 mL VB / > 1 000 mL césarienne), \
+ocytocine (Syntocinon — utérotonique 1re ligne), sulprostone (Nalador IV — 2e ligne), \
+misoprostol (Cytotec — 2e ligne HPP si sulprostone indisponible), \
+AT (acide tranexamique — WOMAN trial : ≤ 3h post-HPP), \
+APD (analgésie péridurale), rachianesthésie, \
+SF (streptocoque du groupe B — dépistage vagino-rectal 35-37 SA), \
+EPDS (Edinburgh Postnatal Depression Scale — seuil clinique ≥ 10 dépistage / ≥ 13 probable), \
+IHAB (Initiative Hôpital Ami des Bébés — OMS/UNICEF), \
+DIU (dispositif intra-utérin), LNG-DIU (hormonal — Mirena/Kyleena), CuT (cuivre), \
+IVG (interruption volontaire de grossesse — médicamenteuse ≤ 14 SA depuis 2022), \
+FCT (frottis cervico-utérin — cotesting FCT+HPV), HPV (papillomavirus humain), \
+gardasil 9 (nonavalent — génotypes 6, 11, 16, 18, 31, 33, 45, 52, 58), \
+Décret compétences SF (art. R.4127-318 CSP — périmètre prescription autorisé).
+
+EXEMPLES DE RÉDACTION (style BJOG / Midwifery / Birth) :
+
+Essai randomisé — prévention HPP (résultat centré) :
+  titre_court : "Acide tranexamique précoce dans HPP : réduction mortalité maternelle \
+(WOMAN trial)"
+  resume : "WOMAN (RCT international, N=20 060, HPP clinique après accouchement VB \
+ou césarienne, 21 pays) : acide tranexamique (AT) 1 g IV en ≤ 3h vs placebo — \
+décès par saignement 1,5 % vs 1,9 % (RR 0,81 ; IC95% 0,65–1,00 ; p=0,045). \
+Bénéfice concentré sur les femmes traitées dans les 3 premières heures post-diagnostic \
+HPP (RR 0,69 ; IC95% 0,52–0,91). Pas d'excès de thrombose veineuse (RR 0,88 ; \
+IC95% 0,60–1,28)."
+  impact_pratique : "En pratique : administrer systématiquement AT 1 g IV dès le \
+diagnostic d'HPP — délai ≤ 3h par rapport aux pertes > 500 mL est critique pour \
+l'efficacité. Ne pas attendre l'échec de l'ocytocine pour l'initier."
+
+Guideline HAS — dépistage prénatal :
+  titre_cours : "HAS 2023 : cfADN en 1re intention pour le dépistage T21 dès T1"
+  resume : "HAS (recommandation, jan. 2023) : le dépistage combiné du 1er trimestre \
+par cfADN (ADN fœtal libre circulant) remplace le schéma marqueurs sériques + TN \
+en 1re intention pour la trisomie 21 chez toutes les femmes enceintes, quel que soit \
+l'âge. Sensibilité cfADN pour T21 : 99,2 % (spécificité 99,9 % — taux faux positifs \
+< 0,1 %). Le diagnostic prénatal invasif (amniocentèse) reste indiqué si cfADN positif \
+avant interruption de grossesse."
+  impact_pratique : "À retenir : proposer le cfADN à toutes les patientes dès la \
+consultation du 1er trimestre — la prise en charge est désormais remboursée à 100 % \
+par l'Assurance Maladie depuis avril 2023 ; informer de la possibilité d'anomalies \
+chromosomiques rares détectées en incidentalome."
+
+Alerte médicament — grossesse :
+  titre_court : "ANSM : valproate contre-indiqué en grossesse — rappel obligations \
+prescripteurs et sages-femmes"
+  resume : "ANSM (DHPC, jan. 2026) : rappel de l'interdiction absolue du valproate \
+(Dépakine, Dépamide) en grossesse (tératogénicité : 10 % malformations majeures, \
+30–40 % troubles neurodéveloppementaux). En pratique sage-femme : si découverte \
+d'une grossesse chez une patiente sous valproate (épilepsie ou trouble bipolaire), \
+ne pas interrompre le traitement sans avis du prescripteur — contacter immédiatement \
+le médecin prescripteur et orienter vers un CPDPN dans les 48h."
+  impact_pratique : "En pratique : à chaque 1re consultation de grossesse, vérifier \
+l'ordonnance complète à la recherche de médicaments tératogènes (valproate, \
+rétinoïdes, MTX) — le signalement immédiat est une obligation légale de la sage-femme."
+"""
+
+_SPECIALTY_ADDENDUM_RHUMATOLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — RHUMATOLOGIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : rhumatologue (CHU / libéral, France / Europe), maîtrisant \
+rhumatismes inflammatoires chroniques (PR, SpA, rhumatisme psoriasique, AJI), \
+connectivites (LES, Sjögren, SSc, myopathies inflammatoires), microcrystallines \
+(goutte, CPPD), arthrose, ostéoporose, vascularites (ANCA, ACG/Horton, PPR). \
+Référentiels actuels : recommandations EULAR 2022-2024 (PR, SpA, LES, SSc, ANCA, \
+goutte, ostéoporose), recommandations SFR, HAS guides bon usage bDMARDs, \
+recommandations ANSM (protocoles de suivi JAK inhibiteurs — bilan lipidique, \
+NFS, créatinine ; surveillance tératogénicité MTX/LEF ; thromboembolisme JAKi), \
+FRAX (fracture risk assessment — seuil intervention pharmacologique SFR). \
+Essais pivots de référence : ORAL Surveillance (tofacitinib — risque MACE/cancer \
+vs anti-TNF en PR ≥ 50 ans avec FCV), SELECT-COMPARE (upadacitinib vs adalimumab \
+— PR MTX insuffisant répondeur), RA-BEAM (baricitinib vs adalimumab), \
+RAPID-1/2 (certolizumab PR), MEASURE-1/2 (sécukinumab SpA axiale), \
+DISCOVER-1/2 (guselkumab — rhumatisme psoriasique), SELECT-PsA (upadacitinib PsA), \
+TULIP-1/2 (anifrolumab LES modéré-sévère), ADVOCATE (avacopan — vascularites ANCA), \
+SENSCIS (nintédanib SSc-ILD), FRAME/ARCH (romosozumab — ostéoporose sévère), \
+HORIZON-PFT (zolédronate — fracture vertébrale), CLEAR (sécukinumab vs ixékizumab — head-to-head PsA, NEJM 2020).
+
+CRITÈRE DE PERTINENCE RHUMATOLOGIQUE :
+"Ce résultat va-t-il modifier le choix d'un bDMARD ou JAKi, une stratégie de \
+switch, un bilan de suivi, ou le seuil d'intervention thérapeutique dans ma \
+consultation dans les 1-3 ans ?" \
+Rejeter même un RCT solide si : population pédiatrique hors AJI adulte, étude \
+rétrospective de vie réelle sans ajustement valide sur les cofacteurs, biomarqueurs \
+exploratoires sans résultat clinique, comparaison csDMARDs déjà arbitrée par les \
+guidelines EULAR, chirurgie orthopédique (relayer chirurgie-orthopédique).
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Polyarthrite rhumatoïde (PR) : nouvelles données JAK inhibiteurs (upadacitinib, \
+  filgotinib, baricitinib) en 1re/2e ligne bDMARD, nouvelles données de sécurité \
+  cardiovasculaire et oncologique (classe JAKi — suivi ORAL Surveillance), \
+  switch anti-TNF → autre mécanisme vs second anti-TNF, biosimilaires (adalimumab — \
+  données immunogénicité comparée), combinaisons csDMARD en primo-traitement, \
+  stratégie T2T (treat-to-target DAS28/CDAI), grossesse sous bDMARD (certolizumab)
+→ Spondyloarthrites (SpA) axiales et périphériques : anti-IL17A (sécukinumab, \
+  ixékizumab) vs anti-TNF en 1re ligne, nr-axSpA (réponse identique à r-axSpA — \
+  données EULAR), rhumatisme psoriasique (PsA) — nouveaux anti-IL23 (guselkumab, \
+  risakizumab), JAKi en PsA (upadacitinib vs adalimumab SELECT-PsA), DAPSA/MDA \
+  comme cibles T2T en PsA
+→ Connectivites : anifrolumab (anti-IFNAR LES — TULIP, données extension 2 ans), \
+  belimumab LES (lupus rénal — BLISS-LN), voclosporine + MMF en néphrite lupique, \
+  nintédanib SSc-ILD (SENSCIS — réduction déclin CVF), IVIG dans myopathies \
+  inflammatoires résistantes (PROMYOS), myopathie à anticorps anti-MDA5 \
+  (pneumopathie interstitielle rapidement progressive — RP-ILD)
+→ Vascularites : avacopan (inhibiteur C5aR — ADVOCATE : non-infériorité prednisone \
+  en rémission GPA/MPA, réduction corticothérapie), rituximab vs cyclophosphamide \
+  (ANCA — maintenance rituximab MAINRITSAN 3), biopsie artère temporale vs TEP-TDM \
+  (ACG/Horton — diagnostic), tocilizumab IV/SC maintenance ACG (GiACTA)
+→ Microcrystallines : urate plasmatique cible < 360 µmol/L (PR : nouvelle donnée \
+  SFR 2024 — < 300 µmol/L en goutte tophacée), pégloticasse (Krystexxa) en goutte \
+  sévère réfractaire, colchicine péricardite goutteuse, CPPD — nouvelles données \
+  anti-IL1 (anakinra/canakinumab) dans arthrite CPPD aiguë réfractaire
+→ Arthrose : anti-NGF (tanézumab — données douleur vs AINS, effets osseux), PRP \
+  (méta-analyses intra-articulaire genou — résultats à 12 mois), \
+  sprifermin (FGF-18 — régénération cartilage — données phase 3), \
+  diacéréine / glucosamine / chondroïtine — mise à jour recommandations EULAR/OARSI
+→ Ostéoporose : romosozumab (Evenity — 12 mois ARCH/FRAME puis switch), \
+  denosumab 10 ans (effets rebond à l'arrêt — séquence vers zolédronate), \
+  zolédronate dans fracture de hanche (HORIZON-RFT — réduction mortalité), \
+  nouvelles recommandations SFR 2023 (seuils FRAX, durée traitement anti-résorptif)
+→ Sécurité médicaments : surveillance JAKi (lipides, NFS, créatinine — protocole \
+  ANSM), tératogénicité MTX/LEF (arrêt et wash-out — protocoles SFR/EULAR), \
+  ostéonécrose de la mâchoire (denosumab/bisphosphonates — facteurs de risque), \
+  thrombose veineuse profonde et JAKi (risque absolu — données vie réelle SNDS)
+
+REJETER :
+→ Études purement mécanistiques ou de physiopathologie immunologique sans résultat \
+  thérapeutique clinique associé
+→ Rhumatologie pédiatrique (AJI) : à inclure uniquement si résultat transposable \
+  à l'adulte (biothérapies approuvées adulte/enfant — abatacept, tocilizumab)
+→ Études rétrospectives de vie réelle < 200 patients sans ajustement sur propensity score
+→ Comparaisons csDMARDs (MTX vs LEF vs SSZ vs HCQ) déjà arbitrées par EULAR ≥ 2019
+→ Chirurgie orthopédique rhumatologique (prothèses, ostéotomies) : relayer \
+  chirurgie-orthopédique
+→ Douleurs chroniques / fibromyalgie : à inclure uniquement si essai sur \
+  traitement pharmacologique modifiant la prise en charge rhumatologique
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+PR (Polyarthrite Rhumatoïde), csDMARD (conventional synthetic : MTX, LEF, SSZ, HCQ), \
+bDMARD (biologic : anti-TNF, anti-IL6R, anti-CD20, abatacept), \
+JAKi (JAK inhibiteur : tofacitinib, baricitinib, upadacitinib, filgotinib), \
+anti-TNF (adalimumab / étanercept / infliximab / golimumab / certolizumab), \
+anti-IL6R (tocilizumab / sarilumab), \
+DAS28 (Disease Activity Score 28 articulations — rémission < 2,6), \
+CDAI / SDAI (indices activité PR — rémission ≤ 2,8 / ≤ 3,3), \
+HAQ-DI (Health Assessment Questionnaire — handicap fonctionnel 0–3), \
+T2T (treat-to-target — cible DAS28 < 2,6 ou faible activité < 3,2), \
+SpA (spondyloarthrite) axiale : r-axSpA (radiographique = SA) / nr-axSpA, \
+ASDAS (Ankylosing Spondylitis Disease Activity Score — rémission < 1,3), \
+BASDAI (Bath AS Disease Activity Index — activité élevée ≥ 4), \
+anti-IL17A (sécukinumab / ixékizumab), anti-IL23 (guselkumab / risakizumab), \
+PsA (rhumatisme psoriasique), DAPSA (Disease Activity PSoriatic Arthritis — \
+  rémission ≤ 4), MDA (Minimal Disease Activity — 5/7 critères), \
+LES (Lupus Érythémateux Systémique), SLEDAI-2K (activité lupus — poussée ≥ 4), \
+anti-dsDNA, C3/C4, \
+anifrolumab (anti-IFNAR1 — LES modéré-sévère), belimumab (anti-BLyS — LES/lupus rénal), \
+SAPL (syndrome des antiphospholipides), anticoagulation (anti-vitamine K — INR 2-3), \
+SSc (sclérose systémique), CVF % prédit (fibrose pulmonaire SSc-ILD), \
+nintédanib (antifibrotique SSc-ILD), \
+GPA (granulomatose avec polyangéite — ex-Wegener), MPA (polyangéite microscopique), \
+PR3-ANCA / MPO-ANCA, BVAS (Birmingham Vasculitis Activity Score), \
+avacopan (inhibiteur C5aR — GPA/MPA), rituximab (anti-CD20 — PR / ANCA), \
+ACG (artérite à cellules géantes / maladie de Horton), PPR (pseudopolyarthrite rhizomélique), \
+tocilizumab IV/SC (maintenance ACG — GiACTA), \
+uricémie (urate plasmatique — cible < 360 µmol/L, < 300 µmol/L si tophus), \
+T-score DXA (ostéoporose ≤ −2,5 ; ostéopénie −1 à −2,5), FRAX (seuil SFR/IOF), \
+bisphosphonate (alendronate / risédronate / ibandronate / zolédronate), \
+denosumab (Prolia 60 mg/6 mois — anti-RANK-L ; rebond à l'arrêt), \
+romosozumab (Evenity — anti-sclérostine, anabolisant, 12 mois), \
+tériparatide (PTH recombinante — anabolisant 24 mois), \
+NGF (nerve growth factor — tanézumab anti-NGF dans arthrose sévère).
+
+EXEMPLES DE RÉDACTION (style ARD / Arthritis & Rheumatology / RMD Open) :
+
+Essai pivot — sécurité JAK inhibiteurs (résultat en tête) :
+  titre_court : "ORAL Surveillance : tofacitinib — surrisque MACE et cancers vs anti-TNF \
+chez PR ≥ 50 ans avec FCV"
+  resume : "ORAL Surveillance (RCT post-autorisation, N=4 362, PR avec ≥ 1 FCV, \
+âge ≥ 50 ans, tofacitinib 5 ou 10 mg/j vs anti-TNF, suivi médian 4 ans) : \
+incidence MACE 0,98 vs 0,73/100 patient-années (HR 1,33 ; IC95% 1,00–1,78 ; \
+critère de non-infériorité non atteint). Cancers (hors NMSC) : 1,13 vs 0,77/100 PA \
+(HR 1,48 ; IC95% 1,04–2,09). \
+TVP/EP : HR 1,66 (IC95% 1,01–2,71). Résultats identiques à 5 et 10 mg."
+  impact_pratique : "En pratique : chez tout patient PR ≥ 50 ans avec antécédent \
+cardiovasculaire, tabagisme, ou cancer actif/récent, privilégier un bDMARD non-JAKi \
+en 1re ligne — conformément à la mise à jour des recommandations EULAR 2022 et à \
+l'alerte ANSM/EMA de 2023."
+
+Guideline EULAR — connectivites :
+  titre_court : "EULAR 2023 LES : anifrolumab en 2e ligne après échec HCQ + \
+immunosuppresseur"
+  resume : "EULAR Recommendations LES 2023 (ARD suppl.) : anifrolumab (anti-IFNAR1, \
+300 mg IV/4 sem) recommandé comme 3e ligne après échec hydroxychloroquine (HCQ) \
+et au moins un immunosuppresseur (MMF, AZA ou MTX), pour les LES modéré-sévère \
+sans atteinte rénale ou SNC actifs — niveau 1B (accord fort 94 %). \
+Basé sur TULIP-1/2 (N=726) : taux BICLA à 52 semaines 47,8 % vs 31,5 % placebo \
+(différence 16,3 % ; IC95% 6,3–26,3). Pas d'indication actuelle en néphrite lupique."
+  impact_pratique : "À retenir : l'anifrolumab se positionne dans le LES cutané, \
+articulaire et général non-rénal — compléter le bilan IFNAR avant mise sous \
+traitement et documenter l'échec HCQ + immunosuppresseur dans le dossier \
+(condition de remboursement HAS attendue en 2026)."
+
+Alerte sécurité médicament :
+  titre_court : "ANSM : denosumab — effet rebond à l'arrêt, obligation de séquence \
+zolédronate"
+  resume : "ANSM (mise à jour RCP Prolia, jan. 2026) : renforcement de l'obligation \
+d'une séquence antiresorptive après arrêt du dénosumab, suite à 23 cas de fractures \
+vertébrales multiples en rebond documentés en pharmacovigilance française (délai \
+médian 10 mois post-arrêt). Zolédronate IV 5 mg recommandé 6 mois après la \
+dernière injection de dénosumab comme séquence de sécurité. \
+En l'absence de contre-indication, alendronate oral est une alternative acceptable."
+  impact_pratique : "En pratique : à chaque renouvellement de Prolia, documenter \
+la stratégie de sortie et informer le patient — tout arrêt programmé ou non-programmé \
+(pénurie, perte de vue) nécessite une prise en charge antiresorptive immédiate."
+"""
+
+_SPECIALTY_ADDENDUM_RADIOLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — RADIOLOGIE (DIAGNOSTIQUE ET INTERVENTIONNELLE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : radiologue (CHU / clinique privée, France / Europe), maîtrisant \
+radiologie diagnostique multi-modalités (TDM, IRM, échographie, radiographie \
+standard, TEP-scan/médecine nucléaire) ET radiologie interventionnelle (ablation \
+percutanée, embolisation, biopsie guidée, drainage, TIPS, angioplastie). \
+Référentiels actuels : guidelines ESR (European Society of Radiology), \
+guidelines CIRSE (interventionnel), guidelines SFR/SFICV (France), \
+guidelines EANM (médecine nucléaire), EUSOBI (sein), ESUR (uro-génital), \
+recommandations HAS sur imagerie (IRM prostate PI-RADS, BI-RADS sein), \
+décret radioprotection français (zones classifiées, dosimétrie). \
+Essais pivots de référence : PRECISION (IRM-TRUS fusion biopsie prostate vs \
+TRUS seule), PROMIS (IRM multiparamétrique vs biopsie systématique), \
+IRST (TARE Y-90 vs TACE dans HCC), OSLO-COMET (ablation thermique vs chirurgie — \
+métastases hépatiques colorectales), COLLISION (ablation vs chimio — mCRC hépatique), \
+randomisés AI en radiologie (détection lésions pulmonaires LDCT, BI-RADS automatisé), \
+CRISTAL (embolisation fibromes utérins vs chirurgie — 5 ans), \
+PRESERVE (TIPS couvert vs nu — HTP).
+
+CRITÈRE DE PERTINENCE RADIOLOGIQUE :
+"Ce résultat va-t-il modifier un protocole d'acquisition, une technique \
+interventionnelle, ou une décision de triage diagnostique dans ma pratique \
+dans les 1-3 ans ?" \
+Rejeter même une étude bien conduite si : performance diagnostique uniquement \
+rétrospective sans validation prospective externe, technique non disponible \
+en dehors de 2-3 centres hyper-spécialisés mondiaux, IA non CE-marquée et \
+sans données de déploiement, comparaison de séquences IRM sans impact clinique \
+sur la conduite à tenir, études histologiques ou moléculaires sans résultat \
+d'imagerie applicable.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Nouvelles techniques d'acquisition et de traitement : IRM ultra-haut champ \
+  (7T en clinique), TDM spectral photon-counting (PC-CT — premières données \
+  prospectives), protocoles à faible dose (LDCT poumon dépistage — données \
+  volume réel), DWI/perfusion IRM (nouveaux critères de réponse tumorale), \
+  radiomique et IA CE-marquées (résultats sur critères cliniques validés)
+→ Radiologie interventionnelle oncologique : ablation percutanée \
+  (RF, micro-ondes, cryoablation, IRE — nouvelles indications ou comparaisons \
+  randomisées avec chirurgie ou chimiothérapie systémique), TACE drug-eluting \
+  beads (DEB-TACE) vs TACE conventionnelle, TARE (radioembolisation Y-90) dans HCC \
+  et métastases hépatiques, radiologie interventionnelle en cancers rénaux/pulmonaires
+→ Radiologie interventionnelle non-oncologique : TIPS couvert (traitement HTP, \
+  prévention récidive hémorragique), embolisation artère splénique, embolisation \
+  fibromes utérins (EFU — données 5-10 ans), embolisation artère prostatique (EAP), \
+  hémorragies post-partum (embolisation artérielle sélective), \
+  vertébroplastie/kyphoplastie (indications révisées)
+→ Médecine nucléaire et théranostique : TEP-PSMA (prostate — staging, récidive, \
+  comparaison TEP-choline), TEP-FAPI (nouveaux traceurs fibroblastes), \
+  lutetium-177-DOTATATE (PRRT — tumeurs neuroendocrines), \
+  lutetium-177-PSMA-617 (cancer prostate métastatique — VISION trial), \
+  TEP amyloïde/tau (Alzheimer — indication thérapeutique lecanémab), \
+  dosimétrie individualisée en radiothérapie interne vectorisée (RIV)
+→ IA en radiologie : outils CE-marqués modifiant le flux de travail \
+  (détection automatisée nodules pulmonaires CT-scan, priorisation urgences \
+  AVC/hémorragie, BI-RADS automatisé mammographie) — résultats sur critères \
+  cliniques (sensibilité, spécificité, délai de prise en charge)
+→ Reporting structuré et systèmes de score : mise à jour PI-RADS v3, \
+  BI-RADS 6e édition, LI-RADS (HCC), RECIST v1.1 vs nouveaux critères \
+  (iRECIST, PERCIST TEP), TI-RADS (thyroïde), O-RADS (ovaire)
+→ Radioprotection : nouvelles recommandations CIPR/ASN, dosimétrie \
+  opérateurs en RI, exposition fœtale — protocoles adaptés
+→ Alertes et dispositifs : matériovigilance ANSM/FDA (produits de contraste — \
+  néphrotoxicité gadolinium, rétention cérébrale gadolinium linéaire ; \
+  systèmes d'ablation — incidents, retraits de lots), nouvelles AMM produits \
+  de contraste (microbulles, GBCA macrocyclique)
+
+REJETER :
+→ Études de performance diagnostique purement rétrospectives mono-centriques \
+  (< 100 patients) sans validation externe prospective
+→ Comparaisons de séquences IRM ou de protocoles TDM sans impact sur la \
+  décision clinique finale (bilan diagnostique identique quel que soit le résultat)
+→ IA non CE-marquée, sans données de déploiement clinique réel ou sans \
+  comparaison avec radiologue praticien
+→ Techniques disponibles exclusivement dans 1-2 centres d'expérimentation mondiale \
+  sans accès raisonnable en France dans les 3 ans
+→ Études histologiques/moléculaires ou de corrélation anatomo-radiologique \
+  sans résultat applicable à la pratique d'imagerie
+→ Radiothérapie externe (cobalt, protons, SBRT) : relayer oncologie/radiophysique
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+TDM (tomodensitométrie — scanner), IRM (imagerie par résonance magnétique), \
+TEP-TDM (tomographie par émission de positons couplée au scanner), \
+LDCT (low-dose CT — scanner thoracique faible dose), \
+PC-CT (photon-counting CT — TDM spectral photon-counting), \
+DWI (diffusion-weighted imaging — coefficient ADC), \
+DCE (dynamic contrast enhancement — perfusion), \
+PI-RADS v2.1 (Prostate Imaging — Reporting and Data System), \
+BI-RADS (Breast Imaging Reporting and Data System), \
+LI-RADS (Liver Imaging Reporting and Data System — HCC), \
+TI-RADS (Thyroid Imaging Reporting and Data System — ACR), \
+RECIST v1.1 (critères de réponse — réponse complète RC, partielle RP, \
+  stabilité DS, progression PD), iRECIST (immunothérapie), PERCIST (TEP), \
+TACE (transcatheter arterial chemoembolization — HCC, métastases), \
+DEB-TACE (drug-eluting beads TACE), \
+TARE (transarterial radioembolization — Y-90 microsphères : SIR-Spheres, TheraSphere), \
+TIPS (transjugular intrahepatic portosystemic shunt — PTFE couvert), \
+HTP (hypertension portale), MELD score (Model for End-Stage Liver Disease), \
+RF (radiofréquence), MWA (microwave ablation), cryoablation, \
+IRE (irréversible électroporation — NanoKnife), \
+PRRT (peptide receptor radionuclide therapy — Lu-177-DOTATATE / Lutathera), \
+PSMA (prostate-specific membrane antigen — TEP Ga-68-PSMA / F-18-DCFPyL), \
+FAPI (fibroblast activation protein inhibitor — traceur TEP), \
+GBCA (gadolinium-based contrast agent — macrocyclique vs linéaire), \
+EFU (embolisation des fibromes utérins), EAP (embolisation artère prostatique), \
+IA / DL (Intelligence Artificielle / Deep Learning — outil d'aide à la détection), \
+CE (marquage Conformité Européenne — dispositif médical), \
+CIPR (Commission Internationale de Protection Radiologique), \
+ASN (Autorité de Sûreté Nucléaire — radioprotection FR), \
+Dp (dose personnelle — dosimétrie opérateur RI).
+
+EXEMPLES DE RÉDACTION (style Radiology / European Radiology / J Nucl Med) :
+
+Essai randomisé — technique interventionnelle (résultat en tête) :
+  titre_court : "Ablation micro-ondes vs chirurgie : HCC < 3 cm — survie identique à 3 ans"
+  resume : "Dans un RCT multicentrique (N=328, HCC Child-Pugh A/B7, nodule unique \
+< 3 cm), l'ablation micro-ondes percutanée (MWA) atteint une survie globale à \
+3 ans de 78,4 % vs 81,2 % pour la résection chirurgicale (différence −2,8 % ; \
+IC95% −9,1 à 3,5 ; non-infériorité confirmée, marge 10 %). Résection locale \
+complète à 1 mois : 94,5 % (MWA) vs 97,2 % (chirurgie) — p=0,21. Complications \
+majeures grade 3-4 (Clavien-Dindo) : 4,3 % vs 12,8 % (p=0,001). Durée \
+d'hospitalisation : 1,2 j vs 6,4 j (p<0,001)."
+  impact_pratique : "En pratique : pour un HCC unique < 3 cm chez un patient \
+Child-Pugh A sans cirrhotique hypertendu portal majeur, la MWA percutanée \
+est non-inférieure à la chirurgie en survie et réduit de 3 fois la morbidité \
+procédurale — à proposer en RCP comme alternative de 1re intention."
+
+Guideline update — reporting structuré :
+  titre_court : "PI-RADS v3 : nouveau score 3 catégories pour lésions de transition"
+  resume : "L'ACR et l'ESUR publient conjointement PI-RADS v3 (Radiology 2026) : \
+révision majeure pour les lésions de la zone de transition (ZT). Introduction d'une \
+catégorie 3a/3b discriminant les lésions ZT indéterminées selon la morphologie T2 \
+(nodulaire encapsulée vs hétérogène). Nouvelle pondération DWI-ZT (ADC < 900 µm²/s \
+→ +1 point). Données de validation multicentrique (N=4 218, 14 centres) : \
+réduction du taux de biopsies inutiles de 22 % tout en maintenant la détection \
+des CSPC (cancer prostate cliniquement significatif Gleason ≥ 3+4) à 94,1 %."
+  impact_pratique : "À retenir : la mise à jour PI-RADS v3 modifie le compte-rendu \
+des lésions ZT — réviser les macros de reporting dès la publication officielle \
+et former les équipes aux nouveaux critères DWI-ZT avant déploiement clinique."
+
+Alerte produit de contraste :
+  titre_court : "ANSM : rétention cérébrale gadolinium linéaire — renforcement restrictions"
+  resume : "ANSM (DHPC, fév. 2026) : renforcement des restrictions d'utilisation \
+des agents de contraste gadolinium à chélation linéaire (GBCA linéaires — Omniscan, \
+Magnevist) suite à confirmation de la rétention cérébelleuse en IRM post-mortem \
+et in vivo (signaux T1 noyaux dentelés). Désormais contre-indiqués chez l'enfant \
+< 18 ans et en IRM cérébrale/spinale chez l'adulte. Seuls les GBCA macrocycliques \
+(gadotérate/Dotarem, gadobutrol/Gadovist, gadotéridol/ProHance) sont autorisés \
+pour ces indications."
+  impact_pratique : "En pratique : vérifier le protocole d'injection — tout GBCA \
+linéaire doit être substitué par un macrocyclique pour toute IRM neurologique, \
+pédiatrique ou répétée ; documenter le type de chélate dans le compte-rendu."
+"""
+
+_SPECIALTY_ADDENDUM_PSYCHIATRIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — PSYCHIATRIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : psychiatre (CHU / établissement psychiatrique / libéral, France), \
+maîtrisant psychopharmacologie, psychothérapies validées (TCC, EMDR, thérapies \
+de 3e vague), évaluation suicidaire, psychiatrie de liaison, addictologie, \
+pédopsychiatrie (TDAH, TSA). \
+Référentiels actuels : recommandations HAS (dépression, schizophrénie, trouble \
+bipolaire, TDAH adulte, TSA), guidelines CANMAT (dépression, trouble bipolaire), \
+WFSBP guidelines (World Federation of Societies of Biological Psychiatry), \
+BAP guidelines (British Association for Psychopharmacology), \
+recommandations ANSM (clozapine, lithium, valproate femme en âge de procréer), \
+arrêtés soins sans consentement (loi 2011/2013 modifiée). \
+Essais pivots de référence : STAR*D (dépression résistante — stratégies séquentielles), \
+CATIE (schizophrénie — comparaison antipsychotiques, 18 mois), \
+BALANCE (lithium vs valproate TB type I), CANMAT 2023 (trouble bipolaire — \
+algorithmes de 1re et 2e ligne), essais eskétamine/kétamine IV (TRANSFORM-2, \
+ASPIRE I/II — dépression résistante), COMPASS (psilocybine EDC), \
+MTA (méthylphénidate TDAH enfant — suivi 14 ans).
+
+CRITÈRE DE PERTINENCE PSYCHIATRIQUE :
+"Ce résultat va-t-il modifier le choix d'une molécule, d'une stratégie de \
+potentialisation, l'indication d'une psychothérapie structurée, ou la décision \
+d'hospitalisation dans ma pratique dans les 1-3 ans ?" \
+Rejeter même un RCT bien conduit si : population non psychiatrique (dépression \
+subclinique chez des volontaires sains), psychologie expérimentale pure sans \
+application clinique, neuromodulation au stade préclinique (EEG/biomarqueur \
+sans résultat clinique), cohorte mono-centrique < 50 patients sur une molécule \
+sans dossier AMM associé, psychiatrie culturelle ou sociale sans résultat \
+pharmacologique ou thérapeutique applicable.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Dépression unipolaire : nouvelles molécules (inhibiteurs NMDA — eskétamine \
+  intranasale, zuranolone ; agonistes mélatoninergiques, antidépresseurs atypiques), \
+  stratégies d'augmentation (lithium, aripiprazole, rispéridone, quétiapine XR, \
+  kétamine IV), ECT (indications élargies, efficacité comparée), stimulation \
+  magnétique transcrânienne répétée (rTMS — nouvelles cibles), psychédéliques \
+  assistés (psilocybine, MDMA-PTSD — résultats phase 3)
+→ Dépression résistante : définition et seuils (≥ 2 essais antidépresseurs adéquats), \
+  eskétamine Spravato — nouvelles indications et durée de traitement, traitement \
+  de maintenance, ECT vs kétamine, biomarqueurs prédictifs de réponse (BDNF, CRP)
+→ Trouble bipolaire : lithiémie cible, nouvelles données lamotrigine/valproate/\
+  lurasidone (phase dépressive TB II), antipsychotiques atypiques (cariprazine TB), \
+  thymorégulateurs en grossesse (recommandations ANSM valproate), \
+  prévention rechute (CANMAT 2023)
+→ Schizophrénie / psychoses : nouveaux antipsychotiques de 3e génération \
+  (cariprazine, briépirazole, luméatérone), formes à libération prolongée (LAI — \
+  Long-Acting Injectables : aripiprazole lauroxil, paléripéridone 3 mois/6 mois), \
+  clozapine résistance — critères, suivi NFS, augmentation (amisulpride), \
+  détection précoce des états mentaux à risque (CHR/UHR), \
+  traitement de la symptomatologie négative
+→ TDAH adulte : méthylphénidate, amphétamines (lisdexamfétamine/Vyvanse — données \
+  européennes), atomoxétine, viloxazine (accès EU), guides de prescription HAS 2023, \
+  comorbidités (anxiété, substance use disorder), TDAH et conduite automobile
+→ Addictions : traitements de substitution opioïdes (buprénorphine — dépôt sous-cutané \
+  Brixelle, méthadone), nouvelles thérapies alcool (nalméfène, acamprosate combiné), \
+  THC thérapeutique — cadre légal FR, tabac (varénicline, cytisine — données FR), \
+  réduction des risques, pharmacothérapies du jeu pathologique
+→ Troubles anxieux / PTSD : paroxétine, sertraline, venlafaxine en panique/TAG/phobie \
+  sociale, EMDR PTSD (recommandation HAS/OMS), MDMA-assisted therapy (résultats \
+  phase 3 MAPS — PTSD)
+→ TCA (Troubles du Comportement Alimentaire) : anorexie résistante (olanzapine RCT — \
+  ATTAIN), nouvelles approches thérapeutiques boulimie/BED
+→ Psychiatrie de liaison : dépistage et prise en charge des états confusionnels \
+  aigus (délirium), prescription adaptée en soins somatiques, psychotropes en \
+  gériatrie (critères Beers/STOPP), soins palliatifs psychiatriques
+→ Réglementation et exercice : soins sous contrainte (HO/HDT/SDRE — jurisprudence \
+  récente), obligation de suivi ambulatoire, ANSM alertes psychotropes \
+  (valproate, clozapine, lithium, benzodiazépines), décret TDAH méthylphénidate
+
+REJETER :
+→ Études chez des volontaires sains sans trouble psychiatrique constitué \
+  (sujets sous-cliniques, inventaires de personnalité en population générale)
+→ Neuromodulation préclinique / imagerie seule (IRMf, EEG de repos) sans résultat \
+  sur un critère clinique validé
+→ Psychiatrie culturelle ou sociale sans bras thérapeutique ni résultat applicable
+→ Cohortes rétrospectives mono-centriques de petite taille (< 50 patients) \
+  sur des molécules sans dossier d'AMM actif
+→ Psychologie positive, interventions de bien-être, méditation (hors résultats \
+  dans une population psychiatrique constituée en RCT)
+→ Neurologie pure : épilepsie, Parkinson, démences (relayer neurologie ou gériatrie)
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+EDC (Épisode Dépressif Caractérisé), dépression résistante (≥ 2 lignes adéquates), \
+HDRS-17 (Hamilton Depression Rating Scale — score ≥ 17 = dépression modérée-sévère), \
+MADRS (Montgomery–Åsberg Depression Rating Scale), PHQ-9 (dépistage), \
+IMB (inhibiteur de la monoamine oxydase — IMAO), IRS (inhibiteur recapture sérotonine), \
+IRSNA (double — sérotonine + noradrénaline), NaSSA (mirtazapine), \
+eskétamine (Spravato — antagoniste NMDA intranasal), zuranolone (agoniste GABAAR), \
+potentialisation (lithium / aripiprazole / quétiapine XR / rispéridone), \
+ECT (électroconvulsivothérapie — crises tonico-cloniques guidées EEG), \
+rTMS (stimulation magnétique transcrânienne répétée — protocoles TBS/HF), \
+psilocybine (agoniste 5-HT2A — phases 2/3 en cours), \
+TB (Trouble Bipolaire) type I / II, \
+lithiémie cible (0,6–0,8 mmol/L prophylaxie ; 0,8–1,0 mmol/L épisode aigu), \
+LAI (Long-Acting Injectable antipsychotique — formes LP IM), \
+clozapine (schizophrénie ultra-résistante — critères TRTD, surveillance NFS), \
+NFS (numération formule sanguine — surveillance agranulocytose clozapine), \
+CHR/UHR (Clinical High Risk / Ultra High Risk de psychose), \
+PANSS (Positive and Negative Syndrome Scale — schizophrénie), \
+TDAH (Trouble Déficit de l'Attention / Hyperactivité), \
+MPH (méthylphénidate), LDX (lisdexamfétamine), ATX (atomoxétine), \
+SUD (Substance Use Disorder), TSO (Traitement de Substitution aux Opioïdes), \
+BHD (buprénorphine haut dosage), \
+HO/HDT/SDRE (hospitalisation sous contrainte — soins sans consentement FR), \
+TCC (Thérapie Cognitivo-Comportementale — grade A), EMDR (Eye Movement \
+  Desensitization and Reprocessing — PTSD, recommandation HAS), \
+PTSD (Trouble de Stress Post-Traumatique), \
+TAG (Trouble Anxieux Généralisé), \
+BED (Binge Eating Disorder), \
+STOPP/START (critères iatrogénie gériatrique — interactions psychotropes).
+
+EXEMPLES DE RÉDACTION (style JAMA Psychiatry / Lancet Psychiatry / Am J Psychiatry) :
+
+Essai pivot — nouvelle molécule (résultat centré, pas de méthode en tête) :
+  titre_court : "Zuranolone vs placebo : rémission EDC à 15 jours (LANDSCAPE/SHORELINE)"
+  resume : "Dans deux RCT de phase 3 (LANDSCAPE, N=543 ; SHORELINE, N=542 — EDC \
+modéré-sévère, HDRS-17 ≥ 24), zuranolone 50 mg/j (14 jours) réduit le score HDRS-17 \
+de −12,5 pts vs −8,8 pts (placebo) à J15 — différence −3,7 pts (IC95% −5,0 à −2,4 ; \
+p<0,001). Taux de rémission (HDRS-17 ≤ 7) : 28,4 % vs 15,8 % à J15. \
+Effet sédatif transitoire grade 1-2 : 14,5 % vs 4,2 %. Pas d'excès de pensées \
+suicidaires (C-SSRS)."
+  impact_pratique : "En pratique : zuranolone offre un délai d'action de 15 jours \
+contre 4-6 semaines pour les IRS/IRSNA — à positionner dans l'EDC sévère nécessitant \
+une réponse rapide, en alternative à l'eskétamine IV et à l'hospitalisation sous ECT."
+
+Guideline update :
+  titre_court : "CANMAT 2023 trouble bipolaire : lurasidone et cariprazine en 1re ligne \
+phase dépressive"
+  resume : "CANMAT/ISBD Guidelines 2023 (Bipolar Disord suppl.) : révision des \
+recommandations pour la phase dépressive du trouble bipolaire type I et II. \
+Lurasidone (20–120 mg/j) et cariprazine (1,5–3 mg/j) obtiennent désormais un niveau \
+d'évidence 1 (multiple RCTs) pour le TB-I et TB-II, à égalité avec la quetiapine XR. \
+Lithium et lamotrigine conservent leur grade 1 en prévention des récurrences \
+dépressives TB-II. L'olanzapine-fluoxétine reste 2e ligne (profil métabolique)."
+  impact_pratique : "À retenir : lurasidone est à privilégier en 1re intention \
+pour la dépression bipolaire type II — efficacité démontrée sans le risque \
+métabolique de la quetiapine XR ou de l'olanzapine."
+
+Alerte réglementaire :
+  titre_court : "ANSM : valproate contre-indiqué chez la femme en âge de procréer \
+sans contraception efficace — rappel de mesures 2024"
+  resume : "ANSM (DHPC, jan. 2026) : rappel des mesures de minimisation du risque \
+valproate — tératogénicité (risque malformations : 10 % ; troubles \
+neurodéveloppementaux : 30–40 %). Obligation légale : formulaire d'accord de soins \
+signé annuellement, contraception efficace documentée, consultation spécialisée \
+avant toute prescription ou renouvellement chez une femme de 15 à 50 ans. \
+En psychiatrie : indication résiduelle uniquement en trouble bipolaire de type I \
+résistant, après échec lithium + 2 autres thymorégulateurs."
+  impact_pratique : "En pratique : vérifier à chaque renouvellement la présence du \
+formulaire signé et d'une contraception documentée — l'absence de l'un ou l'autre \
+rend la prescription non conforme aux exigences ANSM, avec responsabilité engagée."
+"""
+
+_SPECIALTY_ADDENDUM_PNEUMOLOGIE = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — PNEUMOLOGIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : pneumologue (CHU / clinique / cabinet, France / Europe), \
+maîtrisant explorations fonctionnelles respiratoires (EFR, pléthysmographie, \
+DLCO, test de marche 6 min), bronchoscopie diagnostique et interventionnelle, \
+CPAP/VNI, endoscopie bronchique (cryobiopsie, EBUS), pneumologie oncologique \
+(immunothérapie en 1re ligne, TKI, décision RCP). \
+Référentiels actuels : ERS/ATS COPD Guidelines (GOLD 2025), GINA 2024 (asthme), \
+ERS/ESC Guidelines HTAP 2022, ATS/ERS guidelines FPI/ILD 2022, \
+recommandations SPLF (BPCO, apnée du sommeil, tabacologie), HAS guides BPCO/asthme. \
+Essais pivots de référence : IMPACT trial (ICS/LABA/LAMA triplet BPCO), \
+GALATHEA/TERRANOVA (benralizumab BPCO), NAVIGATOR (tézépélumab asthme sévère), \
+LIBERTY ASTHMA QUEST (dupilumab asthme modéré-sévère), INPULSIS (nintédanib FPI), \
+CAPACITY/ASCEND (pirfénidone FPI), AMBITION (macitentan+tadalafil HTAP), \
+STELLAR (sotatercept HTAP), GRIPHON (sélexipag HTAP), \
+KEYNOTE-189 (pembrolizumab+chimio NSCLC non-squameux 1re ligne), \
+essais pivots Kaftrio phase 3 (elexacaftor-tezacaftor-ivacaftor, NEJM 2019 — Heijerman, Middleton).
+
+CRITÈRE DE PERTINENCE PNEUMOLOGIQUE :
+"Ce résultat va-t-il modifier une stratégie thérapeutique, le choix d'un inhalateur, \
+l'indication d'une biothérapie, ou le suivi d'un patient dans ma consultation dans \
+les 1-3 ans qui viennent ?" \
+Rejeter même un RCT bien conduit si : BPCO/asthme léger sans impact sur step-up/down, \
+pathologie ultra-rare sans dispositif thérapeutique accessible en France, \
+résultats confirmatoires d'une stratégie déjà intégrée aux guidelines ERS/ATS/GINA/GOLD, \
+essai purement physiologique (mécanique ventilatoire) sans traduction clinique, \
+études animalières pulmonaires sans essai clinique associé.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ BPCO : nouvelles classes thérapeutiques, triplet ICS/LABA/LAMA, exacerbations \
+  aiguës (antibiothérapie, corticothérapie systémique, VNI), phénotypes (ACOS, \
+  emphysème, bronchiteux chronique), réhabilitation respiratoire, spirométrie post-\
+  COVID, cystoprofilaxie, azithromycine de maintenance
+→ Asthme : biothérapies en asthme sévère (anti-IL5 : mepolizumab/reslizumab/\
+  benralizumab ; anti-IL4/IL13 : dupilumab ; anti-TSLP : tézépélumab ; \
+  anti-IgE : omalizumab), step-up/down GINA, biologie à l'initiative du pharmacien \
+  en observance inhalateur, phénotypage T2/non-T2, FeNO
+→ ILD (Interstitial Lung Disease) / FPI : nouveaux antifibrotiques, cryobiopsie \
+  trans-bronchique (résultats diagnostiques vs CBT chirurgicale), télémédecine suivi \
+  CVF, FPI + emphysème (CPFE), HP (pneumonie d'hypersensibilité) — critères diagnostiques
+→ Hypertension pulmonaire artérielle (HTAP) : nouvelles associations (sotatercept, \
+  sélexipag), stratification risque (COMPERA), critères de référence au CHU
+→ Infections respiratoires : PAC (SPBC/S. pneumoniae, Legionella, atypiques — \
+  antibiothérapie guidée PCT), pneumonies à COVID-19 résiduelles, \
+  PAVM/PNAVM en réanimation (co-morbidité pneumologue), tuberculose résistante (RR-TB), \
+  NTM pulmonaire (Mycobacterium avium complex — critères ATS/ERS)
+→ Cancer broncho-pulmonaire : côté médical (pas chirurgie) — immunothérapie 1re/2e ligne \
+  (anti-PD1/PDL1), TKI (EGFR/ALK/RET/ROS1/KRAS), SCLC (atézolizumab maintenance), \
+  VT-PET-scan, biomarqueurs (PD-L1, TMB, NGS panel tumoral), \
+  effets pulmonaires des ICI (pneumopathie interstitielle immune grade 2-4)
+→ Mucoviscidose (CF) : modulateurs CFTR (elexacaftor-tezacaftor-ivacaftor / Kaftrio), \
+  nouvelles combinaisons, données de vie réelle France, infections à Pseudomonas
+→ Apnée du sommeil (SAOS) : CPAP vs orthèse d'avancée mandibulaire, nouvelles \
+  thérapies (stimulation du nerf hypoglosse — Inspire Medical Systems, Genio), \
+  impact cardiovasculaire (SAVE trial, ISAACC trial), SAOS sévère et \
+  évènements coronariens, suivi observance CPAP (données télémonitoring)
+→ Tabacologie : nouvelles pharmacothérapies (varénicline, cytisine, combinaisons), \
+  cigarette électronique (données LT) — si impact sur pratique de sevrage
+→ Alertes ANSM/EMA : retraits d'inhalateurs, nouvelles CI bronchodilatateurs, \
+  pneumopathies médicamenteuses (amiodarone, MTX, nitrofurantoïne, bléomycine)
+
+REJETER :
+→ BPCO/asthme léger (GOLD A/B ou GINA step 1-2) sans résultat modifiant la pratique
+→ Études purement physiologiques (courbes débit-volume, compliance dynamique) \
+  sans application clinique testée
+→ Infections respiratoires virales bénignes (rhinopharyngite, bronchite aiguë) \
+  sans résultat sur antibiothérapie ou antiviral
+→ Cancérologie : phase 1 d'escalade de dose (relayer oncologie)
+→ Études animalières pulmonaires (modèles souris BPCO, asthme) sans essai clinique
+→ Pollution atmosphérique / épidémiologie environnementale seule, sans résultat \
+  clinique applicable en consultation
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+BPCO (Broncho-Pneumopathie Chronique Obstructive), GOLD A/B/C/D, VEMS (FEV₁), \
+CVF (FVC), ratio VEMS/CVF (Tiffeneau), DLCO (diffusion CO), \
+bronchodilatateur à courte durée d'action (BDCA : SABA + SAMA), \
+bronchodilatateur à longue durée d'action (BDLA : LABA + LAMA), \
+ICS (Inhaled Corticosteroids), triplet ICS/LABA/LAMA, \
+ACOS (Asthma-COPD Overlap Syndrome), \
+exacerbation aiguë de BPCO (EABPCO), \
+GINA step 1-5, FeNO (Fractional exhaled Nitric Oxide — seuil > 25 ppb T2), \
+IgE totales / spécifiques (RAST), tests de provocation bronchique (métacholine), \
+FPI (Fibrose Pulmonaire Idiopathique), CVF % prédit, \
+nintédanib / pirfénidone (antifibrotiques), \
+HTAP (Hypertension Pulmonaire Artérielle), PAPm (pression artérielle pulmonaire \
+  moyenne — seuil AMM ≥ 20 mmHg), RVP (résistances vasculaires pulmonaires), \
+  COMPERA (score risque HTAP), ERA (antagoniste des récepteurs à l'endothéline), \
+  PDE5i (inhibiteur PDE-5 : sildénafil / tadalafil), sGC (riociguat), \
+  sotatercept (activine / BMPR2), sélexipag (agoniste IP), \
+PAC (Pneumonie Acquise en Communauté), PAVM (Pneumonie Acquise sous Ventilation \
+  Mécanique), PCT (procalcitonine), CRP, antigénuries Legionella/pneumocoque, \
+VNI (Ventilation Non Invasive), CPAP (Continuous Positive Airway Pressure), \
+SAOS (Syndrome d'Apnée Obstructive du Sommeil), IAH (index apnée-hypopnée — \
+  léger 5-15, modéré 15-30, sévère > 30 /h), SpO₂, désaturation nocturne, \
+OAM (Orthèse d'Avancée Mandibulaire), stimulation hypoglosse (Inspire), \
+CF (Cystic Fibrosis — mucoviscidose), CFTR (Cystic Fibrosis Transmembrane Conductance \
+  Regulator), modulateur CFTR (elexacaftor-tezacaftor-ivacaftor / Kaftrio), \
+EFR (Explorations Fonctionnelles Respiratoires), TVO (trouble ventilatoire \
+  obstructif), TVR (trouble ventilatoire restrictif), \
+EBUS (Endobronchial Ultrasound), \
+TM6M (test de marche de 6 minutes — distance, désaturation), SpO₂ effort.
+
+EXEMPLES DE RÉDACTION (style ERJ / AJRCCM / Lancet Respir Med) :
+
+Essai pivot (biothérapie asthme) :
+  titre_court : "Tézépélumab asthme sévère non-T2 : NAVIGATOR 52 semaines"
+  resume : "NAVIGATOR (RCT, N=1 061, asthme sévère non contrôlé toutes phénotypes, \
+suivi 52 semaines) : tézépélumab (anti-TSLP) réduit le taux annualisé d'exacerbations \
+de 70 % vs placebo (0,93 vs 3,10 — IRR 0,30 ; IC95% 0,24–0,37 ; p<0,001) quel que \
+soit le phénotype T2 ou non-T2. VEMS +0,13 L vs +0,08 L. FeNO, IgE, éosinophiles \
+améliorés uniformément. Sous-groupe non-T2 (FeNO < 25, éosinophiles < 150) : réduction \
+exacerbations 70 %, IRR 0,30 (IC95% 0,17–0,53)."
+  impact_pratique : "En pratique : tézépélumab est le seul anti-TSLP efficace dans les \
+phénotypes non-T2 — à proposer en 1re intention pour les asthmatiques sévères non \
+contrôlés sans argument éosinophile ni allergique."
+
+Guideline update (BPCO) :
+  titre_court : "GOLD 2025 : triplet d'emblée si symptômes élevés et > 1 exacerbation"
+  resume : "GOLD 2025 (rapport annuel) : mise à jour majeure de la stratification \
+initiale — passage au triplet ICS/LABA/LAMA recommandé d'emblée (Grade IA) pour les \
+patients GOLD B à D avec ≥ 1 exacerbation modérée/an, quel que soit le niveau d'IgE. \
+Basé sur ETHOS (N=8 509) : réduction exacerbations modérées-sévères 24 % vs doublet LABA/LAMA. \
+Abandon du schéma 'monothérapie → doublet → triplet' pour ce sous-groupe."
+  impact_pratique : "À retenir : classifier les patients BPCO en 'post-bronchodilatateur' \
+(VEMS/CVF < 0,70) + ≥ 1 exacerbation → initier le triplet d'emblée sans attendre l'échec \
+du doublet."
+
+Alerte sécurité inhalateurs :
+  titre_court : "ANSM : suspension Formotérol/Béclométasone (lot XXXX) — contamination"
+  resume : "ANSM (lettre professionnels, mars 2026) : rappel de lots d'aérosol doseur \
+Formotérol/Béclométasone 6/100 µg (Chiesi — lot XXX-XXX) après détection d'un taux \
+de particules fines hors spécification (< 1,5 µm : 41 % au lieu de ≤ 35 %). \
+Environ 12 000 boîtes concernées en France. \
+Les patients asymptomatiques sous ces lots ne doivent pas interrompre leur traitement."
+  impact_pratique : "En pratique : identifier les patients porteurs du lot concerné \
+et remplacer à la prochaine dispensation — déclarer tout doute de contrôle insuffisant \
+en pharmacovigilance via le portail signalement-sante.gouv.fr."
+"""
+
+_SPECIALTY_ADDENDUM_PHARMACIEN = """\
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTE SPÉCIALITÉ — PHARMACIEN (OFFICINE ET HOSPITALIER)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LECTEUR CIBLE : pharmacien d'officine ou pharmacien hospitalier (PH, CHU / CH, France), \
+maîtrisant dispensation, pharmacovigilance, conciliation médicamenteuse, \
+bon usage, circuit du médicament, interactions, pharmacocinétique clinique, \
+stérilisation / préparations magistrales et hospitalières. \
+Référentiels actuels : SFPC recommandations, EAHP Good Practice Statements 2022, \
+HAS fiches de bon usage médicament, ANSM guides de bon usage, \
+Thériaque / Vidal / interactions ANSM, Répertoire des spécialités pharmaceutiques. \
+Points d'attention réglementaires : liste des médicaments à risque (LASA, forte \
+vigilance), décret de compétences officinales (vaccination, TROD, bilan de médication), \
+Circuit ATU/AAP ANSM-HAS, biosimilaires interchangeables (liste ANSM).
+
+CRITÈRE DE PERTINENCE PHARMACIEN :
+"Ce résultat va-t-il modifier un acte de dispensation, une décision de substitution, \
+un protocole de bon usage, ou la détection d'une interaction/toxicité en pratique \
+quotidienne française dans les 1-3 ans ?" \
+Rejeter même une étude robuste si : recherche fondamentale en pharmacologie sans \
+application clinique immédiate, PK/PD uniquement chez la souris, essai de phase 1 \
+sans données d'efficacité/tolérance en routine, pathologie ultra-rare sans impact \
+sur les médicaments dispensés en ville ou à l'hôpital en France.
+
+FILTRES SPÉCIFIQUES :
+
+RETENIR :
+→ Nouvelles interactions médicamenteuses cliniquement significatives (grade contre-\
+  indication ou précaution majeure ANSM/ANSM) : mécanisme CYP, transporteurs P-gp/BCRP, \
+  allongement QTc, hyperkaliémie, néphrotoxicité cumulée
+→ Alertes pharmacovigilance / matériovigilance ANSM : nouveaux signaux de sécurité, \
+  lettres aux professionnels de santé (DHPC — Direct Healthcare Professional Communication), \
+  retraits de lots, suspensions AMM, modifications de RCP
+→ Ruptures d'approvisionnement et tensions d'approvisionnement : médicaments à liste \
+  ANSM, alternatives thérapeutiques validées HAS, protocoles de gestion
+→ Biosimilaires : nouvelles inscriptions sur la liste ANSM, données d'interchangeabilité \
+  et d'immunogénicité, résultats de pharmaco-épidémiologie post-commercialisation
+→ Bon usage hospitalier : protocoles de conciliation médicamenteuse (iatrogénie évitée), \
+  sécurisation circuit chimiothérapie (préparation centralisée, double vérification), \
+  préparations magistrales ANSM, stérilisation ISO — uniquement si changement de pratique
+→ Décret de compétences officinales : nouvelles missions (vaccination 2025, TROD, \
+  bilan de médication SFD/CNGE, dispensation d'urgence contraception), impact sur \
+  prescription déléguée et traçabilité
+→ Pharmacocinétique clinique impactant le suivi thérapeutique : TDM (Therapeutic \
+  Drug Monitoring) nouvelles molécules ou nouvelles cibles — aminosides, vancomycine \
+  (AUC-guided), imipenem/méropénem/pipéracilline TDM, antiépileptiques, anti-TNF
+→ Transition hospitalier-ville : coordination sorties d'hospitalisation, ordonnances \
+  de sortie (réforme 2025), bilan partagé de médication (BPM ASIP/HAS)
+→ Réglementation stupéfiants / psychotropes : modifications quotas, nouvelles \
+  inscriptions / déclassements, règles de prescription sécurisée
+→ Pharmaco-épidémiologie : études en vie réelle (bases SNDS/EGB) sur l'utilisation \
+  réelle des médicaments, effets indésirables en population, mésusage
+
+REJETER :
+→ Recherche fondamentale (cible moléculaire, modèle animal) sans résultats cliniques \
+  disponibles ou attendus à court terme
+→ Essais de phase 1 d'escalade de dose (aucun impact sur dispensation actuelle)
+→ Articles de pharmacologie académique pure (interactions CYP in vitro non confirmées \
+  cliniquement)
+→ Études sur systèmes de santé étrangers non transposables en France (Medicaid, NHS \
+  formularies sans équivalent ANSM)
+→ Économie de santé / coût-efficacité sans recommandation HAS ou décision de prise \
+  en charge associée
+→ Soins infirmiers et protocoles paramédicaux (relayer vers infirmiers si pertinent)
+
+TERMINOLOGIE — employer sans guillemets ni définition :
+AMM (Autorisation de Mise sur le Marché), RCP (Résumé des Caractéristiques du Produit), \
+DCI (Dénomination Commune Internationale), ANSM, HAS, ATU / AAP (Accès Précoce), \
+DHPC (lettre aux professionnels de santé), MTE (médicament à tolérance étroite), \
+LASA (Look-Alike Sound-Alike — médicaments à risque de confusion), \
+TDM (Therapeutic Drug Monitoring — suivi thérapeutique pharmacologique), \
+AUC (Aire sous la courbe — AUC24/MIC pour vancomycine), \
+Css (concentration à l'équilibre), Cmin / Cmax, demi-vie t½, biodisponibilité F, \
+CYP3A4/3A5 (inducteurs : rifampicine, carbamazépine / inhibiteurs : azolés, macrolides), \
+P-gp / BCRP (transporteurs d'efflux), \
+biosimilaire / médicament biologique de référence, \
+interchangeabilité (liste ANSM biosimilaires), immunogénicité, anticorps anti-médicament, \
+conciliation médicamenteuse (CM entrée / sortie), bilan partagé de médication (BPM), \
+iatrogénie médicamenteuse, EI (effet indésirable), pharmacovigilance, \
+préparation hospitalière (PH) / préparation magistrale (PM) / MITM, \
+chimiothérapie anticancéreuse en UPC (Unité de Préparation des Cytotoxiques), \
+RTU (Recommandation Temporaire d'Utilisation — remplacée par l'AAP), \
+substitution générique / biosimilaire à l'officine, ordonnance sécurisée (stupéfiants), \
+SMR / ASMR (évaluation HAS — Service Médical Rendu / Amélioration), IQSS.
+
+EXEMPLES DE RÉDACTION (style Ann Pharm Fr / Eur J Hosp Pharm / SFPC) :
+
+Alerte ANSM — interaction médicamenteuse :
+  titre_court : "ANSM : association méropénem–valproate — contre-indication renforcée"
+  resume : "DHPC ANSM (fév. 2026) : mise à jour du RCP méropénem et valproate de sodium \
+suite à 18 cas de perte de contrôle épileptique documentés en pharmacovigilance européenne. \
+Mécanisme : inhibition de l'hydrolyse du valproate-glucuronide par les β-lactamines \
+(réduction plasma jusqu'à 80 %). Délai d'action rapide (< 48 h). Contre-indication \
+formelle maintenue — aucune alternative β-lactamine validée (imipenem, pipéracilline \
+même effet)."
+  impact_pratique : "En pratique : signaler systématiquement cette CI à l'équipe \
+médicale à chaque nouvelle prescription de méropénem chez un patient sous valproate ; \
+monitorer la valproatémie en cas d'antécédent récent."
+
+Biosimilaire — nouvelle inscription liste ANSM :
+  titre_court : "Adalimumab biosimilaire : 3 nouvelles spécialités interchangeables (ANSM 2026)"
+  resume : "ANSM (liste biosimilaires, actualisation mars 2026) : Hyrimoz, Idacio et \
+Simlandi ajoutés à la liste d'interchangeabilité avec Humira pour les indications \
+rhumatologiques et dermatologiques. Données de pharmacovigilance : 2 ans de suivi \
+post-commercialisation en Europe — incidence anticorps anti-médicament comparable à \
+la molécule de référence (5,1 % vs 5,4 %, différence non significative, EBPG 2025)."
+  impact_pratique : "En pratique : la substitution par le pharmacien hospitalier \
+est possible sans réévaluation médicale — documenter la substitution dans le dossier \
+patient et informer le prescripteur conformément à l'arrêté du 20 juillet 2024."
+
+Conciliation médicamenteuse — résultat de pratique :
+  titre_court : "Conciliation entrée : réduction 48 % iatrogénie à l'hôpital (étude CORIS)"
+  resume : "CORIS (étude prospective multicentrique française, 12 services médecine interne, \
+N=1 240) : conciliation médicamenteuse systématique à l'entrée — 48 % de réduction des \
+événements iatrogènes médicamenteux évitables (4,2 vs 8,1/100 admissions ; p<0,001). \
+Médicaments les plus impliqués : anticoagulants (23 %), antihypertenseurs (18 %), \
+antidiabétiques oraux (14 %). Temps moyen de conciliation : 22 minutes par patient."
+  impact_pratique : "À retenir : la conciliation à l'entrée réduit de moitié l'iatrogénie \
+évitable — argument pour formaliser le protocole dans tout établissement sans conciliation \
+systématisée (cible IPAQSS 2026)."
+"""
+
 _SPECIALTY_ADDENDA: dict[str, str] = {
-    "chirurgie-vasculaire":  _SPECIALTY_ADDENDUM_VASCULAIRE,
-    "chirurgie-cardiaque":   _SPECIALTY_ADDENDUM_CARDIAQUE,
-    "chirurgie-plastique":   _SPECIALTY_ADDENDUM_PLASTIQUE,
-    "chirurgie-pediatrique": _SPECIALTY_ADDENDUM_PEDIATRIQUE,
-    "pediatrie":             _SPECIALTY_ADDENDUM_PEDIATRIE,
-    # À implémenter : "cardiologie", "oncologie", "pneumologie", "neurologie", etc.
+    "anesthesiologie":        _SPECIALTY_ADDENDUM_ANESTHESIOLOGIE,
+    "biologiste":             _SPECIALTY_ADDENDUM_BIOLOGISTE,
+    "cardiologie":            _SPECIALTY_ADDENDUM_CARDIOLOGIE,
+    "chirurgie-orthopedique": _SPECIALTY_ADDENDUM_ORTHOPEDIE,
+    "chirurgie-thoracique":   _SPECIALTY_ADDENDUM_THORACIQUE,
+    "chirurgie-vasculaire":   _SPECIALTY_ADDENDUM_VASCULAIRE,
+    "chirurgie-cardiaque":    _SPECIALTY_ADDENDUM_CARDIAQUE,
+    "chirurgie-plastique":    _SPECIALTY_ADDENDUM_PLASTIQUE,
+    "chirurgie-pediatrique":  _SPECIALTY_ADDENDUM_PEDIATRIQUE,
+    "dermatologie":           _SPECIALTY_ADDENDUM_DERMATOLOGIE,
+    "endocrinologie":         _SPECIALTY_ADDENDUM_ENDOCRINOLOGIE,
+    "gastro-enterologie":     _SPECIALTY_ADDENDUM_GASTROENTEROLOGIE,
+    "geriatrie":              _SPECIALTY_ADDENDUM_GERIATRIE,
+    "gynecologie":            _SPECIALTY_ADDENDUM_GYNECOLOGIE,
+    "hematologie":            _SPECIALTY_ADDENDUM_HEMATOLOGIE,
+    "infectiologie":          _SPECIALTY_ADDENDUM_INFECTIOLOGIE,
+    "infirmiers":             _SPECIALTY_ADDENDUM_INFIRMIERS,
+    "kinesitherapie":         _SPECIALTY_ADDENDUM_KINESITHERAPIE,
+    "medecine-generale":      _SPECIALTY_ADDENDUM_MEDECINE_GENERALE,
+    "medecine-interne":       _SPECIALTY_ADDENDUM_MEDECINE_INTERNE,
+    "medecine-physique":      _SPECIALTY_ADDENDUM_MPR,
+    "medecine-urgences":      _SPECIALTY_ADDENDUM_URGENCES,
+    "nephrologie":            _SPECIALTY_ADDENDUM_NEPHROLOGIE,
+    "neurochirurgie":         _SPECIALTY_ADDENDUM_NEUROCHIRURGIE,
+    "neurologie":             _SPECIALTY_ADDENDUM_NEUROLOGIE,
+    "oncologie":              _SPECIALTY_ADDENDUM_ONCOLOGIE,
+    "ophtalmologie":          _SPECIALTY_ADDENDUM_OPHTALMOLOGIE,
+    "orl":                    _SPECIALTY_ADDENDUM_ORL,
+    "pediatrie":              _SPECIALTY_ADDENDUM_PEDIATRIE,
+    "pharmacien":             _SPECIALTY_ADDENDUM_PHARMACIEN,
+    "pneumologie":            _SPECIALTY_ADDENDUM_PNEUMOLOGIE,
+    "psychiatrie":            _SPECIALTY_ADDENDUM_PSYCHIATRIE,
+    "radiologie":             _SPECIALTY_ADDENDUM_RADIOLOGIE,
+    "rhumatologie":           _SPECIALTY_ADDENDUM_RHUMATOLOGIE,
+    "sage-femme":             _SPECIALTY_ADDENDUM_SAGE_FEMME,
+    "urologie":               _SPECIALTY_ADDENDUM_UROLOGIE,
 }
 
 
@@ -1983,6 +7638,7 @@ async def call_claude_async(
         title, content, date_pub, source_hint,
         is_innovation=is_innovation,
         is_press=is_press,
+        specialty_hint=specialty_hint,
     )
     client = _get_anthropic_client()
 
@@ -2063,6 +7719,14 @@ SOURCE_CONFIG: dict[str, dict] = {
         "min_llm_score": 5,
     },
     "bo_social": {
+        "require_whitelist": False,
+        "min_llm_score": 6,
+    },
+    "legifrance_jorf_remboursement": {
+        # Mots-clés titre déjà filtrés côté PISTE → pas de whitelist locale.
+        # Seuil LLM relevé à 6 : un arrêté de remboursement doit apporter un
+        # changement actionnable (nouveau prix, nouvelle inscription/radiation)
+        # pour figurer dans la newsletter.
         "require_whitelist": False,
         "min_llm_score": 6,
     },
