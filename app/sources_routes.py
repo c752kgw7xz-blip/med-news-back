@@ -2,10 +2,10 @@
 """
 Routes admin pour gérer et tester les sources de collecte.
 
-GET  /admin/sources/status?days=35
+GET  /admin/sources/status?days=120
      État de toutes les sources connues (700+) : nb candidats, statuts
 
-POST /admin/sources/collect/all?days=35
+POST /admin/sources/collect/all?days=120
      ← RUN PRINCIPAL — JORF + KALI + RSS (160) + PubMed (512) + Web + API
 
 POST /admin/sources/collect/jorf       ← JORF seul (API PISTE)
@@ -90,7 +90,7 @@ def _validate_url(url: str) -> None:
 # ---------------------------------------------------------------------------
 
 @router.get("/status")
-def sources_status(request: Request, days: int = Query(default=35, ge=1, le=365)):
+def sources_status(request: Request, days: int = Query(default=120, ge=1, le=365)):
     """
     Vue d'ensemble : pour chaque source active, nombre de candidats insérés
     dans la fenêtre demandée (default 35 jours).
@@ -201,7 +201,7 @@ def sources_status(request: Request, days: int = Query(default=35, ge=1, le=365)
 # ---------------------------------------------------------------------------
 
 @router.post("/collect/jorf")
-def collect_jorf(request: Request, days: int = Query(default=35, ge=1, le=365)):
+def collect_jorf(request: Request, days: int = Query(default=120, ge=1, le=365)):
     _require_admin(request)
     try:
         from app.piste_collector import collect_jorf as _collect
@@ -215,7 +215,7 @@ def collect_jorf(request: Request, days: int = Query(default=35, ge=1, le=365)):
 
 
 @router.post("/collect/kali")
-def collect_kali(request: Request, days: int = Query(default=35, ge=1, le=365)):
+def collect_kali(request: Request, days: int = Query(default=120, ge=1, le=365)):
     _require_admin(request)
     try:
         from app.piste_collector import collect_kali as _collect
@@ -228,7 +228,7 @@ def collect_kali(request: Request, days: int = Query(default=35, ge=1, le=365)):
 
 
 @router.post("/collect/has")
-def collect_has(request: Request, days: int = Query(default=35, ge=1, le=365)):
+def collect_has(request: Request, days: int = Query(default=120, ge=1, le=365)):
     _require_admin(request)
     try:
         from app.rss_collector import collect_has as _collect
@@ -241,7 +241,7 @@ def collect_has(request: Request, days: int = Query(default=35, ge=1, le=365)):
 
 
 @router.post("/collect/ansm")
-def collect_ansm(request: Request, days: int = Query(default=35, ge=1, le=365)):
+def collect_ansm(request: Request, days: int = Query(default=120, ge=1, le=365)):
     _require_admin(request)
     try:
         from app.rss_collector import collect_ansm as _collect
@@ -254,7 +254,7 @@ def collect_ansm(request: Request, days: int = Query(default=35, ge=1, le=365)):
 
 
 @router.post("/collect/spf")
-def collect_spf(request: Request, days: int = Query(default=35, ge=1, le=365)):
+def collect_spf(request: Request, days: int = Query(default=120, ge=1, le=365)):
     _require_admin(request)
     try:
         from app.rss_collector import collect_spf as _collect
@@ -294,14 +294,14 @@ def collect_web(request: Request):
 
 
 @router.post("/collect/innovation")
-def collect_innovation(request: Request, days: int = Query(default=90, ge=1, le=365)):
+def collect_innovation(request: Request, days: int = Query(default=120, ge=1, le=365)):
     """
     Collecte toutes les sources innovation + API dispositifs médicaux (sans PISTE) :
     - RSS    : 160 feeds toutes spécialités (journaux, sociétés savantes, presse clinique)
     - PubMed : 512 sources toutes spécialités
     - Web    : scraping HTML sociétés savantes FR + EU
     - API    : FDA (PMA Class III + 510k), EUDAMED (classe III), EMA DHPC
-    days=90 par défaut pour l'historique récent au premier run.
+    days=120 par défaut.
     Note : ne collecte pas JORF/KALI — utiliser /collect/all pour tout inclure.
     """
     _require_admin(request)
@@ -322,7 +322,7 @@ def collect_innovation(request: Request, days: int = Query(default=90, ge=1, le=
 
 
 @router.post("/collect/fda")
-def collect_fda(request: Request, days: int = Query(default=90, ge=1, le=365)):
+def collect_fda(request: Request, days: int = Query(default=120, ge=1, le=365)):
     """
     Collecte les approbations FDA de dispositifs médicaux :
     - PMA (Class III) : dispositifs à risque élevé (implants, endoprothèses…)
@@ -343,7 +343,7 @@ def collect_fda(request: Request, days: int = Query(default=90, ge=1, le=365)):
 
 
 @router.post("/collect/eudamed")
-def collect_eudamed(request: Request, days: int = Query(default=90, ge=1, le=365)):
+def collect_eudamed(request: Request, days: int = Query(default=120, ge=1, le=365)):
     """
     Collecte les dispositifs CE marqués dans EUDAMED (base UE).
     Filtre : Classe III (Im), codes EMDN pertinents + mots-clés cliniques côté client.
@@ -416,7 +416,7 @@ def enrich_unpaywall(
 
 
 @router.post("/collect/all")
-def collect_all(request: Request, days: int = Query(default=35, ge=1, le=365)):
+def collect_all(request: Request, days: int = Query(default=120, ge=1, le=365)):
     """
     Lance la collecte complète de toutes les sources :
     - PISTE  : JORF + KALI (API Légifrance)
@@ -459,11 +459,11 @@ def collect_all(request: Request, days: int = Query(default=35, ge=1, le=365)):
 
 
 @router.post("/collect/pratique")
-def collect_pratique(request: Request, days: int = Query(default=90, ge=1, le=365)):
+def collect_pratique(request: Request, days: int = Query(default=120, ge=1, le=365)):
     """
     Collecte uniquement les sources pratiques médicales :
     recommandations HAS, bon usage ANSM, sociétés savantes, académie de médecine.
-    days=90 par défaut pour capturer l'historique récent lors du premier run.
+    days=120 par défaut.
     """
     _require_admin(request)
     try:

@@ -481,7 +481,7 @@ def jorf_search_debug(request: Request):
 @router.post("/jorf/search-to-candidates")
 def jorf_search_to_candidates(
     request: Request,
-    days: int = 90,
+    days: int = 120,
     strict: bool = True,
     page_size: int = 50,
     max_pages: int = 40,
@@ -788,7 +788,7 @@ def jorf_search_remboursement_sample(
 @router.post("/jorf/search-remboursement")
 def jorf_search_remboursement(
     request: Request,
-    days: int = 180,
+    days: int = 120,
     page_size: int = 50,
     max_pages: int = 40,
 ):
@@ -989,7 +989,7 @@ EXTRA_FONDS = {
 def collect_extra_fonds(
     request: Request,
     fond: str = "KALI",
-    days: int = 90,
+    days: int = 120,
     page_size: int = 50,
     max_pages: int = 20,
 ):

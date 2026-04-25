@@ -299,7 +299,7 @@ def collect_pratique(days: int = 120) -> dict[str, Any]:
     - Flux RSS : recommandations, bon usage, sociétés savantes (ALL_PRATIQUE_FEEDS)
     - Scraping HTML : sociétés sans RSS (SFH, SFR, SFO, SFPédiatrie, SOFCOT)
 
-    Par défaut days=90 pour capturer l'historique récent des nouveaux feeds.
+    Par défaut days=120 pour capturer l'historique récent des nouveaux feeds.
     Le scraping HTML n'utilise pas le paramètre days (pas de date dans les pages).
     """
     results: dict[str, Any] = {}

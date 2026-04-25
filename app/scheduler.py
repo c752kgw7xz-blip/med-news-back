@@ -165,7 +165,7 @@ def job_collect_regulation() -> None:
 
         source = "legifrance_jorf"
         today = date.today()
-        start = today - timedelta(days=35)
+        start = today - timedelta(days=120)
         page_size, max_pages = 50, 40
         seen = ins = dup = 0
 
@@ -238,7 +238,7 @@ def job_collect_regulation() -> None:
         for fond, src in EXTRA_FONDS.items():
             try:
                 today_d = date.today()
-                start_d = today_d - timedelta(days=35)
+                start_d = today_d - timedelta(days=120)
                 from app.piste_routes import _piste_call as pc, _extract_list as el, _parse_date10 as pd10, _sha256_hex as sh, _json_canonical_bytes as jcb
                 ins = dup = s = filtered = 0
                 insert_sql = """
@@ -295,14 +295,14 @@ def job_collect_regulation() -> None:
         from app.rss_collector import collect_ansm, collect_feed, FEEDS
         from app.llm_analysis import SOURCE_TO_TYPE
 
-        report["ansm"] = collect_ansm(days=35)
+        report["ansm"] = collect_ansm(days=120)
 
         # BO Social et CNOM depuis FEEDS, filtrés sur source_type = reglementaire
         reg_sources = {s for s, t in SOURCE_TO_TYPE.items() if t == "reglementaire"}
         for feed in FEEDS:
             if feed["source"] in reg_sources and not feed["source"].startswith("ansm"):
                 try:
-                    r = collect_feed(feed, days=35)
+                    r = collect_feed(feed, days=120)
                     report[feed["source"]] = r
                     logger.info("[%s] ins=%d", feed["source"], r.get("inserted", 0))
                 except Exception as e3:
@@ -335,8 +335,8 @@ def job_collect_recommendations() -> None:
     # ── HAS + sociétés savantes (RSS) ────────────────────────────
     try:
         from app.rss_collector import collect_has, collect_pratique
-        report["has"] = collect_has(days=10)           # légère marge > 7 jours
-        report["pratique"] = collect_pratique(days=10)
+        report["has"] = collect_has(days=120)           # légère marge > 7 jours
+        report["pratique"] = collect_pratique(days=120)
         logger.info("Recommandations RSS collectées")
     except Exception as e:
         logger.error("RSS recommandations échoué : %s", e)
@@ -347,7 +347,7 @@ def job_collect_recommendations() -> None:
         from app.rss_collector import collect_feed, FEEDS
         for feed in FEEDS:
             if feed["source"] == "has_ct":
-                r = collect_feed(feed, days=10)
+                r = collect_feed(feed, days=120)
                 report["has_ct"] = r
                 logger.info("[has_ct] ins=%d", r.get("inserted", 0))
     except Exception as e:
@@ -388,7 +388,7 @@ def job_collect_innovation() -> None:
     logger.info("JOB COLLECTE INNOVATION démarré — %s", date.today().isoformat())
     logger.info("=" * 60)
     from app.collector import collect_all
-    report = collect_all(days=10)
+    report = collect_all(days=120)
     try:
         _run_llm_batch()
     except Exception as e:
@@ -401,7 +401,7 @@ def job_collect_innovation() -> None:
 # Collecte par spécialité (cœur de la Routine)
 # ---------------------------------------------------------------------------
 
-def collect_by_specialty(specialty_slug: str, days: int = 2) -> dict[str, Any]:
+def collect_by_specialty(specialty_slug: str, days: int = 120) -> dict[str, Any]:
     """
     Collecte COMPLÈTE pour une spécialité — un seul déclencheur, tout inclus :
 
@@ -507,7 +507,7 @@ def job_try_send_regulation() -> None:
     )
     total_sent = _send_newsletters_by_source_type(
         source_types=REGULATION_SOURCE_TYPES,
-        days=35,
+        days=120,
     )
     if total_sent > 0:
         _finalize_newsletter_sent("reglementaire", period, articles_sent=total_sent)
@@ -557,7 +557,7 @@ def job_try_send_recommendations() -> None:
     )
     total_sent = _send_newsletters_by_source_type(
         source_types=RECOMMENDATION_SOURCE_TYPES,
-        days=7,  # fenêtre = semaine uniquement
+        days=120,
     )
     if total_sent > 0:
         _finalize_newsletter_sent("recommandation", period, articles_sent=total_sent)
@@ -578,7 +578,7 @@ def job_try_send_recommendations() -> None:
 def _get_approved_items(
     specialty_slug: str,
     source_types: tuple[str, ...] | None = None,
-    days: int = 35,
+    days: int = 120,
 ) -> list[dict[str, Any]]:
     since = date.today() - timedelta(days=days)
     with get_conn() as conn:
@@ -661,7 +661,7 @@ def _get_subscribers(specialty_slug: str) -> list[str]:
 
 def _send_newsletters_by_source_type(
     source_types: tuple[str, ...] | None = None,
-    days: int = 35,
+    days: int = 120,
 ) -> int:
     """Envoie la newsletter à tous les abonnés par spécialité. Retourne le nb total d'articles."""
     total_articles = 0
@@ -677,7 +677,7 @@ def _send_newsletters_by_source_type(
 def _send_specialty_newsletter(
     specialty_slug: str,
     source_types: tuple[str, ...] | None = None,
-    days: int = 35,
+    days: int = 120,
 ) -> int:
     items = _get_approved_items(specialty_slug, source_types=source_types, days=days)
     if not items:

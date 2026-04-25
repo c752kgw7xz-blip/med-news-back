@@ -8,12 +8,12 @@ Sous-commandes :
     llm         Analyse les candidats restants avec Claude
 
 Workflow spé par spé :
-    python scripts/pipeline.py collect --specialty cardiologie --days 180
+    python scripts/pipeline.py collect --specialty cardiologie --days 120
     python scripts/pipeline.py prefilter --specialty cardiologie
     python scripts/pipeline.py llm --limit 200
 
 Collecte globale :
-    python scripts/pipeline.py collect --all --days 180
+    python scripts/pipeline.py collect --all --days 120
     python scripts/pipeline.py prefilter
     python scripts/pipeline.py llm --limit 500
 
