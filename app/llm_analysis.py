@@ -8520,11 +8520,34 @@ _SPECIALTY_PREFILTER_RES: dict[str, list[re.Pattern]] = {
 }
 
 
-def specialty_prefilter(title: str, specialty_slug: str) -> tuple[bool, str | None]:
+# Marqueurs réglementaires transversaux : un article avec ces termes peut concerner
+# plusieurs spécialités simultanément → on bypasse le filtre spécialité pour laisser
+# le LLM trancher (coût d'un faux-positif ~0.005€, coût d'un faux-négatif = info manquée).
+_REGULATORY_BYPASS_RE = re.compile(
+    r"(?i)\b("
+    r"arr[êe]t[ée]|d[eé]cret|ordonnance|loi\s+n[°o]|circulaire|instruction"
+    r"|alerte|retrait|rappel\s+de\s+lot|rupture\s+de\s+stock|p[eé]nurie"
+    r"|AMM|ATU|acc[eè]s\s+pr[eé]coce|autorisation\s+de\s+mise\s+en\s+march[eé]"
+    r"|JORF|Journal\s+officiel|BO\s+sant[eé]|bulletin\s+officiel"
+    r")\b"
+)
+
+
+def specialty_prefilter(title: str, specialty_slug: str, source: str | None = None) -> tuple[bool, str | None]:
     """
     Filtre d'inclusion par spécialité — à appliquer uniquement sur les sources 'tous'.
     Retourne (keep, reason). keep=False si aucun keyword de la spécialité n'est trouvé.
+
+    Bypass automatique pour :
+    - Sources de type 'reglementaire' (ANSM, JORF, HAS BO…) — portée nationale multi-spé
+    - Titres contenant un marqueur réglementaire explicite (décret, alerte, retrait…)
     """
+    # Bypass : source réglementaire → le LLM tranche la pertinence spécialité
+    if source and get_source_type(source) == "reglementaire":
+        return True, None
+    # Bypass : marqueur réglementaire dans le titre (toutes sources)
+    if _REGULATORY_BYPASS_RE.search(title):
+        return True, None
     patterns = _SPECIALTY_PREFILTER_RES.get(specialty_slug)
     if not patterns:
         return True, None  # spécialité sans filtre défini → laisser passer
@@ -8777,7 +8800,7 @@ def pre_filter_candidate(
         return False, "jorf_no_health_term"
     # Filtre spécialité : sources "tous" sans pertinence pour la spé courante
     if specialty_slug and source_is_tous:
-        keep, reason = specialty_prefilter(t, specialty_slug)
+        keep, reason = specialty_prefilter(t, specialty_slug, source=source)
         if not keep:
             return False, reason
     return True, None
