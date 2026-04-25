@@ -8085,6 +8085,455 @@ def _passes_jorf_whitelist(title: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Pré-filtre par spécialité (inclusion keywords — sources "tous" uniquement)
+# ---------------------------------------------------------------------------
+# Logique : pour les sources specialty_hint=="tous" (HAS, ANSM, EMA, JAMA, NEJM…),
+# le titre doit contenir AU MOINS UN terme de la spécialité cible pour passer.
+# Les sources spé-spécifiques (hint == slug) ignorent ce filtre.
+# Termes FR + EN pour couvrir les journaux anglophones et les sources françaises.
+
+SPECIALTY_PREFILTER_KEYWORDS: dict[str, list[str]] = {
+    "anesthesiologie": [
+        r"(?i)\banesthési", r"(?i)\banalgési", r"(?i)\bsédation\b",
+        r"(?i)\bopioïd", r"(?i)\bmorphine\b", r"(?i)\bsufentanil\b",
+        r"(?i)\brémifentanil\b", r"(?i)\bfentanyl\b", r"(?i)\bkétamine\b",
+        r"(?i)\bpropofol\b", r"(?i)\bintubation\b", r"(?i)\blocorégional",
+        r"(?i)\bALR\b", r"(?i)\bbloc\s+nerveux\b", r"(?i)\bépidurale\b",
+        r"(?i)\brachisthésie\b", r"(?i)\bdouleur\s+post.?op", r"(?i)\bRAAC\b",
+        r"(?i)regional anesthes", r"(?i)\bneuraxial\b", r"(?i)sedation\b",
+        r"(?i)analges", r"(?i)pain management", r"(?i)\bairway\b",
+        r"(?i)perioperative", r"(?i)postoperative pain", r"(?i)\bcurare\b",
+        r"(?i)\brocuronium\b", r"(?i)enhanced recovery", r"(?i)\bERAS\b",
+        r"(?i)\bdouleur chronique\b", r"(?i)\bneuromuscular block",
+    ],
+    "biologiste": [
+        r"(?i)\bbiologie\b", r"(?i)\bbiomarqueur", r"(?i)\bhémogramme\b",
+        r"(?i)\bsérologie\b", r"(?i)\bbactériologi", r"(?i)\bmicrobiologi",
+        r"(?i)\bdiagnostic\s+(biologique|moléculaire|in\s+vitro)",
+        r"(?i)\bPCR\b", r"(?i)\bELISA\b", r"(?i)\bdosage\b",
+        r"(?i)\bgénomiq", r"(?i)\bséquençage\b", r"(?i)\bNGS\b",
+        r"(?i)\blaboratoire\s+d[e']analyse", r"(?i)\bDM.DIV\b",
+        r"(?i)\bbiobank", r"(?i)\bprotéomiq", r"(?i)\bimmunohistochimi",
+        r"(?i)\bcytologi", r"(?i)biomarker", r"(?i)laboratory test",
+        r"(?i)point.of.care test", r"(?i)\bDNA\b", r"(?i)\bRNA\b",
+        r"(?i)\bannexe\s+biologique\b",
+    ],
+    "cardiologie": [
+        r"(?i)\bcardiaqu", r"(?i)\bcoronar", r"(?i)\binfarctu",
+        r"(?i)insuffisance cardiaque", r"(?i)\barythmie\b",
+        r"(?i)fibrillation\s+(auriculaire|ventriculaire)",
+        r"(?i)\btachycardie\b", r"(?i)\bbradycardie\b",
+        r"(?i)\bhypertension\b", r"(?i)\bantihypertenseur",
+        r"(?i)\bbêtabloquant\b", r"(?i)\biECA\b", r"(?i)\bsartan\b",
+        r"(?i)\bstatine\b", r"(?i)\banticoagulant", r"(?i)\bAOD\b",
+        r"(?i)\bTAVI\b", r"(?i)\bpontage\b", r"(?i)\bstents?\b",
+        r"(?i)\bangioplastie\b", r"(?i)\béchocardiograph",
+        r"(?i)\bpacemaker\b", r"(?i)\bdéfibrillateur\b", r"(?i)\bDAI\b",
+        r"(?i)\baortique\b", r"(?i)\bmitrale\b", r"(?i)\btricuspide\b",
+        r"(?i)\bIDM\b", r"(?i)\bSCA\b", r"(?i)\bheart failure\b",
+        r"(?i)\batrial fibrillation\b", r"(?i)\bmyocardial infarct",
+        r"(?i)\bhypertens", r"(?i)\bcardiovascular\b", r"(?i)\bcoronary\b",
+        r"(?i)\bantiplatelet\b", r"(?i)\bGLP.1\b", r"(?i)\bsemaglutide\b",
+        r"(?i)\bempagliflozin\b", r"(?i)\bSGLT.?2\b",
+    ],
+    "chirurgie-cardiaque": [
+        r"(?i)chirurgie\s+(cardiaque|cardiac)", r"(?i)\bCABG\b",
+        r"(?i)pontage\s+coronar", r"(?i)\bvalv(e|ulaire|uloplastie)",
+        r"(?i)remplacement\s+valvulaire", r"(?i)\baorte\s+ascendante\b",
+        r"(?i)transplantation\s+(cardiaque|cardiac)", r"(?i)\bLVAD\b",
+        r"(?i)\bECMO\b", r"(?i)assistance\s+circulatoire",
+        r"(?i)mechanical\s+(circulatory|heart)\s+support",
+        r"(?i)cardiac surgery", r"(?i)\bEACTS\b",
+        r"(?i)\bthoracotomie\b", r"(?i)\bcirculat\b.*\bextracorporelle\b",
+        r"(?i)cardioplegia", r"(?i)valve\s+(repair|replacement)",
+    ],
+    "chirurgie-orthopedique": [
+        r"(?i)\bos\b", r"(?i)\bfracture\b", r"(?i)\barthropl(astie|asty)",
+        r"(?i)\bprothèse\s+(hanche|genou|épaule)", r"(?i)\bhanche\b",
+        r"(?i)\bgenou\b", r"(?i)\brachis\b", r"(?i)\bvertèbre\b",
+        r"(?i)\bscoliose\b", r"(?i)\barthroscopie\b", r"(?i)\bligament\b",
+        r"(?i)\btendon\b", r"(?i)\bostéotomie\b", r"(?i)\bostéoporose\b",
+        r"(?i)\bostéosynthèse\b", r"(?i)\btotal hip\b", r"(?i)\btotal knee\b",
+        r"(?i)\bspine\b", r"(?i)\bfracture\b", r"(?i)\bbone\b",
+        r"(?i)\borthopedi", r"(?i)\bimplant\s+orthopéd",
+        r"(?i)\blumbar\b", r"(?i)\bcervical\b", r"(?i)\bdiscal\b",
+    ],
+    "chirurgie-pediatrique": [
+        r"(?i)chirurgie\s+pédiatr", r"(?i)\bhernie\s+(inguinale|ombilicale)",
+        r"(?i)\bappendicit\b", r"(?i)\binvagination\b",
+        r"(?i)\bmalformation\s+(congénital|digestive)",
+        r"(?i)\blaparotomie\s+enfant\b", r"(?i)\bnéonatale?\b",
+        r"(?i)\bpédiatr", r"(?i)\benfant\b", r"(?i)\bnourrisson\b",
+        r"(?i)\bpediatric surgery\b", r"(?i)\bneonatal surgery\b",
+        r"(?i)\batrésie\b", r"(?i)\bocclusion\s+néonatal",
+        r"(?i)\bhydrocèle\b", r"(?i)\bcryptorchidie\b",
+    ],
+    "chirurgie-plastique": [
+        r"(?i)\breconstruct", r"(?i)\bgreffe\s+(de\s+peau|cutanée)",
+        r"(?i)\blambeau\b", r"(?i)\brhinoplast", r"(?i)\bmammoplast",
+        r"(?i)\bliposuccion\b", r"(?i)\bbrûlure\b", r"(?i)\bcicatrice\b",
+        r"(?i)\bkéloïde\b", r"(?i)chirurgie\s+(réparatrice|esthétique|plastique)",
+        r"(?i)\bmastectomie\b", r"(?i)\breconstruction\s+mammaire\b",
+        r"(?i)\bplastic surgery\b", r"(?i)\breconstruction\b",
+        r"(?i)\bskin graft\b", r"(?i)\bflap\b", r"(?i)\bbody contouring\b",
+    ],
+    "chirurgie-thoracique": [
+        r"(?i)\bthoraci", r"(?i)\bpoumon\b", r"(?i)\bplèvre\b",
+        r"(?i)\bmédiast", r"(?i)\btrachée\b", r"(?i)\bœsophage\b",
+        r"(?i)\blobectomie\b", r"(?i)\bpneumonectomie\b",
+        r"(?i)\bthoracoscopie\b", r"(?i)\bVATS\b",
+        r"(?i)\brésection\s+pulmonaire\b", r"(?i)lung\s+(resection|cancer)",
+        r"(?i)thoracic surgery", r"(?i)\besophageal\b", r"(?i)\bpneumothorax\b",
+        r"(?i)\bépanchement\s+pleural\b", r"(?i)\bempyème\b",
+    ],
+    "chirurgie-vasculaire": [
+        r"(?i)\baorte\b", r"(?i)\banévrisme\b", r"(?i)\bartériopathie\b",
+        r"(?i)\biscémie\b", r"(?i)\bischémie\b", r"(?i)\brévascularisation\b",
+        r"(?i)\bendoprothèse\b", r"(?i)\bEVAR\b", r"(?i)\bTEVAR\b",
+        r"(?i)\bvarice\b", r"(?i)\bartère\s+(fémorale|poplitée|iliaque)",
+        r"(?i)\bthrombose\s+(veineuse|artérielle)", r"(?i)\bclaudication\b",
+        r"(?i)\bamput", r"(?i)\bpied\s+diabétique\b", r"(?i)\bcarotide\b",
+        r"(?i)\bendarterect", r"(?i)vascular surgery", r"(?i)\baortic\b",
+        r"(?i)\baneurysm\b", r"(?i)peripheral\s+artery", r"(?i)\bbypass\b",
+        r"(?i)\bstenting\b", r"(?i)deep vein thrombosis", r"(?i)\bDVT\b",
+    ],
+    "dentiste": [
+        r"(?i)\bdentaire\b", r"(?i)\bdent\b", r"(?i)\bparodont",
+        r"(?i)\bcarie\b", r"(?i)\bendodont", r"(?i)\bimplant\s+dentaire\b",
+        r"(?i)\bbucco.dentaire\b", r"(?i)\bmuqueuse\s+buccale\b",
+        r"(?i)chirurgie\s+orale\b", r"(?i)\bodontologi", r"(?i)\bpulpe\b",
+        r"(?i)\bdental\b", r"(?i)\boral\s+(health|hygiene|surgery)",
+        r"(?i)\borthodont", r"(?i)\bpériodont", r"(?i)\bxérostomie\b",
+        r"(?i)\bbouche\b", r"(?i)\bgencive\b",
+    ],
+    "dermatologie": [
+        r"(?i)\bpeau\b", r"(?i)\bdermite\b", r"(?i)\bdermato",
+        r"(?i)\bpsoriasis\b", r"(?i)\beczéma\b", r"(?i)\bmélanome\b",
+        r"(?i)\bcarcinome\s+(basocellulaire|épidermoïde|cutané)",
+        r"(?i)\bacné\b", r"(?i)\burticaire\b", r"(?i)\bpemphigoïde\b",
+        r"(?i)\bdermatite\s+atopique\b", r"(?i)\bdupilumab\b",
+        r"(?i)\bbologène\b", r"(?i)\biksekizumab\b", r"(?i)\bpembrolizumab\b",
+        r"(?i)\bguselkumab\b", r"(?i)\bbiologiques?\s+cutanés?",
+        r"(?i)\bskin\b", r"(?i)\bdermatol", r"(?i)\batopic dermatitis\b",
+        r"(?i)\bpsoriasis\b", r"(?i)\bmelanoma\b", r"(?i)\becz",
+        r"(?i)\balopécie\b", r"(?i)\bvitiligo\b", r"(?i)\brosacea\b",
+        r"(?i)\bIL.17\b", r"(?i)\bIL.23\b",
+    ],
+    "endocrinologie": [
+        r"(?i)\bdiabète\b", r"(?i)\bthyroïde\b", r"(?i)\bsurrénale\b",
+        r"(?i)\bhypophyse\b", r"(?i)\binsuline\b", r"(?i)\bGLP.?1\b",
+        r"(?i)\bSGLT.?2\b", r"(?i)\bobésité\b", r"(?i)\bostéoporose\b",
+        r"(?i)\bhypothyroïdie\b", r"(?i)\bhyperthyroïdie\b",
+        r"(?i)\bHashimoto\b", r"(?i)\bBasedow\b", r"(?i)\bhormone\b",
+        r"(?i)\bHbA1c\b", r"(?i)\bglyc[eé]mie\b", r"(?i)\bpancréas\b",
+        r"(?i)\bsemaglutide\b", r"(?i)\bdulaglutide\b", r"(?i)\bliraglutide\b",
+        r"(?i)\bempagliflozin\b", r"(?i)\bdapagliflozin\b",
+        r"(?i)\bmetformine\b", r"(?i)\bsulfonylurée\b",
+        r"(?i)diabetes\b", r"(?i)\bthyroid\b", r"(?i)\bobesity\b",
+        r"(?i)\binsulin\b", r"(?i)\bhyperglycemia\b", r"(?i)\bA1C\b",
+        r"(?i)\bcushing\b", r"(?i)\bacromégalie\b", r"(?i)\bphéochromocytome\b",
+    ],
+    "gastro-enterologie": [
+        r"(?i)\bfoie\b", r"(?i)\bintestin\b", r"(?i)\bcolon\b",
+        r"(?i)\brectum\b", r"(?i)\bCrohn\b", r"(?i)\brectocolite\b",
+        r"(?i)\bMICI\b", r"(?i)\bhépatite\b", r"(?i)\bcirrhose\b",
+        r"(?i)\bulcère\b", r"(?i)\breflux\s+gastro", r"(?i)\bendoscopie\b",
+        r"(?i)\bcoloscopie\b", r"(?i)\bpancréas\b", r"(?i)\bcholangite\b",
+        r"(?i)\bhémorragie\s+digestive\b", r"(?i)\bdiverticulite\b",
+        r"(?i)\bstéatose\b", r"(?i)\bNASH\b", r"(?i)\bMASLD\b",
+        r"(?i)\bCBP\b", r"(?i)\bCSP\b", r"(?i)\bIBD\b",
+        r"(?i)\bCrohn.s\b", r"(?i)inflammatory bowel\b",
+        r"(?i)\bhepatitis\b", r"(?i)\bcirrhosis\b", r"(?i)\bpancreatitis\b",
+        r"(?i)\bcolorectal\b", r"(?i)\bgastric\b",
+    ],
+    "geriatrie": [
+        r"(?i)\bpersonne.s?\s+âgée.s?\b", r"(?i)\bgériatri",
+        r"(?i)\bdémence\b", r"(?i)\bchute\b", r"(?i)\bfragilité\b",
+        r"(?i)\bpolypharmacie\b", r"(?i)\bEHPAD\b", r"(?i)\bdépendance\b",
+        r"(?i)\bAlzheimer\b", r"(?i)\bostéoporose\b", r"(?i)\bsarcopénie\b",
+        r"(?i)\bdélirium\b", r"(?i)\bdénutrition\s+(gériatrique|âgée)",
+        r"(?i)\baging\b", r"(?i)\belderly\b", r"(?i)\bolder adult",
+        r"(?i)\bdementia\b", r"(?i)\bfall\b", r"(?i)\bfrailty\b",
+        r"(?i)\bnursing home\b", r"(?i)older patient",
+    ],
+    "gynecologie": [
+        r"(?i)\butérus\b", r"(?i)\bovaire\b", r"(?i)\bsein\b",
+        r"(?i)\bcol\s+de\s+l.utérus\b", r"(?i)\bménopause\b",
+        r"(?i)\bcontraception\b", r"(?i)\bendométriose\b",
+        r"(?i)\bgrossesse\b", r"(?i)\bfertilité\b", r"(?i)\bhystérectomie\b",
+        r"(?i)\bfibrome\b", r"(?i)\bHPV\b", r"(?i)\bcervical\b",
+        r"(?i)\bthérapie\s+hormonale\b", r"(?i)\bTHS\b",
+        r"(?i)\bovulation\b", r"(?i)\bmammographie\b", r"(?i)\bFIV\b",
+        r"(?i)\bcancer\s+(du\s+sein|ovarien|utérin|endométr)",
+        r"(?i)\bbreast cancer\b", r"(?i)\bovarian\b", r"(?i)\buterine\b",
+        r"(?i)\bmenopause\b", r"(?i)\bcontraceptive\b",
+        r"(?i)\bendometriosis\b", r"(?i)\bfertility\b",
+    ],
+    "hematologie": [
+        r"(?i)\banémie\b", r"(?i)\bleucem", r"(?i)\blymphome\b",
+        r"(?i)\bmyélome\b", r"(?i)\bhémophilie\b",
+        r"(?i)\bthrombocytopénie\b", r"(?i)\bplaquette\b",
+        r"(?i)\bmoelle\s+osseuse\b", r"(?i)\bgreffe\s+(de\s+moelle|hématopo)",
+        r"(?i)\btransfusion\b", r"(?i)\bcoagulation\b",
+        r"(?i)\banticoagulant\b", r"(?i)\bhémoglobine\b",
+        r"(?i)\bdrépanocytose\b", r"(?i)\bthalassémie\b",
+        r"(?i)\bmyélofibrose\b", r"(?i)\bLMC\b", r"(?i)\bLLA\b",
+        r"(?i)\bLNH\b", r"(?i)\bCAR.T\b", r"(?i)\bleukemia\b",
+        r"(?i)\blymphoma\b", r"(?i)\bmyeloma\b", r"(?i)\banemia\b",
+        r"(?i)\bhematopoietic\b", r"(?i)\bblood cancer\b",
+    ],
+    "infectiologie": [
+        r"(?i)\binfection\b", r"(?i)\bbactéri", r"(?i)\bviral\b",
+        r"(?i)\bantibiotique\b", r"(?i)\bantiviral\b", r"(?i)\bsepsis\b",
+        r"(?i)\bpneumonie\b", r"(?i)\btuberculose\b", r"(?i)\bVIH\b",
+        r"(?i)\bhépatite\b", r"(?i)\bvaccination\b", r"(?i)\bvaccin\b",
+        r"(?i)\bprophylaxie\b", r"(?i)\brésistance\s+aux\s+antibiotiques\b",
+        r"(?i)\bépidémie\b", r"(?i)\bfongique\b", r"(?i)\bparasitose\b",
+        r"(?i)\bCOVID\b", r"(?i)\bRSV\b", r"(?i)\binfluenza\b",
+        r"(?i)\bEBV\b", r"(?i)\bCMV\b", r"(?i)\bHIV\b",
+        r"(?i)antimicrobial resistance\b", r"(?i)\bseptic\b",
+        r"(?i)\binfectious\b", r"(?i)\bpathogen\b", r"(?i)\bvaccine\b",
+        r"(?i)\bATB\b", r"(?i)\bMRSA\b", r"(?i)\bBMR\b",
+    ],
+    "infirmiers": [
+        r"(?i)\bsoins\s+infirmiers\b", r"(?i)\bIDEL\b", r"(?i)\bIDE\b",
+        r"(?i)\bpansement\b", r"(?i)\bplaie\b", r"(?i)\bstomie\b",
+        r"(?i)\bperfusion\b", r"(?i)\binjection\b", r"(?i)\bcathéter\b",
+        r"(?i)\bnursing\b", r"(?i)\binfirmier", r"(?i)\bsoins\s+à\s+domicile\b",
+        r"(?i)\bHAD\b", r"(?i)\bescarre\b", r"(?i)\bdouleur.*patient",
+        r"(?i)nursing care", r"(?i)wound care", r"(?i)home care",
+    ],
+    "kinesitherapie": [
+        r"(?i)\bkinésithérap", r"(?i)\bphysiothérap", r"(?i)\brééducation\b",
+        r"(?i)\bexercice\s+thérapeutique\b", r"(?i)\blombalgie\b",
+        r"(?i)\bréhabilitation\b", r"(?i)\bmobilisation\b",
+        r"(?i)\bélectrostimulation\b", r"(?i)\bmassage\b",
+        r"(?i)\bphysical therapy\b", r"(?i)\brehabilitation\b",
+        r"(?i)\bexercise therapy\b", r"(?i)\bmusculoskeletal\b",
+        r"(?i)\bmanipulation\b", r"(?i)\bstrengthening\b",
+    ],
+    "medecine-generale": [
+        r"(?i)\bmédecine\s+générale\b", r"(?i)\bmédecin\s+généraliste\b",
+        r"(?i)\bsoins\s+primaires\b", r"(?i)\bprévention\b",
+        r"(?i)\bdépistage\b", r"(?i)\bvaccination\b", r"(?i)\bcomorbidité\b",
+        r"(?i)\bpolymédication\b", r"(?i)\bambulat", r"(?i)\bprimary care\b",
+        r"(?i)\bgeneral practice\b", r"(?i)\bGP\b", r"(?i)\bscreening\b",
+        r"(?i)\bhypertension\b", r"(?i)\bdiabète\b", r"(?i)\bcholestérol\b",
+        r"(?i)\bhypercholestér", r"(?i)\bobésité\b", r"(?i)\bfumeur\b",
+        r"(?i)\btabac\b", r"(?i)\bdépression\b", r"(?i)\blombalgie\b",
+        r"(?i)\bantibiotique\b",
+    ],
+    "medecine-interne": [
+        r"(?i)\bmédecine\s+interne\b", r"(?i)\bvascularite\b",
+        r"(?i)\bsarcoïdose\b", r"(?i)\bamylose\b", r"(?i)\bauto.immune\b",
+        r"(?i)\blupus\b", r"(?i)\bSjögren\b", r"(?i)\bpolyarthrite\b",
+        r"(?i)\binflammation\s+systémique\b", r"(?i)\bfièvre\s+prolongée\b",
+        r"(?i)\bhémopathie\b", r"(?i)\bvascularitis\b",
+        r"(?i)systemic\s+(lupus|autoimmune|inflammation)",
+        r"(?i)\bsarcoidosis\b", r"(?i)\bamyloidosis\b",
+        r"(?i)\bautoimmune\b", r"(?i)\bconnective tissue\b",
+    ],
+    "medecine-physique": [
+        r"(?i)\bMPR\b", r"(?i)\bmédecine\s+physique\b",
+        r"(?i)\brééducation\s+(AVC|neurologique|orthopédique)",
+        r"(?i)\bspasticité\b", r"(?i)\bparaplégi", r"(?i)\bhandicap\b",
+        r"(?i)\bappareillage\b", r"(?i)\blombalgie\b",
+        r"(?i)\bdouleur\s+chronique\b", r"(?i)\bfibromyalgie\b",
+        r"(?i)\brehabilitation\b", r"(?i)\bneurological rehabilitation\b",
+        r"(?i)\bspinal cord\b", r"(?i)\bstroke rehabilitation\b",
+        r"(?i)\bprosthesis\b", r"(?i)\borthotics\b",
+    ],
+    "medecine-urgences": [
+        r"(?i)\burgence\b", r"(?i)\bréanimation\b", r"(?i)\btrauma\b",
+        r"(?i)\barrêt\s+cardiaque\b", r"(?i)\bRCP\b", r"(?i)\bchoc\b",
+        r"(?i)\bsepsis\b", r"(?i)\bpolytraumatisme\b", r"(?i)\bSMUR\b",
+        r"(?i)\bintoxication\b", r"(?i)\bAVC\s+aigu\b",
+        r"(?i)\baccident\s+vasculaire\s+cérébral\b",
+        r"(?i)\btraumatic\b", r"(?i)emergency\b", r"(?i)\bshock\b",
+        r"(?i)cardiac arrest\b", r"(?i)\bICU\b", r"(?i)\bcritical care\b",
+        r"(?i)\bpre.hospital\b", r"(?i)\bEMS\b", r"(?i)\bresuscitation\b",
+    ],
+    "nephrologie": [
+        r"(?i)\brein\b", r"(?i)\binsufficance\s+rénale\b",
+        r"(?i)\binsuffisance\s+rénale\b", r"(?i)\bdialyse\b",
+        r"(?i)\btransplantation\s+rénale\b", r"(?i)\bprotéinurie\b",
+        r"(?i)\bglomérulonéphrite\b", r"(?i)\bnéphrologie\b",
+        r"(?i)\bcréatinine\b", r"(?i)\bDFG\b", r"(?i)\beGFR\b",
+        r"(?i)\bhématurie\b", r"(?i)\bdialysis\b", r"(?i)\brenal\b",
+        r"(?i)\bkidney\b", r"(?i)\bnephropathy\b", r"(?i)\bproteinuria\b",
+        r"(?i)kidney transplant", r"(?i)\bhémodialyse\b",
+        r"(?i)\bnéphrotique\b",
+    ],
+    "neurochirurgie": [
+        r"(?i)\bneurochirurgi", r"(?i)\btumeur\s+cérébrale\b",
+        r"(?i)\bméningiome\b", r"(?i)\bglioblastome\b",
+        r"(?i)\bherniation\s+discale\b", r"(?i)\bhernie\s+discale\b",
+        r"(?i)\brachidie\b", r"(?i)\bcraniectomie\b",
+        r"(?i)\banévrisme\s+cérébral\b", r"(?i)\bMAV\b",
+        r"(?i)\bneurosurger", r"(?i)\bbrain\s+(tumor|surgery)",
+        r"(?i)\bspinal surgery\b", r"(?i)\bcraniotomy\b",
+        r"(?i)\bdisk herniation\b", r"(?i)\bhydrocephalus\b",
+        r"(?i)\bhydrocéphalie\b", r"(?i)\blaminectomie\b",
+    ],
+    "neurologie": [
+        r"(?i)\bAVC\b", r"(?i)\baccident\s+vasculaire\s+cérébral\b",
+        r"(?i)\bsclérose\s+en\s+plaques\b", r"(?i)\bSEP\b",
+        r"(?i)\bépilepsie\b", r"(?i)\bParkinson\b", r"(?i)\bAlzheimer\b",
+        r"(?i)\bmigraine\b", r"(?i)\bneuropathie\b", r"(?i)\bdémence\b",
+        r"(?i)\btremblement\b", r"(?i)\bmyasthénie\b",
+        r"(?i)\bcerveau\b", r"(?i)\bneurologique\b", r"(?i)\bIRM\s+cérébrale\b",
+        r"(?i)\bstroke\b", r"(?i)\bmultiple sclerosis\b",
+        r"(?i)\bepilepsy\b", r"(?i)\bneurology\b", r"(?i)\bdementia\b",
+        r"(?i)\bneuropathy\b", r"(?i)\bmigraine\b",
+        r"(?i)\bnatalizumab\b", r"(?i)\bocrelizumab\b",
+    ],
+    "oncologie": [
+        r"(?i)\bcancer\b", r"(?i)\btumeur\b", r"(?i)\bchimiothérap",
+        r"(?i)\bimmunothérap", r"(?i)\banticorps\s+monoclonal",
+        r"(?i)\bpembrolizumab\b", r"(?i)\bnivolumab\b",
+        r"(?i)\bbevacizumab\b", r"(?i)\bhormono.thérap",
+        r"(?i)\bmétastase\b", r"(?i)\bcarcinome\b", r"(?i)\blymphome\b",
+        r"(?i)\bsarcome\b", r"(?i)\bchimioth",
+        r"(?i)\bsurvie\s+(globale|sans\s+progression)", r"(?i)\bOGS\b",
+        r"(?i)\boncologi", r"(?i)\btumor\b", r"(?i)\bmalignant\b",
+        r"(?i)\bchemotherapy\b", r"(?i)\bimmunotherapy\b",
+        r"(?i)\bcancer\b", r"(?i)\bcheckpoint\s+inhibitor",
+        r"(?i)\btargeted therapy\b", r"(?i)\bCAR.T\b",
+        r"(?i)\bADC\b", r"(?i)\bantibody.drug conjugate",
+    ],
+    "ophtalmologie": [
+        r"(?i)\bœil\b", r"(?i)\bvision\b", r"(?i)\brétine\b",
+        r"(?i)\bglaucome\b", r"(?i)\bcataracte\b", r"(?i)\bDMLA\b",
+        r"(?i)\bkératocône\b", r"(?i)\buvéite\b", r"(?i)\bcornée\b",
+        r"(?i)\bconjonctivite\b", r"(?i)\bmyopie\b", r"(?i)\bastigmatisme\b",
+        r"(?i)\bophtalmologi", r"(?i)\bantiangiogénique\b",
+        r"(?i)\banti.VEGF\b", r"(?i)\bintraocular\b",
+        r"(?i)\bretinal\b", r"(?i)\bglaucoma\b", r"(?i)\bcataract\b",
+        r"(?i)\bAge.related macular\b", r"(?i)\bAMD\b",
+        r"(?i)\boptic nerve\b", r"(?i)\bocular\b",
+    ],
+    "orl": [
+        r"(?i)\boreille\b", r"(?i)\bnez\b", r"(?i)\bgorge\b",
+        r"(?i)\bsinusite\b", r"(?i)\botite\b", r"(?i)\brhinite\b",
+        r"(?i)\blarynx\b", r"(?i)\bpharynx\b", r"(?i)\bvertige\b",
+        r"(?i)\bsurdité\b", r"(?i)\btonsill", r"(?i)\bamygdale\b",
+        r"(?i)\bapnée\s+du\s+sommeil\b", r"(?i)\bSAOS\b", r"(?i)\bSAS\b",
+        r"(?i)\botolaryngol", r"(?i)\bORL\b",
+        r"(?i)hearing loss\b", r"(?i)\bsinusitis\b", r"(?i)\brhinitis\b",
+        r"(?i)\btinnitus\b", r"(?i)\bvertigo\b", r"(?i)sleep apnea\b",
+        r"(?i)\bthyroïde\b.*\bchirurgi", r"(?i)\bparotide\b",
+    ],
+    "pediatrie": [
+        r"(?i)\benfant\b", r"(?i)\bpédiatr", r"(?i)\bnourrisson\b",
+        r"(?i)\bnouveau.né\b", r"(?i)\bnéonatal\b", r"(?i)\bcroissance\b",
+        r"(?i)\bvaccin\b", r"(?i)\bvaccination\b", r"(?i)\bprématuré\b",
+        r"(?i)\bpédiatrique\b", r"(?i)\bpuericulture\b",
+        r"(?i)\bchildren\b", r"(?i)\bpediatric\b", r"(?i)\bneonatal\b",
+        r"(?i)\binfant\b", r"(?i)\bjuvenile\b", r"(?i)\bchildhood\b",
+        r"(?i)\bnewborn\b", r"(?i)\bvaccine.*child",
+    ],
+    "pharmacien": [
+        r"(?i)\bmédicament\b", r"(?i)\bpharmacologi", r"(?i)\binteraction\s+médicament",
+        r"(?i)\bpharmacocinétique\b", r"(?i)\bdispensation\b",
+        r"(?i)\bofficine\b", r"(?i)\bgénérique\b", r"(?i)\bsubstitution\b",
+        r"(?i)\bdéprescription\b", r"(?i)\bpharmacie\b",
+        r"(?i)\bdrug.drug interaction", r"(?i)\bpharmacist\b",
+        r"(?i)\bprescription\b", r"(?i)\bpolypharmacy\b",
+        r"(?i)\bdosage\s+(régime|recommend)", r"(?i)\bbioavailability\b",
+        r"(?i)\bAMM\b", r"(?i)\bRCP\s+médicament\b",
+    ],
+    "pneumologie": [
+        r"(?i)\bpoumon\b", r"(?i)\bbronche\b", r"(?i)\basthme\b",
+        r"(?i)\bBPCO\b", r"(?i)\bfibrose\s+pulmonaire\b",
+        r"(?i)\bpneumonie\b", r"(?i)\btuberculose\b", r"(?i)\bCOVID\b",
+        r"(?i)\brespiratoire\b", r"(?i)\bventilation\b",
+        r"(?i)\binhalateur\b", r"(?i)\bcorticoïdes\s+inhalés\b",
+        r"(?i)\boxygénothérapie\b", r"(?i)\bHTP\b",
+        r"(?i)\blung\b", r"(?i)\basthma\b", r"(?i)\bCOPD\b",
+        r"(?i)\bpulmonary\b", r"(?i)\brespiratory\b",
+        r"(?i)\bpneumonia\b", r"(?i)\binhaler\b",
+        r"(?i)\binterstitial lung\b", r"(?i)\bIPF\b",
+        r"(?i)\bpulmonary embolism\b", r"(?i)\bémbolie\s+pulmonaire\b",
+    ],
+    "psychiatrie": [
+        r"(?i)\bdépression\b", r"(?i)\banxiété\b", r"(?i)\bbipolaire\b",
+        r"(?i)\bschizophrénie\b", r"(?i)\bpsychose\b",
+        r"(?i)\bantidépresseur\b", r"(?i)\bantipsychotique\b",
+        r"(?i)\banxiolytique\b", r"(?i)\bTOC\b", r"(?i)\bPTSD\b",
+        r"(?i)\blithium\b", r"(?i)\baddiction\b",
+        r"(?i)\bmental\s+health\b", r"(?i)\bpsychiatri",
+        r"(?i)\bdepression\b", r"(?i)\banxiety\b",
+        r"(?i)\bschizophrenia\b", r"(?i)\bbipolar\b",
+        r"(?i)\bSSRI\b", r"(?i)\bSNRI\b", r"(?i)\bketamine\b",
+        r"(?i)\bpsilocybin\b", r"(?i)\btranscranial\b", r"(?i)\bTMS\b",
+        r"(?i)\bsuicide\b", r"(?i)\bautisme\b", r"(?i)\bTDA.?H\b",
+    ],
+    "radiologie": [
+        r"(?i)\bimagerie\b", r"(?i)\bIRM\b", r"(?i)\bscanner\b",
+        r"(?i)\béchographie\b", r"(?i)\bradiologi", r"(?i)\bTEP.scan\b",
+        r"(?i)\binterventionnelle\b", r"(?i)\bémbolisation\b",
+        r"(?i)\bartériographie\b", r"(?i)\bcontraste\b",
+        r"(?i)\bdose\s+(de\s+rayonnement|d.irradiation)", r"(?i)\bAI\s+radiol",
+        r"(?i)\bMRI\b", r"(?i)\bCT\s+scan\b", r"(?i)\bultrasound\b",
+        r"(?i)\bradiology\b", r"(?i)\bimaging\b", r"(?i)\bPET\b",
+        r"(?i)interventional radiol", r"(?i)\bcontrast\s+agent\b",
+    ],
+    "rhumatologie": [
+        r"(?i)\barthrite\b", r"(?i)\bpolyarthrite\b",
+        r"(?i)\bspondylarthrite\b", r"(?i)\blupus\b", r"(?i)\bgoutte\b",
+        r"(?i)\bostéoporose\b", r"(?i)\bbiothérapie\b",
+        r"(?i)\btocilizumab\b", r"(?i)\badalimumab\b", r"(?i)\banti.TNF\b",
+        r"(?i)\bcolchicine\b", r"(?i)\bsyNovite\b", r"(?i)\bcartilage\b",
+        r"(?i)\bok itinumab\b", r"(?i)\babatacept\b", r"(?i)\bbaricitinib\b",
+        r"(?i)\bupadacitinib\b", r"(?i)\bJAK\s+inhibit",
+        r"(?i)\brheumatol", r"(?i)\barthritis\b", r"(?i)\bgout\b",
+        r"(?i)\bosteoporosis\b", r"(?i)\bJIA\b", r"(?i)\bspA\b",
+        r"(?i)\bPsA\b", r"(?i)\bRA\b.*(?:biologic|DMARDs?)",
+        r"(?i)\bfibromyalgie\b",
+    ],
+    "sage-femme": [
+        r"(?i)\bgrossesse\b", r"(?i)\bobstétrique\b", r"(?i)\baccouchement\b",
+        r"(?i)\bpérinatale?\b", r"(?i)\bmaternité\b", r"(?i)\bnéonatologie\b",
+        r"(?i)\bprématurité\b", r"(?i)\bfœtus\b", r"(?i)\banténatal\b",
+        r"(?i)\bpostpartum\b", r"(?i)\béclampsie\b",
+        r"(?i)\bhémorragie\s+du\s+post.partum\b", r"(?i)\bdiabète\s+gestationnel\b",
+        r"(?i)\bpregnancy\b", r"(?i)\bobstetric\b", r"(?i)\bmaternal\b",
+        r"(?i)\bneonatal\b", r"(?i)\bprenatal\b", r"(?i)\bfetal\b",
+        r"(?i)\bpreeclampsia\b", r"(?i)\bgestational\b",
+    ],
+    "urologie": [
+        r"(?i)\bprostate\b", r"(?i)\bvésicale?\b", r"(?i)\bvésicale?\b",
+        r"(?i)\burinaire\b", r"(?i)\blithiase\b", r"(?i)\bincontinence\b",
+        r"(?i)\bcancer\s+de\s+la\s+prostate\b", r"(?i)\bPSA\b",
+        r"(?i)\btesticulaire\b", r"(?i)\bhyperplasie\b.*\bprostate\b",
+        r"(?i)\brobotic\s+surgery\b", r"(?i)\burologi",
+        r"(?i)\bprostate\b", r"(?i)\bbladder\b", r"(?i)\bkidney stone\b",
+        r"(?i)\burinary\b", r"(?i)\boveractive bladder\b",
+        r"(?i)\bpenile\b", r"(?i)\berectile\b", r"(?i)\btesticular\b",
+        r"(?i)\bnephrectomie\b", r"(?i)\bcystoscopie\b",
+    ],
+}
+
+_SPECIALTY_PREFILTER_RES: dict[str, list[re.Pattern]] = {
+    slug: [re.compile(p) for p in patterns]
+    for slug, patterns in SPECIALTY_PREFILTER_KEYWORDS.items()
+}
+
+
+def specialty_prefilter(title: str, specialty_slug: str) -> tuple[bool, str | None]:
+    """
+    Filtre d'inclusion par spécialité — à appliquer uniquement sur les sources 'tous'.
+    Retourne (keep, reason). keep=False si aucun keyword de la spécialité n'est trouvé.
+    """
+    patterns = _SPECIALTY_PREFILTER_RES.get(specialty_slug)
+    if not patterns:
+        return True, None  # spécialité sans filtre défini → laisser passer
+    if any(p.search(title) for p in patterns):
+        return True, None
+    return False, f"specialty_mismatch:{specialty_slug}"
+
+
+# ---------------------------------------------------------------------------
 # Pré-filtre local (0 appel API)
 # ---------------------------------------------------------------------------
 
@@ -8292,8 +8741,18 @@ _ANSM_DM_LIBERAL_EXCLUDE_PATTERNS = [
 _ANSM_DM_LIBERAL_EXCLUDE_RES = [re.compile(p) for p in _ANSM_DM_LIBERAL_EXCLUDE_PATTERNS]
 
 
-def pre_filter_candidate(title: str, source: str | None = None) -> tuple[bool, str | None]:
-    """Retourne (keep, reason). Si keep=False, pas besoin d'appel LLM."""
+def pre_filter_candidate(
+    title: str,
+    source: str | None = None,
+    specialty_slug: str | None = None,
+    source_is_tous: bool = False,
+) -> tuple[bool, str | None]:
+    """Retourne (keep, reason). Si keep=False, pas besoin d'appel LLM.
+
+    specialty_slug + source_is_tous : si la source est une source "tous"
+    (applicable à toutes spécialités), le titre doit contenir au moins un
+    terme de la spécialité courante, sinon il est éliminé sans appel LLM.
+    """
     t = (title or "").strip()
     if not t:
         return False, "empty_title"
@@ -8316,6 +8775,11 @@ def pre_filter_candidate(title: str, source: str | None = None) -> tuple[bool, s
     cfg = get_source_config(source)
     if cfg.get("require_whitelist") and not _passes_jorf_whitelist(t):
         return False, "jorf_no_health_term"
+    # Filtre spécialité : sources "tous" sans pertinence pour la spé courante
+    if specialty_slug and source_is_tous:
+        keep, reason = specialty_prefilter(t, specialty_slug)
+        if not keep:
+            return False, reason
     return True, None
 
 

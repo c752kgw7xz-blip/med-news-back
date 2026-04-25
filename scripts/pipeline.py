@@ -9,7 +9,7 @@ Sous-commandes :
 
 Workflow spé par spé :
     python scripts/pipeline.py collect --specialty cardiologie --days 180
-    python scripts/pipeline.py prefilter
+    python scripts/pipeline.py prefilter --specialty cardiologie
     python scripts/pipeline.py llm --limit 200
 
 Collecte globale :
@@ -144,33 +144,90 @@ def cmd_collect(args: argparse.Namespace) -> None:
 # Sous-commande : prefilter
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _build_source_hint_map() -> dict[str, str]:
+    """Retourne {source_key: specialty_hint} pour toutes les sources connues."""
+    from app.sources import ALL_FEEDS, API_SOURCES
+    from app.pubmed_collector import PUBMED_SOURCES
+    mapping: dict[str, str] = {}
+    for src in (*ALL_FEEDS, *PUBMED_SOURCES, *API_SOURCES):
+        key = src.get("source") or src.get("id") or ""
+        hint = src.get("specialty_hint", "tous")
+        if key:
+            mapping[key] = hint
+    return mapping
+
+
 def cmd_prefilter(args: argparse.Namespace) -> None:
     from app.llm_analysis import pre_filter_candidate
 
-    print(f"{'[DRY-RUN] ' if args.dry_run else ''}Connexion à Neon DB…")
+    specialty_slug: str | None = getattr(args, "specialty", None)
+    source_hint_map = _build_source_hint_map()
+
+    # Sources "tous" : appliquées à toutes les spécialités → filtre spécialité activé
+    tous_sources = {s for s, h in source_hint_map.items() if h == "tous"}
+    # Sources propres à la spécialité demandée
+    specialty_sources = (
+        {s for s, h in source_hint_map.items() if h == specialty_slug}
+        if specialty_slug else set()
+    )
+    # Sources à interroger : tous + propres à la spé (si filtre actif)
+    active_sources: set[str] | None = (
+        tous_sources | specialty_sources if specialty_slug else None
+    )
+
+    dry = args.dry_run
+    label = "[DRY-RUN] " if dry else ""
+    spé_label = f" — spécialité : {specialty_slug}" if specialty_slug else " — toutes spécialités"
+    print(f"{label}Connexion à Neon DB…{spé_label}")
     t0 = time.time()
 
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) FROM candidates WHERE status = 'NEW';")
+            if active_sources:
+                cur.execute(
+                    "SELECT COUNT(*) FROM candidates WHERE status = 'NEW' AND source = ANY(%s);",
+                    (list(active_sources),),
+                )
+            else:
+                cur.execute("SELECT COUNT(*) FROM candidates WHERE status = 'NEW';")
             total_new = cur.fetchone()[0]
 
-        print(f"📊  {total_new} candidats NEW à traiter (batch={args.batch})\n")
+        if specialty_slug:
+            print(
+                f"📊  {total_new} candidats NEW"
+                f" ({len(specialty_sources)} sources spé + {len(tous_sources)} sources tous)"
+                f"  batch={args.batch}\n"
+            )
+        else:
+            print(f"📊  {total_new} candidats NEW à traiter (batch={args.batch})\n")
 
         eliminated = kept = batch_n = 0
         last_id = "00000000-0000-0000-0000-000000000000"
 
         while True:
             with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT id, title_raw, source
-                    FROM candidates
-                    WHERE status = 'NEW' AND id > %s::uuid
-                    ORDER BY id LIMIT %s;
-                    """,
-                    (last_id, args.batch),
-                )
+                if active_sources:
+                    cur.execute(
+                        """
+                        SELECT id, title_raw, source
+                        FROM candidates
+                        WHERE status = 'NEW'
+                          AND source = ANY(%s)
+                          AND id > %s::uuid
+                        ORDER BY id LIMIT %s;
+                        """,
+                        (list(active_sources), last_id, args.batch),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        SELECT id, title_raw, source
+                        FROM candidates
+                        WHERE status = 'NEW' AND id > %s::uuid
+                        ORDER BY id LIMIT %s;
+                        """,
+                        (last_id, args.batch),
+                    )
                 rows = cur.fetchall()
 
             if not rows:
@@ -181,13 +238,20 @@ def cmd_prefilter(args: argparse.Namespace) -> None:
             to_eliminate: list[str] = []
 
             for (cid, title_raw, source) in rows:
-                keep, _ = pre_filter_candidate(title_raw or "", source=source or "")
+                src = source or ""
+                is_tous = src in tous_sources
+                keep, _ = pre_filter_candidate(
+                    title_raw or "",
+                    source=src,
+                    specialty_slug=specialty_slug,
+                    source_is_tous=is_tous,
+                )
                 if not keep:
                     to_eliminate.append(str(cid))
                 else:
                     kept += 1
 
-            if to_eliminate and not args.dry_run:
+            if to_eliminate and not dry:
                 with conn.cursor() as cur:
                     cur.execute(
                         "UPDATE candidates SET status = 'LLM_DONE' WHERE id = ANY(%s::uuid[]);",
@@ -201,17 +265,17 @@ def cmd_prefilter(args: argparse.Namespace) -> None:
             print(
                 f"  Lot {batch_n:>3} | traités {processed:>5}/{total_new}"
                 f"  ({pct:>3}%) | éliminés {eliminated:>5} | conservés {kept:>5}"
-                + (" [DRY-RUN]" if args.dry_run else "")
+                + (" [DRY-RUN]" if dry else "")
             )
 
             if len(rows) < args.batch:
                 break
 
     elapsed = round(time.time() - t0, 1)
-    print(f"\n{'[DRY-RUN] ' if args.dry_run else ''}✅  Terminé en {elapsed}s")
+    print(f"\n{label}✅  Terminé en {elapsed}s")
     print(f"   Éliminés  : {eliminated}  (→ LLM_DONE, 0 appel LLM)")
     print(f"   Conservés : {kept}  (→ restent NEW, prêts pour LLM)")
-    if args.dry_run:
+    if dry:
         print("   ⚠️  Dry-run : aucune écriture en base.")
     else:
         pct_elim = round(eliminated / (eliminated + kept) * 100) if (eliminated + kept) else 0
@@ -503,6 +567,8 @@ def main() -> None:
     p_col.add_argument("--days", type=int, default=180, help="Fenêtre temporelle en jours (défaut: 180)")
 
     p_pre = sub.add_parser("prefilter", help="Élimine les candidats hors-scope (0 LLM)")
+    p_pre.add_argument("--specialty", metavar="SLUG", default=None,
+                       help="Filtre spécialité : active le filtre par mots-clés sur les sources 'tous'")
     p_pre.add_argument("--batch", type=int, default=500, help="Taille de lot (défaut 500)")
     p_pre.add_argument("--dry-run", action="store_true", help="Simulation sans écriture DB")
 

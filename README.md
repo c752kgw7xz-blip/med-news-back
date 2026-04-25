@@ -59,7 +59,8 @@ Le pipeline se lance depuis la racine du projet via `scripts/pipeline.py`.
 python3 scripts/pipeline.py collect --specialty cardiologie --days 180
 
 # 2. Pré-filtre — élimine les candidats hors-scope sans appel LLM
-python3 scripts/pipeline.py prefilter
+# --specialty active le filtre par mots-clés sur les 28 sources "tous"
+python3 scripts/pipeline.py prefilter --specialty cardiologie
 
 # 3. Analyse LLM — Claude score et classe tous les candidats NEW
 python3 scripts/pipeline.py llm
@@ -69,7 +70,7 @@ python3 scripts/pipeline.py llm
 
 ```bash
 python3 scripts/pipeline.py collect --all --days 180
-python3 scripts/pipeline.py prefilter
+python3 scripts/pipeline.py prefilter  # sans --specialty : traite toutes spécialités, pas de filtre mot-clé
 python3 scripts/pipeline.py llm
 ```
 
