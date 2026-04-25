@@ -97,7 +97,7 @@ def _fda_date_range(days: int) -> str:
     return f"[{since}+TO+{today}]"
 
 
-def _collect_fda_pma(days: int = 90, source_cfg: dict | None = None, **_) -> dict[str, int]:
+def _collect_fda_pma(days: int = 120, source_cfg: dict | None = None, **_) -> dict[str, int]:
     stats = {"fetched": 0, "inserted": 0, "skipped": 0, "errors": 0}
     specialty_hint = (source_cfg or {}).get("specialty_hint", "tous")
     # Pas de filtre advisory_committee : PMA Class III = ~50 approbations/an toutes spés
@@ -182,7 +182,7 @@ def _collect_fda_pma(days: int = 90, source_cfg: dict | None = None, **_) -> dic
     return stats
 
 
-def _collect_fda_510k(days: int = 90, source_cfg: dict | None = None, **_) -> dict[str, int]:
+def _collect_fda_510k(days: int = 120, source_cfg: dict | None = None, **_) -> dict[str, int]:
     stats = {"fetched": 0, "inserted": 0, "skipped": 0, "errors": 0}
     specialty_hint = (source_cfg or {}).get("specialty_hint", "tous")
     # Pas de filtre advisory_committee : couvre toutes spécialités.
@@ -320,7 +320,7 @@ def _search_eudamed_class3(client: httpx.Client) -> list[dict]:
     return all_results
 
 
-def _collect_eudamed(days: int = 90, source_cfg: dict | None = None, **_) -> dict[str, int]:
+def _collect_eudamed(days: int = 120, source_cfg: dict | None = None, **_) -> dict[str, int]:
     stats = {"fetched": 0, "inserted": 0, "skipped": 0, "errors": 0}
     since = date.today() - timedelta(days=days)
     specialty_hint = (source_cfg or {}).get("specialty_hint", "tous")
@@ -462,7 +462,7 @@ def _ema_match_specialty(atc: str, ta_mesh: str, atc_prefixes: list[str], mesh_k
     return False
 
 
-def _collect_ema_dhpc(days: int = 90, source_cfg: dict | None = None) -> dict[str, int]:
+def _collect_ema_dhpc(days: int = 120, source_cfg: dict | None = None) -> dict[str, int]:
     """Dear Healthcare Professional Communications EMA dans la fenêtre `days`.
     """
     cfg = source_cfg or {}
@@ -572,7 +572,7 @@ _API_DISPATCH: dict[str, Any] = {
 }
 
 
-def collect_all_api(days: int = 90) -> dict[str, dict]:
+def collect_all_api(days: int = 120) -> dict[str, dict]:
     """Collecte toutes les sources API (API_SOURCES dans sources.py).
 
     Passe `source_cfg` à chaque handler — les fonctions EMA s'en servent pour
@@ -598,13 +598,13 @@ def collect_all_api(days: int = 90) -> dict[str, dict]:
 # COLLECTE GLOBALE
 # =============================================================================
 
-def collect_all(days: int = 35) -> dict[str, Any]:
+def collect_all(days: int = 120) -> dict[str, Any]:
     """
     Lance l'intégralité de la collecte : RSS + PubMed + Web scraping + API.
 
     Utilisé par la route /collect/all et le job global.
     Les jours passés en argument s'appliquent à toutes les sources.
-    Les sources API (FDA/EUDAMED) utilisent days=90 par défaut si days < 35
+    Les sources API (FDA/EUDAMED) utilisent au minimum 120 jours
     pour capturer les approbations récentes (publications plus lentes).
     """
     from app.rss_collector import collect_all_rss
@@ -631,7 +631,7 @@ def collect_all(days: int = 35) -> dict[str, Any]:
         logger.error("[collector] Web scraping échoué : %s", e)
         report["web"] = {"error": str(e)}
 
-    api_days = max(days, 90)
+    api_days = max(days, 120)
     try:
         report["api"] = collect_all_api(days=api_days)
     except Exception as e:
@@ -645,7 +645,7 @@ def collect_all(days: int = 35) -> dict[str, Any]:
 # COLLECTE PAR SPÉCIALITÉ (sources uniquement — sans LLM ni réglementation)
 # =============================================================================
 
-def collect_by_specialty_sources(specialty_slug: str, days: int = 2) -> dict[str, Any]:
+def collect_by_specialty_sources(specialty_slug: str, days: int = 120) -> dict[str, Any]:
     """
     Collecte toutes les sources d'innovation filtrées par specialty_hint.
 
@@ -688,7 +688,7 @@ def collect_by_specialty_sources(specialty_slug: str, days: int = 2) -> dict[str
 
     # ── API filtré par spécialité ─────────────────────────────────────────
     api_results: dict = {}
-    api_days = max(days, 90)
+    api_days = max(days, 120)
     for src in API_SOURCES:
         if _matches(src.get("specialty_hint", "")):
             fn = _API_DISPATCH.get(src["collector"])

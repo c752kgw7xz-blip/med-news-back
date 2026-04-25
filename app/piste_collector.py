@@ -148,7 +148,7 @@ def _kali_filter(title: str) -> bool:
     return any(kw in t for kw in KALI_KEYWORDS)
 
 
-def collect_kali(days: int = 35) -> dict[str, int]:
+def collect_kali(days: int = 120) -> dict[str, int]:
     """
     Collecte les avenants et accords KALI relatifs à la médecine libérale.
 
@@ -234,7 +234,7 @@ def collect_kali(days: int = 35) -> dict[str, int]:
 # JORF — Journal Officiel de la République Française
 # ---------------------------------------------------------------------------
 
-def collect_jorf(days: int = 35) -> dict[str, int]:
+def collect_jorf(days: int = 120) -> dict[str, int]:
     """
     Collecte les textes JORF (Journal Officiel) via l'API PISTE.
 
@@ -309,7 +309,7 @@ def collect_jorf(days: int = 35) -> dict[str, int]:
 # Collecteur global PISTE
 # ---------------------------------------------------------------------------
 
-def collect_all_piste_fonds(days: int = 35) -> dict[str, Any]:
+def collect_all_piste_fonds(days: int = 120) -> dict[str, Any]:
     """Lance la collecte de tous les fonds PISTE : JORF + KALI."""
     results = {}
     try:

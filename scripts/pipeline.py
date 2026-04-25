@@ -564,7 +564,7 @@ def main() -> None:
     grp = p_col.add_mutually_exclusive_group(required=True)
     grp.add_argument("--specialty", metavar="SLUG", help="Slug de spécialité (ex: cardiologie)")
     grp.add_argument("--all", action="store_true", help="Collecte toutes les sources")
-    p_col.add_argument("--days", type=int, default=180, help="Fenêtre temporelle en jours (défaut: 180)")
+    p_col.add_argument("--days", type=int, default=120, help="Fenêtre temporelle en jours (défaut: 120)")
 
     p_pre = sub.add_parser("prefilter", help="Élimine les candidats hors-scope (0 LLM)")
     p_pre.add_argument("--specialty", metavar="SLUG", default=None,

@@ -6439,7 +6439,7 @@ def _month_str_to_int(s: str) -> int:
 # Collecteur principal
 # ---------------------------------------------------------------------------
 
-def collect_pubmed_source(source_cfg: dict, days: int = 90) -> dict[str, int]:
+def collect_pubmed_source(source_cfg: dict, days: int = 120) -> dict[str, int]:
     """
     Collecte les articles PubMed pour une source donnée et les insère en base.
 
@@ -6513,7 +6513,7 @@ def collect_pubmed_source(source_cfg: dict, days: int = 90) -> dict[str, int]:
     return stats
 
 
-def collect_all_pubmed(days: int = 90) -> dict[str, dict]:
+def collect_all_pubmed(days: int = 120) -> dict[str, dict]:
     """Collecte toutes les sources PubMed configurées."""
     results = {}
     for source_cfg in PUBMED_SOURCES:

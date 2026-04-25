@@ -147,7 +147,7 @@ def fetch_feed(feed_url: str, timeout: int = 20) -> feedparser.FeedParserDict | 
 # Collecteur d'un flux
 # ---------------------------------------------------------------------------
 
-def collect_feed(feed_config: dict, days: int = 35) -> dict[str, int]:
+def collect_feed(feed_config: dict, days: int = 120) -> dict[str, int]:
     url    = feed_config["url"]
     source = feed_config["source"]
     today  = date.today()
@@ -248,7 +248,7 @@ def collect_feed(feed_config: dict, days: int = 35) -> dict[str, int]:
 # Collecteur global
 # ---------------------------------------------------------------------------
 
-def collect_all_rss(days: int = 35) -> dict[str, Any]:
+def collect_all_rss(days: int = 120) -> dict[str, Any]:
     """
     Lance la collecte de tous les flux RSS actifs.
     Appelé par le scheduler mensuel.
@@ -267,7 +267,7 @@ def collect_all_rss(days: int = 35) -> dict[str, Any]:
 # Collecteurs par source (appelés depuis sources_routes.py)
 # ---------------------------------------------------------------------------
 
-def _collect_by_prefix(prefix: str, days: int = 35) -> dict[str, Any]:
+def _collect_by_prefix(prefix: str, days: int = 120) -> dict[str, Any]:
     results = {}
     for feed in FEEDS:
         if feed["source"].startswith(prefix):
@@ -279,21 +279,21 @@ def _collect_by_prefix(prefix: str, days: int = 35) -> dict[str, Any]:
     return results
 
 
-def collect_has(days: int = 35) -> dict[str, Any]:
+def collect_has(days: int = 120) -> dict[str, Any]:
     return _collect_by_prefix("has", days)
 
 
-def collect_ansm(days: int = 35) -> dict[str, Any]:
+def collect_ansm(days: int = 120) -> dict[str, Any]:
     return _collect_by_prefix("ansm", days)
 
 
-def collect_spf(days: int = 35) -> dict[str, Any]:
+def collect_spf(days: int = 120) -> dict[str, Any]:
     # Santé publique France est exclu des sources retenues (épidémiologie,
     # pas réglementaire — voir docstring module). Aucun feed n'a source "spf".
     return {"inserted": 0, "skipped": 0, "errors": 0, "note": "source spf non activée"}
 
 
-def collect_pratique(days: int = 90) -> dict[str, Any]:
+def collect_pratique(days: int = 120) -> dict[str, Any]:
     """
     Collecte les sources pratiques médicales :
     - Flux RSS : recommandations, bon usage, sociétés savantes (ALL_PRATIQUE_FEEDS)
