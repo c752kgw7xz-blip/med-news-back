@@ -1950,6 +1950,15 @@ SOURCE_HINTS: dict[str, str] = {
     "has_dm":  "HAS — Avis sur les dispositifs médicaux (admission remboursement, conditions utilisation)",
     "spf_beh": "Santé publique France — Article épidémiologique (BEH, alerte sanitaire, vaccination)",
     "cnom":    "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
+    # ── Sociétés savantes françaises (RSS + scraping) ─────────────────────
+    "gpip":            "GPIP — Groupe de Pathologie Infectieuse Pédiatrique : recommandations antibiothérapie, vaccination, protocoles infectiologie pédiatrique",
+    # ── Sources européennes (agences réglementaires EU) ───────────────────
+    "ema_news":        "EMA — Alerte ou décision de sécurité européenne : retrait AMM, suspension, restriction d'indication, DHPC diffusé par l'EMA",
+    "ema_guidelines":  "EMA — Guideline scientifique européen sur l'évaluation des médicaments (ICH, CHMP) — impact sur les standards d'autorisation",
+    "ema_new_medicines": "EMA — Nouvelle AMM européenne (CHMP opinion positive) : médicament human nouvellement autorisé dans l'UE",
+    "ecdc_risk":       "ECDC — Évaluation du risque épidémique européen : menace infectieuse émergente, épidémie transfrontalière, pathogène résistant",
+    "ecdc_guidance":   "ECDC — Recommandation technique européenne de prévention et contrôle des infections (vaccination, screening, isolement)",
+    "ecdc_cdtr":       "ECDC — CDTR (Communicable Disease Threats Report) : surveillance hebdomadaire des menaces infectieuses en Europe",
     # ── Sources innovation — journaux scientifiques internationaux ────────
     # JAMA Network
     "jama":                "JAMA (Journal of the American Medical Association) — Article de recherche clinique ou editorial (toutes spécialités)",
@@ -2158,6 +2167,50 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "sfpediatrie":                    "pediatrie",
     "gpip":                           "pediatrie",
     "eap_pediatrie":                  "pediatrie",
+    # ── Sociétés savantes françaises — manquantes (audit avril 2026) ──────────
+    # Médecine générale
+    "cnge":                           "medecine-generale",   # CNGE — médecins généralistes
+    "sfms":                           "medecine-du-sport",   # SFMS — médecine du sport et de l'exercice
+    # Médecine interne & addictologie
+    "snfmi":                          "medecine-interne",    # SNFMI — médecine interne
+    "sfalcoologie":                   "addictologie",        # SFAL — alcoologie et addictologie
+    # Cardiologie
+    "sfhta":                          "cardiologie",         # SFHTA — hypertension artérielle
+    # Neurologie & neurochirurgie
+    "sfn":                            "neurologie",          # SFN — Société Française de Neurologie
+    "sfnc":                           "neurochirurgie",      # SFNC — neurochirurgie
+    # Endocrinologie & diabétologie
+    "sfendocrino":                    "endocrinologie",      # SFE — endocrinologie
+    "sfdiabete":                      "endocrinologie",      # SFD — diabétologie
+    # Gastro-entérologie & hépatologie (déjà: snfge, afef, snfcp)
+    # ORL
+    "sforl":                          "orl",                 # SFORL — ORL et chirurgie cervico-faciale
+    # Gériatrie
+    "sfgg":                           "geriatrie",           # SFGG — gériatrie et gérontologie
+    # Gynécologie-obstétrique
+    "cngof_recommandations":          "gynecologie",         # CNGOF — gynécologie obstétrique
+    # Néphrologie
+    "sfndt":                          "nephrologie",         # SFNDT — néphrologie et transplantation
+    # Infectiologie & microbiologie
+    "sfm_microbiologie":              "infectiologie",       # SFM — microbiologie / anti-infectieux
+    # Hématologie
+    "sfh":                            "hematologie",         # SFH — hématologie clinique
+    # Ophtalmologie
+    "sfo":                            "ophtalmologie",       # SFO — ophtalmologie
+    # Chirurgie orthopédique
+    "sofcot":                         "chirurgie-orthopedique",  # SOFCOT — orthopédie traumatologie
+    # Chirurgie plastique
+    "sofcpre_plastique":              "chirurgie-plastique", # SOFCPRE — chirurgie plastique reconstructrice
+    # Oncologie soins de support
+    "afsos":                          "oncologie",           # AFSOS — soins oncologiques de support
+    # Médecine nucléaire
+    "sfmn":                           "medecine-nucleaire",  # SFMN — médecine nucléaire
+    # Médecine d'urgence
+    "sfmu":                           "medecine-urgences",   # SFMU — médecine d'urgence
+    # Biologie médicale (déjà: sfbc → biologiste)
+    "sfbc":                           "biologiste",          # SFBC — biologie clinique
+    # Infirmiers libéraux
+    "sniil":                          "infirmiers",          # SNIIL — infirmiers libéraux
     # ── Sources réglementaires françaises — toutes spécialités ─────────────────
     # Ces sources sont collectées dans rss_collector.py et piste_routes.py.
     # specialty_hint="tous" : le LLM addendum de chaque spécialité filtre ce qui est pertinent.
@@ -2178,6 +2231,13 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "has_acces_precoces":             "tous",        # HAS — Accès précoce (ex-ATU) — cross-specialty
     "has_bo":                         "tous",        # HAS — Bulletin officiel (décisions formelles)
     "inca_recommandations":           "oncologie",   # INCa — Référentiels oncologie
+    # ── Sources européennes (agences réglementaires EU) ───────────────────────
+    "ema_news":           "tous",          # EMA — Alertes sécurité EU (retraits AMM, DHPCs) — cross-specialty
+    "ema_guidelines":     "tous",          # EMA — Guidelines scientifiques EU — cross-specialty
+    "ema_new_medicines":  "tous",          # EMA — Nouvelles AMM EU — cross-specialty
+    "ecdc_risk":          "infectiologie", # ECDC — Risques épidémiques (maladies infectieuses)
+    "ecdc_guidance":      "infectiologie", # ECDC — Recommandations prévention/contrôle infections
+    "ecdc_cdtr":          "infectiologie", # ECDC — CDTR hebdo (surveillance maladies infectieuses)
     # ── Cardiologie ───────────────────────────────────────────────────────────
     "bmj_heart":                    "cardiologie",   # RSS Heart / BCS — cardiologie clinique (IF ~15)
     "circulation_aha":              "cardiologie",   # RSS Circulation (AHA, IF ~35)
@@ -7813,6 +7873,30 @@ SOURCE_CONFIG: dict[str, dict] = {
         "require_whitelist": False,
         "min_llm_score": 4,
     },
+    # ── HAS — Accès précoce (ex-ATU) ─────────────────────────────────────
+    # Faible volume, haute valeur : décision nominative par médicament → seuil bas
+    "has_acces_precoces": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
+    # ── HAS — Bulletin officiel ──────────────────────────────────────────
+    # Décisions formelles numérotées (accès précoce, avis vaccin, CEESP)
+    "has_bo": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    # ── ANSM — Points d'information ──────────────────────────────────────
+    # Communiqués variés (pharmacovigilance, bilans, signaux émergents)
+    "ansm_actualites": {
+        "require_whitelist": False,
+        "min_llm_score": 6,
+    },
+    # ── INCa — Recommandations nationales oncologie ───────────────────────
+    # Référentiels officiels → contenu toujours pertinent pour oncologie
+    "inca_recommandations": {
+        "require_whitelist": False,
+        "min_llm_score": 4,
+    },
     # ── Santé publique France (articles + BEH) ───────────────────────────
     # RSS général SPF — données épidémio pas toujours actionnables directement
     # Seuil 5 : seules les alertes sanitaires et changements de recommandation passent
@@ -7884,6 +7968,24 @@ SOURCE_CONFIG: dict[str, dict] = {
     "ema_new_medicines": {
         "require_whitelist": False,
         "min_llm_score": 8,
+    },
+    # ema_guidelines : guidelines CHMP/ICH — faible volume, haute valeur → seuil 5
+    "ema_guidelines": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    # ecdc_risk / ecdc_guidance / ecdc_cdtr : infectiologie uniquement → seuil 5
+    "ecdc_risk": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    "ecdc_guidance": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    "ecdc_cdtr": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
     },
     # ema_news : alertes sécurité EMA (retraits AMM, contre-indications).
     # Niveau alerte ANSM → seuil 6 comme ansm_securite.
@@ -8285,9 +8387,13 @@ _VALID_STUDY_DESIGN = {
     "regulatory-decision", "technique-paper", "review", "editorial",
 }
 _VALID_PRIMARY_ENDPOINT = {
-    "mortality", "patency", "limb-salvage", "stroke-TIA",
-    "reintervention", "composite-MALE", "technical-success",
-    "quality-of-life", "other",
+    "mortality", "hospitalization-rate", "complication-free",
+    "neurodevelopmental", "infection-rate", "tumor-response",
+    "remission-rate", "pain-score", "functional-outcome",
+    "seizure-freedom", "graft-survival", "patency", "limb-salvage",
+    "stroke-TIA", "reintervention", "composite-MALE", "composite-MACCE",
+    "LVEF-function", "valve-durability", "AF-recurrence",
+    "technical-success", "quality-of-life", "other",
 }
 _VALID_VASCULAR_DOMAIN = {
     "aorte-abdominale", "aorte-thoracique", "aorte-thoraco-abdominale",
@@ -8317,7 +8423,30 @@ _VALID_REGULATORY_MILESTONE = {
     "CE_mark", "AMM_europe", "FDA_approval", "remboursement_HAS",
     "CNAM_accord", "guideline_update", "autorisation_temporaire",
 }
-_VALID_GUIDELINE_BODY = {"ESVS", "ESC", "HAS", "AHA-ACC", "SFCV", "SFMV", "autre"}
+_VALID_GUIDELINE_BODY = {
+    # Vasculaire / Cardiaque
+    "ESVS", "EACTS", "ESC", "AHA-ACC", "STS", "AATS", "SFC", "SFCTCV", "SFCV", "SFMV",
+    # Pédiatrie
+    "AAP", "SFP", "IPEG", "EUPSA", "ESPGHAN", "ESPID", "GPIP",
+    # Oncologie
+    "ESMO", "ASCO",
+    # Rhumatologie
+    "EULAR", "ACR",
+    # Neurologie
+    "EAN", "AAN",
+    # Pneumologie
+    "ERS", "ATS",
+    # Urologie
+    "EAU",
+    # Gastro-entérologie / Hépatologie
+    "ECCO", "EASL",
+    # Orthopédie
+    "EFORT",
+    # Institutionnel FR
+    "HAS",
+    # Catch-all
+    "autre",
+}
 _VALID_GUIDELINE_GRADE = {"IA", "IB", "IIaA", "IIaB", "IIbA", "IIbB", "III"}
 
 # Matrice clinical_maturity × actionability_horizon → score de base

@@ -3,13 +3,14 @@
 Collecteurs PISTE pour les fonds réglementaires médicaux.
 
 Fonds retenus :
-  JORF        → traité directement dans scheduler.py (existant)
-  KALI        → convention médicale UNCAM, avenants tarifaires
-  CIRCULAIRES → supprimé (doublon du BO Social, moins fiable)
-  LEGI        → supprimé (modifications techniques, doublon tardif du JORF)
+  JORF → collect_jorf()  : Journal Officiel — décrets, arrêtés, avis médicaux
+  KALI → collect_kali()  : convention médicale UNCAM, avenants tarifaires
 
-Seul KALI est implémenté ici. Le JORF reste dans scheduler.py
-pour ne pas casser le pipeline existant.
+Fonds supprimés :
+  CIRCULAIRES → doublon du BO Social, moins fiable
+  LEGI        → modifications techniques, doublon tardif du JORF
+
+Point d'entrée global : collect_all_piste_fonds(days) → JORF + KALI
 """
 
 from __future__ import annotations
@@ -165,7 +166,7 @@ def collect_kali(days: int = 35) -> dict[str, int]:
 
     with get_conn() as conn:
         with conn.cursor() as cur:
-            for page in range(1, 21):
+            for page in range(1, 41):
                 payload = {
                     "fond": "KALI",
                     "recherche": {
@@ -187,38 +188,41 @@ def collect_kali(days: int = 35) -> dict[str, int]:
                     if not isinstance(it, dict):
                         continue
                     seen += 1
+                    try:
+                        title = _title_from_item(it)
+                        pub_date = _pub_date_from_item(it, title)
 
-                    title = _title_from_item(it)
-                    pub_date = _pub_date_from_item(it, title)
+                        if pub_date is None or not (start <= pub_date <= today):
+                            skipped += 1
+                            continue
 
-                    if pub_date is None or not (start <= pub_date <= today):
+                        if not _kali_filter(title):
+                            skipped += 1
+                            continue
+
+                        ext_id = _external_id_from_item(it)
+                        if not ext_id:
+                            skipped += 1
+                            continue
+
+                        official_url = f"https://www.legifrance.gouv.fr/conv_coll/id/{ext_id}"
+
+                        row = build_candidate_row(
+                            source=source,
+                            external_id=str(ext_id),
+                            official_url=official_url,
+                            official_date=pub_date,
+                            title_raw=title,
+                            raw_payload=it,
+                        )
+
+                        if insert_candidate(cur, row):
+                            inserted += 1
+                        else:
+                            deduped += 1
+                    except Exception as e:
+                        logger.warning("[%s] erreur item : %s", source, e)
                         skipped += 1
-                        continue
-
-                    if not _kali_filter(title):
-                        skipped += 1
-                        continue
-
-                    ext_id = _external_id_from_item(it)
-                    if not ext_id:
-                        skipped += 1
-                        continue
-
-                    official_url = f"https://www.legifrance.gouv.fr/conv_coll/id/{ext_id}"
-
-                    row = build_candidate_row(
-                        source=source,
-                        external_id=str(ext_id),
-                        official_url=official_url,
-                        official_date=pub_date,
-                        title_raw=title,
-                        raw_payload=it,
-                    )
-
-                    if insert_candidate(cur, row):
-                        inserted += 1
-                    else:
-                        deduped += 1
 
         conn.commit()
 
@@ -227,15 +231,92 @@ def collect_kali(days: int = 35) -> dict[str, int]:
 
 
 # ---------------------------------------------------------------------------
-# Collecteur global PISTE (hors JORF déjà dans scheduler.py)
+# JORF — Journal Officiel de la République Française
+# ---------------------------------------------------------------------------
+
+def collect_jorf(days: int = 35) -> dict[str, int]:
+    """
+    Collecte les textes JORF (Journal Officiel) via l'API PISTE.
+
+    Filtre sur les natures réglementaires médicales (décrets, arrêtés, avis…)
+    via _keep_item_with_reason. Remonte les textes publiés dans la fenêtre
+    [today - days, today].
+    """
+    from app.piste_routes import (
+        _piste_call, _extract_list, _keep_item_with_reason,
+        _parse_date10, _official_url,
+    )
+
+    source = "legifrance_jorf"
+    today = date.today()
+    start = today - timedelta(days=days)
+    seen = ins = dup = 0
+
+    logger.info("=== Collecte JORF (%d jours) ===", days)
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            for page in range(1, 41):
+                payload = {"fond": "JORF", "recherche": {
+                    "pageNumber": page, "pageSize": 50,
+                    "operateur": "ET", "typePagination": "DEFAUT",
+                }}
+                try:
+                    data = _piste_call("/search", payload)
+                except Exception:
+                    break
+                items = _extract_list(data)
+                if not items:
+                    break
+                for it in items:
+                    if not isinstance(it, dict):
+                        continue
+                    seen += 1
+                    titles = it.get("titles") if isinstance(it.get("titles"), list) else []
+                    t0 = titles[0] if titles and isinstance(titles[0], dict) else {}
+                    jorftext_id = t0.get("cid")
+                    title = t0.get("title")
+                    nature = it.get("nature") or it.get("type")
+                    ok, _ = _keep_item_with_reason(nature, title)
+                    if not ok:
+                        continue
+                    pub_s = _parse_date10(it.get("datePublication")) or _parse_date10(it.get("date"))
+                    if not pub_s:
+                        continue
+                    pub_d = date.fromisoformat(pub_s)
+                    if not (start <= pub_d <= today):
+                        continue
+                    if not (isinstance(jorftext_id, str) and jorftext_id.startswith("JORFTEXT")):
+                        continue
+                    row = build_candidate_row(
+                        source=source, external_id=jorftext_id,
+                        official_url=_official_url(jorftext_id),
+                        official_date=pub_d,
+                        title_raw=(title or "").strip() or "(no title)",
+                        jorftext_id=jorftext_id, raw_payload=it,
+                    )
+                    if insert_candidate(cur, row):
+                        ins += 1
+                    else:
+                        dup += 1
+        conn.commit()
+
+    logger.info("[%s] vu=%d ins=%d dup=%d", source, seen, ins, dup)
+    return {"seen": seen, "inserted": ins, "deduped": dup}
+
+
+# ---------------------------------------------------------------------------
+# Collecteur global PISTE
 # ---------------------------------------------------------------------------
 
 def collect_all_piste_fonds(days: int = 35) -> dict[str, Any]:
-    """
-    Lance la collecte des fonds PISTE complémentaires.
-    Le JORF est géré séparément dans scheduler.py.
-    """
+    """Lance la collecte de tous les fonds PISTE : JORF + KALI."""
     results = {}
+    try:
+        results["jorf"] = collect_jorf(days=days)
+    except Exception as e:
+        logger.error("Collecte JORF échouée : %s", e)
+        results["jorf"] = {"error": str(e)}
     try:
         results["kali"] = collect_kali(days=days)
     except Exception as e:

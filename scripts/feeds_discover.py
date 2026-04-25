@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-check_societes_savantes_rss.py
+scripts/feeds_discover.py
 Détecte les flux RSS des sociétés savantes médicales françaises via :
   1. RSS autodiscovery  — balise <link rel="alternate" type="application/rss+xml">
   2. URLs candidates    — patterns /feed, /rss, /rss.xml, etc.
   3. Validation finale  — via /admin/sources/test-feed (Render)
 
 Usage :
-    python3 scripts/check_societes_savantes_rss.py
+    python3 scripts/feeds_discover.py
 
 Prérequis :
     pip3 install httpx beautifulsoup4 lxml
@@ -18,7 +18,10 @@ import json
 import os
 import re
 import time
+from pathlib import Path
 from urllib.parse import urljoin, urlparse
+
+ROOT = Path(__file__).resolve().parent.parent
 
 try:
     from bs4 import BeautifulSoup
@@ -28,7 +31,7 @@ except ImportError:
     print("⚠️  beautifulsoup4 non installé — autodiscovery désactivé")
     print("   pip3 install beautifulsoup4 lxml\n")
 
-BASE_URL     = "https://med-news-back-fmgu.onrender.com"
+BASE_URL     = os.environ.get("MEDNEWS_BASE_URL", "https://med-news-back-fmgu.onrender.com")
 ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "")
 if not ADMIN_SECRET:
     raise RuntimeError("ADMIN_SECRET env var is not set — export ADMIN_SECRET=<your-secret> before running this script")
@@ -759,7 +762,7 @@ def main():
     print(f"{'='*70}\n")
 
     if working:
-        print("✅ À AJOUTER dans sources_pratique.py :\n")
+        print("✅ À AJOUTER dans app/sources.py :\n")
         for r in working:
             print(f"  [{r['specialty']}] {r['label']}")
             print(f"    source : {r['source']}")
@@ -773,7 +776,7 @@ def main():
             print(f"  [{r['specialty']}] {r['label']}  ({r['homepage']})")
 
     # Export JSON
-    output = "scripts/societes_savantes_rss_results.json"
+    output = ROOT / "scripts" / "societes_savantes_rss_results.json"
     with open(output, "w", encoding="utf-8") as f:
         json.dump({"working": working, "dead": dead}, f, ensure_ascii=False, indent=2)
     print(f"\n→ Résultats sauvegardés dans {output}")

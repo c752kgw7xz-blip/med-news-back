@@ -2,17 +2,26 @@
 """
 Collecteur PubMed via NCBI E-utilities.
 
-Utilisé pour les journaux dont le RSS éditeur est mort (Elsevier 410 Gone,
-JAMA Surgery 403 depuis avril 2026), notamment en chirurgie vasculaire et cardiaque.
+512 sources configurées couvrant 36 spécialités :
+  chirurgie-vasculaire, chirurgie-cardiaque, chirurgie-thoracique,
+  chirurgie-orthopedique, chirurgie-plastique, chirurgie-pediatrique,
+  chirurgie-pediatrique (urologie), pediatrie, anesthesiologie,
+  cardiologie, neurologie, neurochirurgie, psychiatrie, gastro-enterologie,
+  hepatologie, pneumologie, infectiologie, rhumatologie, dermatologie,
+  endocrinologie, nephrologie, hematologie, oncologie, urologie,
+  ophtalmologie, orl, medecine-generale, medecine-interne,
+  medecine-urgences, medecine-physique, geriatrie, gynecologie,
+  radiologie, biologiste, pharmacien, infirmiers, kinesitherapie, sage-femme
 
-API : https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
-  - esearch.fcgi : recherche par journal + filtre thématique + date → liste PMIDs
-  - efetch.fcgi  : récupération détails XML par lot de PMIDs (titres, abstracts, dates)
+API NCBI E-utilities :
+  - esearch.fcgi : recherche par journal_term + date → liste PMIDs
+                   retmax=200 (≤35j) ou 500 (>35j — run initial)
+  - efetch.fcgi  : détails XML par lots de 20 PMIDs (titre, abstract, DOI, date)
 
 Rate limit NCBI :
-  - Sans clé  : 3 req/s
-  - Avec clé  : 10 req/s (NCBI_API_KEY dans l'env)
-  Stratégie : batch de 20 PMIDs par efetch + sleep entre lots si nécessaire.
+  - Sans clé  : 3 req/s  → sleep 0.4s entre lots efetch
+  - Avec clé  : 10 req/s → sleep 0.35s (NCBI_API_KEY dans l'env)
+  Durée estimée run initial (days=120, 512 sources) : 30-45 minutes.
 
 Sources configurées (voir PUBMED_SOURCES) :
 
@@ -6263,14 +6272,15 @@ def _ncbi_params(extra: dict) -> dict:
 def _search_pmids(journal_term: str, days: int, client: httpx.Client) -> list[str]:
     """
     Recherche les PMIDs publiés dans [today-days, today] pour un journal donné.
-    Retourne au max 200 PMIDs (suffisant pour un run mensuel).
+    retmax adapté à la fenêtre : 200 pour ≤35 jours, 500 pour le run initial (>35 j).
     """
     since = (date.today() - timedelta(days=days)).strftime("%Y/%m/%d")
     today = date.today().strftime("%Y/%m/%d")
     term = f'{journal_term} AND ("{since}"[PDAT] : "{today}"[PDAT])'
+    retmax = 500 if days > 35 else 200
     params = _ncbi_params({
         "term": term,
-        "retmax": 200,
+        "retmax": retmax,
         "sort": "date",
     })
     try:
@@ -6297,8 +6307,6 @@ def _fetch_articles(pmids: list[str], client: httpx.Client) -> list[dict]:
             "rettype": "abstract",
             "retmode": "xml",
         })
-        # Supprimer retmode=json (déjà en xml)
-        params["retmode"] = "xml"
         try:
             r = client.get(f"{NCBI_BASE}/efetch.fcgi", params=params, timeout=20)
             r.raise_for_status()

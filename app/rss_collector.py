@@ -1,21 +1,22 @@
 # app/rss_collector.py
 """
-Collecteurs RSS — sources officielles de santé française.
-URLs vérifiées directement sur les sites officiels.
+Collecteur RSS — 160 feeds actifs, toutes spécialités.
 
-Sources retenues :
-  HAS  : Recommandations de bonne pratique uniquement
-         → changement de pratique clinique pour les médecins
-  ANSM : Alertes sécurité médicaments + ruptures d'appro
-         → retraits AMM, contre-indications nouvelles, tensions stock
-  BO   : Bulletins officiels ministères sociaux
-         → circulaires ministère santé hors JORF
+FEEDS = ALL_FEEDS, composé de 5 sections (voir app/sources.py) :
+  FR_REGULATORY (15)  : HAS, ANSM, SPF, CNOM, Académie de Médecine…
+  FR_SOCIETIES  (27)  : CNGE, SFAR, SFN, SNFGE, AFU, SFORL, SFGG…
+  EU_FEEDS      (23)  : EMA, ECDC, ESMO, ERS, EASL, ESICM, EADV…
+  JOURNALS      (63)  : NEJM, Lancet, JAMA, Nature Med, BMJ spécialisés…
+  CLINICAL_PRESS(32)  : Healio (×14 spés), MedPage, Vascular Specialist…
 
-Sources exclues et pourquoi :
-  - HAS commission transparence / DM / accès précoce → décisions industrie pharma
-  - ANSM actualités générales → bruit, doublon avec alertes ciblées
-  - Santé publique France → épidémiologie, pas réglementaire
-  - LEGI codes consolidés → doublon tardif du JORF
+Enrichissement HAS : les flux HAS ne contiennent que le titre.
+  has_rbp, has_ct, has_dm → scraping de la page HTML pour récupérer
+  le résumé clinique, les messages clés et le type de document.
+
+Pré-filtres appliqués avant insertion (0 appel LLM) :
+  - pre_filter_candidate : élimine nominations, congrès, emploi, etc.
+  - NOISY_SOURCES + _passes_jorf_whitelist : filtre supplémentaire
+    pour les sources généralistes à haut volume / faible signal.
 """
 
 from __future__ import annotations
@@ -127,8 +128,11 @@ def fetch_feed(feed_url: str, timeout: int = 20) -> feedparser.FeedParserDict | 
                 m = _JS_REDIRECT_RE.search(r.text)
                 if m:
                     redirect_path = m.group(1)
-                    base = str(r.url).split("/", 3)[:3]  # scheme + host
-                    redirect_url = "/".join(base) + redirect_path
+                    if redirect_path.startswith("http"):
+                        redirect_url = redirect_path
+                    else:
+                        base = str(r.url).split("/", 3)[:3]  # scheme + host
+                        redirect_url = "/".join(base) + redirect_path
                     logger.debug("Fetch RSS %s → redirect JS → %s", feed_url, redirect_url)
                     r = client.get(redirect_url)
                     r.raise_for_status()

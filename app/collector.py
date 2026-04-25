@@ -43,42 +43,44 @@ logger = logging.getLogger(__name__)
 _FDA_BASE = "https://api.fda.gov"
 _FDA_API_KEY = os.getenv("FDA_API_KEY", "")
 
-_VASCULAR_KEYWORDS = [
-    "aort",
-    "endovascular",
-    "endograft",
-    "stent graft",
-    "stentgraft",
-    "fenestrated",
-    "branched",
-    "tevar",
-    "evar",
-    "fevar",
-    "carotid",
-    "iliac",
-    "thoracic aneurysm",
-    "abdominal aneurysm",
-    "peripheral vascular",
-    "peripheral arterial",
-    "arteriovenous",
-    "arterial graft",
-    "vascular graft",
-    "bypass graft",
-    "inferior vena cava",
-    "ivc filter",
-    "thrombectomy",
-    "embolectomy",
-    "hemodialysis access",
-    "dialysis access",
-    "atherectomy",
-    "angioplasty",
-    "revascularization",
+# Filtre keyword 510k — élimine les dispositifs purement administratifs/non-cliniques.
+# PMA (Class III) n'utilise pas ce filtre : volume faible (~50/an), tous pertinents.
+_CLINICAL_510K_KEYWORDS = [
+    # Cardiovasculaire / vasculaire
+    "aort", "endovascular", "stent", "carotid", "cardiac", "coronary",
+    "valve", "pacemaker", "defibrillator", "ventricular", "atrial", "heart",
+    "vascular", "arterial", "angioplasty", "revascularization", "thrombectomy",
+    "ivc filter", "hemodialysis", "dialysis access",
+    # Orthopédie
+    "implant", "prosthes", "arthroplasty", "spine", "vertebr", "joint",
+    "hip ", "knee", "shoulder", "ankle", "fixation", "intramedullary", "fracture",
+    # Neurologie / neurochirurgie
+    "neural", "neurostimulat", "brain", "spinal cord", "cochlear",
+    "deep brain", "intracranial", "cerebrospinal",
+    # Ophtalmologie
+    "intraocular", "ocular", "retinal", "glaucoma", "lens implant", "vitreous",
+    # Chirurgie plastique / reconstructrice
+    "breast implant", "tissue expander", "dermal substitute", "skin graft",
+    # Chirurgie générale / digestive / endoscopie
+    "hernia mesh", "stapl", "endoscop", "laparoscop", "bariatric",
+    # Gynécologie / obstétrique
+    "uterine", "intrauterine", "cervical", "obstetric",
+    # Urologie
+    "ureter", "urethr", "prostatic", "renal stone", "urinary",
+    # Pneumologie / thoracique
+    "bronch", "pulmonary", "thoracoscop", "pleural", "lung",
+    # Radiologie interventionnelle
+    "catheter", "guidewire", "introducer", "sheath", "emboli",
+    # Anesthésie
+    "epidural", "intubation", "airway", "laryngeal mask",
+    # Hématologie
+    "apheresis", "blood filter", "transfusion",
 ]
 
 
-def _is_vascular(name: str, description: str = "") -> bool:
+def _is_clinical_device(name: str, description: str = "") -> bool:
     text = f"{name} {description}".lower()
-    return any(kw in text for kw in _VASCULAR_KEYWORDS)
+    return any(kw in text for kw in _CLINICAL_510K_KEYWORDS)
 
 
 def _fda_params(extra: dict) -> dict:
@@ -95,10 +97,12 @@ def _fda_date_range(days: int) -> str:
     return f"[{since}+TO+{today}]"
 
 
-def _collect_fda_pma(days: int = 90, **_) -> dict[str, int]:
+def _collect_fda_pma(days: int = 90, source_cfg: dict | None = None, **_) -> dict[str, int]:
     stats = {"fetched": 0, "inserted": 0, "skipped": 0, "errors": 0}
+    specialty_hint = (source_cfg or {}).get("specialty_hint", "tous")
+    # Pas de filtre advisory_committee : PMA Class III = ~50 approbations/an toutes spés
     params = _fda_params({
-        "search": f'advisory_committee:"CH"+AND+decision_date:{_fda_date_range(days)}',
+        "search": f'decision_date:{_fda_date_range(days)}',
         "limit": 100,
         "skip": 0,
     })
@@ -131,9 +135,6 @@ def _collect_fda_pma(days: int = 90, **_) -> dict[str, int]:
                 try:
                     trade_name = item.get("trade_name") or ""
                     generic_name = item.get("generic_name") or ""
-                    if not _is_vascular(trade_name, generic_name):
-                        stats["skipped"] += 1
-                        continue
                     pma_number = item.get("pma_number") or ""
                     if not pma_number:
                         stats["errors"] += 1
@@ -167,7 +168,7 @@ def _collect_fda_pma(days: int = 90, **_) -> dict[str, int]:
                         title_raw=title,
                         content_raw=content,
                         raw_payload={**item, "source": "fda_pma", "source_type": "innovation",
-                                     "specialty_hint": "chirurgie-vasculaire"},
+                                     "specialty_hint": specialty_hint},
                     )
                     if insert_candidate(cur, row):
                         stats["inserted"] += 1
@@ -181,10 +182,14 @@ def _collect_fda_pma(days: int = 90, **_) -> dict[str, int]:
     return stats
 
 
-def _collect_fda_510k(days: int = 90, **_) -> dict[str, int]:
+def _collect_fda_510k(days: int = 90, source_cfg: dict | None = None, **_) -> dict[str, int]:
     stats = {"fetched": 0, "inserted": 0, "skipped": 0, "errors": 0}
+    specialty_hint = (source_cfg or {}).get("specialty_hint", "tous")
+    # Pas de filtre advisory_committee : couvre toutes spécialités.
+    # Filtre keyword _is_clinical_device côté client pour écarter les kits
+    # non-cliniques (emballages, logiciels administratifs, accessoires).
     params = _fda_params({
-        "search": f'advisory_committee:"CH"+AND+decision_date:{_fda_date_range(days)}',
+        "search": f'decision_date:{_fda_date_range(days)}',
         "limit": 100,
         "skip": 0,
     })
@@ -217,7 +222,7 @@ def _collect_fda_510k(days: int = 90, **_) -> dict[str, int]:
                 try:
                     device_name = item.get("device_name") or ""
                     applicant = item.get("applicant") or item.get("contact") or ""
-                    if not _is_vascular(device_name):
+                    if not _is_clinical_device(device_name):
                         stats["skipped"] += 1
                         continue
                     k_number = item.get("k_number") or ""
@@ -248,7 +253,7 @@ def _collect_fda_510k(days: int = 90, **_) -> dict[str, int]:
                         title_raw=title,
                         content_raw=content,
                         raw_payload={**item, "source": "fda_510k", "source_type": "innovation",
-                                     "specialty_hint": "chirurgie-vasculaire"},
+                                     "specialty_hint": specialty_hint},
                     )
                     if insert_candidate(cur, row):
                         stats["inserted"] += 1
@@ -269,18 +274,13 @@ def _collect_fda_510k(days: int = 90, **_) -> dict[str, int]:
 # =============================================================================
 
 _EUDAMED_BASE = "https://ec.europa.eu/tools/eudamed/api"
-_VASCULAR_EMDN_CODES = ["E05", "E06", "E07"]
-_EUDAMED_VASCULAR_KEYWORDS = _VASCULAR_KEYWORDS + [
-    "endoprothèse",
-    "prothèse vasculaire",
-    "greffon vasculaire",
-    "filtre cave",
-    "stent périphérique",
-    "vena cava filter",
-]
+# Pas de filtre EMDN : on collecte tous les dispositifs Classe III (Im).
+# La Classe III est déjà le filtre le plus sélectif (implants actifs, haut risque).
+# Le LLM classifie la spécialité au triage.
 
 
-def _search_eudamed_by_emdn(client: httpx.Client, emdn_code: str, since: date) -> list[dict]:
+def _search_eudamed_class3(client: httpx.Client) -> list[dict]:
+    """Récupère tous les dispositifs EUDAMED Classe III (Im) — toutes spécialités."""
     all_results: list[dict] = []
     page = 1
     page_size = 100
@@ -291,22 +291,21 @@ def _search_eudamed_by_emdn(client: httpx.Client, emdn_code: str, since: date) -
             "filters": {
                 "groupMedicalDeviceType": "MD",
                 "riskClassification": ["Im"],
-                "emdn": emdn_code,
             },
         }
         try:
             r = client.post(
                 f"{_EUDAMED_BASE}/devices/basicUDI/search",
                 json=payload,
-                timeout=20,
+                timeout=30,
             )
             if r.status_code in (404, 422):
-                logger.warning("[eudamed] %d pour EMDN=%s — %s", r.status_code, emdn_code, r.text[:200])
+                logger.warning("[eudamed] %d — %s", r.status_code, r.text[:200])
                 break
             r.raise_for_status()
             data = r.json()
         except Exception as e:
-            logger.warning("[eudamed] fetch error EMDN=%s: %s", emdn_code, e)
+            logger.warning("[eudamed] fetch error: %s", e)
             break
 
         batch: list[dict] = data.get("data") or data.get("results") or data.get("content") or []
@@ -321,10 +320,10 @@ def _search_eudamed_by_emdn(client: httpx.Client, emdn_code: str, since: date) -
     return all_results
 
 
-def _collect_eudamed(days: int = 90, **_) -> dict[str, int]:
+def _collect_eudamed(days: int = 90, source_cfg: dict | None = None, **_) -> dict[str, int]:
     stats = {"fetched": 0, "inserted": 0, "skipped": 0, "errors": 0}
     since = date.today() - timedelta(days=days)
-    all_items: list[dict] = []
+    specialty_hint = (source_cfg or {}).get("specialty_hint", "tous")
 
     with httpx.Client(
         follow_redirects=True,
@@ -334,9 +333,7 @@ def _collect_eudamed(days: int = 90, **_) -> dict[str, int]:
             "User-Agent": "med-news-back/1.0 (contact@mednews.fr)",
         },
     ) as client:
-        for emdn_code in _VASCULAR_EMDN_CODES:
-            all_items.extend(_search_eudamed_by_emdn(client, emdn_code, since))
-            time.sleep(0.5)
+        all_items = _search_eudamed_class3(client)
 
     stats["fetched"] = len(all_items)
     if not all_items:
@@ -385,12 +382,6 @@ def _collect_eudamed(days: int = 90, **_) -> dict[str, int]:
                         stats["skipped"] += 1
                         continue
 
-                    kws = _VASCULAR_KEYWORDS + _EUDAMED_VASCULAR_KEYWORDS
-                    text = f"{device_name} {description}".lower()
-                    if not any(kw in text for kw in kws):
-                        stats["skipped"] += 1
-                        continue
-
                     risk_class = item.get("riskClassification") or item.get("riskClass") or "III"
                     official_url = (
                         f"https://ec.europa.eu/tools/eudamed/#/screen/devices/udi-di/{eudamed_id}"
@@ -412,7 +403,7 @@ def _collect_eudamed(days: int = 90, **_) -> dict[str, int]:
                         title_raw=title,
                         content_raw=content,
                         raw_payload={**item, "source": "eudamed", "source_type": "innovation",
-                                     "specialty_hint": "chirurgie-vasculaire"},
+                                     "specialty_hint": specialty_hint},
                     )
                     if insert_candidate(cur, row):
                         stats["inserted"] += 1

@@ -6,10 +6,11 @@ Entrée  : liste d'items APPROVED pour cette spécialité (depuis DB)
 Sortie  : (sujet_email: str, html: str, texte_plain: str)
 
 Design :
-  - Reprend le système de design du portal (thème adaptatif OS clair/sombre)
-  - Chaque article = carte avec priorité, catégorie, titre, résumé, impact, lien
+  - Reprend exactement le système de design du portail (Outfit + Instrument Serif,
+    palette warm-gray, bordures gauche colorées par dimension éditoriale)
+  - Chaque article = carte avec bordure colorée, titre, résumé, impact, points clés, lien
   - Ordre : score_density DESC (les plus importants en premier)
-  - Séparation visuelle SPECIALITE / TRANSVERSAL si les deux présents
+  - Sections : Réglementation (bleu #3B52A4) · Recommandations (vert #1A6B5C) · Innovation (ambre #9B5714)
 """
 
 from __future__ import annotations
@@ -25,52 +26,79 @@ from urllib.parse import urlparse
 # ---------------------------------------------------------------------------
 
 SPECIALTY_LABELS: dict[str, str] = {
-    # Médecine générale
-    "medecine-generale": "Médecine générale",
-    # Spécialités médicales
-    "cardiologie": "Cardiologie",
-    "dermatologie": "Dermatologie",
-    "endocrinologie": "Endocrinologie",
-    "gastro-enterologie": "Gastro-entérologie",
-    "gynecologie": "Gynécologie",
-    "neurologie": "Neurologie",
-    "ophtalmologie": "Ophtalmologie",
-    "orl": "ORL",
-    "pediatrie": "Pédiatrie",
-    "pneumologie": "Pneumologie",
-    "psychiatrie": "Psychiatrie",
-    "rhumatologie": "Rhumatologie",
-    "urologie": "Urologie",
-    "medecine-interne": "Médecine interne",
-    "medecine-urgences": "Médecine d'urgences",
-    "geriatrie": "Gériatrie",
-    "medecine-physique": "Médecine physique et réadaptation",
-    "oncologie": "Oncologie",
-    "hematologie": "Hématologie",
-    "infectiologie": "Infectiologie",
-    "nephrologie": "Néphrologie",
-    "radiologie": "Radiologie",
-    "anesthesiologie": "Anesthésiologie",
-    # Chirurgie
-    "chirurgie": "Chirurgie",
+    "medecine-generale":    "Médecine générale",
+    "cardiologie":          "Cardiologie",
+    "dermatologie":         "Dermatologie",
+    "endocrinologie":       "Endocrinologie",
+    "gastro-enterologie":   "Gastro-entérologie",
+    "gynecologie":          "Gynécologie",
+    "neurologie":           "Neurologie",
+    "ophtalmologie":        "Ophtalmologie",
+    "orl":                  "ORL",
+    "pediatrie":            "Pédiatrie",
+    "pneumologie":          "Pneumologie",
+    "psychiatrie":          "Psychiatrie",
+    "rhumatologie":         "Rhumatologie",
+    "urologie":             "Urologie",
+    "medecine-interne":     "Médecine interne",
+    "medecine-urgences":    "Médecine d'urgences",
+    "geriatrie":            "Gériatrie",
+    "medecine-physique":    "Médecine physique et réadaptation",
+    "oncologie":            "Oncologie",
+    "hematologie":          "Hématologie",
+    "infectiologie":        "Infectiologie",
+    "nephrologie":          "Néphrologie",
+    "radiologie":           "Radiologie",
+    "anesthesiologie":      "Anesthésiologie",
+    "chirurgie":            "Chirurgie",
     "chirurgie-vasculaire": "Chirurgie vasculaire",
-    "chirurgie-orthopedique": "Chirurgie orthopédique",
+    "chirurgie-orthopedique":"Chirurgie orthopédique",
     "chirurgie-thoracique": "Chirurgie thoracique",
-    "chirurgie-plastique": "Chirurgie plastique",
-    "neurochirurgie": "Neurochirurgie",
-    "chirurgie-pediatrique": "Chirurgie pédiatrique",
-    "chirurgie-cardiaque": "Chirurgie cardiaque",
-    # Paramédicaux
-    "infirmiers": "Infirmiers",
-    "kinesitherapie": "Kinésithérapie",
-    "sage-femme": "Sage-femme",
-    "biologiste": "Biologie médicale",
-    # Chirurgiens-dentistes et orthodontistes
-    "dentiste": "Dentisterie",
-    "orthodontiste": "Orthodontie",
-    # Pharmaciens — slug 'pharmacien' (sans s) : utilisé par llm_routes.py
-    # pour tous les items audience=PHARMACIENS (cf. llm_routes.py:193).
-    "pharmacien": "Pharmacien d'officine",
+    "chirurgie-plastique":  "Chirurgie plastique",
+    "neurochirurgie":       "Neurochirurgie",
+    "chirurgie-pediatrique":"Chirurgie pédiatrique",
+    "chirurgie-cardiaque":  "Chirurgie cardiaque",
+    "infirmiers":           "Infirmiers",
+    "kinesitherapie":       "Kinésithérapie",
+    "sage-femme":           "Sage-femme",
+    "biologiste":           "Biologie médicale",
+    "dentiste":             "Dentisterie",
+    "orthodontiste":        "Orthodontie",
+    "pharmacien":           "Pharmacien d'officine",
+}
+
+# ---------------------------------------------------------------------------
+# Couleurs par dimension éditoriale — identiques au portail
+# ---------------------------------------------------------------------------
+
+_SECTION_COLORS: dict[str, dict] = {
+    "reglementation": {
+        "border":  "#3B52A4",
+        "border_faint": "rgba(59,82,164,.22)",
+        "cat_bg":  "rgba(59,82,164,.07)",
+        "cat_fg":  "#3B52A4",
+        "cat_bd":  "rgba(59,82,164,.18)",
+        "label":   "Réglementation",
+        "grp_css": "grp-reg",
+    },
+    "recommandations": {
+        "border":  "#1A6B5C",
+        "border_faint": "rgba(26,107,92,.22)",
+        "cat_bg":  "rgba(26,107,92,.07)",
+        "cat_fg":  "#1A6B5C",
+        "cat_bd":  "rgba(26,107,92,.18)",
+        "label":   "Recommandations cliniques",
+        "grp_css": "grp-reco",
+    },
+    "innovation": {
+        "border":  "#9B5714",
+        "border_faint": "rgba(155,87,20,.22)",
+        "cat_bg":  "rgba(155,87,20,.07)",
+        "cat_fg":  "#9B5714",
+        "cat_bd":  "rgba(155,87,20,.18)",
+        "label":   "Innovation",
+        "grp_css": "grp-innov",
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -78,7 +106,6 @@ SPECIALTY_LABELS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 def _safe_url(url: str) -> str:
-    """Sanitize a URL: reject non-http(s) schemes (e.g. javascript:) and HTML-escape."""
     if not url or url == "#":
         return "#"
     parsed = urlparse(url)
@@ -99,7 +126,6 @@ MOIS_FR_LONG = {
 
 
 def _format_date(date_raw: str) -> str:
-    """'2026-02-23' → '23 fév. 2026'"""
     try:
         d = date.fromisoformat(date_raw[:10])
         return f"{d.day} {MOIS_FR[d.month]} {d.year}"
@@ -107,43 +133,12 @@ def _format_date(date_raw: str) -> str:
         return date_raw or ""
 
 
-def _priority_label(score: int) -> tuple[str, str]:
-    """Retourne (label, css_class) selon le score."""
-    if score >= 8:
-        return ("▲ À lire impérativement", "h")
-    elif score >= 6:
-        return ("↑ Important", "m")
-    else:
-        return ("À consulter", "l")
-
-
-CAT_STYLES: dict[str, tuple[str, str]] = {
-    "therapeutique":  ("Médicaments & Dispositifs", "cat-innovation"),
-    "clinique":       ("Clinique",                  "cat-recommandation"),
-    "exercice":       ("Exercice & Admin",           "cat-reglementation"),
-    "innovation":     ("Innovation",                 "cat-innovation"),
-    "recommandation": ("Recommandation",             "cat-recommandation"),
-    "reglementation": ("Réglementation",             "cat-reglementation"),
-}
-
-# CTA text selon le type de source
-_SOURCE_TYPE_CTA: dict[str, str] = {
-    "journal":        "Lire l'article →",
-    "press":          "Lire l'article →",
-    "presse":         "Lire l'article →",
-    "innovation":     "Voir l'étude →",
-    "guideline":      "Lire la recommandation →",
-    "regulatory":     "Lire le texte officiel →",
-    "reglementation": "Lire le texte officiel →",
-    "congress":       "Voir le highlight →",
-    "device":         "Voir le dispositif →",
-}
-
 # ---------------------------------------------------------------------------
-# CSS complet (thème adaptatif OS)
+# CSS — palette exacte du portail, thème adaptatif OS
 # ---------------------------------------------------------------------------
 
 _CSS = """
+/* ── Thème sombre (Apple Mail, iOS Mail) ── */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg:       #17140C;
@@ -153,14 +148,14 @@ _CSS = """
     --border2:  #4A4438;
     --text:     #EDE7DC;
     --text2:    #C6BEB4;
-    --text3:    #8A8378;
-    --text4:    #6A6360;
-    --text5:    #504840;
+    --text3:    #A8A098;
+    --text4:    #8A8378;
+    --text5:    #6A6360;
     --accent:   #9B2335;
     --strip:    #1E1B12;
-    --impact:   #252219;
   }
 }
+/* ── Thème clair (défaut, Gmail, Outlook) ── */
 :root {
   --bg:       #F5F4EF;
   --surface:  #FDFCF9;
@@ -169,104 +164,158 @@ _CSS = """
   --border2:  #B4B0A6;
   --text:     #1A1714;
   --text2:    #3E3A34;
-  --text3:    #706860;
-  --text4:    #908880;
-  --text5:    #B0A898;
+  --text3:    #4E4840;
+  --text4:    #6A6258;
+  --text5:    #908880;
   --accent:   #9B2335;
   --strip:    #ECEAE2;
-  --impact:   #F5F4EF;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-       font-weight: 400; margin: 0; padding: 0; color: var(--text); }
+body {
+  background: var(--bg);
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-weight: 400; color: var(--text);
+}
 .bg  { background: var(--bg); padding: 32px 16px; }
 .wrap { max-width: 600px; margin: 0 auto; }
 
-/* Masthead */
-.masthead { text-align: center; padding: 36px 0 28px;
-            border-bottom: 1px solid var(--border); }
-.masthead-name { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-                  font-size: 24px; font-style: italic; color: var(--text); }
-.masthead-name em { color: var(--accent); font-style: normal; font-weight: 400; }
-.masthead-sub { font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-                color: var(--text4); margin-top: 6px; font-weight: 500; }
+/* ── Masthead ── */
+.masthead {
+  text-align: center; padding: 36px 0 28px;
+  border-bottom: 1px solid var(--border);
+}
+.masthead-name {
+  font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  font-size: 24px; font-style: italic; color: var(--text); letter-spacing: -.3px;
+}
+.masthead-name em { color: var(--accent); font-style: normal; }
+.masthead-sub {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text4); margin-top: 6px; font-weight: 500;
+}
 
-/* Header */
+/* ── Header ── */
 .hd { padding: 32px 40px 24px; }
-.hd-eye { font-size: 10px; color: var(--text4); letter-spacing: 1px;
-           text-transform: uppercase; margin-bottom: 14px; font-weight: 500; }
-.hd-dot { width: 5px; height: 5px; background: var(--accent);
-           border-radius: 50%; display: inline-block;
-           margin-right: 6px; vertical-align: middle; }
-.hd-title { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-             font-size: 28px; font-weight: 400; color: var(--text);
-             line-height: 1.2; margin-bottom: 4px; }
+.hd-eye {
+  font-size: 10px; color: var(--text4); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 14px; font-weight: 500;
+}
+.hd-dot {
+  width: 5px; height: 5px; background: var(--accent);
+  border-radius: 50%; display: inline-block;
+  margin-right: 6px; vertical-align: middle;
+}
+.hd-title {
+  font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  font-size: 28px; font-weight: 400; color: var(--text);
+  line-height: 1.2; margin-bottom: 4px;
+}
 .hd-title em { font-style: italic; color: var(--text2); }
-.hd-stats { font-size: 11px; color: var(--text4); letter-spacing: 0.2px; margin-top: 16px; }
+.hd-stats { font-size: 11px; color: var(--text4); letter-spacing: .2px; margin-top: 16px; }
 .hd-stats .n   { color: var(--text2); font-weight: 500; }
 .hd-stats .sep { color: var(--border2); margin: 0 8px; }
 
-/* Édito */
+/* ── Édito ── */
 .edito { padding: 0 40px 26px; }
 .edito p { font-size: 13px; color: var(--text3); line-height: 1.85; }
-.edito-sign { font-size: 11px; color: var(--text4); margin-top: 12px;
-               letter-spacing: .5px; font-weight: 500; }
+.edito-sign { font-size: 11px; color: var(--text4); margin-top: 12px; letter-spacing: .5px; font-weight: 500; }
 
-/* CTA portal */
-.portal-strip { background: var(--strip); border-top: 1px solid var(--border);
-                border-bottom: 1px solid var(--border);
-                padding: 18px 40px; margin-bottom: 8px; }
-.portal-strip p { font-size: 12px; color: var(--text4);
-                  letter-spacing: .2px; line-height: 1.6;
-                  display: inline-block; vertical-align: middle;
-                  max-width: 340px; }
-.portal-btn { font-size: 12px; font-weight: 500; color: var(--text);
-              text-decoration: none; background: var(--surface);
-              border: 1px solid var(--border2);
-              padding: 8px 18px; border-radius: 4px;
-              white-space: nowrap; display: inline-block;
-              vertical-align: middle; margin-left: 16px; }
+/* ── CTA portal ── */
+.portal-strip {
+  background: var(--strip); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 18px 40px; margin-bottom: 8px;
+}
+.portal-strip p {
+  font-size: 12px; color: var(--text4); letter-spacing: .2px; line-height: 1.6;
+  display: inline-block; vertical-align: middle; max-width: 320px;
+}
+.portal-btn {
+  font-size: 12px; font-weight: 500; color: var(--text2);
+  text-decoration: none; background: var(--surface);
+  border: 1px solid var(--border2);
+  padding: 8px 18px; border-radius: 4px;
+  white-space: nowrap; display: inline-block;
+  vertical-align: middle; margin-left: 16px;
+}
 
-/* Section headers */
+/* ── Section headers ── */
 .grp { padding: 28px 40px 12px; }
-.grp-label { font-size: 11px; font-weight: 500;
-              letter-spacing: .6px; text-transform: uppercase;
-              padding-left: 10px; }
+.grp-label {
+  font-size: 10px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase;
+  padding-left: 10px; display: inline-block;
+}
 .grp-reg   { color: #3B52A4; border-left: 3px solid #3B52A4; }
 .grp-reco  { color: #1A6B5C; border-left: 3px solid #1A6B5C; }
 .grp-innov { color: #9B5714; border-left: 3px solid #9B5714; }
 
-/* Cards articles */
-.card { background: var(--surface); border: 1px solid var(--border);
-         border-radius: 4px; padding: 22px 28px 20px;
-         margin: 0 40px 8px; }
-.card-top { margin-bottom: 10px; }
-.card-top > * { display: inline-block; vertical-align: middle; margin-right: 7px; }
-.card-date { font-size: 11px; color: var(--text5); }
+/* ── Article cards — structure portail ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 18px 22px 16px;
+  margin: 0 40px 8px;
+  border-left: 3px solid var(--border);
+}
+.card-top {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px; flex-wrap: nowrap;
+}
+.card-date { font-size: 11px; color: var(--text5); flex-shrink: 0; }
 
-/* Catégories */
-.cat { font-size: 10px; letter-spacing: .3px; text-transform: uppercase;
-        padding: 2px 8px; border-radius: 2px; font-weight: 500; }
-.cat-reglementation { background: rgba(59,82,164,.07); color: #3B52A4;
-                      border: 0.5px solid rgba(59,82,164,.2); }
-.cat-recommandation { background: rgba(26,107,92,.07); color: #1A6B5C;
-                      border: 0.5px solid rgba(26,107,92,.2); }
-.cat-innovation     { background: rgba(155,87,20,.07); color: #9B5714;
-                      border: 0.5px solid rgba(155,87,20,.2); }
+/* Badges catégorie */
+.cat {
+  font-size: 10px; letter-spacing: .2px; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 2px; font-weight: 500;
+  border: 0.5px solid transparent;
+}
+.cat-reg   { background: rgba(59,82,164,.07); color: #3B52A4; border-color: rgba(59,82,164,.18); }
+.cat-reco  { background: rgba(26,107,92,.07); color: #1A6B5C; border-color: rgba(26,107,92,.18); }
+.cat-innov { background: rgba(155,87,20,.07); color: #9B5714; border-color: rgba(155,87,20,.18); }
 
-.card-title { font-size: 0.95rem; font-weight: 500; color: var(--text);
-               line-height: 1.45; margin-bottom: 10px; }
-.card-resume { font-size: 13px; font-weight: 400; color: var(--text3);
-                line-height: 1.7; margin-bottom: 12px; }
-.card-impact { font-size: 12px; color: var(--text3); line-height: 1.65;
-                padding: 10px 14px; margin-bottom: 14px;
-                background: var(--impact); border-radius: 4px;
-                font-weight: 400; border: 1px solid var(--border); }
-.card-link { font-size: 12px; font-weight: 500; color: var(--accent);
-              text-decoration: none;
-              display: inline-block; }
+/* Titre */
+.card-title {
+  font-size: 15px; font-weight: 500; color: var(--text);
+  line-height: 1.4; margin-bottom: 8px;
+}
 
-/* Footer */
+/* Résumé */
+.card-resume {
+  font-size: 13px; font-weight: 400; color: var(--text3);
+  line-height: 1.7; margin-bottom: 10px;
+}
+
+/* Impact pratique — style italic + border-left (identique portail) */
+.card-impact {
+  font-size: 13px; color: var(--text2); font-style: italic; line-height: 1.6;
+  padding-left: 10px; margin-bottom: 12px;
+  border-left: 2px solid var(--border);
+}
+
+/* Points clés */
+.card-points {
+  margin: 0 0 12px 0; padding: 0; list-style: none;
+}
+.card-points li {
+  font-size: 12px; color: var(--text3); line-height: 1.55;
+  padding-left: 14px; position: relative; margin-bottom: 4px;
+}
+.card-points li::before {
+  content: "·"; position: absolute; left: 0;
+  color: var(--text4); font-size: 14px; line-height: 1.3;
+}
+
+/* Bouton lien officiel — style .btn-official du portail */
+.card-link {
+  display: inline-block;
+  font-size: 12px; font-weight: 500; color: var(--text2);
+  text-decoration: none;
+  border: 1px solid var(--border2);
+  border-radius: 4px; padding: 6px 14px;
+  background: transparent;
+}
+
+/* ── Footer ── */
 .footer { padding: 24px 0 8px; text-align: center; }
 .footer p { font-size: 11px; color: var(--text5); letter-spacing: .2px; line-height: 2; }
 .footer a { color: var(--text4); text-decoration: none; }
@@ -281,152 +330,18 @@ body { background: var(--bg); font-family: 'Outfit', -apple-system, BlinkMacSyst
   .portal-strip p { display: block; max-width: 100%; margin-right: 0; }
   .portal-btn { display: block; margin-left: 0; margin-top: 10px; text-align: center; }
   .grp  { padding: 20px 16px 8px; }
-  .card { margin: 0 8px 8px; padding: 16px 14px 14px; }
-  .card-title { font-size: 0.88rem; }
+  .card { margin: 0 8px 8px; padding: 14px 14px 12px; }
+  .card-title { font-size: 14px; }
   .card-resume { font-size: 12px; }
+  .card-top { flex-wrap: wrap; }
 }
 """
 
 # ---------------------------------------------------------------------------
-# Rendu d'un article
+# Classification éditoriale
 # ---------------------------------------------------------------------------
-
-def _render_article(item: dict[str, Any], featured: bool = False) -> str:
-    tri = item.get("tri_json") or {}
-    score = item.get("score_density") or 5
-    prio_label, prio_class = _priority_label(score)
-
-    date_str = _format_date(item.get("official_date") or "")
-
-    # Catégorie : on remonte source_type en priorité pour les articles innovation/presse
-    source_type = item.get("source_type") or ""
-    cat = item.get("categorie") or ""
-    # Mapper source_type → cat si pas de catégorie explicite
-    if not cat and source_type in CAT_STYLES:
-        cat = source_type
-    cat_label, cat_class = CAT_STYLES.get(cat, ("", ""))
-
-    titre = tri.get("titre_court") or item.get("title_raw") or ""
-    resume = tri.get("resume") or ""
-    impact = tri.get("impact_pratique") or ""
-    url = _safe_url(item.get("official_url") or "#")
-
-    # CTA dynamique selon source_type
-    cta_text = _SOURCE_TYPE_CTA.get(source_type, "Lire l'article →")
-
-    cat_html = (
-        f'<span class="cat {cat_class}">{_he(cat_label)}</span>'
-        if cat_label else ""
-    )
-
-    impact_html = (
-        f'<div class="card-impact">{_he(impact)}</div>'
-        if impact else ""
-    )
-
-    return f"""
-<div class="card">
-  <div class="card-top">
-    <span class="card-date">{_he(date_str)}</span>
-    {cat_html}
-  </div>
-  <div class="card-title">{_he(titre)}</div>
-  <p class="card-resume">{_he(resume)}</p>
-  {impact_html}
-  <a class="card-link" href="{url}">{cta_text}</a>
-</div>
-"""
-
-
-# ---------------------------------------------------------------------------
-# Génération de l'édito
-# ---------------------------------------------------------------------------
-
-def _generate_edito(
-    items_spec: list,
-    items_transv: list,
-    specialty_name: str,
-    emission_date: date,
-) -> str:
-    n_total = len(items_spec) + len(items_transv)
-    mois = MOIS_FR_LONG[emission_date.month]
-
-    return (
-        f"Réglementation, recommandations cliniques, innovation\u00a0: "
-        f"chaque semaine, MedNews sélectionne pour votre spécialité "
-        f"les publications à fort impact pratique. "
-        f"Cette édition regroupe {n_total}\u00a0article{'s' if n_total > 1 else ''} "
-        f"issus des parutions de {mois}\u00a0{emission_date.year} et du mois précédent, "
-        f"classés par dimension et par pertinence clinique."
-    )
-
-
-# ---------------------------------------------------------------------------
-# Texte plain
-# ---------------------------------------------------------------------------
-
-def _build_plain(
-    specialty_name: str,
-    items_spec: list,
-    items_transv: list,
-    portal_url: str,
-) -> str:
-    lines = [
-        f"MedNews — La revue médicale · {specialty_name}",
-        "=" * 50,
-        "",
-    ]
-    for item in items_spec + items_transv:
-        tri = item.get("tri_json") or {}
-        titre = tri.get("titre_court") or item.get("title_raw") or ""
-        impact = tri.get("impact_pratique") or ""
-        url = item.get("official_url") or ""
-        lines += [f"• {titre}", f"  {impact}", f"  {url}", ""]
-    lines += ["---", f"Accéder à mon espace : {portal_url}"]
-    return "\n".join(lines)
-
-
-# ---------------------------------------------------------------------------
-# Point d'entrée principal
-# ---------------------------------------------------------------------------
-
-def _source_tags(items: list[dict]) -> str:
-    """Génère les tags de sources à partir des items (ex: PubMed · TCTMD · ESVS)."""
-    seen: list[str] = []
-    _source_map = {
-        "pubmed_jvs":          "JVS",
-        "pubmed_ejves":        "EJVES",
-        "pubmed_jet":          "J Endovasc Ther",
-        "pubmed_ann_vasc_surg":"Ann Vasc Surg",
-        "pubmed_":             "PubMed",
-        "vascular_specialist": "Vascular Specialist",
-        "vascular_news":       "Vascular News",
-        "tctmd":               "TCTMD",
-        "linc_highlights":     "LINC",
-        "cirse_highlights":    "CIRSE",
-        "esvs_highlights":     "ESVS",
-        "quotidien_medecin":   "Quotidien du Médecin",
-        "egora":               "Egora",
-        "has_":                "HAS",
-        "ansm_":               "ANSM",
-        "legifrance":          "JORF",
-        "fda_":                "FDA",
-        "eudamed":             "CE/EUDAMED",
-    }
-    for item in items:
-        src = item.get("source") or ""
-        label = None
-        for prefix, lbl in _source_map.items():
-            if src == prefix or src.startswith(prefix):
-                label = lbl
-                break
-        if label and label not in seen:
-            seen.append(label)
-    return " · ".join(seen[:5]) if seen else "PubMed · Presse médicale"
-
 
 def _classify_section(item: dict) -> str:
-    """Classifie un article dans l'une des 3 dimensions éditoriales."""
     cat = (item.get("categorie") or "").lower()
     source_type = (item.get("source_type") or "").lower()
     source = (item.get("source") or "").lower()
@@ -439,13 +354,163 @@ def _classify_section(item: dict) -> str:
         "innovation", "journal", "press", "presse", "congress", "device"
     ):
         return "innovation"
-    # Fallback par source
-    if source.startswith("legifrance") or source.startswith("ansm_"):
+    if source.startswith("legifrance") or source.startswith("ansm_") or source.startswith("piste_"):
         return "reglementation"
     if source.startswith("has_"):
         return "recommandations"
     return "innovation"
 
+
+# ---------------------------------------------------------------------------
+# Rendu d'un article
+# ---------------------------------------------------------------------------
+
+def _render_article(item: dict[str, Any], section: str) -> str:
+    tri     = item.get("tri_json") or {}
+    lecture = item.get("lecture_json") or {}
+    sc      = _SECTION_COLORS.get(section, _SECTION_COLORS["innovation"])
+
+    date_str = _format_date(item.get("official_date") or "")
+    titre    = tri.get("titre_court") or item.get("title_raw") or ""
+    resume   = tri.get("resume") or ""
+    impact   = tri.get("impact_pratique") or ""
+    url      = _safe_url(item.get("official_url") or "#")
+
+    # Points clés (max 3 — au-delà ça alourdit l'email)
+    points = lecture.get("points_cles") or []
+    if isinstance(points, list):
+        points = [p for p in points if isinstance(p, str) and p.strip()][:3]
+
+    # Badge catégorie
+    cat_css_map = {"reglementation": "cat-reg", "recommandations": "cat-reco", "innovation": "cat-innov"}
+    cat_css   = cat_css_map.get(section, "cat-innov")
+    cat_label = sc["label"]
+
+    # CTA
+    cta_map = {
+        "reglementation":  "Lire le texte officiel →",
+        "recommandations": "Lire la recommandation →",
+        "innovation":      "Lire l'étude →",
+    }
+    cta_text = cta_map.get(section, "Lire l'article →")
+
+    # Impact HTML
+    impact_html = (
+        f'<div class="card-impact">{_he(impact)}</div>'
+        if impact else ""
+    )
+
+    # Points clés HTML
+    points_html = ""
+    if points:
+        items_li = "".join(f"<li>{_he(p)}</li>" for p in points)
+        points_html = f'<ul class="card-points">{items_li}</ul>'
+
+    # Bouton lien
+    link_html = (
+        f'<a class="card-link" href="{url}">{cta_text}</a>'
+        if url != "#" else ""
+    )
+
+    # Bordure gauche colorée (inline pour fiabilité email)
+    border_style = (
+        f'border-left: 3px solid {sc["border"]}; '
+        f'border-color: {sc["border_faint"]}; '
+        f'border-left-color: {sc["border"]}; '
+    )
+
+    return f"""
+<div class="card" style="{border_style}">
+  <div class="card-top">
+    <span class="card-date">{_he(date_str)}</span>
+    <span class="cat {cat_css}">{_he(cat_label)}</span>
+  </div>
+  <div class="card-title">{_he(titre)}</div>
+  <p class="card-resume">{_he(resume)}</p>
+  {impact_html}{points_html}{link_html}
+</div>
+"""
+
+
+# ---------------------------------------------------------------------------
+# Source tags
+# ---------------------------------------------------------------------------
+
+_SOURCE_MAP = {
+    "pubmed_jvs":          "JVS",
+    "pubmed_ejves":        "EJVES",
+    "pubmed_jet":          "J Endovasc Ther",
+    "pubmed_ann_vasc_surg":"Ann Vasc Surg",
+    "pubmed_":             "PubMed",
+    "vascular_specialist": "Vascular Specialist",
+    "vascular_news":       "Vascular News",
+    "tctmd":               "TCTMD",
+    "quotidien_medecin":   "Quotidien du Médecin",
+    "egora":               "Egora",
+    "has_":                "HAS",
+    "ansm_":               "ANSM",
+    "legifrance":          "JORF",
+    "piste_kali":          "UNCAM/KALI",
+    "fda_":                "FDA",
+    "eudamed":             "CE/EUDAMED",
+    "ema_":                "EMA",
+    "ecdc_":               "ECDC",
+}
+
+
+def _source_tags(items: list[dict]) -> str:
+    seen: list[str] = []
+    for item in items:
+        src = item.get("source") or ""
+        label = None
+        for prefix, lbl in _SOURCE_MAP.items():
+            if src == prefix or src.startswith(prefix):
+                label = lbl
+                break
+        if label and label not in seen:
+            seen.append(label)
+    return " · ".join(seen[:5]) if seen else "PubMed · Presse médicale"
+
+
+# ---------------------------------------------------------------------------
+# Édito
+# ---------------------------------------------------------------------------
+
+def _generate_edito(n_total: int, specialty_name: str, emission_date: date) -> str:
+    mois = MOIS_FR_LONG[emission_date.month]
+    return (
+        f"Réglementation, recommandations cliniques, innovation : "
+        f"MedNews sélectionne chaque mois pour votre spécialité "
+        f"les publications à fort impact pratique. "
+        f"Cette édition regroupe {n_total} article{'s' if n_total > 1 else ''} "
+        f"issus des parutions de {mois} {emission_date.year} et du mois précédent, "
+        f"classés par dimension et par pertinence clinique."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Texte plain
+# ---------------------------------------------------------------------------
+
+def _build_plain(specialty_name: str, items: list[dict], portal_url: str) -> str:
+    lines = [
+        f"MedNews — La revue médicale · {specialty_name}",
+        "=" * 50,
+        "",
+    ]
+    for item in items:
+        tri    = item.get("tri_json") or {}
+        titre  = tri.get("titre_court") or item.get("title_raw") or ""
+        impact = tri.get("impact_pratique") or ""
+        url    = item.get("official_url") or ""
+        lines += [f"• {titre}", f"  {impact}", f"  {url}", ""]
+    lines += ["---", f"Accéder à mon espace : {portal_url}"]
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Point d'entrée principal
+# ---------------------------------------------------------------------------
 
 def build_newsletter(
     specialty_slug: str,
@@ -458,15 +523,6 @@ def build_newsletter(
 ) -> tuple[str, str, str]:
     """
     Construit la newsletter.
-
-    Args:
-        specialty_slug  : slug de la spécialité
-        items           : liste d'items APPROVED (spécialité + transversaux)
-        emission_date   : date d'émission (défaut: aujourd'hui)
-        portal_url      : URL du portal (construit depuis BASE_URL si vide)
-        unsubscribe_url : URL de désabonnement
-        archive_url     : URL d'archive
-        max_articles    : nombre maximum d'articles dans la newsletter (défaut 6)
 
     Returns:
         (sujet: str, html: str, texte_plain: str)
@@ -495,10 +551,12 @@ def build_newsletter(
         raw = item.get("official_date") or ""
         try:
             d = date.fromisoformat(raw[:10])
-            return (d.year == emission_date.year and d.month == emission_date.month) or \
-                   (d.year == prev_year and d.month == prev_month)
+            return (
+                (d.year == emission_date.year and d.month == emission_date.month) or
+                (d.year == prev_year and d.month == prev_month)
+            )
         except Exception:
-            return True  # date manquante → on garde
+            return True
 
     items = [i for i in items if _in_window(i)]
 
@@ -509,7 +567,7 @@ def build_newsletter(
         or i.get("specialty_slug") == specialty_slug
     ]
 
-    # Trier par score descendant, puis garder les N meilleurs
+    # Trier par score, limiter
     items_spec = sorted(items_spec, key=lambda x: x.get("score_density") or 0, reverse=True)
     items_spec = items_spec[:max_articles]
 
@@ -522,11 +580,12 @@ def build_newsletter(
                          key=lambda x: x.get("score_density") or 0, reverse=True)
     items_innov = sorted([i for i in items_spec if _classify_section(i) == "innovation"],
                          key=lambda x: x.get("score_density") or 0, reverse=True)
+
     n_reg   = len(items_reg)
     n_reco  = len(items_reco)
     n_innov = len(items_innov)
 
-    # Sujet : accroche sur l'item le plus urgent
+    # Sujet email
     top_item = items_spec[0] if items_spec else None
     if top_item:
         top_titre = (top_item.get("tri_json") or {}).get("titre_court") or top_item.get("title_raw") or ""
@@ -536,23 +595,30 @@ def build_newsletter(
     else:
         sujet = f"[MedNews] {specialty_name} — Veille {MOIS_FR_LONG[emission_date.month]} {emission_date.year}"
 
-    edito_text = _generate_edito(items_spec, [], specialty_name, emission_date)
-
+    edito_text  = _generate_edito(n_total, specialty_name, emission_date)
     source_tags = _source_tags(items_spec)
 
-    def _section_html(label: str, css: str, items: list) -> str:
+    def _section_html(section: str, items: list) -> str:
         if not items:
             return ""
-        cards = "".join(_render_article(i) for i in items)
-        return f'<div class="grp"><div class="grp-label {css}">{_he(label)}</div></div>\n{cards}'
+        sc    = _SECTION_COLORS[section]
+        cards = "".join(_render_article(i, section) for i in items)
+        return (
+            f'<div class="grp">'
+            f'<div class="grp-label {sc["grp_css"]}">{_he(sc["label"])}</div>'
+            f'</div>\n{cards}'
+        )
 
     articles_html = (
-        _section_html("Réglementation", "grp-reg", items_reg)
-        + _section_html("Recommandations cliniques", "grp-reco", items_reco)
-        + _section_html("Innovation", "grp-innov", items_innov)
+        _section_html("reglementation", items_reg)
+        + _section_html("recommandations", items_reco)
+        + _section_html("innovation", items_innov)
     )
     if not articles_html.strip():
-        articles_html = '<p style="color:var(--text5);font-style:italic;padding:20px 40px;">Aucun article sélectionné cette semaine.</p>'
+        articles_html = (
+            '<p style="color:var(--text5);font-style:italic;padding:20px 40px;">'
+            'Aucun article sélectionné cette période.</p>'
+        )
 
     html = f"""<!DOCTYPE html>
 <html lang="fr">
@@ -561,7 +627,9 @@ def build_newsletter(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>{_he(sujet)}</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@400;500&display=swap" rel="stylesheet">
 <style>{_CSS}</style>
 </head>
 <body>
@@ -622,6 +690,5 @@ def build_newsletter(
 </body>
 </html>"""
 
-    plain = _build_plain(specialty_name, items_spec, [], portal_url)
-
+    plain = _build_plain(specialty_name, items_spec, portal_url)
     return sujet, html, plain

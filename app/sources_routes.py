@@ -2,16 +2,25 @@
 """
 Routes admin pour gérer et tester les sources de collecte.
 
-GET  /admin/sources/status
-     État de chaque source : dernière collecte, nb candidats, erreurs
+GET  /admin/sources/status?days=35
+     État de toutes les sources connues (700+) : nb candidats, statuts
 
-POST /admin/sources/collect/jorf
-POST /admin/sources/collect/kali
-POST /admin/sources/collect/has
-POST /admin/sources/collect/ansm
-POST /admin/sources/collect/spf
-POST /admin/sources/collect/web       ← scraper HTML (SFH, SFR, SFO, SFPédiatrie, SOFCOT)
-POST /admin/sources/collect/all       ← tout en une fois
+POST /admin/sources/collect/all?days=35
+     ← RUN PRINCIPAL — JORF + KALI + RSS (160) + PubMed (512) + Web + API
+
+POST /admin/sources/collect/jorf       ← JORF seul (API PISTE)
+POST /admin/sources/collect/kali       ← KALI seul (conventions médicales)
+POST /admin/sources/collect/has        ← HAS seul (recommandations, CT, DM)
+POST /admin/sources/collect/ansm       ← ANSM seul (sécurité, ruptures)
+POST /admin/sources/collect/spf        ← SPF (non activé)
+POST /admin/sources/collect/web        ← scraping HTML sociétés savantes FR + EU
+POST /admin/sources/collect/innovation ← RSS + PubMed + Web + API (sans PISTE)
+POST /admin/sources/collect/pratique   ← FR_REGULATORY + FR_SOCIETIES + Web FR
+POST /admin/sources/collect/fda        ← FDA PMA + 510(k)
+POST /admin/sources/collect/eudamed    ← EUDAMED classe III
+
+POST /admin/sources/enrich/pubmed-abstracts  ← re-fetch abstracts manquants
+POST /admin/sources/enrich/unpaywall         ← full text OA via Unpaywall + PMC
 
 POST /admin/sources/test-feed?url=…   ← tester un flux RSS manuellement
 """
@@ -81,14 +90,17 @@ def _validate_url(url: str) -> None:
 # ---------------------------------------------------------------------------
 
 @router.get("/status")
-def sources_status(request: Request):
+def sources_status(request: Request, days: int = Query(default=35, ge=1, le=365)):
     """
-    Vue d'ensemble : pour chaque source, combien de candidats
-    ont été insérés dans les 35 derniers jours.
+    Vue d'ensemble : pour chaque source active, nombre de candidats insérés
+    dans la fenêtre demandée (default 35 jours).
+
+    Couvre toutes les sources du pipeline : RSS (160), PubMed (512),
+    web scraping HTML (26), PISTE API (2), API externes (FDA, EUDAMED, EMA).
     """
     _require_admin(request)
 
-    since = date.today() - timedelta(days=35)
+    since = date.today() - timedelta(days=days)
 
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -101,47 +113,87 @@ def sources_status(request: Request):
             """, (since,))
             rows = cur.fetchall()
 
-    # Regrouper par source
     by_source: dict[str, dict] = {}
-    for source, status, count in rows:
-        if source not in by_source:
-            by_source[source] = {"total": 0, "by_status": {}}
-        by_source[source]["by_status"][status] = count
-        by_source[source]["total"] += count
+    for src, status, count in rows:
+        if src not in by_source:
+            by_source[src] = {"total": 0, "by_status": {}}
+        by_source[src]["by_status"][status] = count
+        by_source[src]["total"] += count
 
-    # Enrichir avec les métadonnées des sources connues
-    known_sources = {
-        # PISTE
-        "legifrance_jorf":    {"label": "JORF — Journal Officiel",         "type": "piste_api",    "legal": "API officielle PISTE"},
-        "piste_kali":         {"label": "KALI — Conventions collectives",  "type": "piste_api",    "legal": "API officielle PISTE"},
-        "piste_legi":         {"label": "LEGI — Codes consolidés",         "type": "piste_api",    "legal": "API officielle PISTE"},
-        "piste_circulaires":  {"label": "CIRCULAIRES — Ministère santé",   "type": "piste_api",    "legal": "API officielle PISTE"},
-        # RSS
-        "has_rbp":            {"label": "HAS — Recommandations bonne pratique", "type": "rss",     "legal": "Flux RSS public — Licence Ouverte"},
-        "has_ct":             {"label": "HAS — Commission transparence",   "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "has_dm":             {"label": "HAS — Avis dispositifs médicaux", "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "has_ap":             {"label": "HAS — Accès précoce",             "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "has_cert":           {"label": "HAS — Certification établissements", "type": "rss",       "legal": "Flux RSS public — Licence Ouverte"},
-        "ansm_actu":          {"label": "ANSM — Actualités",               "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "ansm_alertes":       {"label": "ANSM — Alertes de sécurité",      "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "ansm_decisions":     {"label": "ANSM — Décisions",                "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "ansm_ruptures":      {"label": "ANSM — Ruptures d'appro.",        "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "ansm_reco":          {"label": "ANSM — Recommandations",          "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "spf_actu":           {"label": "SPF — Actualités",                "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "spf_publi":          {"label": "SPF — Publications",              "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
-        "spf_alertes":        {"label": "SPF — Alertes sanitaires",        "type": "rss",          "legal": "Flux RSS public — Licence Ouverte"},
+    # ── Construire known_sources dynamiquement depuis les définitions de sources ──
+    from app.sources import ALL_FEEDS, EU_WEB_SOURCES
+    from app.web_scraper import WEB_SCRAPER_SOURCES
+    from app.pubmed_collector import PUBMED_SOURCES
+
+    known_sources: dict[str, dict] = {}
+
+    # PISTE
+    known_sources["legifrance_jorf"] = {
+        "label": "JORF — Journal Officiel de la République Française",
+        "section": "piste", "type": "piste_api", "legal": "API officielle PISTE",
     }
+    known_sources["piste_kali"] = {
+        "label": "KALI — Convention médicale et avenants UNCAM",
+        "section": "piste", "type": "piste_api", "legal": "API officielle PISTE",
+    }
+
+    # RSS — toutes sections (FR_REGULATORY, FR_SOCIETIES, EU_FEEDS, JOURNALS, CLINICAL_PRESS)
+    for feed in ALL_FEEDS:
+        known_sources[feed["source"]] = {
+            "label": feed.get("label", feed["source"]),
+            "section": "rss",
+            "type": "rss",
+            "legal": "Flux RSS public",
+        }
+
+    # Web scraping HTML — sociétés européennes
+    for src in EU_WEB_SOURCES:
+        known_sources[src["source"]] = {
+            "label": src.get("label", src["source"]),
+            "section": "web_eu",
+            "type": "web_scraper",
+            "legal": "Scraping HTML public",
+        }
+
+    # Web scraping HTML — sociétés françaises
+    for src in WEB_SCRAPER_SOURCES:
+        known_sources[src["source"]] = {
+            "label": src.get("label", src["source"]),
+            "section": "web_fr",
+            "type": "web_scraper",
+            "legal": "Scraping HTML public",
+        }
+
+    # PubMed — 512 sources
+    for src in PUBMED_SOURCES:
+        known_sources[src["source"]] = {
+            "label": src.get("label", src["source"]),
+            "section": "pubmed",
+            "type": "pubmed",
+            "specialty": src.get("specialty_hint"),
+            "legal": "API NCBI — accès libre (E-utilities)",
+        }
 
     result = []
     for src_id, meta in known_sources.items():
         stats = by_source.get(src_id, {"total": 0, "by_status": {}})
-        result.append({
-            "source_id": src_id,
-            **meta,
-            "last_35_days": stats,
-        })
+        result.append({"source_id": src_id, **meta, f"last_{days}_days": stats})
 
-    return {"ok": True, "since": since.isoformat(), "sources": result}
+    # Sources en DB non référencées dans les définitions connues
+    unknown = [
+        {"source_id": src_id, "section": "unknown", **stats}
+        for src_id, stats in by_source.items()
+        if src_id not in known_sources
+    ]
+
+    return {
+        "ok": True,
+        "since": since.isoformat(),
+        "total_known_sources": len(known_sources),
+        "total_with_data": sum(1 for r in result if r[f"last_{days}_days"]["total"] > 0),
+        "sources": result,
+        "unknown_sources": unknown,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -152,73 +204,13 @@ def sources_status(request: Request):
 def collect_jorf(request: Request, days: int = Query(default=35, ge=1, le=365)):
     _require_admin(request)
     try:
-        from app.scheduler import job_collect_and_analyse
-        # On réutilise le bloc JORF du scheduler directement
-        from app.piste_routes import (
-            _piste_call, _extract_list, _keep_item_with_reason,
-            _parse_date10, _official_url,
-        )
-        from app.collector_utils import build_candidate_row, insert_candidate
-        from datetime import timedelta
-
-        source = "legifrance_jorf"
-        today = date.today()
-        start = today - timedelta(days=days)
-        seen = ins = dup = 0
-
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                for page in range(1, 41):
-                    payload = {"fond": "JORF", "recherche": {
-                        "pageNumber": page, "pageSize": 50,
-                        "operateur": "ET", "typePagination": "DEFAUT",
-                    }}
-                    try:
-                        data = _piste_call("/search", payload)
-                    except Exception:
-                        break
-                    items = _extract_list(data)
-                    if not items:
-                        break
-                    for it in items:
-                        if not isinstance(it, dict):
-                            continue
-                        seen += 1
-                        titles = it.get("titles") if isinstance(it.get("titles"), list) else []
-                        t0 = titles[0] if titles and isinstance(titles[0], dict) else {}
-                        jorftext_id = t0.get("cid")
-                        title = t0.get("title")
-                        nature = it.get("nature") or it.get("type")
-                        ok, _ = _keep_item_with_reason(nature, title)
-                        if not ok:
-                            continue
-                        pub_s = _parse_date10(it.get("datePublication")) or _parse_date10(it.get("date"))
-                        if not pub_s:
-                            continue
-                        pub_d = date.fromisoformat(pub_s)
-                        if not (start <= pub_d <= today):
-                            continue
-                        if not (isinstance(jorftext_id, str) and jorftext_id.startswith("JORFTEXT")):
-                            continue
-                        row = build_candidate_row(
-                            source=source, external_id=jorftext_id,
-                            official_url=_official_url(jorftext_id),
-                            official_date=pub_d,
-                            title_raw=(title or "").strip() or "(no title)",
-                            jorftext_id=jorftext_id, raw_payload=it,
-                        )
-                        if insert_candidate(cur, row):
-                            ins += 1
-                        else:
-                            dup += 1
-            conn.commit()
-
-        return {"ok": True, "source": "legifrance_jorf", "days": days,
-                "seen": seen, "inserted": ins, "deduped": dup}
+        from app.piste_collector import collect_jorf as _collect
+        result = _collect(days=days)
+        return {"ok": True, "source": "legifrance_jorf", "days": days, **result}
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Erreur sources admin")
+        logger.exception("Erreur collect/jorf")
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
@@ -304,18 +296,13 @@ def collect_web(request: Request):
 @router.post("/collect/innovation")
 def collect_innovation(request: Request, days: int = Query(default=90, ge=1, le=365)):
     """
-    Collecte les sources innovation + réglementation dispositifs médicaux :
-    - PubMed — chirurgie vasculaire : JVS, EJVES, EJVES-guidelines, JET, Ann Vasc Surg, JAMA Surgery
-    - PubMed — chirurgie cardiaque  : JTCVS, EJCTS, EJCTS-guidelines, Ann Thorac Surg,
-                                      JACC, JACC Cardiovasc Interv, European Heart J, Circulation
-    - RSS presse médicale : Vascular Specialist, Vascular News, TCTMD (vasculaire + cardiac interv.),
-                            Endovascular Today, Archives of Cardiovascular Diseases (SFC)
-    - RSS presse généraliste : Le Quotidien du Médecin, Egora
-    - Flux RSS journaux : JAMA/NEJM/Lancet/BMJ/Nature Medicine + paramédicaux
-    - Approbations FDA (PMA Class III + clearances 510k)
-    - Dispositifs CE EUDAMED (classes III, codes EMDN vasculaires E06/E07)
-    - ANSM sécurité dispositifs médicaux (ansm_securite_dm)
+    Collecte toutes les sources innovation + API dispositifs médicaux (sans PISTE) :
+    - RSS    : 160 feeds toutes spécialités (journaux, sociétés savantes, presse clinique)
+    - PubMed : 512 sources toutes spécialités
+    - Web    : scraping HTML sociétés savantes FR + EU
+    - API    : FDA (PMA Class III + 510k), EUDAMED (classe III), EMA DHPC
     days=90 par défaut pour l'historique récent au premier run.
+    Note : ne collecte pas JORF/KALI — utiliser /collect/all pour tout inclure.
     """
     _require_admin(request)
     try:
@@ -337,9 +324,9 @@ def collect_innovation(request: Request, days: int = Query(default=90, ge=1, le=
 @router.post("/collect/fda")
 def collect_fda(request: Request, days: int = Query(default=90, ge=1, le=365)):
     """
-    Collecte les approbations FDA de dispositifs vasculaires :
-    - PMA (Class III) : endoprothèses, greffons aortiques, filtres cave
-    - 510(k) (Class II) : cathéters, stents périphériques, systèmes de délivrance
+    Collecte les approbations FDA de dispositifs médicaux :
+    - PMA (Class III) : dispositifs à risque élevé (implants, endoprothèses…)
+    - 510(k) (Class II) : dispositifs à risque modéré (clearances)
     Source : open.fda.gov (API publique, pas de clé requise).
     """
     _require_admin(request)
@@ -359,8 +346,7 @@ def collect_fda(request: Request, days: int = Query(default=90, ge=1, le=365)):
 def collect_eudamed(request: Request, days: int = Query(default=90, ge=1, le=365)):
     """
     Collecte les dispositifs CE marqués dans EUDAMED (base UE).
-    Filtre : Classe III (Im), codes EMDN vasculaires E06/E07 (prothèses vasculaires,
-    stents périphériques), + mots-clés vasculaires côté client.
+    Filtre : Classe III (Im), codes EMDN pertinents + mots-clés cliniques côté client.
     Source : https://ec.europa.eu/tools/eudamed/ (API publique).
     """
     _require_admin(request)
@@ -431,23 +417,44 @@ def enrich_unpaywall(
 
 @router.post("/collect/all")
 def collect_all(request: Request, days: int = Query(default=35, ge=1, le=365)):
-    """Lance la collecte complète de toutes les sources."""
+    """
+    Lance la collecte complète de toutes les sources :
+    - PISTE  : JORF + KALI (API Légifrance)
+    - RSS    : 160 feeds (FR_REGULATORY, FR_SOCIETIES, EU, JOURNALS, CLINICAL_PRESS)
+    - PubMed : 512 sources (tous specialty_hints, fenêtre = days)
+    - Web    : scraping HTML sociétés savantes FR + EU (ESC, EULAR, EAU…)
+    - API    : FDA (PMA + 510k), EUDAMED (classe III), EMA DHPC — fenêtre max(days, 90)
+
+    Pour le run initial (matelas 2026) utiliser days=120.
+    """
     _require_admin(request)
     try:
         from app.piste_collector import collect_all_piste_fonds
-        from app.rss_collector import collect_all_rss
-        from app.pubmed_collector import collect_all_pubmed
+        from app.collector import collect_all as _collect_all
+
+        piste = collect_all_piste_fonds(days=days)
+        rest  = _collect_all(days=days)   # RSS + PubMed + Web + API
+
+        total_inserted = (
+            sum(v.get("inserted", 0) for v in piste.values() if isinstance(v, dict))
+            + sum(
+                r.get("inserted", 0)
+                for section in rest.values() if isinstance(section, dict)
+                for r in (section.values() if isinstance(section, dict) else [])
+                if isinstance(r, dict)
+            )
+        )
         return {
             "ok": True,
             "days": days,
-            "piste_extra": collect_all_piste_fonds(days=days),
-            "rss": collect_all_rss(days=days),
-            "pubmed": collect_all_pubmed(days=days),
+            "total_inserted": total_inserted,
+            "piste": piste,
+            **rest,
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Erreur sources admin")
+        logger.exception("Erreur collect/all")
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 

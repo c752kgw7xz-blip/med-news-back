@@ -7,9 +7,10 @@ extrait les liens vers des documents récents, insère en base via le même
 pipeline que le collecteur RSS.
 
 Deux périmètres couverts :
-  1. Sources FR  (WEB_SCRAPER_SOURCES)  : SFH, SFR, SFO, SFPédiatrie, SOFCOT, SOFMER, SOFCPRE plastique
+  1. Sources FR  (WEB_SCRAPER_SOURCES)  : SFH, SFR, SFO, SFPédiatrie, SOFCOT, SOFCPRE plastique, INCa
   2. Sources EUR (EUROPE_WEB_SOURCES)   : ESC, EULAR, EAU, ESCMID, EAN, ECCO, EHA,
-                                          EASD, ESE, ERA — priorité médico-légale haute
+                                          EASD, ESE, ERA, ESGE, EuSEM, EFIM, EFLM, ESHRE,
+                                          EGS, EURETINA, EFP, EAHP — priorité médico-légale haute
 
 Volume attendu : 2-10 documents/an par société → collecte trimestrielle suffit.
 Les guidelines européennes passent partiellement via les feeds RSS déjà actifs
@@ -421,9 +422,9 @@ def scrape_all_web(sources: list[dict] | None = None) -> dict[str, Any]:
     """
     Lance le scraping de toutes les sources HTML configurées (ou un sous-ensemble).
     Couvre :
-      - Sources FR  (WEB_SCRAPER_SOURCES)       : SFH, SFR, SFO, SFPédiatrie, SOFCOT
-      - Sources EUR (EUROPE_WEB_SOURCES)         : ESC, EULAR, EAU, ESCMID, EAN…
-      - Congrès vasc. (VASCULAR_CONGRESS_SOURCES): LINC, EVC
+      - Sources FR  (WEB_SCRAPER_SOURCES)       : SFH, SFR, SFO, SFPédiatrie, SOFCOT, SOFCPRE, INCa
+      - Sources EUR (EUROPE_WEB_SOURCES)         : ESC, EULAR, EAU, ESCMID, EAN, ESGE, EuSEM…
+      - Congrès vasc. (VASCULAR_CONGRESS_SOURCES): désactivé (liste vide — couvert par TCTMD/VN)
     Volume faible → pas de parallélisme nécessaire.
     """
     targets = sources or (WEB_SCRAPER_SOURCES + EUROPE_WEB_SOURCES + VASCULAR_CONGRESS_SOURCES)

@@ -242,7 +242,7 @@ FR_SOCIETIES_FEEDS: list[dict] = [
 
     # ── Cardiologie / HTA ─────────────────────────────────────────────────
     {
-        "url": "https://www.sfhta.eu/feed",
+        "url": "https://sfhta.eu/feed",
         "label": "SFHTA — Société Française d'Hypertension Artérielle",
         "source": "sfhta",
         "source_type": "recommandation",
@@ -271,9 +271,12 @@ FR_SOCIETIES_FEEDS: list[dict] = [
     },
 
     # ── Psychiatrie ───────────────────────────────────────────────────────
+    # sfpsy.org = Société Française de Psychologie (≠ psychiatrie médicale) — URL corrigée
+    # AFPBN = Association Française de Psychiatrie Biologique et Neuropsychopharmacologie
+    # FFP (Fédération Française de Psychiatrie) : pas de RSS accessible
     {
-        "url": "https://www.sfpsy.org/feed",
-        "label": "SFP — Société Française de Psychiatrie",
+        "url": "https://www.afpbn.org/feed/",
+        "label": "AFPBN — Psychiatrie biologique et neuropsychopharmacologie",
         "source": "sfpsychiatrie",
         "source_type": "recommandation",
         "audience": ["medecins"],
@@ -301,18 +304,21 @@ FR_SOCIETIES_FEEDS: list[dict] = [
     },
 
     # ── Pneumologie ───────────────────────────────────────────────────────
-    {
-        "url": "https://splf.fr/feed",
-        "label": "SPLF — Société de Pneumologie de Langue Française",
-        "source": "splf",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "pneumologie",
-    },
+    # SPLF désactivé : splf.fr/feed retourne des pages de centres de recherche
+    # (CRCTB, INSERM, CNRS), pas d'actualités cliniques. Aucun sous-feed actif.
+    # Pneumologie couverte par ERS (EU_FEEDS) + PubMed (pubmed_chest, pubmed_thorax_bts).
+    # {
+    #     "url": "https://splf.fr/feed",
+    #     "label": "SPLF — Société de Pneumologie de Langue Française",
+    #     "source": "splf",
+    #     "source_type": "recommandation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "pneumologie",
+    # },
 
     # ── Endocrinologie ────────────────────────────────────────────────────
     {
-        "url": "https://www.sfendocrino.org/feed",
+        "url": "https://www.sfendocrino.org/feed/",
         "label": "SFE — Société Française d'Endocrinologie",
         "source": "sfendocrino",
         "source_type": "recommandation",
@@ -321,18 +327,20 @@ FR_SOCIETIES_FEEDS: list[dict] = [
     },
 
     # ── Diabétologie ──────────────────────────────────────────────────────
-    {
-        "url": "https://www.sfdiabete.org/rss.xml",
-        "label": "SFD — Société Francophone du Diabète",
-        "source": "sfdiabete",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "endocrinologie",
-    },
+    # SFD désactivé : rss.xml = 2 items (dernier : 2014), aucun feed alternatif actif.
+    # Diabétologie couverte par PubMed (pubmed_diabetes_care, pubmed_diabetologia, etc.)
+    # {
+    #     "url": "https://www.sfdiabete.org/rss.xml",
+    #     "label": "SFD — Société Francophone du Diabète",
+    #     "source": "sfdiabete",
+    #     "source_type": "recommandation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "endocrinologie",
+    # },
 
     # ── Rhumatologie ──────────────────────────────────────────────────────
     {
-        "url": "https://www.larhumatologie.fr/feed",
+        "url": "https://larhumatologie.fr/feed",
         "label": "SFRhumato — Société Française de Rhumatologie",
         "source": "sfrhumato",
         "source_type": "recommandation",
@@ -352,7 +360,7 @@ FR_SOCIETIES_FEEDS: list[dict] = [
 
     # ── Urologie ──────────────────────────────────────────────────────────
     {
-        "url": "https://www.urofrance.org/feed",
+        "url": "https://urofrance.org/feed",
         "label": "AFU — Association Française d'Urologie",
         "source": "afu",
         "source_type": "recommandation",
@@ -381,14 +389,16 @@ FR_SOCIETIES_FEEDS: list[dict] = [
     },
 
     # ── Néphrologie ───────────────────────────────────────────────────────
-    {
-        "url": "https://www.sfndt.org/actualites/feed",
-        "label": "SFNDT — Société Francophone de Néphrologie Dialyse et Transplantation",
-        "source": "sfndt",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "nephrologie",
-    },
+    # SFNDT désactivé : derniers items en 2022, tous feeds alternatifs retournent 404.
+    # Néphrologie couverte par PubMed (pubmed_jasn, pubmed_kidney_int, etc.) + ERA (EU_FEEDS).
+    # {
+    #     "url": "https://www.sfndt.org/actualites/feed",
+    #     "label": "SFNDT — Société Francophone de Néphrologie Dialyse et Transplantation",
+    #     "source": "sfndt",
+    #     "source_type": "recommandation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "nephrologie",
+    # },
 
     # ── Chirurgie thoracique et cardio-vasculaire ─────────────────────────
     {
@@ -442,14 +452,16 @@ FR_SOCIETIES_FEEDS: list[dict] = [
     },
 
     # ── Médecine du sport ─────────────────────────────────────────────────
-    {
-        "url": "https://www.sfms.fr/feed/",
-        "label": "SFMS — Société Française de Médecine du Sport",
-        "source": "sfms",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "medecine-generale",
-    },
+    # SFMS désactivé : sfms.fr = Société Française de Médecine Sexuelle (≠ du sport).
+    # La vraie SFMS sport (sfms.asso.fr) n'a pas de RSS accessible.
+    # {
+    #     "url": "https://www.sfms.fr/feed/",
+    #     "label": "SFMS — Société Française de Médecine du Sport",
+    #     "source": "sfms",
+    #     "source_type": "recommandation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "medecine-generale",
+    # },
 
     # ── Alcoologie ────────────────────────────────────────────────────────
     {
@@ -495,7 +507,7 @@ FR_SOCIETIES_FEEDS: list[dict] = [
     # Recommandations françaises de référence : antibiothérapies, méningites,
     # pneumonies, IU, scarlatine, sepsis néonatal.
     {
-        "url": "https://www.gpip.fr/feed/",
+        "url": "https://gpip.fr/feed/",
         "label": "GPIP — Recommandations infectiologie pédiatrique française",
         "source": "gpip",
         "source_type": "recommandation",
@@ -515,7 +527,7 @@ FR_SOCIETIES_FEEDS: list[dict] = [
 
     # ── Biologie médicale ─────────────────────────────────────────────────
     {
-        "url": "https://www.sfbc-asso.fr/feed/",
+        "url": "https://sfbc-asso.fr/feed/",
         "label": "SFBC — Société Française de Biologie Clinique",
         "source": "sfbc",
         "source_type": "recommandation",
@@ -747,15 +759,16 @@ EU_FEEDS: list[dict] = [
         "specialty_hint": "radiologie",
     },
 
-    # Orthodontie — EOS/EJO
-    {
-        "url": "https://academic.oup.com/rss/content/journal/ejo",
-        "label": "EOS/EJO — European Journal of Orthodontics (orthodontie)",
-        "source": "eos_ejo",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "orthodontiste",
-    },
+    # Orthodontie — EOS/EJO : OUP Cloudflare WAF bloque feedparser (HTTP 404, HTML retourné).
+    # Pas d'alternative RSS identifiée (EJO exclusivement sur OUP).
+    # {
+    #     "url": "https://academic.oup.com/rss/content/journal/ejo",
+    #     "label": "EOS/EJO — European Journal of Orthodontics (orthodontie)",
+    #     "source": "eos_ejo",
+    #     "source_type": "recommandation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "orthodontiste",
+    # },
 
     # Rhumatologie — ARD/EULAR
     {
@@ -769,8 +782,8 @@ EU_FEEDS: list[dict] = [
 
     # Chirurgie pédiatrique — EUPSA/EJPS
     {
-        "url": "https://www.thieme-connect.de/rss/thieme/en/10.1055-s-00000015.xml",
-        "label": "EUPSA/EJPS — European Journal of Pediatric Surgery (chirurgie pédiatrique)",
+        "url": "https://link.springer.com/search.rss?query=pediatric+surgery&search-within=Journal&facet-journal-id=383",
+        "label": "EJPS — European Journal of Pediatric Surgery via Springer RSS (chirurgie pédiatrique)",
         "source": "eupsa_ejps",
         "source_type": "recommandation",
         "audience": ["medecins"],
@@ -787,92 +800,17 @@ EU_FEEDS: list[dict] = [
 
 JOURNALS_FEEDS: list[dict] = [
 
-    # ── JAMA Network — 11 flux (Silverchair platform) ─────────────────────
+    # ── JAMA Network ──────────────────────────────────────────────────────
+    # JAMA général (67.xml) fonctionne. Specialty (68-78.xml) = endpoints supprimés
+    # (HTTP 404 confirmé feedparser avr. 2026). Remplacés par pubmed_collector :
+    # Derm → pubmed_jama_derm | Ophtalmo → pubmed_jama_ophthalmol
+    # ORL → pubmed_jama_otolaryngol | Pédia → pubmed_jama_peds
+    # Psy → pubmed_jama_psychiatry | Chir → pubmed_jama_surgery
+    # Cardio / Internal Med / Neuro / Onco / Network Open : pas d'équivalent PubMed → à créer si besoin
     {
         "url": "https://jamanetwork.com/rss/site_3/67.xml",
         "label": "JAMA — Journal général (toutes spécialités)",
         "source": "jama",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",
-    },
-    {
-        "url": "https://jamanetwork.com/rss/site_3/68.xml",
-        "label": "JAMA Cardiology",
-        "source": "jama_cardiology",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "cardiologie",
-    },
-    {
-        "url": "https://jamanetwork.com/rss/site_3/69.xml",
-        "label": "JAMA Dermatology",
-        "source": "jama_dermatology",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "dermatologie",
-    },
-    {
-        "url": "https://jamanetwork.com/rss/site_3/71.xml",
-        "label": "JAMA Internal Medicine",
-        "source": "jama_internal_med",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "medecine-interne",
-    },
-    {
-        "url": "https://jamanetwork.com/rss/site_3/70.xml",
-        "label": "JAMA Neurology",
-        "source": "jama_neurology",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "neurologie",
-    },
-    {
-        "url": "https://jamanetwork.com/rss/site_3/77.xml",
-        "label": "JAMA Oncology",
-        "source": "jama_oncology",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "oncologie",
-    },
-    {
-        "url": "https://jamanetwork.com/rss/site_3/72.xml",
-        "label": "JAMA Ophthalmology",
-        "source": "jama_ophthalmology",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "ophtalmologie",
-    },
-    {
-        "url": "https://jamanetwork.com/rss/site_3/73.xml",
-        "label": "JAMA Otolaryngology — Head & Neck Surgery",
-        "source": "jama_otolaryngology",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "orl",
-    },
-    {
-        "url": "https://jamanetwork.com/rss/site_3/74.xml",
-        "label": "JAMA Pediatrics",
-        "source": "jama_pediatrics",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "pediatrie",
-    },
-    {
-        "url": "https://jamanetwork.com/rss/site_3/75.xml",
-        "label": "JAMA Psychiatry",
-        "source": "jama_psychiatry",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "psychiatrie",
-    },
-    # JAMA Surgery — RSS 403 depuis avril 2026 → remplacé par pubmed_jama_surgery
-    {
-        "url": "https://jamanetwork.com/rss/site_3/78.xml",
-        "label": "JAMA Network Open (accès libre, toutes spécialités)",
-        "source": "jama_network_open",
         "source_type": "innovation",
         "audience": ["medecins"],
         "specialty_hint": "tous",
@@ -895,14 +833,17 @@ JOURNALS_FEEDS: list[dict] = [
         "audience": ["medecins"],
         "specialty_hint": "tous",
     },
-    {
-        "url": "https://feeds.bmj.com/bmj/current.rss",
-        "label": "BMJ — British Medical Journal",
-        "source": "bmj",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",
-    },
+    # BMJ général — feeds.bmj.com mort (DNS/connexion refused depuis avr. 2026)
+    # www.bmj.com bloque curl + feedparser (Cloudflare WAF). Couvert par sous-journaux BMJ
+    # specialty (heart, thorax, gut, ard, jnnp, adc) et par pubmed_collector.
+    # {
+    #     "url": "https://feeds.bmj.com/bmj/current.rss",
+    #     "label": "BMJ — British Medical Journal",
+    #     "source": "bmj",
+    #     "source_type": "innovation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "tous",
+    # },
     {
         "url": "https://www.nature.com/nm.rss",
         "label": "Nature Medicine — Recherche translationnelle",
@@ -914,7 +855,7 @@ JOURNALS_FEEDS: list[dict] = [
 
     # ── Lancet specialty — 10 journaux spécialisés ────────────────────────
     {
-        "url": "https://www.thelancet.com/rssfeed/lanneur_current.xml",
+        "url": "https://www.thelancet.com/rssfeed/laneur_current.xml",
         "label": "Lancet Neurology (IF ~57)",
         "source": "lancet_neurology",
         "source_type": "innovation",
@@ -922,7 +863,7 @@ JOURNALS_FEEDS: list[dict] = [
         "specialty_hint": "neurologie",
     },
     {
-        "url": "https://www.thelancet.com/rssfeed/lano_current.xml",
+        "url": "https://rss.sciencedirect.com/publication/science/14702045",
         "label": "Lancet Oncology (IF ~51)",
         "source": "lancet_oncology",
         "source_type": "innovation",
@@ -962,7 +903,7 @@ JOURNALS_FEEDS: list[dict] = [
         "specialty_hint": "hematologie",
     },
     {
-        "url": "https://www.thelancet.com/rssfeed/langa_current.xml",
+        "url": "https://rss.sciencedirect.com/publication/science/24681253",
         "label": "Lancet Gastroenterology & Hepatology (IF ~35)",
         "source": "lancet_gastro_hepatol",
         "source_type": "innovation",
@@ -1134,7 +1075,7 @@ JOURNALS_FEEDS: list[dict] = [
         "specialty_hint": "hematologie",
     },
     {
-        "url": "https://feeds.nature.com/leu/rss/current",
+        "url": "https://www.nature.com/leu.rss",
         "label": "Leukemia (Nature portfolio, IF ~12)",
         "source": "leukemia_rss",
         "source_type": "innovation",
@@ -1379,28 +1320,32 @@ JOURNALS_FEEDS: list[dict] = [
     # ── Sources paramédicales ─────────────────────────────────────────────
 
     # Biologie médicale
-    {
-        "url": "https://academic.oup.com/rss/site_5278/advancepub.xml",
-        "label": "Clinical Chemistry — Biologie médicale (AACC, Oxford)",
-        "source": "clinical_chemistry",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "biologiste",
-    },
+    # Clinical Chemistry (OUP/AACC) : Cloudflare WAF bloque feedparser (HTTP 404, HTML retourné)
+    # Couvert par pubmed_clin_chem dans pubmed_collector.
+    # {
+    #     "url": "https://academic.oup.com/rss/site_5278/advancepub.xml",
+    #     "label": "Clinical Chemistry — Biologie médicale (AACC, Oxford)",
+    #     "source": "clinical_chemistry",
+    #     "source_type": "innovation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "biologiste",
+    # },
 
     # Kinésithérapie
-    {
-        "url": "https://academic.oup.com/rss/site_5305/advancepub.xml",
-        "label": "Physical Therapy Journal (PTJ/APTA, Oxford)",
-        "source": "ptj_kine",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "kinesitherapie",
-    },
+    # PTJ (OUP/APTA) : même blocage Cloudflare WAF que Clinical Chemistry.
+    # Couvert par sources PubMed kinésithérapie dans pubmed_collector.
+    # {
+    #     "url": "https://academic.oup.com/rss/site_5305/advancepub.xml",
+    #     "label": "Physical Therapy Journal (PTJ/APTA, Oxford)",
+    #     "source": "ptj_kine",
+    #     "source_type": "innovation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "kinesitherapie",
+    # },
 
     # Sage-femme
     {
-        "url": "https://obgyn.onlinelibrary.wiley.com/feed/1471-0528/most-recent",
+        "url": "https://obgyn.onlinelibrary.wiley.com/feed/14710528/most-recent",
         "label": "BJOG — British Journal of Obstetrics and Gynaecology (Wiley/RCOG)",
         "source": "bjog",
         "source_type": "innovation",
@@ -1410,7 +1355,7 @@ JOURNALS_FEEDS: list[dict] = [
 
     # Pharmacien
     {
-        "url": "https://ascpt.onlinelibrary.wiley.com/feed/1532-6535/most-recent",
+        "url": "https://ascpt.onlinelibrary.wiley.com/feed/15326535/most-recent",
         "label": "Clinical Pharmacology & Therapeutics (Wiley/ASCPT)",
         "source": "cpt_pharmacol",
         "source_type": "innovation",
@@ -1446,7 +1391,7 @@ JOURNALS_FEEDS: list[dict] = [
 
     # Infirmiers
     {
-        "url": "https://onlinelibrary.wiley.com/feed/1365-2648/most-recent",
+        "url": "https://onlinelibrary.wiley.com/feed/13652648/most-recent",
         "label": "Journal of Advanced Nursing (JAN/Wiley)",
         "source": "jan_nursing",
         "source_type": "innovation",
@@ -1799,28 +1744,28 @@ CLINICAL_PRESS_FEEDS: list[dict] = [
 
 API_SOURCES: list[dict] = [
     {
-        "label": "FDA — PMA Class III (implants vasculaires haute priorité)",
+        "label": "FDA — PMA Class III (toutes spécialités — implants haut risque)",
         "source": "fda_pma",
         "collector": "fda_pma",
         "source_type": "innovation",
         "audience": ["medecins"],
-        "specialty_hint": "chirurgie-vasculaire",
+        "specialty_hint": "tous",
     },
     {
-        "label": "FDA — 510(k) Class II (dispositifs vasculaires)",
+        "label": "FDA — 510(k) Class II (toutes spécialités — dispositifs médicaux)",
         "source": "fda_510k",
         "collector": "fda_510k",
         "source_type": "innovation",
         "audience": ["medecins"],
-        "specialty_hint": "chirurgie-vasculaire",
+        "specialty_hint": "tous",
     },
     {
-        "label": "EUDAMED — Dispositifs médicaux CE Classe III (vasculaire)",
+        "label": "EUDAMED — Dispositifs médicaux CE Classe III (toutes spécialités)",
         "source": "eudamed",
         "collector": "eudamed",
         "source_type": "innovation",
         "audience": ["medecins"],
-        "specialty_hint": "chirurgie-vasculaire",
+        "specialty_hint": "tous",
     },
     # ── EMA DHPC — Dear Healthcare Professional Communications ───────────
     # Alertes de sécurité EMA : retrait, nouvelle CI, restriction d'indication,
@@ -1986,7 +1931,7 @@ EU_WEB_SOURCES: list[dict] = [
         "exclude_pattern": r"(?i)/(about|events|congress|membership|education|contact|news|jobs)(/|$)",
     },
     {
-        "url": "https://www.escmid.org/guidelines-journals/escmid-guidelines/",
+        "url": "https://www.escmid.org/guidelines-journals/guidelines/",
         "source": "escmid_guidelines",
         "label": "ESCMID — Guidelines (infectiologie, antibiothérapie)",
         "source_type": "recommandation",
@@ -2007,7 +1952,7 @@ EU_WEB_SOURCES: list[dict] = [
         "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|news|careers)(/|$)",
     },
     {
-        "url": "https://ecco-ibd.eu/publications/guidelines.html",
+        "url": "https://ecco-ibd.eu/publications/guidelines",
         "source": "ecco_guidelines",
         "label": "ECCO — Guidelines (Crohn, RCH, MICI)",
         "source_type": "recommandation",
@@ -2017,7 +1962,7 @@ EU_WEB_SOURCES: list[dict] = [
         "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|education|grants)(/|$)",
     },
     {
-        "url": "https://ehaweb.org/resources/clinical-practice-guidelines/",
+        "url": "https://ehaweb.org/resources/guidelines/",
         "source": "eha_guidelines",
         "label": "EHA — Clinical Practice Guidelines (hématologie)",
         "source_type": "recommandation",
@@ -2047,7 +1992,7 @@ EU_WEB_SOURCES: list[dict] = [
         "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|news|grants|jobs)(/|$)",
     },
     {
-        "url": "https://www.era-online.org/practice-guidelines/",
+        "url": "https://www.era-online.org/guidelines/",
         "source": "era_guidelines",
         "label": "ERA — Practice Guidelines (néphrologie : IRC, dialyse, transplantation)",
         "source_type": "recommandation",
@@ -2057,16 +2002,8 @@ EU_WEB_SOURCES: list[dict] = [
         "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|news|grants|education)(/|$)",
     },
     # Gastroentérologie complément
-    {
-        "url": "https://ueg.eu/quality-of-care/search-guidelines/",
-        "source": "ueg_guidelines",
-        "label": "UEG — United European Gastroenterology (guidelines gastro complètes)",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "gastro-enterologie",
-        "link_pattern": r"ueg\.eu/",
-        "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|news|grants|education|week|advocacy|press)(/|$)",
-    },
+    # UEG désactivé : toutes les URLs retournent 404 (site restructuré).
+    # Gastro couverte par ECCO, ESGE, EASL, UEG PubMed.
     {
         "url": "https://www.esge.com/publications/guidelines/",
         "source": "esge_guidelines",
@@ -2123,7 +2060,7 @@ EU_WEB_SOURCES: list[dict] = [
     },
     # Ophtalmologie — Glaucome
     {
-        "url": "https://www.eugs.org/educational_materials",
+        "url": "https://eugs.org/guidelines/",
         "source": "egs_guidelines",
         "label": "EGS — European Glaucoma Society (guidelines glaucome 6e éd. 2024)",
         "source_type": "recommandation",

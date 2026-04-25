@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-scripts/test_collect_dry_run.py
+scripts/feeds_test.py
 ─────────────────────────────────────────────────────────────────────────────
 Dry-run du collect RSS : fetch les feeds, applique le pré-filtre, affiche
 les stats et un aperçu des titres — SANS écrire en base ni appeler le LLM.
 
 Usage :
     # Depuis la racine du projet
-    python scripts/test_collect_dry_run.py
+    python scripts/feeds_test.py
 
     # Tester un sous-ensemble
-    python scripts/test_collect_dry_run.py --sources cnge,sfc_recommandations,splf
+    python scripts/feeds_test.py --sources cnge,sfc_recommandations,splf
 
     # Afficher aussi les titres filtrés
-    python scripts/test_collect_dry_run.py --show-dropped
+    python scripts/feeds_test.py --show-dropped
 
     # Modifier la fenêtre temporelle (défaut : 90 jours)
-    python scripts/test_collect_dry_run.py --days 30
+    python scripts/feeds_test.py --days 30
 
 Dépendances :
     pip install feedparser httpx
@@ -69,11 +69,11 @@ RESET  = "\033[0m"
 # Feeds représentatifs pour le test rapide (si pas --sources spécifié)
 DEFAULT_TEST_SOURCES = [
     "cnge",              # Médecine générale — haut volume
-    "sfc_recommandations", # Cardiologie — standard
-    "splf",              # Pneumologie
+    "sfhta",             # Cardiologie — SFHTA
+    "ers",               # Pneumologie — European Respiratory Society
     "snfge",             # Gastro-entérologie
-    "sfdermato",         # Dermatologie — nouveau feed
-    "sofcot",            # Chirurgie orthopédique — plus bruyant
+    "sfrhumato",         # Rhumatologie
+    "sfmu",              # Urgences — plus bruyant
     "has_ct",            # HAS Commission Transparence
     "spf_beh",           # Santé publique France
     "cnom",              # Ordre des Médecins — source bruyante avec whitelist
@@ -300,11 +300,11 @@ def print_summary(results: list[dict]) -> None:
         )
 
     print()
-    print(f"  {BOLD}Estimation coût LLM (Claude Haiku){RESET}")
+    print(f"  {BOLD}Estimation coût LLM (Claude Haiku 4.5){RESET}")
     print(f"  ~{total_kept} appels × ~800 tokens ≈ {total_kept*800//1000} k tokens")
-    print(f"  Coût indicatif : {total_kept * 0.0004:.2f} USD (input) + {total_kept * 0.0016:.2f} USD (output)")
+    print(f"  Coût indicatif : {total_kept * 0.0008:.2f} USD (input) + {total_kept * 0.004:.2f} USD (output)")
     print(f"  {'─'*40}")
-    print(f"  Total estimé : ~{total_kept * 0.002:.2f} USD pour ce lot")
+    print(f"  Total estimé : ~{total_kept * 0.0048:.2f} USD pour ce lot")
     print()
 
 
