@@ -356,8 +356,16 @@ def admin_piste_debug(request: Request):
     """Debug : vérifie les env vars PISTE vues par le process Render."""
     _require_secret(request, "x-admin-secret", ADMIN_SECRET)
     import os
-    piste_keys = {k: (f"{v[:4]}...{v[-4:]}" if len(v) > 8 else f"(len={len(v)})") for k, v in os.environ.items() if "PISTE" in k.upper()}
-    return {"piste_vars": piste_keys, "total_env_vars": len(os.environ)}
+    all_keys = sorted(os.environ.keys())
+    piste_adjacent = [repr(k) for k in all_keys if "PI" in k.upper() or "LF_" in k.upper() or "LEGI" in k.upper()]
+    anthropic_ok = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    database_ok = bool(os.environ.get("DATABASE_URL"))
+    return {
+        "total_env_vars": len(os.environ),
+        "piste_adjacent_keys": piste_adjacent,
+        "anthropic_set": anthropic_ok,
+        "database_set": database_ok,
+    }
 
 
 @app.post("/admin/scheduler/run-collect")
