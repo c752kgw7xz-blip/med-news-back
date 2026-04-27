@@ -229,6 +229,88 @@ def job_collect_regulation() -> None:
         logger.error("JORF échoué : %s", e)
         report["jorf"] = {"error": str(e)}
 
+    # ── 1.5. JORF remboursement — convention médicale, CCAM, nomenclature ────
+    # Filtre titre sur REMBOURSEMENT_KEYWORDS → source = legifrance_jorf_remboursement
+    try:
+        from app.piste_routes import (
+            _piste_call as _pc_rm, _extract_list as _el_rm, _keep_item_with_reason as _kir_rm,
+            _parse_date10 as _pd_rm, _official_url as _ou_rm, _sha256_hex as _sh_rm,
+            _json_canonical_bytes as _jcb_rm, _build_titre_champs, REMBOURSEMENT_KEYWORDS,
+        )
+        from app.collector_utils import build_candidate_row as _bcr_rm, insert_candidate as _ic_rm
+
+        source_rm = "legifrance_jorf_remboursement"
+        today_rm = date.today()
+        start_rm = today_rm - timedelta(days=180)  # fenêtre plus large : textes sortent en continu
+        pg_size_rm, max_pg_rm = 50, 40
+        seen_rm = ins_rm = dup_rm = 0
+
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                for pg_rm in range(1, max_pg_rm + 1):
+                    payload_rm = {
+                        "fond": "JORF",
+                        "recherche": {
+                            "pageNumber": pg_rm,
+                            "pageSize": pg_size_rm,
+                            "operateur": "ET",
+                            "typePagination": "DEFAUT",
+                            "champs": _build_titre_champs(REMBOURSEMENT_KEYWORDS),
+                            "filtres": [{
+                                "facette": "DATE_PUBLICATION",
+                                "dates": {
+                                    "start": start_rm.strftime("%Y-%m-%dT00:00:00.000+0000"),
+                                    "end": today_rm.strftime("%Y-%m-%dT23:59:59.000+0000"),
+                                },
+                            }],
+                        },
+                    }
+                    try:
+                        data_rm = _pc_rm("/search", payload_rm)
+                    except Exception:
+                        break
+                    items_rm = _el_rm(data_rm)
+                    if not items_rm:
+                        break
+                    for it_rm in items_rm:
+                        if not isinstance(it_rm, dict):
+                            continue
+                        seen_rm += 1
+                        titles_rm = it_rm.get("titles") if isinstance(it_rm.get("titles"), list) else []
+                        t0_rm = titles_rm[0] if titles_rm and isinstance(titles_rm[0], dict) else {}
+                        jorftext_id_rm = t0_rm.get("cid")
+                        title_rm = t0_rm.get("title")
+                        nature_rm = it_rm.get("nature") or it_rm.get("type")
+                        ok_rm, _ = _kir_rm(nature_rm, title_rm)
+                        if not ok_rm:
+                            continue
+                        pub_s_rm = _pd_rm(it_rm.get("datePublication")) or _pd_rm(it_rm.get("date"))
+                        if not pub_s_rm:
+                            continue
+                        pub_d_rm = date.fromisoformat(pub_s_rm)
+                        if not (start_rm <= pub_d_rm <= today_rm):
+                            continue
+                        if not (isinstance(jorftext_id_rm, str) and jorftext_id_rm.startswith("JORFTEXT")):
+                            continue
+                        row_rm = _bcr_rm(
+                            source=source_rm, external_id=jorftext_id_rm,
+                            official_url=_ou_rm(jorftext_id_rm),
+                            official_date=pub_d_rm,
+                            title_raw=(title_rm or "").strip() or "(no title)",
+                            jorftext_id=jorftext_id_rm, raw_payload=it_rm,
+                        )
+                        if _ic_rm(cur, row_rm):
+                            ins_rm += 1
+                        else:
+                            dup_rm += 1
+                conn.commit()
+
+        report["jorf_remboursement"] = {"seen": seen_rm, "inserted": ins_rm, "deduped": dup_rm}
+        logger.info("JORF remboursement : vu=%d ins=%d dup=%d", seen_rm, ins_rm, dup_rm)
+    except Exception as e:
+        logger.error("JORF remboursement échoué : %s", e)
+        report["jorf_remboursement"] = {"error": str(e)}
+
     # ── 2. KALI / LEGI / CIRCULAIRES ─────────────────────────────
     try:
         from app.piste_routes import EXTRA_FONDS
@@ -239,16 +321,28 @@ def job_collect_regulation() -> None:
             try:
                 today_d = date.today()
                 start_d = today_d - timedelta(days=120)
-                from app.piste_routes import _piste_call as pc, _extract_list as el, _parse_date10 as pd10, _sha256_hex as sh, _json_canonical_bytes as jcb
+                from app.piste_routes import _piste_call as pc, _extract_list as el, _parse_date10 as pd10, _sha256_hex as sh, _json_canonical_bytes as jcb, _build_titre_champs as _btc
                 ins = dup = s = filtered = 0
                 insert_sql = """
                 INSERT INTO candidates (source, official_url, official_date, title_raw, content_raw, raw_json, raw_sha256, dedupe_key, status)
                 VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, 'NEW') ON CONFLICT (dedupe_key) DO NOTHING;
                 """
+                # KALI : filtre titre sur secteur santé pour éviter les conventions non-médicales
+                # (BTP, hôtellerie, transports…). La convention médicale UNCAM est dans JORF,
+                # pas dans KALI — seules les conventions collectives des salariés de santé y figurent.
+                KALI_HEALTH_KEYWORDS = [
+                    "médecin", "professionnel de santé", "pharmacien", "infirmier",
+                    "sage-femme", "auxiliaire médical", "cabinet médical", "clinique",
+                    "chirurgien", "dentiste", "kinésithérapeute", "orthophoniste",
+                ]
+                extra_champs = _btc(KALI_HEALTH_KEYWORDS) if fond == "KALI" else None
                 with _get_conn() as conn:
                     with conn.cursor() as cur:
                         for pg in range(1, 21):
-                            data = pc("/search", {"fond": fond, "recherche": {"pageNumber": pg, "pageSize": 50, "operateur": "ET", "typePagination": "DEFAUT", "filtres": [{"facette": "DATE_PUBLICATION", "dates": {"start": start_d.strftime("%Y-%m-%dT00:00:00.000+0000"), "end": today_d.strftime("%Y-%m-%dT23:59:59.000+0000")}}]}})
+                            recherche: dict = {"pageNumber": pg, "pageSize": 50, "operateur": "ET", "typePagination": "DEFAUT", "filtres": [{"facette": "DATE_PUBLICATION", "dates": {"start": start_d.strftime("%Y-%m-%dT00:00:00.000+0000"), "end": today_d.strftime("%Y-%m-%dT23:59:59.000+0000")}}]}
+                            if extra_champs:
+                                recherche["champs"] = extra_champs
+                            data = pc("/search", {"fond": fond, "recherche": recherche})
                             items = el(data) if isinstance(data, dict) else []
                             if not items:
                                 break
@@ -311,11 +405,45 @@ def job_collect_regulation() -> None:
         logger.error("RSS réglementation échoué : %s", e)
         report["rss_regulation"] = {"error": str(e)}
 
-    # ── 4. Analyse LLM ───────────────────────────────────────────
+    # ── 4. CNOM — scraper (RSS vide depuis 2026) ─────────────────
     try:
-        _run_llm_batch()
+        from app.web_scraper import collect_cnom
+        report["cnom_scraper"] = collect_cnom(days=180)
+        logger.info("CNOM scraper : ins=%d", report["cnom_scraper"].get("inserted", 0))
     except Exception as e:
-        logger.error("Analyse LLM échouée : %s", e)
+        logger.error("CNOM scraper échoué : %s", e)
+        report["cnom_scraper"] = {"error": str(e)}
+
+    # ── 5. ameli.fr/medecin — actualités CNAM (pas de RSS) ───────
+    try:
+        from app.web_scraper import collect_ameli_medecin
+        report["ameli_medecin"] = collect_ameli_medecin(days=180)
+        logger.info("ameli.fr médecin : ins=%d", report["ameli_medecin"].get("inserted", 0))
+    except Exception as e:
+        logger.error("ameli.fr médecin échoué : %s", e)
+        report["ameli_medecin"] = {"error": str(e)}
+
+    # ── 6. CARMF — retraite et cotisations médecins libéraux ─────
+    try:
+        from app.web_scraper import collect_carmf
+        report["carmf"] = collect_carmf(days=180)
+        logger.info("CARMF : ins=%d", report["carmf"].get("inserted", 0))
+    except Exception as e:
+        logger.error("CARMF échoué : %s", e)
+        report["carmf"] = {"error": str(e)}
+
+    # ── 7. CARPIMKO — retraite auxiliaires médicaux libéraux ─────
+    try:
+        from app.web_scraper import collect_carpimko
+        report["carpimko"] = collect_carpimko(days=180)
+        logger.info("CARPIMKO : ins=%d", report["carpimko"].get("inserted", 0))
+    except Exception as e:
+        logger.error("CARPIMKO échoué : %s", e)
+        report["carpimko"] = {"error": str(e)}
+
+    # ── 8. Analyse LLM ───────────────────────────────────────────
+    # DÉSACTIVÉ : le triage se fait manuellement dans la conversation Claude Pro.
+    # _run_llm_batch()
 
     logger.info("JOB COLLECTE RÉGLEMENTATION terminé")
     return report
@@ -342,7 +470,7 @@ def job_collect_recommendations() -> None:
         logger.error("RSS recommandations échoué : %s", e)
         report["rss"] = {"error": str(e)}
 
-    # ── HAS CT (avis médicaments — source_type=therapeutique) ────
+    # ── HAS CT (avis médicaments — source_type déterminé par LLM) ────
     try:
         from app.rss_collector import collect_feed, FEEDS
         for feed in FEEDS:
@@ -366,10 +494,8 @@ def job_collect_recommendations() -> None:
         report["web_scraping"] = {"error": str(e)}
 
     # ── Analyse LLM ──────────────────────────────────────────────
-    try:
-        _run_llm_batch()
-    except Exception as e:
-        logger.error("Analyse LLM recommandations échouée : %s", e)
+    # DÉSACTIVÉ : le triage se fait manuellement dans la conversation Claude Pro.
+    # _run_llm_batch()
 
     logger.info("JOB COLLECTE RECOMMANDATIONS terminé")
     return report
@@ -389,10 +515,8 @@ def job_collect_innovation() -> None:
     logger.info("=" * 60)
     from app.collector import collect_all
     report = collect_all(days=120)
-    try:
-        _run_llm_batch()
-    except Exception as e:
-        logger.error("[innovation] Analyse LLM échouée : %s", e)
+    # DÉSACTIVÉ : le triage se fait manuellement dans la conversation Claude Pro.
+    # _run_llm_batch()
     logger.info("JOB COLLECTE INNOVATION terminé")
     return report
 
@@ -431,10 +555,8 @@ def collect_by_specialty(specialty_slug: str, days: int = 120) -> dict[str, Any]
         logger.error("[%s] Recommandations échouées : %s", specialty_slug, e)
         report["recommendations"] = {"error": str(e)}
 
-    try:
-        _run_llm_batch()
-    except Exception as e:
-        logger.error("[%s] Analyse LLM échouée : %s", specialty_slug, e)
+    # DÉSACTIVÉ : le triage se fait manuellement dans la conversation Claude Pro.
+    # _run_llm_batch()
 
     logger.info("COLLECTE [%s] terminée", specialty_slug)
     return report

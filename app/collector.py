@@ -91,6 +91,16 @@ def _fda_params(extra: dict) -> dict:
     return p
 
 
+def _fda_url(endpoint: str, search: str, limit: int, skip: int) -> str:
+    """
+    Construit l'URL FDA en injectant le paramètre search brut (sans ré-encodage httpx).
+    Nécessaire car l'API Lucene FDA attend les crochets et + littéraux —
+    httpx les encode en %5B/%2B ce qui provoque un 500.
+    """
+    api_key_part = f"&api_key={_FDA_API_KEY}" if _FDA_API_KEY else ""
+    return f"{_FDA_BASE}{endpoint}?search={search}&limit={limit}&skip={skip}{api_key_part}"
+
+
 def _fda_date_range(days: int) -> str:
     since = (date.today() - timedelta(days=days)).strftime("%Y%m%d")
     today = date.today().strftime("%Y%m%d")
@@ -101,16 +111,15 @@ def _collect_fda_pma(days: int = 120, source_cfg: dict | None = None, **_) -> di
     stats = {"fetched": 0, "inserted": 0, "skipped": 0, "errors": 0}
     specialty_hint = (source_cfg or {}).get("specialty_hint", "tous")
     # Pas de filtre advisory_committee : PMA Class III = ~50 approbations/an toutes spés
-    params = _fda_params({
-        "search": f'decision_date:{_fda_date_range(days)}',
-        "limit": 100,
-        "skip": 0,
-    })
+    search = f'decision_date:{_fda_date_range(days)}'
+    limit = 100
+    skip = 0
     results: list[dict] = []
     try:
         with httpx.Client(follow_redirects=True) as client:
             while True:
-                r = client.get(f"{_FDA_BASE}/device/pma.json", params=params, timeout=20)
+                url = _fda_url("/device/pma.json", search, limit, skip)
+                r = client.get(url, timeout=20)
                 if r.status_code == 404:
                     break
                 r.raise_for_status()
@@ -119,10 +128,9 @@ def _collect_fda_pma(days: int = 120, source_cfg: dict | None = None, **_) -> di
                 results.extend(batch)
                 meta = data.get("meta", {}).get("results", {})
                 total = meta.get("total", 0)
-                skip = params["skip"] + len(batch)
+                skip += len(batch)
                 if skip >= total or len(batch) < 100:
                     break
-                params["skip"] = skip
                 time.sleep(0.3)
     except Exception as e:
         logger.warning("[fda_pma] fetch error: %s", e)
@@ -167,7 +175,7 @@ def _collect_fda_pma(days: int = 120, source_cfg: dict | None = None, **_) -> di
                         official_date=pub_date,
                         title_raw=title,
                         content_raw=content,
-                        raw_payload={**item, "source": "fda_pma", "source_type": "innovation",
+                        raw_payload={**item, "source": "fda_pma", "source_type": "reglementaire",
                                      "specialty_hint": specialty_hint},
                     )
                     if insert_candidate(cur, row):
@@ -188,16 +196,15 @@ def _collect_fda_510k(days: int = 120, source_cfg: dict | None = None, **_) -> d
     # Pas de filtre advisory_committee : couvre toutes spécialités.
     # Filtre keyword _is_clinical_device côté client pour écarter les kits
     # non-cliniques (emballages, logiciels administratifs, accessoires).
-    params = _fda_params({
-        "search": f'decision_date:{_fda_date_range(days)}',
-        "limit": 100,
-        "skip": 0,
-    })
+    search = f'decision_date:{_fda_date_range(days)}'
+    limit = 100
+    skip = 0
     results: list[dict] = []
     try:
         with httpx.Client(follow_redirects=True) as client:
             while True:
-                r = client.get(f"{_FDA_BASE}/device/510k.json", params=params, timeout=20)
+                url = _fda_url("/device/510k.json", search, limit, skip)
+                r = client.get(url, timeout=20)
                 if r.status_code == 404:
                     break
                 r.raise_for_status()
@@ -206,10 +213,9 @@ def _collect_fda_510k(days: int = 120, source_cfg: dict | None = None, **_) -> d
                 results.extend(batch)
                 meta = data.get("meta", {}).get("results", {})
                 total = meta.get("total", 0)
-                skip = params["skip"] + len(batch)
+                skip += len(batch)
                 if skip >= total or len(batch) < 100:
                     break
-                params["skip"] = skip
                 time.sleep(0.3)
     except Exception as e:
         logger.warning("[fda_510k] fetch error: %s", e)
@@ -252,7 +258,7 @@ def _collect_fda_510k(days: int = 120, source_cfg: dict | None = None, **_) -> d
                         official_date=pub_date,
                         title_raw=title,
                         content_raw=content,
-                        raw_payload={**item, "source": "fda_510k", "source_type": "innovation",
+                        raw_payload={**item, "source": "fda_510k", "source_type": "reglementaire",
                                      "specialty_hint": specialty_hint},
                     )
                     if insert_candidate(cur, row):
@@ -321,6 +327,13 @@ def _search_eudamed_class3(client: httpx.Client) -> list[dict]:
 
 
 def _collect_eudamed(days: int = 120, source_cfg: dict | None = None, **_) -> dict[str, int]:
+    # EUDAMED API (ec.europa.eu/tools/eudamed/api) désactivée côté Commission européenne
+    # depuis début 2025 — toutes les routes renvoient 302 → page-not-found.
+    # Source désactivée jusqu'à migration vers le nouveau portail EU.
+    # TODO : surveiller https://eudamed.ec.europa.eu/ pour la nouvelle API publique.
+    logger.info("[eudamed] source désactivée — API Commission indisponible (302 page-not-found)")
+    return {"fetched": 0, "inserted": 0, "skipped": 0, "errors": 0, "disabled": True}
+
     stats = {"fetched": 0, "inserted": 0, "skipped": 0, "errors": 0}
     since = date.today() - timedelta(days=days)
     specialty_hint = (source_cfg or {}).get("specialty_hint", "tous")

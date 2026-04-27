@@ -32,7 +32,7 @@ import httpx
 
 from app.collector_utils import build_candidate_row, insert_candidate
 from app.db import get_conn
-from app.llm_analysis import pre_filter_candidate, NOISY_SOURCES, _passes_jorf_whitelist
+from app.llm_analysis import pre_filter_candidate, NOISY_SOURCES, _passes_jorf_whitelist, passes_bo_social_allowlist
 from app.sources import ALL_FEEDS, ALL_PRATIQUE_FEEDS
 from app.web_scraper import scrape_all_web
 from app.has_scraper import scrape_has_page, build_enriched_content
@@ -193,6 +193,12 @@ def collect_feed(feed_config: dict, days: int = 120) -> dict[str, int]:
                 # 2. Filtre whitelist médicale pour les sources bruyantes
                 if source in NOISY_SOURCES and not _passes_jorf_whitelist(title):
                     logger.debug("[%s] noisy_source DROP '%s'", source, title[:60])
+                    skipped += 1
+                    continue
+                # 3. bo_social : allowlist positive — garder uniquement
+                #    instructions/circulaires/notes DGS/DSS/DGOS/DREES
+                if source == "bo_social" and not passes_bo_social_allowlist(title):
+                    logger.debug("[bo_social] allowlist DROP '%s'", title[:60])
                     skipped += 1
                     continue
 

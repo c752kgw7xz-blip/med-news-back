@@ -342,21 +342,37 @@ body {
 # ---------------------------------------------------------------------------
 
 def _classify_section(item: dict) -> str:
-    cat = (item.get("categorie") or "").lower()
+    """Détermine la section newsletter d'un item.
+
+    Priorité 1 : source_type (déterministe pour les sources institutionnelles,
+                  LLM pour les journaux/sociétés savantes)
+    Priorité 2 : categorie (clinique/therapeutique/exercice — filtre portail)
+    Priorité 3 : motif sur le slug source (fallback ultime)
+    """
     source_type = (item.get("source_type") or "").lower()
+    cat = (item.get("categorie") or "").lower()
     source = (item.get("source") or "").lower()
 
-    if cat in ("reglementation", "exercice") or source_type in ("regulatory", "reglementation"):
+    # Source_type → section newsletter (valeurs valides : reglementaire | recommandation | innovation)
+    if source_type == "reglementaire":
         return "reglementation"
-    if cat in ("recommandation", "clinique") or source_type in ("guideline", "recommandation"):
+    if source_type == "recommandation":
         return "recommandations"
-    if cat in ("therapeutique", "innovation") or source_type in (
-        "innovation", "journal", "press", "presse", "congress", "device"
-    ):
+    if source_type == "innovation":
         return "innovation"
+
+    # Fallback categorie (clinique/therapeutique/exercice)
+    if cat == "exercice":
+        return "reglementation"
+    if cat == "clinique":
+        return "recommandations"
+    if cat == "therapeutique":
+        return "innovation"
+
+    # Fallback ultime : pattern sur le slug
     if source.startswith("legifrance") or source.startswith("ansm_") or source.startswith("piste_"):
         return "reglementation"
-    if source.startswith("has_"):
+    if source.startswith("has_") or source.startswith("sf") or source.endswith("_guidelines"):
         return "recommandations"
     return "innovation"
 

@@ -216,21 +216,21 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
     if audience not in ("SPECIALITE", "PHARMACIENS"):
         audience = "SPECIALITE"
     type_praticien: str | None = result.get("type_praticien")
-    source_type: str = get_source_type(candidate.get("source"))
 
-    # Presse médicale spécialisée + journaux scientifiques : source_type='innovation'
-    # par défaut. Si le LLM identifie nature=RECOMMANDATION (guideline, consensus),
-    # on bascule vers 'recommandation' pour que la newsletter la range correctement.
-    # Couvre : EJVES (guidelines ESVS), Vascular News, Vascular Specialist, TCTMD,
-    # JVS, JET, Annals (guidelines SVS/AHA-ACC présentées ou publiées dans ces sources).
-    _PRESS_AND_JOURNAL_SOURCES = {
-        "pubmed_ejves", "pubmed_jvs", "pubmed_jet", "pubmed_ann_vasc_surg",
-        "vascular_news", "vascular_specialist", "tctmd", "endovascular_today",
-    }
-    if candidate.get("source") in _PRESS_AND_JOURNAL_SOURCES:
-        tri = result.get("tri_json") or {}
-        if tri.get("nature") == "RECOMMANDATION":
-            source_type = "recommandation"
+    # Détermination du source_type :
+    # - Sources institutionnelles (JORF, ANSM, EMA, FDA, CNOM…) → type déterministe (get_source_type)
+    # - Toutes les autres sources → LLM détermine depuis le contenu ("source_type" dans le JSON)
+    #   Un journal peut publier une étude (→ innovation) OU une guideline (→ recommandation) ;
+    #   une société savante peut publier une RBP (→ recommandation) OU de la recherche (→ innovation).
+    _deterministic_type = get_source_type(candidate.get("source"))
+    if _deterministic_type is not None:
+        source_type: str = _deterministic_type
+    else:
+        llm_source_type = result.get("source_type", "")
+        if llm_source_type in ("recommandation", "innovation", "reglementaire"):
+            source_type = llm_source_type
+        else:
+            source_type = "innovation"  # fallback conservateur pour les journaux/presse
 
     # PHARMACIENS → 1 item avec specialty_slug = 'pharmacien'
     # SPECIALITE  → 1 item par spécialité (medecine-generale si aucune spécialité identifiée)
@@ -294,75 +294,16 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
 @router.post("/run")
 def run_llm_analysis(
     request: Request,
-    candidate_id: Optional[str] = Query(default=None, description="Analyser un seul candidat"),
-    limit: int = Query(default=20, ge=1, le=200, description="Nombre max de candidats à traiter"),
-    sources: Optional[str] = Query(default=None, description="Sources séparées par virgule (ex: pubmed_jvs,pubmed_ejves)"),
+    candidate_id: Optional[str] = Query(default=None),
+    limit: int = Query(default=20, ge=1, le=200),
+    sources: Optional[str] = Query(default=None),
 ):
-    """
-    Lance l'analyse LLM sur les candidats NEW.
-    - Sans paramètre : traite les `limit` plus récents candidats NEW
-    - Avec candidate_id : traite uniquement ce candidat
-    - Avec sources : filtre par source(s)
-    Protégé par x-admin-secret.
-    """
+    # DESACTIVE : triage manuel dans la conversation Claude Pro — jamais via API.
     _require_admin(request)
-
-    source_list = [s.strip() for s in sources.split(",")] if sources else None
-
-    # Enrichissement Unpaywall avant analyse : tente de remplacer les abstracts courts
-    # par le full text open access pour les candidats PubMed avec DOI.
-    # Silencieux en cas d'erreur — ne bloque pas le pipeline LLM.
-    unpaywall_stats: dict = {}
-    if not candidate_id:  # inutile sur un seul candidat ciblé
-        try:
-            from app.unpaywall_client import enrich_with_unpaywall
-            unpaywall_stats = enrich_with_unpaywall(limit=limit, sources=source_list)
-            logger.info("[llm/run] Unpaywall enrichissement : %s", unpaywall_stats)
-        except Exception as _uw_err:
-            logger.warning("[llm/run] Unpaywall ignoré : %s", _uw_err)
-
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            candidates = _fetch_candidates_to_analyse(cur, candidate_id, limit, sources=source_list)
-
-    if not candidates:
-        return {
-            "ok": True,
-            "message": "Aucun candidat NEW à analyser",
-            "processed": 0,
-            "unpaywall": unpaywall_stats,
-            "reports": [],
-        }
-
-    reports = []
-    done = failed = not_pertinent = pre_filtered = 0
-
-    for i, candidate in enumerate(candidates):
-        logger.info("LLM [%d/%d] %s", i + 1, len(candidates), candidate["title_raw"][:60])
-        report = _process_one_candidate(candidate)
-        reports.append(report)
-
-        if report["status"] == "PRE_FILTERED":
-            pre_filtered += 1
-        elif report["status"] == "LLM_DONE":
-            done += 1
-        elif report["status"] == "LLM_DONE_NOT_PERTINENT":
-            not_pertinent += 1
-        else:
-            failed += 1
-
-    return {
-        "ok": True,
-        "processed": len(candidates),
-        "pre_filtered": pre_filtered,
-        "done": done,
-        "not_pertinent": not_pertinent,
-        "failed": failed,
-        "llm_calls": done + not_pertinent + failed,
-        "unpaywall": unpaywall_stats,
-        "reports": reports,
-    }
-
+    raise HTTPException(
+        status_code=503,
+        detail="Triage LLM desactive : se fait manuellement dans la conversation Claude Pro.",
+    )
 
 @router.post("/reset-all")
 def reset_all_pipeline(request: Request):
@@ -570,66 +511,13 @@ class _RunBackgroundBody(BaseModel):
 
 
 @router.post("/run-background")
-def run_background(request: Request, body: _RunBackgroundBody = _RunBackgroundBody()):
-    """
-    Lance le traitement LLM dans un thread séparé — retourne immédiatement.
-    Le traitement continue côté serveur, requête non-bloquante.
-    Un seul thread à la fois : si un traitement est déjà en cours, retourne 409.
-    Consulte /admin/llm/stats pour suivre la progression.
-    Body JSON : { "max_candidates": 200, "batch_size": 20 }
-    """
-    global _bg_running
+def run_background(request: Request, body: "_RunBackgroundBody" = None):
+    # DESACTIVE : triage manuel dans la conversation Claude Pro — jamais via API.
     _require_admin(request)
-    max_candidates = max(1, min(body.max_candidates, 10000))
-    batch_size = max(1, min(body.batch_size, 100))
-
-    with _bg_lock:
-        if _bg_running:
-            raise HTTPException(
-                status_code=409,
-                detail="Un traitement LLM est déjà en cours. Consultez /admin/llm/stats.",
-            )
-        _bg_running = True
-
-    def _bg_process(cap: int):
-        global _bg_running
-        try:
-            logger.info("run-background : démarrage thread, cap=%d", cap)
-            total = 0
-            while total < cap:
-                to_fetch = min(batch_size, cap - total)
-                with get_conn() as conn:
-                    with conn.cursor() as cur:
-                        candidates = _fetch_candidates_to_analyse(cur, None, to_fetch)
-                if not candidates:
-                    logger.info("run-background : terminé (NEW épuisés), %d traités", total)
-                    break
-                for candidate in candidates:
-                    _process_one_candidate(candidate)
-                    total += 1
-                logger.info("run-background : %d/%d traités", total, cap)
-            logger.info("run-background : arrêt — %d traités (plafond=%d)", total, cap)
-        except Exception:
-            logger.exception("run-background : ERREUR FATALE dans le thread")
-        finally:
-            with _bg_lock:
-                _bg_running = False
-
-    t = threading.Thread(target=_bg_process, args=(max_candidates,), daemon=True)
-    t.start()
-
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) FROM candidates WHERE status = 'NEW';")
-            remaining = cur.fetchone()[0]
-
-    return {
-        "ok": True,
-        "message": f"Traitement lancé en arrière-plan — {min(max_candidates, remaining)} candidats à traiter ({remaining} NEW en attente au total).",
-        "candidates_to_process": min(max_candidates, remaining),
-        "candidates_remaining_total": remaining,
-    }
-
+    raise HTTPException(
+        status_code=503,
+        detail="Triage LLM desactive : se fait manuellement dans la conversation Claude Pro.",
+    )
 
 @router.post("/pre-filter")
 def run_pre_filter(request: Request):
@@ -711,57 +599,15 @@ def run_pre_filter(request: Request):
 @router.post("/run-all")
 def run_llm_all(
     request: Request,
-    batch_size: int = Query(default=10, ge=1, le=50, description="Taille de chaque lot"),
-    sources: Optional[str] = Query(default=None, description="Sources séparées par virgule (ex: pubmed_jvs,pubmed_ejves)"),
+    batch_size: int = Query(default=10, ge=1, le=50),
+    sources: Optional[str] = Query(default=None),
 ):
-    """
-    Traite TOUS les candidats NEW + LLM_FAILED par lots.
-    Retourne le résumé global sans timeout.
-    Si sources est fourni, ne traite que les candidats de ces sources.
-    """
+    # DESACTIVE : triage manuel dans la conversation Claude Pro — jamais via API.
     _require_admin(request)
-
-    from concurrent.futures import ThreadPoolExecutor, as_completed
-
-    source_list = [s.strip() for s in sources.split(",")] if sources else None
-
-    total_done = total_failed = total_not_pertinent = total_processed = total_pre_filtered = 0
-    workers = min(batch_size, 15)
-
-    while True:
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                candidates = _fetch_candidates_to_analyse(cur, None, batch_size, sources=source_list)
-
-        if not candidates:
-            break
-
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = {pool.submit(_process_one_candidate, c): c for c in candidates}
-            for future in as_completed(futures):
-                total_processed += 1
-                report = future.result()
-                logger.info("LLM-ALL [%d] %s", total_processed, futures[future]["title_raw"][:60])
-
-                if report["status"] == "PRE_FILTERED":
-                    total_pre_filtered += 1
-                elif report["status"] == "LLM_DONE":
-                    total_done += 1
-                elif report["status"] == "LLM_DONE_NOT_PERTINENT":
-                    total_not_pertinent += 1
-                else:
-                    total_failed += 1
-
-    return {
-        "ok": True,
-        "processed": total_processed,
-        "pre_filtered": total_pre_filtered,
-        "done": total_done,
-        "not_pertinent": total_not_pertinent,
-        "failed": total_failed,
-        "llm_calls": total_done + total_not_pertinent + total_failed,
-    }
-
+    raise HTTPException(
+        status_code=503,
+        detail="Triage LLM desactive : se fait manuellement dans la conversation Claude Pro.",
+    )
 
 @router.get("/stats")
 def llm_stats(request: Request):
@@ -801,12 +647,99 @@ def llm_stats(request: Request):
             )
             avg_score = cur.fetchone()[0]
 
+            # Candidates sans items (LLM_FAILED ou NEW) — fenêtre 120 jours
+            cur.execute(
+                """
+                SELECT c.source, c.status, COUNT(*) AS n
+                FROM candidates c
+                WHERE c.status IN ('LLM_FAILED', 'NEW')
+                  AND c.official_date >= NOW() - INTERVAL '120 days'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM items i WHERE i.candidate_id = c.id
+                  )
+                GROUP BY c.source, c.status
+                ORDER BY n DESC;
+                """
+            )
+            unprocessed_rows = cur.fetchall()
+            unprocessed: dict[str, dict] = {}
+            for source, status, n in unprocessed_rows:
+                if source not in unprocessed:
+                    unprocessed[source] = {}
+                unprocessed[source][status] = n
+
     return {
         "ok": True,
         "candidates": candidate_stats,
         "items": item_stats,
         "items_by_specialty": by_specialty,
         "avg_score_approved": round(float(avg_score), 1) if avg_score else None,
+        "unprocessed_by_source": unprocessed,
+        "unprocessed_total": sum(
+            n for row in unprocessed_rows for n in [row[2]]
+        ),
+    }
+
+
+@router.get("/unprocessed")
+def list_unprocessed(
+    request: Request,
+    days: int = Query(default=120, ge=7, le=365),
+):
+    """
+    Liste les candidates sans items (NEW ou LLM_FAILED) dans la fenêtre donnée.
+    Permet de détecter ce qui doit être trié manuellement.
+    """
+    _require_admin(request)
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    c.id,
+                    c.source,
+                    c.status,
+                    c.official_date,
+                    c.title_raw,
+                    c.official_url,
+                    c.llm_error
+                FROM candidates c
+                WHERE c.status IN ('LLM_FAILED', 'NEW')
+                  AND c.official_date >= NOW() - INTERVAL '1 day' * %s
+                  AND NOT EXISTS (
+                    SELECT 1 FROM items i WHERE i.candidate_id = c.id
+                  )
+                ORDER BY c.official_date DESC, c.source;
+                """,
+                (days,),
+            )
+            rows = cur.fetchall()
+
+    candidates = [
+        {
+            "id": str(r[0]),
+            "source": r[1],
+            "status": r[2],
+            "official_date": r[3].isoformat() if r[3] else None,
+            "title_raw": r[4],
+            "official_url": r[5],
+            "llm_error": r[6],
+        }
+        for r in rows
+    ]
+
+    # Résumé par source
+    by_source: dict[str, int] = {}
+    for c in candidates:
+        by_source[c["source"]] = by_source.get(c["source"], 0) + 1
+
+    return {
+        "ok": True,
+        "days": days,
+        "total": len(candidates),
+        "by_source": by_source,
+        "candidates": candidates,
     }
 
 

@@ -178,7 +178,7 @@ def list_articles(
     # Filtre source_type (reglementaire | recommandation | innovation)
     _VALID_SOURCE_TYPES = {"reglementaire", "recommandation", "innovation"}
     if source_type and source_type in _VALID_SOURCE_TYPES:
-        extra_clauses.append("COALESCE(i.source_type, 'reglementaire') = %s")
+        extra_clauses.append("COALESCE(i.source_type, 'innovation') = %s")
         extra_params.append(source_type)
 
     # Full-text search (ILIKE) — métacaractères LIKE échappés.
@@ -325,7 +325,7 @@ def article_counts(
             # Count per specialty per source_type, filtered by date range
             # Applique les mêmes filtres type_praticien que /articles pour cohérence
             cur.execute(f"""
-                SELECT i.specialty_slug, COALESCE(i.source_type, 'reglementaire'), COUNT(*)
+                SELECT i.specialty_slug, COALESCE(i.source_type, 'innovation'), COUNT(*)
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
@@ -339,7 +339,7 @@ def article_counts(
                       (i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')
                     ELSE TRUE
                   END
-                GROUP BY i.specialty_slug, COALESCE(i.source_type, 'reglementaire');
+                GROUP BY i.specialty_slug, COALESCE(i.source_type, 'innovation');
             """, date_params + [list(_INTERVENTIONAL_SLUGS), list(_PRESCRIPTEUR_SLUGS)])
             per_spec: dict = {}
             for slug, stype, count in cur.fetchall():
@@ -371,7 +371,7 @@ def article_months(
     extra_clauses = []
     extra_params: list = []
     if source_type and source_type in _VALID_SOURCE_TYPES:
-        extra_clauses.append("COALESCE(i.source_type, 'reglementaire') = %s")
+        extra_clauses.append("COALESCE(i.source_type, 'innovation') = %s")
         extra_params.append(source_type)
     extra_sql = ("AND " + " AND ".join(extra_clauses)) if extra_clauses else ""
 

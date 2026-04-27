@@ -75,819 +75,62 @@ KNOWN_TYPE_PRATICIEN  = {"prescripteur", "interventionnel", "biologiste", "pharm
 KNOWN_SOURCE_TYPES    = {"reglementaire", "recommandation", "innovation"}
 
 # ---------------------------------------------------------------------------
-# Mapping source → source_type (déterministe, 0 appel LLM)
-# Toute source absente de ce dict → "reglementaire" par défaut.
+# Mapping source → source_type DÉTERMINISTE
 #
-# 3 sections :
-#   • reglementaire : JORF, conventions, alertes ANSM, circulaires — flux moyen
-#   • recommandation : HAS RBP, sociétés savantes, EMA guidelines — flux faible, opposable
-#   • innovation    : nouvelles AMM, nouveaux dispositifs médicaux, thérapies émergentes
+# PRINCIPE : ce dictionnaire ne contient QUE les sources dont le type est
+# garanti par leur mandat institutionnel (flux officiels français/européens).
+# Pour toutes les autres sources (journaux, sociétés savantes, presse médicale),
+# le LLM détermine lui-même le source_type depuis le contenu de l'article :
+#   - un journal peut publier une étude clinique (→ innovation) OU une guideline (→ recommandation)
+#   - une société savante peut publier une RBP (→ recommandation) OU un travail de recherche (→ innovation)
+# Forcer le type par la source serait un mauvais triage.
+#
+# Sources déterministes : textes officiels français, alertes ANSM, décisions EMA/ECDC/FDA.
 # ---------------------------------------------------------------------------
 SOURCE_TO_TYPE: dict[str, str] = {
     # Sources réglementaires
     "legifrance_jorf":              "reglementaire",
     "legifrance_jorf_remboursement":"reglementaire",  # JORF remboursement/nomenclature/conventions
     "piste_kali":                   "reglementaire",
-    "piste_legi":           "reglementaire",
-    "piste_circ":           "reglementaire",
-    "ansm_securite":        "reglementaire",
-    "ansm_securite_med":    "reglementaire",
-    "ansm_securite_dm":     "reglementaire",  # ANSM — Sécurité dispositifs médicaux
-    "ansm_ruptures_med":    "reglementaire",
-    "ansm_ruptures_vaccins":"reglementaire",
-    "ansm_actualites":      "reglementaire",  # ANSM — Points d'information, communiqués
-    "bo_social":            "reglementaire",
-    # HAS — sources complémentaires
-    "has_acces_precoces":   "reglementaire",  # HAS — Décisions accès précoce (ex-ATU)
-    "has_bo":               "reglementaire",  # HAS — Bulletin officiel (décisions formelles)
-    # INCa — Recommandations nationales oncologie
-    "inca_recommandations": "recommandation",
-    # Recommandations de pratique
-    "has_rbp":              "recommandation",
-    "has_fiches_memo":      "recommandation",
-    "has_parcours":         "recommandation",
-    "has_outils":           "recommandation",
-    "academie_medecine":    "recommandation",
-    "sfc_recommandations":  "recommandation",
-    "sfmu_recommandations": "recommandation",
-    "sfp_recommandations":  "recommandation",
-    "sofcot_recommandations":"recommandation",
-    "cngof_recommandations":"recommandation",
-    # Bon usage
-    "ansm_bon_usage":       "recommandation",
-    # Sociétés savantes — scan mars 2026
-    "cnge":                 "recommandation",
-    "snfmi":                "recommandation",
-    "sfhta":                "recommandation",
-    "sfar":                 "recommandation",
-    "sfn":                  "recommandation",
-    "sfpsychiatrie":        "recommandation",
-    "snfge":                "recommandation",
-    "afef":                 "recommandation",
-    "splf":                 "recommandation",
-    "sfendocrino":          "recommandation",
-    "sfdiabete":            "recommandation",
-    "sfrhumato":            "recommandation",
-    "sforl":                "recommandation",
-    "afu":                  "recommandation",
-    "sfgg":                 "recommandation",
-    "sfndt":                "recommandation",
-    "sfctcv":               "recommandation",
-    "sfnc":                 "recommandation",
-    "snfcp":                "recommandation",
-    "sfm_microbiologie":    "recommandation",
-    "sfcv":                 "recommandation",
-    "sofcpre":              "recommandation",
-    "sofmer":               "recommandation",
-    "sfmv":                 "recommandation",
-    "sfms":                 "recommandation",
-    "sfalcoologie":         "recommandation",
-    "sfpathol":             "recommandation",
-    "sfmn":                 "recommandation",
-    "sfscmfco":             "recommandation",
-    "sfmu":                 "recommandation",
-    "sfpediatrie":          "recommandation",
-    "sfnn":                 "recommandation",
-    "sfsp":                 "recommandation",
-    # Nouvelles sources — spécialités manquantes
-    "sfdermato":            "recommandation",
-    "sfo":                  "recommandation",
-    "afsos":                "recommandation",
-    "sfh":                  "recommandation",
-    "sfr_radiologie":       "recommandation",
-    "sofcot":               "recommandation",
-    "sofcpre_plastique":    "recommandation",
-    "sfcp":                 "recommandation",
-    "sfcp_pediatrique":     "recommandation",
-    # PubMed — chirurgie pédiatrique
-    "pubmed_jps":               "innovation",
-    "pubmed_psi":               "innovation",
-    "pubmed_ejps":              "innovation",
-    "pubmed_semin_pediatr_surg":"recommandation",
-    "pubmed_jps_guidelines":    "recommandation",
-    "pubmed_jpu":               "innovation",
-    "pubmed_jpu_guidelines":    "recommandation",
-    "eupsa_pediatrique":        "recommandation",
-    "sniil":                "recommandation",
-    "ffmkr":                "recommandation",
-    "cnsf":                 "recommandation",
-    "sfbc":                 "recommandation",
-    "fspf":                 "recommandation",
-    # Nouvelles sources institutionnelles — audit mars 2026
-    "has_ct":  "recommandation",  # HAS CT — avis médicaments ✅ RSS p_3081449
-    "has_dm":  "reglementaire",  # HAS DM — avis dispositifs médicaux ✅ RSS p_3081446
-    "spf_beh": "reglementaire",  # SPF — articles (BEH inclus) ✅
-    "cnom":    "reglementaire",  # CNOM — déontologie, exercice médical ✅ RSS actif
-    # Retirées après audit : inca (pas de RSS), andpc (pas de RSS), ameli_pro (login)
-    # ── Sources européennes (RSS) ──────────────────────────────────────────────
-    # EMA — European Medicines Agency
-    "ema_news":             "reglementaire",   # alertes, retraits AMM, mesures sécurité
-    "ema_guidelines":       "recommandation",  # standards évaluation médicaments
-    "ema_new_medicines":    "innovation",      # ← nouvelles AMM européennes
-    # ECDC — European Centre for Disease Prevention and Control
-    "ecdc_risk":            "reglementaire",   # risk assessments épidémiques
-    "ecdc_guidance":        "recommandation",  # technical guidance
-    "ecdc_cdtr":            "reglementaire",   # Communicable Disease Threats Report
-    # Sociétés savantes européennes — recommandations (RSS)
-    "esmo":                 "recommandation",  # oncologie
-    "ers":                  "recommandation",  # pneumologie
-    "easl":                 "recommandation",  # gastro-entérologie/hépatologie
-    "esicm":                "recommandation",  # anesthésiologie/réanimation
-    "eso_stroke":           "recommandation",  # neurologie (AVC)
-    "esvs":                 "recommandation",  # chirurgie vasculaire
-    "eadv":                 "recommandation",  # dermatologie
-    "esgo":                 "recommandation",  # gynécologie oncologie
-    "efort":                "recommandation",  # chirurgie orthopédique
-    "epa_psychiatrie":      "recommandation",  # psychiatrie
-    "esaic":                "recommandation",  # anesthésiologie
-    "eacts":                "recommandation",  # chirurgie cardiaque/thoracique
-    "iagg_geriatrie":       "recommandation",  # gériatrie
-    "esprm":                "recommandation",  # médecine physique/réadaptation
-    "eap_pediatrie":              "recommandation",  # pédiatrie
-    "pubmed_pediatrics":          "innovation",
-    "pubmed_pediatrics_guidelines": "recommandation",
-    "pubmed_jama_peds":           "innovation",
-    "pubmed_arch_dis_child":      "innovation",
-    "pubmed_eur_j_pediatr":       "innovation",
-    "pubmed_lancet_child":        "innovation",
-    "pubmed_j_pediatr":           "innovation",
-    "pubmed_arch_pediatr":        "recommandation",  # Archives de Pédiatrie — publications SFP
-    "pubmed_pidj":                "innovation",
-    "pubmed_acta_paediatr":       "innovation",
-    "pubmed_pediatr_neurol":      "innovation",
-    "gpip":                       "recommandation",
-    "esr_radiologie":       "recommandation",  # radiologie
-    "eos_ejo":              "recommandation",  # chirurgie orthopédique/colonne
-    "ard_eular":            "recommandation",  # rhumatologie
-    "eupsa_ejps":           "recommandation",  # chirurgie pédiatrique
-    # Sociétés savantes européennes — web scraping
-    "esc_guidelines":       "recommandation",  # cardiologie
-    "eular_recommendations":"recommandation",  # rhumatologie
-    "eau_guidelines":       "recommandation",  # urologie
-    "escmid_guidelines":    "recommandation",  # infectiologie
-    "ean_guidelines":       "recommandation",  # neurologie
-    "ecco_guidelines":      "recommandation",  # gastro-entérologie
-    "eha_guidelines":       "recommandation",  # hématologie
-    "easd_guidelines":      "recommandation",  # endocrinologie/diabète
-    "ese_guidelines":       "recommandation",  # endocrinologie
-    "era_guidelines":       "recommandation",  # néphologie
-    "ueg_guidelines":       "recommandation",  # gastro-entérologie
-    "esge_guidelines":      "recommandation",  # gastro-entérologie
-    "eusem_guidelines":     "recommandation",  # médecine d'urgence
-    "efim_guidelines":      "recommandation",  # médecine interne
-    "eflm_guidelines":      "recommandation",  # biologie médicale
-    "eshre_guidelines":     "recommandation",  # gynécologie/sage-femme
-    "egs_guidelines":       "recommandation",  # gériatrie
-    "euretina_guidelines":  "recommandation",  # ophtalmologie
-    "efp_guidelines":       "recommandation",  # dentisterie (parodontologie)
-    "eahp_statements":      "recommandation",  # pharmacie hospitalière
-    # ── Sources innovation — journaux spécialisés hauts IF (RSS vérifiés) ──
-    # Cardiologie
-    "circulation_aha":          "innovation",   # Circulation (AHA, IF ~35)
-    "jaha":                     "innovation",   # JAHA (AHA open-access, IF ~5)
-    "jacc_rss":                 "innovation",   # JACC (Elsevier, IF ~24)
-    # Neurologie
-    "neurology_aan":            "innovation",   # Neurology (AAN, IF ~9)
-    "ann_neurol":               "innovation",   # Annals of Neurology (Wiley, IF ~11)
-    "stroke_aha":               "innovation",   # Stroke (AHA/ASA, IF ~8) — neuro + neurochir
-    # Oncologie
-    "jco_rss":                  "innovation",   # JCO (ASCO, IF ~45)
-    "ann_oncol_rss":            "innovation",   # Annals of Oncology (ESMO, IF ~51)
-    # Hématologie
-    "blood_rss":                "innovation",   # Blood (ASH/Elsevier, IF ~25)
-    "am_j_hematol":             "innovation",   # Am J Hematology (Wiley, IF ~12)
-    "leukemia_rss":             "innovation",   # Leukemia (Nature, IF ~12)
-    # Infectiologie
-    "eid_cdc":                  "innovation",   # Emerging Infect Diseases (CDC, IF ~12)
-    # Néphrologie
-    "kidney_int_rss":           "innovation",   # Kidney International (ISN/Elsevier, IF ~14)
-    # Ophtalmologie
-    "ophthalmology_aao":        "innovation",   # Ophthalmology (AAO/Elsevier, IF ~14)
-    "bjo_rss":                  "innovation",   # BJO (BMJ, IF ~5)
-    # ORL
-    "otohns_rss":               "innovation",   # Otolaryngology HNS (AAO-HNS/SAGE, IF ~3)
-    "laryngoscope_rss":         "innovation",   # Laryngoscope (ALA/Wiley, IF ~3)
-    "head_neck_rss":            "innovation",   # Head & Neck (Wiley, IF ~3)
-    # Médecine d'urgences
-    "ann_emerg_med_rss":        "innovation",   # Ann Emerg Med (ACEP, IF ~9)
-    "emj_rss":                  "innovation",   # EMJ (RCEM/BMJ, IF ~4)
-    "resuscitation_rss":        "innovation",   # Resuscitation (ERC/AHA, IF ~6)
-    # Radiologie
-    "eur_radiol_rss":           "innovation",   # European Radiology (Springer, IF ~7)
-    # Dermatologie
-    "jaad_rss":                 "innovation",   # JAAD (AAD/Elsevier, IF ~13)
-    "bjd_rss":                  "innovation",   # BJD (BAD/Wiley, IF ~11)
-    # Endocrinologie
-    "diabetes_care_rss":        "innovation",   # Diabetes Care (ADA, IF ~16)
-    # Rhumatologie
-    "arthritis_rheumatol_rss":  "innovation",   # Arthritis & Rheumatology (ACR/Wiley, IF ~14)
-    # Gériatrie
-    "jags_rss":                 "innovation",   # JAGS (AGS/Wiley, IF ~7)
-    # Gynécologie
-    "ajog_rss":                 "innovation",   # AJOG (Elsevier, IF ~10)
-    # Médecine interne
-    "ann_intern_med_rss":       "innovation",   # Ann Intern Med (ACP, IF ~51)
-    # Médecine générale
-    "cmaj_rss":                 "innovation",   # CMAJ (CMA, IF ~8)
-    "bjgp_rss":                 "innovation",   # BJGP (RCGP, IF ~5)
-    # Pneumologie
-    "chest_rss":                "innovation",   # Chest (ACCP, IF ~9)
-    # Chirurgie thoracique
-    "jto_rss":                  "innovation",   # JTO (IASLC, IF ~20)
-    # Chirurgie vasculaire
-    "jvs_rss":                  "innovation",   # JVS (SVS/Elsevier, IF ~4) — RSS direct
-    # Pharmacien
-    "br_j_clin_pharm_rss":      "innovation",   # BJCP (BPS/Wiley, IF ~4)
-    "ann_pharmacother_rss":     "innovation",   # Ann Pharmacotherapy (SAGE, IF ~4)
-    # ── Sources innovation — grands journaux internationaux ───────────────
-    # Lancet specialty (10 flux — thelancet.com RSS)
-    "lancet_neurology":         "innovation",   # Lancet Neurology (IF ~57) → neurologie
-    "lancet_oncology":          "innovation",   # Lancet Oncology (IF ~51) → oncologie
-    "lancet_psychiatry":        "innovation",   # Lancet Psychiatry (IF ~65) → psychiatrie
-    "lancet_infect_dis":        "innovation",   # Lancet Infectious Diseases (IF ~40) → infectiologie
-    "lancet_diab_endo_rss":     "innovation",   # Lancet Diabetes & Endocrinology (IF ~44) → endocrinologie
-    "lancet_haematol":          "innovation",   # Lancet Haematology (IF ~27) → hématologie
-    "lancet_gastro_hepatol":    "innovation",   # Lancet Gastroenterology & Hepatology (IF ~35) → gastro
-    "lancet_respir_med":        "innovation",   # Lancet Respiratory Medicine (IF ~38) → pneumologie
-    "lancet_rheumatol":         "innovation",   # Lancet Rheumatology (IF ~25) → rhumatologie
-    "eclinmedicine":            "innovation",   # eClinicalMedicine (IF ~15) — Lancet OA, multi-spécialité
-    # BMJ specialty (6 flux — bmj.com RSS)
-    "bmj_heart":            "innovation",   # Heart / BCS (IF ~15) → cardiologie
-    "bmj_thorax":           "innovation",   # Thorax / BTS (IF ~10) → pneumologie
-    "bmj_gut":              "innovation",   # Gut / BSG (IF ~24) → gastro-entérologie
-    "bmj_ard":              "innovation",   # ARD / EULAR (IF ~27) → rhumatologie
-    "bmj_jnnp":             "innovation",   # JNNP (IF ~9) → neurologie
-    "bmj_adc":              "innovation",   # Archives Disease Childhood (IF ~5) → pédiatrie
-    # JAMA Network (12 flux)
-    "jama":                 "innovation",
-    "jama_cardiology":      "innovation",
-    "jama_dermatology":     "innovation",
-    "jama_internal_med":    "innovation",
-    "jama_neurology":       "innovation",
-    "jama_oncology":        "innovation",
-    "jama_ophthalmology":   "innovation",
-    "jama_otolaryngology":  "innovation",
-    "jama_pediatrics":      "innovation",
-    "jama_psychiatry":      "innovation",
-    "jama_surgery":         "innovation",
-    "jama_network_open":    "innovation",
-    # Grands journaux généralistes
-    "nejm":                 "innovation",
-    "lancet":               "innovation",
-    "bmj":                  "innovation",
-    "nature_medicine":      "innovation",
-    # Sources paramédicales
-    "clinical_chemistry":   "innovation",   # biologiste
-    "ptj_kine":             "innovation",   # kinésithérapie
-    "bjog":                 "innovation",   # sage-femme
-    "cpt_pharmacol":        "innovation",   # pharmacien
-    "jdr_dental":           "innovation",   # dentiste / orthodontiste
-    "jan_nursing":          "innovation",   # infirmiers
-
-    # ── Presse clinique spécialisée — Healio (15 flux) + sociétés (5 flux) ───
-    # Journalisme médical clinique : comptes-rendus congrès, guidelines, pratique
-    # Même modèle que vascular_specialist / tctmd — PAS des abstracts de recherche
-    "healio_cardio":        "innovation",   # Healio Cardiology
-    "healio_nephro":        "innovation",   # Healio Nephrology
-    "healio_infect":        "innovation",   # Healio Infectious Disease
-    "healio_rhuma":         "innovation",   # Healio Rheumatology
-    "healio_endo":          "innovation",   # Healio Endocrinology
-    "healio_ophtalmo":      "innovation",   # Healio Ophthalmology
-    "healio_gastro":        "innovation",   # Healio Gastroenterology
-    "healio_hemato_onco":   "innovation",   # Healio Hematology-Oncology (multi-spé)
-    "healio_psy":           "innovation",   # Healio Psychiatry
-    "healio_neuro":         "innovation",   # Healio Neurology
-    "healio_ortho":         "innovation",   # Healio Orthopedics
-    "healio_pulmo":         "innovation",   # Healio Pulmonology
-    "healio_derma":         "innovation",   # Healio Dermatology
-    "healio_pedia":         "innovation",   # Healio Pediatrics
-    "healio_geria":         "innovation",   # Healio Geriatric Medicine
-    "aans_news":            "innovation",   # AANS Neurosurgeon News — neurochirurgie
-    "aaos_news":            "innovation",   # AAOS Now — chirurgie orthopédique
-    "aga_news":             "recommandation", # AGA News — guidelines gastro
-    "psychiatric_times":    "innovation",   # Psychiatric Times — psychiatrie
-    "urology_times":        "innovation",   # Urology Times — urologie
-    # ── ENTtoday + MedPage Today — gaps presse clinique (avril 2026) ─────
-    "enttoday":                 "innovation",   # ENTtoday (AAO-HNS) — ORL
-    "medpage_obgyn":            "innovation",   # MedPage Today OB/Gyn — gynécologie
-    "medpage_emergency":        "innovation",   # MedPage Today Emergency — urgences
-    "medpage_anesthesiology":   "innovation",   # MedPage Today Anesthesiology
-    "medpage_radiology":        "innovation",   # MedPage Today Radiology
-    "medpage_surgery":          "innovation",   # MedPage Today Surgery (multi-chir)
-    # ── Presse spécialisée endovasculaire ────────────────────────────────
-    "endovascular_today":   "innovation",   # Endovascular Today — périph. & endovasc.
-    # ── Congrès vasculaires — désactivés (couvert via TCTMD + Vascular News) ──
-    # "linc_highlights": domaine NXDOMAIN ; "evc_highlights": hors cible
-    # ── PubMed — chirurgie vasculaire (Elsevier RSS 410 Gone → fallback NCBI) ──
-    "pubmed_jvs":           "innovation",   # Journal of Vascular Surgery
-    "pubmed_ejves":         "innovation",   # European Journal of Vascular and Endovascular Surgery
-    "pubmed_jet":           "innovation",   # Journal of Endovascular Therapy
-    "pubmed_ann_vasc_surg": "innovation",   # Annals of Vascular Surgery
-    # ── Presse médicale professionnelle ─────────────────────────────────────
-    # Journalistes médicaux — curation déjà faite, filtre LLM très strict
-    "vascular_specialist":  "innovation",   # SVS official newspaper (en anglais)
-    "vascular_news":        "innovation",   # Vascular News (UK/international)
-    "tctmd":                "innovation",   # TCTMD — interventionnel vasculaire + cardio
-    "quotidien_medecin":    "innovation",   # Le Quotidien du Médecin (FR, généraliste)
-    "egora":                "innovation",   # Egora (FR, libéral, bruit élevé)
-    # ── PubMed — chirurgie cardiaque (Elsevier RSS mort → fallback NCBI) ─────
-    "pubmed_jtcvs":               "innovation",    # Journal of Thoracic and Cardiovascular Surgery
-    "pubmed_ejcts":               "innovation",    # European Journal of Cardio-Thoracic Surgery
-    "pubmed_ejcts_guidelines":    "recommandation",# EJCTS — Guidelines EACTS uniquement
-    "pubmed_ann_thorac_surg":     "innovation",    # Annals of Thoracic Surgery
-    "pubmed_circulation_card":    "innovation",    # Circulation (AHA) — filtré chirurgie cardiaque
-    "pubmed_jacc_card":           "innovation",    # JACC — Journal American College of Cardiology
-    "pubmed_jacc_interv":         "innovation",    # JACC Cardiovascular Interventions — TAVI/structural
-    "pubmed_eur_heart_j":         "innovation",    # European Heart Journal (ESC flagship)
-    "pubmed_jhlt":                "innovation",    # Journal of Heart and Lung Transplantation — transplant & LVAD
-    "pubmed_eurointerv":          "innovation",    # EuroIntervention (PCR) — structural heart, TAVI/TEER européen
-    "pubmed_circ_heart_fail":     "innovation",    # Circulation: Heart Failure — LVAD, MCS, IC avancée
-    "pubmed_esc_guidelines":      "recommandation",# ESC Guidelines via EHJ / Eur J Heart Fail
-    "pubmed_sts_guidelines":      "recommandation",# STS Guidelines via Annals of Thoracic Surgery
-    # ── Journal français cardiologie/chirurgie cardiaque ─────────────────────
-    "arch_cardiovasc_dis":        "innovation",    # Archives of Cardiovascular Diseases — SFC officiel
-    # ── Presse spécialisée chirurgie cardiaque ────────────────────────────────
-    "ctsnet":                     "innovation",    # CTSNet — organe officiel EACTS/STS/AATS
-    # ── PubMed — chirurgie orthopédique ──────────────────────────────────────
-    "pubmed_jbjs":                "innovation",    # Journal of Bone & Joint Surgery (Am)
-    "pubmed_bone_joint_j":        "innovation",    # Bone & Joint Journal — EFORT flagship
-    "pubmed_corr":                "innovation",    # Clinical Orthopaedics and Related Research
-    "pubmed_jarthroplasty":       "innovation",    # Journal of Arthroplasty
-    "pubmed_kssta":               "innovation",    # Knee Surg Sports Traumatol Arthrosc — ESSKA
-    "pubmed_acta_orthop":         "innovation",    # Acta Orthopaedica
-    "pubmed_otsr":                "innovation",    # OTSR — journal officiel SOFCOT
-    "pubmed_otsr_guidelines":     "recommandation",# OTSR — guidelines/recommandations SOFCOT
-    "pubmed_efort_guidelines":    "recommandation",# EFORT Open Reviews — guidelines européennes
-    # ── Chirurgie du sport / sous-spécialités ortho ───────────────────────────
-    "pubmed_ajsm":                "innovation",    # American Journal of Sports Medicine
-    "pubmed_arthroscopy":         "innovation",    # Arthroscopy — AOSSM
-    "pubmed_jses":                "innovation",    # Journal of Shoulder and Elbow Surgery
-    "pubmed_spine":               "innovation",    # Spine (Wolters Kluwer)
-    "pubmed_j_orthop_trauma":     "innovation",    # Journal of Orthopaedic Trauma
-    "pubmed_int_orthop":          "innovation",    # International Orthopaedics — SICOT
-    "pubmed_arch_orthop_trauma":  "innovation",    # Archives of Orthopaedic and Trauma Surgery
-    # ── PubMed — chirurgie plastique & reconstructrice ────────────────────────
-    "pubmed_prs":                 "innovation",    # Plastic and Reconstructive Surgery (ASPS flagship)
-    "pubmed_jpras":               "innovation",    # Journal of Plastic, Reconstructive & Aesthetic Surgery
-    "pubmed_asj":                 "innovation",    # Aesthetic Surgery Journal (ASAPS)
-    "pubmed_ann_plast_surg":      "innovation",    # Annals of Plastic Surgery
-    "pubmed_jhs_am":              "innovation",    # Journal of Hand Surgery American (ASSH)
-    "pubmed_jhs_eur":             "innovation",    # Journal of Hand Surgery European (FESSH)
-    "pubmed_jrms":                "innovation",    # Journal of Reconstructive Microsurgery
-    "pubmed_microsurgery":        "innovation",    # Microsurgery (Wiley)
-    "pubmed_burns":               "innovation",    # Burns — prise en charge brûlures
-    "pubmed_acpe":                "innovation",    # Annales de Chirurgie Plastique Esthétique — SOFCPRE
-    "pubmed_prs_global_open":      "innovation",    # Plastic and Reconstructive Surgery Global Open (ASPS)
-    "pubmed_wound_repair":         "innovation",    # Wound Repair and Regeneration — cicatrisation, substituts cutanés
-    "pubmed_prs_guidelines":      "recommandation",# PRS — Guidelines ASPS / consensus plastique
-    "pubmed_jpras_guidelines":    "recommandation",# JPRAS — Guidelines BAPRAS / ESPRAS
-    # ── PubMed — dermatologie ─────────────────────────────────────────────────
-    "pubmed_jaad":                "innovation",    # JAAD — Journal of the American Academy of Dermatology
-    "pubmed_bjd":                 "innovation",    # British Journal of Dermatology
-    "pubmed_jeadv":               "innovation",    # JEADV — journal officiel EADV
-    "pubmed_eur_j_derm":          "innovation",    # European Journal of Dermatology (IF ~3)
-    "pubmed_jama_derm":           "innovation",    # JAMA Dermatology (IF ~21)
-    "pubmed_acta_derm":           "innovation",    # Acta Dermato-Venereologica
-    "pubmed_dermatology_basel":   "innovation",    # Dermatology (Karger/Basel)
-    "pubmed_clin_exp_derm":       "innovation",    # Clinical and Experimental Dermatology
-    "pubmed_contact_derm":        "innovation",    # Contact Dermatitis — ESCD
-    "pubmed_melanoma_res":        "innovation",    # Melanoma Research
-    "pubmed_jddg":                "innovation",    # JDDG — Deutsche Dermatologische Gesellschaft
-    "pubmed_jid":                 "innovation",    # Journal of Investigative Dermatology
-    "pubmed_derm_therapy":        "innovation",    # Dermatologic Therapy
-    "pubmed_j_derm_treat":        "innovation",    # Journal of Dermatological Treatment
-    "pubmed_pediatr_derm":        "innovation",    # Pediatric Dermatology
-    "pubmed_int_j_derm":          "innovation",    # International Journal of Dermatology
-    # ── PubMed — endocrinologie, diabétologie, maladies métaboliques ──────────
-    "pubmed_diabetes_care":       "innovation",    # Diabetes Care (ADA, IF ~16)
-    "pubmed_lancet_diab_endo":    "innovation",    # Lancet Diabetes & Endocrinology (IF ~44)
-    "pubmed_diabetologia":        "innovation",    # Diabetologia (EASD, IF ~8)
-    "pubmed_jcem":                "innovation",    # J Clin Endocrinol Metab (ENDO, IF ~6.5)
-    "pubmed_thyroid":             "innovation",    # Thyroid (ATA, IF ~8.5)
-    "pubmed_eur_j_endo":          "innovation",    # European Journal of Endocrinology (ESE, IF ~5)
-    "pubmed_diabetes_obes_metab": "innovation",    # Diabetes Obesity & Metabolism (IF ~6.5)
-    "pubmed_osteoporos_int":      "innovation",    # Osteoporosis International (IOF/ESCEO, IF ~5)
-    "pubmed_bone":                "innovation",    # Bone (IF ~4)
-    "pubmed_clin_endo":           "innovation",    # Clinical Endocrinology (Oxf) (IF ~3.5)
-    "pubmed_endocr_pract":        "recommandation",# Endocrine Practice (AACE — consensus/guidelines)
-    "pubmed_diabetes_res_clin":   "innovation",    # Diabetes Research and Clinical Practice (IF ~6)
-    "pubmed_j_endo_invest":       "innovation",    # Journal of Endocrinological Investigation (SIE, IF ~4)
-    "pubmed_horm_metab_res":      "innovation",    # Hormone and Metabolic Research (Thieme, IF ~3)
-    "pubmed_endocrinology":       "innovation",    # Endocrinology (Endocrine Society, IF ~4.5)
-    "pubmed_ann_endo":            "recommandation",# Annales d'Endocrinologie (SFE — guidelines FR)
-    # ── gastro-entérologie ────────────────────────────────────────────────────
-    "pubmed_gut":                 "innovation",    # Gut (BMJ, IF ~24) — MICI, hépatologie, CCR
-    "pubmed_gastroenterology":    "innovation",    # Gastroenterology (AGA, IF ~29) — flagship
-    "pubmed_ajg":                 "innovation",    # Am J Gastroenterol (AGA, IF ~12)
-    "pubmed_hepatology":          "innovation",    # Hepatology (AASLD, IF ~12)
-    "pubmed_j_hepatol":           "innovation",    # J Hepatol (EASL, IF ~26) — hépatologie
-    "pubmed_lancet_gastro":       "innovation",    # Lancet GH (IF ~36) — essais pivots
-    "pubmed_apt":                 "innovation",    # Aliment Pharmacol Ther (IF ~8)
-    "pubmed_cgh":                 "innovation",    # Clin Gastroenterol Hepatol (AGA, IF ~12)
-    "pubmed_jcc":                 "innovation",    # J Crohns Colitis (ECCO, IF ~8) — MICI
-    "pubmed_endoscopy":           "recommandation",# Endoscopy (ESGE, IF ~11) — guidelines endo
-    "pubmed_gie":                 "innovation",    # Gastrointest Endosc (ASGE, IF ~7)
-    "pubmed_jhep_rep":            "innovation",    # JHEP Reports (EASL open-access, IF ~7)
-    "pubmed_liver_int":           "innovation",    # Liver International (IF ~7)
-    "pubmed_dig_endosc":          "innovation",    # Digestive Endoscopy (JGES, IF ~4)
-    "pubmed_ejgh":                "innovation",    # Eur J Gastroenterol Hepatol (IF ~3)
-    "pubmed_j_gastro_hepatol":    "innovation",    # J Gastroenterol Hepatol (IF ~4)
-    # ── gériatrie ─────────────────────────────────────────────────────────────
-    "pubmed_age_ageing":              "innovation",    # Age and Ageing (BGS, IF ~13)
-    "pubmed_jags":                    "innovation",    # J Am Geriatr Soc (AGS, IF ~7)
-    "pubmed_lancet_healthy_longev":   "innovation",    # Lancet Healthy Longevity (IF ~20)
-    "pubmed_alzheimers_dement":       "innovation",    # Alzheimer's & Dementia (IF ~14)
-    "pubmed_j_gerontol_med":          "innovation",    # J Gerontol: Medical Sciences (IF ~6)
-    "pubmed_jamda":                   "innovation",    # JAMDA (AMDA, IF ~6)
-    "pubmed_eur_geriatr_med":         "recommandation",# Eur Geriatr Med (EUGMS guidelines, IF ~4)
-    "pubmed_int_j_geriatr_psychiatry":"innovation",    # Int J Geriatr Psychiatry (IF ~4)
-    "pubmed_j_alzheimers_dis":        "innovation",    # J Alzheimer's Disease (IF ~4)
-    "pubmed_clin_interv_aging":       "innovation",    # Clin Interv Aging (Dove, IF ~3)
-    "pubmed_bmc_geriatr":             "innovation",    # BMC Geriatrics (IF ~4)
-    "pubmed_maturitas":               "innovation",    # Maturitas (IF ~4)
-    "pubmed_j_nutr_health_aging":     "innovation",    # J Nutr Health Aging (IF ~4)
-    "pubmed_aging_clin_exp_res":      "innovation",    # Aging Clin Exp Res (IF ~4)
-    "pubmed_geriatr_gerontol_int":    "innovation",    # Geriatr Gerontol Int (IF ~3)
-    "pubmed_gerontology":             "innovation",    # Gerontology / Karger (IF ~4)
-    # ── Gynécologie ──────────────────────────────────────────────────────────
-    "pubmed_ajog":                    "innovation",    # AJOG (IF ~10)
-    "pubmed_obstet_gynecol":          "recommandation", # Obstetrics & Gynecology / ACOG (IF ~7)
-    "pubmed_fertil_steril":           "innovation",    # Fertility & Sterility / ASRM (IF ~8)
-    "pubmed_bjog":                    "innovation",    # BJOG / RCOG (IF ~6)
-    "pubmed_ultrasound_og":           "recommandation", # Ultrasound OG / ISUOG (IF ~7)
-    "pubmed_gynecol_oncol":           "innovation",    # Gynecologic Oncology / SGO (IF ~6)
-    "pubmed_hum_reprod":              "innovation",    # Human Reproduction / ESHRE (IF ~6)
-    "pubmed_menopause_j":             "recommandation", # Menopause / NAMS (IF ~3)
-    "pubmed_ijgc":                    "innovation",    # Int J Gynecol Cancer / IGCS (IF ~4)
-    "pubmed_jmig":                    "innovation",    # J Minimally Invasive Gyn / AAGL (IF ~4)
-    "pubmed_ejogrb":                  "innovation",    # Eur J Obstet Gynecol Reprod Biol (IF ~3)
-    "pubmed_aogs":                    "innovation",    # Acta Obstet Gynecol Scand / NFOG (IF ~4)
-    "pubmed_jgohr":                   "recommandation", # J Gynecol Obstet Hum Reprod / CNGOF (IF ~2)
-    "pubmed_rbm_online":              "innovation",    # Reproductive BioMedicine Online (IF ~4)
-    "pubmed_arch_gynecol":            "innovation",    # Archives of Gynecology & Obstetrics (IF ~3)
-    "pubmed_gynecol_endocrinol":      "innovation",    # Gynecological Endocrinology (IF ~2)
-    # ── Hématologie ──────────────────────────────────────────────────────────
-    "pubmed_blood":                   "innovation",    # Blood (ASH, IF ~25)
-    "pubmed_leukemia":                "innovation",    # Leukemia / Nature (IF ~12)
-    "pubmed_haematologica":           "innovation",    # Haematologica / EHA (IF ~9)
-    "pubmed_am_j_hematol":            "innovation",    # American J Hematology (IF ~12)
-    "pubmed_lancet_haematol":         "innovation",    # Lancet Haematology (IF ~25)
-    "pubmed_br_j_haematol":           "innovation",    # British J Haematology / BSH (IF ~6)
-    "pubmed_blood_adv":               "innovation",    # Blood Advances / ASH open access (IF ~7)
-    "pubmed_j_hematol_oncol":         "innovation",    # J Hematology & Oncology (IF ~28)
-    "pubmed_bone_marrow_transplant":  "innovation",    # Bone Marrow Transplantation / EBMT (IF ~5)
-    "pubmed_thromb_haemost":          "innovation",    # Thrombosis & Haemostasis / ISTH (IF ~6)
-    "pubmed_j_thromb_haemost":        "innovation",    # J Thrombosis & Haemostasis / ISTH (IF ~7)
-    "pubmed_ann_hematol":             "innovation",    # Annals of Hematology (IF ~4)
-    "pubmed_leuk_lymphoma":           "innovation",    # Leukemia & Lymphoma (IF ~3)
-    "pubmed_eur_j_haematol":          "innovation",    # European J Haematology (IF ~4)
-    "pubmed_hematol_oncol":           "innovation",    # Hematological Oncology (IF ~3)
-    "pubmed_clin_lymphoma_myeloma_leuk": "innovation", # Clin Lymphoma Myeloma Leukemia (IF ~3)
-    # ── Infectiologie ─────────────────────────────────────────────────────────
-    "pubmed_cid":                     "innovation",    # Clinical Infectious Diseases / IDSA (IF ~20)
-    "pubmed_lancet_infect_dis":       "innovation",    # Lancet Infectious Diseases (IF ~36)
-    "pubmed_j_infect_dis":            "innovation",    # Journal of Infectious Diseases / IDSA (IF ~7)
-    "pubmed_aids_journal":            "innovation",    # AIDS / IAS (IF ~5)
-    "pubmed_aac":                     "innovation",    # Antimicrobial Agents & Chemotherapy / ASM (IF ~5)
-    "pubmed_jac":                     "innovation",    # J Antimicrobial Chemotherapy / BSAC (IF ~6)
-    "pubmed_emerg_infect_dis":        "innovation",    # Emerging Infectious Diseases / CDC (IF ~12)
-    "pubmed_ijaa":                    "innovation",    # Int J Antimicrobial Agents / ESCMID (IF ~7)
-    "pubmed_j_infect":                "innovation",    # Journal of Infection / BSID (IF ~18)
-    "pubmed_hiv_med":                 "recommandation", # HIV Medicine / BHIVA (IF ~4)
-    "pubmed_euro_surveill":           "recommandation", # Euro Surveillance / ECDC (IF ~11)
-    "pubmed_mycoses":                 "innovation",    # Mycoses (IF ~4)
-    "pubmed_med_mal_infect":          "recommandation", # Médecine et Maladies Infectieuses / SPILF (IF ~4)
-    "pubmed_infection":               "innovation",    # Infection / Springer (IF ~5)
-    "pubmed_eur_j_clin_microbiol":    "innovation",    # Eur J Clin Microbiology & Infect Dis / ESCMID (IF ~4)
-    "pubmed_plos_ntd":                "innovation",    # PLoS Neglected Tropical Diseases (IF ~4)
-    # ── Infirmiers ────────────────────────────────────────────────────────────
-    "pubmed_int_j_nurs_stud":         "innovation",    # Int J Nursing Studies (IF ~8)
-    "pubmed_j_adv_nurs":              "innovation",    # J Advanced Nursing (IF ~4)
-    "pubmed_j_clin_nurs":             "innovation",    # J Clinical Nursing (IF ~4)
-    "pubmed_nurse_educ_today":        "innovation",    # Nurse Education Today (IF ~4)
-    "pubmed_nurs_res":                "innovation",    # Nursing Research (IF ~3)
-    "pubmed_worldviews_ebn":          "innovation",    # Worldviews Evidence-Based Nursing (IF ~3)
-    "pubmed_int_wound_j":             "innovation",    # International Wound Journal (IF ~3)
-    "pubmed_j_wound_care":            "recommandation", # Journal of Wound Care / EWMA (IF ~2)
-    "pubmed_wound_repair":            "innovation",    # Wound Repair & Regeneration (IF ~4)
-    "pubmed_pain_manag_nurs":         "innovation",    # Pain Management Nursing (IF ~2)
-    "pubmed_appl_nurs_res":           "innovation",    # Applied Nursing Research (IF ~2)
-    "pubmed_j_nurs_manag":            "innovation",    # J Nursing Management (IF ~3)
-    "pubmed_eur_j_oncol_nurs":        "innovation",    # Eur J Oncology Nursing / EONS (IF ~3)
-    "pubmed_intensive_crit_care_nurs": "innovation",   # Intensive & Critical Care Nursing (IF ~3)
-    "pubmed_j_nurs_scholarsh":        "innovation",    # J Nursing Scholarship (IF ~3)
-    "pubmed_nurs_open":               "innovation",    # Nursing Open / Wiley OA (IF ~2)
-    # ── Kinésithérapie ────────────────────────────────────────────────────────
-    "pubmed_phys_ther":               "innovation",    # Physical Therapy / APTA (IF ~4)
-    "pubmed_jospt":                   "innovation",    # JOSPT (IF ~7)
-    "pubmed_j_physiother":            "innovation",    # J Physiotherapy / APA (IF ~8)
-    "pubmed_br_j_sports_med_kine":    "innovation",    # British J Sports Medicine (IF ~18)
-    "pubmed_clin_rehabil":            "innovation",    # Clinical Rehabilitation (IF ~4)
-    "pubmed_arch_phys_med_rehabil":   "innovation",    # Archives PMR / AAPM&R (IF ~4)
-    "pubmed_disabil_rehabil":         "innovation",    # Disability & Rehabilitation (IF ~3)
-    "pubmed_j_rehabil_med":           "innovation",    # J Rehabilitation Medicine / UEMS (IF ~3)
-    "pubmed_bmc_musculoskelet":       "innovation",    # BMC Musculoskeletal Disorders (IF ~3)
-    "pubmed_j_cardiopulm_rehabil":    "innovation",    # J Cardiopulmonary Rehab & Prevention (IF ~3)
-    "pubmed_neurorehabil_neural_repair": "innovation", # Neurorehabilitation & Neural Repair (IF ~5)
-    "pubmed_j_neuroeng_rehabil":      "innovation",    # J Neuroengineering & Rehabilitation (IF ~5)
-    "pubmed_ann_phys_rehabil_med":    "recommandation", # Annals Phys & Rehab Med / SOFMER (IF ~6)
-    "pubmed_eur_j_phys_rehabil_med":  "innovation",    # Eur J Physical & Rehab Med / ESPRM (IF ~4)
-    "arch_pmr_rss":                   "innovation",    # Archives of PMR (ACRM/Elsevier, IF ~4)
-    "pmrj_rss":                       "innovation",    # PM&R Journal (AAPM&R/Wiley, IF ~3)
-    "pubmed_gait_posture":            "innovation",    # Gait & Posture (IF ~3)
-    "pubmed_musculoskelet_sci_pract": "innovation",    # Musculoskeletal Science & Practice (IF ~3)
-    # ── Oncologie ─────────────────────────────────────────────────────────────
-    "pubmed_j_clin_oncol":            "recommandation", # J Clinical Oncology / ASCO (IF ~45)
-    "pubmed_ann_oncol":               "recommandation", # Annals of Oncology / ESMO (IF ~51)
-    "pubmed_lancet_oncol":            "innovation",    # Lancet Oncology (IF ~42)
-    "pubmed_eur_j_cancer":            "innovation",    # European J Cancer / ECCO (IF ~8)
-    "pubmed_clin_cancer_res":         "innovation",    # Clinical Cancer Research / AACR (IF ~11)
-    "pubmed_br_j_cancer":             "innovation",    # British J Cancer / CRUK (IF ~9)
-    "pubmed_cancer_acs":              "innovation",    # Cancer / ACS (IF ~7)
-    "pubmed_jnci":                    "innovation",    # J National Cancer Institute / NCI (IF ~11)
-    "pubmed_int_j_radiat_oncol":      "innovation",    # Int J Radiation Oncology / ASTRO (IF ~8)
-    "pubmed_radiother_oncol":         "recommandation", # Radiotherapy & Oncology / ESTRO (IF ~7)
-    "pubmed_support_care_cancer":     "innovation",    # Supportive Care in Cancer / MASCC (IF ~4)
-    "pubmed_cancer_treat_rev":        "recommandation", # Cancer Treatment Reviews (IF ~10)
-    "pubmed_oncologist":              "innovation",    # The Oncologist / ASCO (IF ~5)
-    "pubmed_esmo_open":               "innovation",    # ESMO Open (IF ~6)
-    "pubmed_cancer_med":              "innovation",    # Cancer Medicine / Wiley OA (IF ~4)
-    "pubmed_oncotarget":              "innovation",    # Oncotarget (IF ~4)
-    # ── Urologie ──────────────────────────────────────────────────────────────
-    "pubmed_eur_urol":               "innovation",    # European Urology / EAU (IF ~25)
-    "pubmed_eur_urol_oncol":         "innovation",    # European Urology Oncology / EAU (IF ~8)
-    "pubmed_j_urol":                 "innovation",    # Journal of Urology / AUA (IF ~6)
-    "pubmed_prostate_cancer":        "innovation",    # Prostate Cancer & Prostatic Diseases / Nature (IF ~6)
-    "pubmed_bjui":                   "innovation",    # BJUI / BAUS (IF ~5)
-    "pubmed_eur_urol_focus":         "recommandation", # European Urology Focus / EAU OA (IF ~4)
-    "pubmed_world_j_urol":           "innovation",    # World Journal of Urology / Springer (IF ~4)
-    "pubmed_j_endourol":             "innovation",    # Journal of Endourology / MAL (IF ~3)
-    "pubmed_neurourol_urodyn":       "innovation",    # Neurourology & Urodynamics / ICS (IF ~3)
-    "pubmed_urology":                "innovation",    # Urology / Elsevier (IF ~3)
-    "pubmed_int_j_urol":             "innovation",    # International Journal of Urology / JUA (IF ~3)
-    "pubmed_prog_urol":              "recommandation", # Progrès en Urologie / AFU ★ France (IF ~1)
-    # ── Sage-femme ────────────────────────────────────────────────────────────
-    "pubmed_midwifery":              "innovation",    # Midwifery / RCM-Elsevier (IF ~3)
-    "pubmed_birth":                  "innovation",    # Birth / Wiley-ICEA (IF ~3)
-    "pubmed_women_birth":            "innovation",    # Women and Birth / ACMI (IF ~3)
-    "pubmed_j_midwifery":            "recommandation", # J Midwifery & Women's Health / ACNM (IF ~2)
-    "pubmed_prenat_diagn":           "innovation",    # Prenatal Diagnosis / Wiley (IF ~3)
-    "pubmed_j_matern_fetal":         "innovation",    # J Matern Fetal Neonatal Med (IF ~3)
-    "pubmed_breastfeed_med":         "recommandation", # Breastfeeding Medicine / ABM (IF ~3)
-    "pubmed_j_hum_lact":             "innovation",    # Journal of Human Lactation / ILCA (IF ~3)
-    "pubmed_arch_womens_ment_health": "innovation",   # Archives Women's Mental Health / Springer (IF ~4)
-    "pubmed_matern_child_nutr":      "innovation",    # Maternal & Child Nutrition / Wiley (IF ~4)
-    "pubmed_int_breastfeed_j":       "recommandation", # International Breastfeeding Journal / BMC (IF ~3)
-    # ── Rhumatologie ──────────────────────────────────────────────────────────
-    "pubmed_ard":                    "innovation",    # Ann Rheum Dis / EULAR-BMJ (IF ~27)
-    "pubmed_arthritis_rheumatol":    "innovation",    # Arthritis & Rheumatology / ACR (IF ~14)
-    "pubmed_rheumatology_oxford":    "innovation",    # Rheumatology Oxford / BSR (IF ~6)
-    "pubmed_j_autoimmun":            "innovation",    # Journal of Autoimmunity (IF ~12)
-    "pubmed_osteoarthritis_cartilage":"innovation",   # Osteoarthritis & Cartilage / OARSI (IF ~8)
-    "pubmed_arthritis_res_ther":     "innovation",    # Arthritis Research & Therapy / BMC (IF ~5)
-    "pubmed_j_rheumatol":            "innovation",    # Journal of Rheumatology / JRheum (IF ~4)
-    "pubmed_rmd_open":               "recommandation", # RMD Open / EULAR OA (IF ~5)
-    "pubmed_semin_arthritis_rheum":  "recommandation", # Seminars in Arthritis & Rheumatism (IF ~5)
-    "pubmed_lupus":                  "innovation",    # Lupus / SAGE (IF ~4)
-    "pubmed_clin_rheumatol":         "innovation",    # Clinical Rheumatology / ILAR (IF ~4)
-    "pubmed_rev_rhum":               "recommandation", # Revue du Rhumatisme / SFR ★ France (IF ~2)
-    # ── Radiologie ────────────────────────────────────────────────────────────
-    "pubmed_radiology":              "innovation",    # Radiology / RSNA (IF ~12)
-    "pubmed_eur_radiology":          "innovation",    # European Radiology / ESR (IF ~7)
-    "pubmed_radiol_interv":          "innovation",    # Radiology — filtré interventionnel
-    "pubmed_jvir":                   "innovation",    # J Vasc Interv Radiol / SIR (IF ~3)
-    "pubmed_cvir":                   "recommandation", # Cardiovascular Interventional Radiology / CIRSE (IF ~3)
-    "pubmed_ajnr":                   "innovation",    # AJNR — Am J Neuroradiology / ASNR (IF ~3)
-    "pubmed_ajr":                    "innovation",    # Am J Roentgenology / ARRS (IF ~4)
-    "pubmed_radiographics":          "recommandation", # RadioGraphics / RSNA — formation continue (IF ~4)
-    "pubmed_ejnmmi":                 "innovation",    # Eur J Nucl Med Mol Imaging / EANM (IF ~9)
-    "pubmed_j_nucl_med":             "innovation",    # Journal of Nuclear Medicine / SNMMI (IF ~9)
-    "pubmed_insights_imaging":       "recommandation", # Insights into Imaging / ESR OA (IF ~4)
-    "pubmed_eur_j_radiol":           "innovation",    # European Journal of Radiology / Elsevier (IF ~3)
-    # ── Psychiatrie ───────────────────────────────────────────────────────────
-    "pubmed_am_j_psychiatry":        "innovation",    # Am J Psychiatry / APA (IF ~17)
-    "pubmed_jama_psychiatry":        "innovation",    # JAMA Psychiatry (IF ~22)
-    "pubmed_lancet_psychiatry":      "innovation",    # Lancet Psychiatry (IF ~65)
-    "pubmed_world_psychiatry":       "recommandation", # World Psychiatry / WPA (IF ~60)
-    "pubmed_br_j_psychiatry":        "innovation",    # British J Psychiatry / RCPsych (IF ~9)
-    "pubmed_acta_psychiatr_scand":   "innovation",    # Acta Psychiatrica Scandinavica (IF ~8)
-    "pubmed_schizophr_bull":         "innovation",    # Schizophrenia Bulletin / SRS (IF ~8)
-    "pubmed_bipolar_disord":         "innovation",    # Bipolar Disorders / ISBD (IF ~6)
-    "pubmed_neuropsychopharmacol":   "innovation",    # Neuropsychopharmacology / ACNP (IF ~7)
-    "pubmed_j_clin_psychiatry":      "recommandation", # J Clinical Psychiatry — guidelines CANMAT (IF ~5)
-    "pubmed_depress_anxiety":        "innovation",    # Depression and Anxiety / ADAA (IF ~5)
-    "pubmed_int_j_neuropsychopharmacol": "innovation", # Int J Neuropsychopharmacology / CINP (IF ~5)
-    "pubmed_encephale":              "recommandation", # L'Encéphale / SPF ★ France (IF ~2)
-    # ── Pneumologie ───────────────────────────────────────────────────────────
-    "pubmed_eur_respir_j":           "innovation",    # European Respiratory Journal / ERS (IF ~24)
-    "pubmed_ajrccm":                 "innovation",    # Am J Respir Crit Care Med / ATS (IF ~23)
-    "pubmed_lancet_respir":          "innovation",    # Lancet Respiratory Medicine (IF ~38)
-    "pubmed_eur_respir_rev":         "recommandation", # Eur Respir Review — guidelines ERS (IF ~10)
-    "pubmed_ann_am_thorac_soc":      "recommandation", # Annals ATS — guidelines & pratique (IF ~8)
-    "pubmed_jaci":                   "innovation",    # J Allergy Clin Immunol / AAAAI (IF ~14)
-    "pubmed_pulmonology":            "innovation",    # Pulmonology / SEPAR (IF ~8)
-    "pubmed_respirology":            "innovation",    # Respirology / APSR (IF ~5)
-    "pubmed_respir_med":             "innovation",    # Respiratory Medicine / Elsevier (IF ~4)
-    "pubmed_sleep":                  "innovation",    # Sleep / AASM-ESRS (IF ~7)
-    "pubmed_j_sleep_res":            "innovation",    # Journal of Sleep Research / ESRS (IF ~4)
-    "pubmed_rev_mal_respir":         "recommandation", # Revue des Maladies Respiratoires / SPLF (IF ~1.5)
-    # ── Pharmacien ────────────────────────────────────────────────────────────
-    "pubmed_clin_pharmacol_ther":     "innovation",    # Clin Pharmacol Ther / ASCPT (IF ~7)
-    "pubmed_ann_pharmacother":        "innovation",    # Annals of Pharmacotherapy (IF ~4)
-    "pubmed_br_j_clin_pharmacol":     "innovation",    # Br J Clinical Pharmacology / BPS (IF ~4)
-    "pubmed_pharmacotherapy":         "innovation",    # Pharmacotherapy / ACCP (IF ~3)
-    "pubmed_drug_safety":             "reglementaire", # Drug Safety / Springer (IF ~4)
-    "pubmed_pharmacoepidemiol_drug_saf": "reglementaire", # Pharmacoepidemiology Drug Safety / ISPE (IF ~3)
-    "pubmed_am_j_health_syst_pharm":  "innovation",    # Am J Health-System Pharmacy / ASHP (IF ~2)
-    "pubmed_eur_j_hosp_pharm":        "innovation",    # Eur J Hospital Pharmacy / EAHP (IF ~2)
-    "pubmed_int_j_clin_pharm":        "innovation",    # Int J Clinical Pharmacy / KNMP (IF ~3)
-    "pubmed_drugs":                   "recommandation", # Drugs / Springer — revues (IF ~4)
-    "pubmed_clin_pharmacokinet":      "innovation",    # Clinical Pharmacokinetics / Springer (IF ~4)
-    "pubmed_biodrugs":                "innovation",    # BioDrugs — biosimilaires (IF ~4)
-    "pubmed_eur_j_clin_pharmacol":    "innovation",    # Eur J Clinical Pharmacology / AGAH (IF ~3)
-    "pubmed_ann_pharm_fr":            "recommandation", # Annales Pharmaceutiques Françaises / SFPC (IF ~2)
-    "pubmed_ther_adv_drug_saf":       "reglementaire", # Ther Advances Drug Safety / SAGE (IF ~4)
-    "pubmed_j_clin_pharm_ther":       "innovation",    # J Clinical Pharmacy & Therapeutics / Wiley (IF ~2)
-    # ── ORL ───────────────────────────────────────────────────────────────────
-    "pubmed_otolaryngol_hns":         "innovation",    # Otolaryngology HNS / AAO-HNS
-    "pubmed_jama_otolaryngol":        "innovation",    # JAMA Otolaryngology HNS
-    "pubmed_laryngoscope":            "innovation",    # Laryngoscope / ALA
-    "pubmed_head_neck":               "innovation",    # Head & Neck / Wiley
-    "pubmed_oral_oncol":              "innovation",    # Oral Oncology — carcinomes T&C
-    "pubmed_eur_arch_orl":            "innovation",    # European Archives ORL / EUFOS
-    "pubmed_otol_neurotol":           "innovation",    # Otology & Neurotology / AOS
-    "pubmed_rhinology":               "innovation",    # Rhinology / ERS
-    "pubmed_clin_otolaryngol":        "innovation",    # Clinical Otolaryngology / BACO
-    "pubmed_int_forum_allergy_rhinol":"innovation",    # Int Forum Allergy Rhinology
-    "pubmed_thyroid":                 "innovation",    # Thyroid / ATA
-    "pubmed_acta_otolaryngol":        "innovation",    # Acta Oto-Laryngologica
-    "pubmed_audiol_neurootol":        "innovation",    # Audiology & Neuro-Otology / Karger
-    "pubmed_dysphagia":               "innovation",    # Dysphagia / Springer
-    "pubmed_j_voice":                 "innovation",    # Journal of Voice / Elsevier
-    "pubmed_epos_guidelines":         "recommandation", # EPOS Guidelines / Rhinology ERS
-    # ── Ophtalmologie ─────────────────────────────────────────────────────────
-    "pubmed_ophthalmology":           "innovation",    # Ophthalmology / AAO (IF ~14)
-    "pubmed_jama_ophthalmol":         "innovation",    # JAMA Ophthalmology (IF ~8)
-    "pubmed_br_j_ophthalmol":         "innovation",    # British J Ophthalmol / BMJ (IF ~5)
-    "pubmed_am_j_ophthalmol":         "innovation",    # American J Ophthalmol (IF ~5)
-    "pubmed_retina":                  "innovation",    # Retina / Wolters Kluwer (IF ~5)
-    "pubmed_jcrs":                    "innovation",    # J Cataract Refract Surg / ASCRS (IF ~4)
-    "pubmed_j_glaucoma":              "innovation",    # Journal of Glaucoma / WGA (IF ~3)
-    "pubmed_cornea":                  "innovation",    # Cornea / Wolters Kluwer (IF ~3)
-    "pubmed_graefes_arch":            "innovation",    # Graefe's Archive / Springer (IF ~3)
-    "pubmed_acta_ophthalmol":         "innovation",    # Acta Ophthalmologica / EUPO (IF ~3)
-    "pubmed_eye":                     "innovation",    # Eye / Nature-RCOphth (IF ~3)
-    "pubmed_surv_ophthalmol":         "innovation",    # Survey of Ophthalmology (IF ~6)
-    "pubmed_iovs":                    "innovation",    # IOVS / ARVO (IF ~4)
-    "pubmed_ocul_surf":               "innovation",    # Ocular Surface (IF ~8)
-    "pubmed_eur_j_ophthalmol":        "innovation",    # European J Ophthalmol / SOE (IF ~2)
-    "pubmed_prog_retin_eye_res":      "recommandation", # Prog Retinal Eye Res (IF ~20)
-    # ── Neurologie ────────────────────────────────────────────────────────────
-    "pubmed_neurology":               "recommandation", # Neurology / AAN (IF ~9)
-    "pubmed_lancet_neurol":           "innovation",    # Lancet Neurology (IF ~48)
-    "pubmed_brain":                   "innovation",    # Brain / Oxford-ABN (IF ~14)
-    "pubmed_ann_neurol":              "innovation",    # Annals of Neurology / ANA (IF ~11)
-    "pubmed_jnnp":                    "innovation",    # JNNP / BMJ (IF ~9)
-    "pubmed_eur_j_neurol":            "recommandation", # Eur J Neurology / EAN (IF ~5)
-    "pubmed_j_neurol":                "innovation",    # Journal of Neurology / DGN (IF ~4)
-    "pubmed_mov_disord":              "innovation",    # Movement Disorders / MDS (IF ~9)
-    "pubmed_epilepsia":               "innovation",    # Epilepsia / ILAE (IF ~6)
-    "pubmed_cephalalgia":             "innovation",    # Cephalalgia / IHS (IF ~5)
-    "pubmed_int_j_stroke":            "innovation",    # Int J Stroke / WSO (IF ~6)
-    "pubmed_cerebrovasc_dis":         "innovation",    # Cerebrovascular Diseases / ESO (IF ~4)
-    "pubmed_parkinsonism_relat_disord":"innovation",   # Parkinsonism & Related Disorders (IF ~4)
-    "pubmed_seizure":                 "innovation",    # Seizure / ILAE (IF ~3)
-    "pubmed_j_neurol_sci":            "innovation",    # J Neurological Sciences / WFN (IF ~4)
-    "pubmed_muscle_nerve":            "innovation",    # Muscle & Nerve / AANEM (IF ~3)
-    # ── Neurochirurgie ────────────────────────────────────────────────────────
-    "pubmed_j_neurosurg":             "innovation",    # Journal of Neurosurgery / AANS (IF ~5)
-    "pubmed_neurosurgery":            "innovation",    # Neurosurgery / CNS (IF ~5)
-    "pubmed_acta_neurochir":          "innovation",    # Acta Neurochirurgica / EANS (IF ~3)
-    "pubmed_world_neurosurg":         "innovation",    # World Neurosurgery / WFNS (IF ~2)
-    "pubmed_neuro_oncol":             "innovation",    # Neuro-Oncology / SNO (IF ~13)
-    "pubmed_j_neurooncol":            "innovation",    # Journal of Neuro-Oncology / SNO (IF ~4)
-    "pubmed_j_neurosurg_spine":       "innovation",    # J Neurosurgery Spine / AANS (IF ~3)
-    "pubmed_eur_spine_j_nc":          "innovation",    # European Spine Journal / EUROSPINE (IF ~3)
-    "pubmed_spine_j_nc":              "innovation",    # Spine Journal / NASS (IF ~4)
-    "pubmed_stroke":                  "innovation",    # Stroke / AHA-ASA (IF ~8)
-    "pubmed_neurocrit_care":          "recommandation", # Neurocritical Care / NCS (IF ~5)
-    "pubmed_j_neurosurg_pediatr":     "innovation",    # J Neurosurgery Pediatrics / AANS-CNS (IF ~2)
-    "pubmed_childs_nerv_syst":        "innovation",    # Child's Nervous System / ISPN (IF ~2)
-    "pubmed_neurosurg_rev":           "recommandation", # Neurosurgical Review / Springer (IF ~4)
-    "pubmed_clin_neurol_neurosurg":   "innovation",    # Clinical Neurology and Neurosurgery (IF ~2)
-    "pubmed_stereotact_funct_neurosurg": "innovation", # Stereotactic & Functional Neurosurgery (IF ~3)
-    "pubmed_oper_neurosurg":          "innovation",    # Operative Neurosurgery / CNS OA (IF ~2)
-    # ── Néphrologie ───────────────────────────────────────────────────────────
-    "pubmed_jasn":                    "innovation",    # J Am Soc Nephrol / ASN (IF ~14)
-    "pubmed_kidney_int":              "innovation",    # Kidney International / ISN (IF ~14)
-    "pubmed_am_j_kidney_dis":         "recommandation", # Am J Kidney Diseases / NKF-KDOQI (IF ~8)
-    "pubmed_nephrol_dial_transplant": "innovation",    # Nephrology Dialysis Transplantation / ERA (IF ~6)
-    "pubmed_cjasn":                   "recommandation", # Clinical JASN / ASN (IF ~9)
-    "pubmed_nephron":                 "innovation",    # Nephron / Karger (IF ~3)
-    "pubmed_nephrology_carlton":      "innovation",    # Nephrology / ANZSN (IF ~2.5)
-    "pubmed_bmc_nephrol":             "innovation",    # BMC Nephrology (IF ~3)
-    "pubmed_perit_dial_int":          "recommandation", # Peritoneal Dialysis Int / ISPD (IF ~3)
-    "pubmed_hemodial_int":            "innovation",    # Hemodialysis International (IF ~2)
-    "pubmed_transplantation":         "innovation",    # Transplantation / TTS (IF ~5)
-    "pubmed_am_j_transplant":         "innovation",    # Am J Transplantation / ASTS-AST (IF ~8)
-    "pubmed_transpl_int":             "innovation",    # Transplant International / ESOT (IF ~4)
-    "pubmed_j_nephrol":               "innovation",    # Journal of Nephrology / SIN (IF ~3)
-    "pubmed_clin_nephrol":            "innovation",    # Clinical Nephrology (IF ~2)
-    "pubmed_nephrol_ther":            "recommandation", # Nephrologie & Thérapeutique / SFNDT (IF ~1)
-    # ── Médecine d'urgences ───────────────────────────────────────────────────
-    "pubmed_ann_emerg_med":           "recommandation", # Annals of Emergency Medicine / ACEP (IF ~9)
-    "pubmed_resuscitation":           "innovation",    # Resuscitation / ERC-AHA (IF ~6)
-    "pubmed_am_j_emerg_med":          "innovation",    # American J Emergency Medicine (IF ~3)
-    "pubmed_acad_emerg_med":          "innovation",    # Academic Emergency Medicine / SAEM (IF ~4)
-    "pubmed_injury":                  "innovation",    # Injury / Elsevier (IF ~3)
-    "pubmed_emerg_med_j":             "innovation",    # Emergency Medicine Journal / RCEM (IF ~4)
-    "pubmed_j_trauma_acute_care_surg":"innovation",    # J Trauma Acute Care Surgery (IF ~3)
-    "pubmed_j_emerg_med":             "innovation",    # Journal of Emergency Medicine / AAEM (IF ~2)
-    "pubmed_scand_j_trauma_resusc":   "innovation",    # Scand J Trauma Resusc Emerg Med (IF ~3)
-    "pubmed_eur_j_emerg_med":         "recommandation", # Eur J Emergency Medicine / EUSEM (IF ~3)
-    "pubmed_prehosp_emerg_care":      "innovation",    # Prehospital Emergency Care / NAEMSP (IF ~3)
-    "pubmed_emerg_med_australas":     "innovation",    # Emergency Medicine Australasia / ACEM (IF ~2)
-    "pubmed_prehosp_disaster_med":    "innovation",    # Prehospital and Disaster Medicine (IF ~2)
-    "pubmed_clin_toxicol":            "innovation",    # Clinical Toxicology / EAPCCT-AACT (IF ~3)
-    "pubmed_j_crit_care_urg":         "innovation",    # Journal of Critical Care (IF ~4)
-    "pubmed_west_j_emerg_med":        "innovation",    # Western J Emergency Medicine (IF ~2)
-    # ── Médecine physique et de réadaptation ─────────────────────────────────
-    "pubmed_pm_r":                    "innovation",    # PM&R / AAPM&R (IF ~3)
-    "pubmed_spinal_cord":             "innovation",    # Spinal Cord / ISCoS (IF ~3)
-    "pubmed_brain_inj":               "innovation",    # Brain Injury (IF ~2)
-    "pubmed_top_stroke_rehabil":      "innovation",    # Topics in Stroke Rehabilitation (IF ~3)
-    "pubmed_j_head_trauma_rehabil":   "innovation",    # J Head Trauma Rehabilitation (IF ~4)
-    "pubmed_int_j_rehabil_res":       "innovation",    # Int J Rehabilitation Research (IF ~2)
-    "pubmed_neuropsychol_rehabil":    "innovation",    # Neuropsychological Rehabilitation (IF ~4)
-    "pubmed_prosthet_orthot_int":     "innovation",    # Prosthetics & Orthotics Int / ISPO (IF ~2)
-    "pubmed_j_spinal_cord_med":       "innovation",    # J Spinal Cord Medicine / ISCoS (IF ~2)
-    "pubmed_pain":                    "innovation",    # Pain / IASP (IF ~9)
-    "pubmed_eur_j_pain":              "innovation",    # Eur J Pain / EFIC (IF ~4)
-    "pubmed_pain_med":                "innovation",    # Pain Medicine / AAPM&R (IF ~3)
-    "pubmed_mult_scler":              "innovation",    # Multiple Sclerosis J / ECTRIMS (IF ~5)
-    "pubmed_mult_scler_relat_disord": "innovation",    # MS and Related Disorders (IF ~3)
-    "pubmed_toxins_mpr":              "innovation",    # Toxins (Basel) — spasticité botulinum (IF ~4)
-    "pubmed_j_neurol_phys_ther":      "innovation",    # J Neurologic Physical Therapy / ANPT (IF ~4)
-    # ── Médecine interne ─────────────────────────────────────────────────────
-    "pubmed_ann_intern_med":          "recommandation", # Annals of Internal Medicine / ACP (IF ~51)
-    "pubmed_am_j_med":                "innovation",    # American Journal of Medicine (IF ~4)
-    "pubmed_medicine_baltimore":      "innovation",    # Medicine (Baltimore) / Wolters Kluwer
-    "pubmed_bmc_med":                 "innovation",    # BMC Medicine (IF ~9)
-    "pubmed_eur_j_clin_invest":       "innovation",    # Eur J Clinical Investigation / EFIM (IF ~4)
-    "pubmed_postgrad_med_j":          "recommandation", # Postgraduate Medical Journal / RCP (IF ~3)
-    "pubmed_j_intern_med":            "innovation",    # Journal of Internal Medicine (IF ~8)
-    "pubmed_eur_j_intern_med":        "recommandation", # Eur J Internal Medicine / EFIM (IF ~5)
-    "pubmed_mayo_clin_proc":          "recommandation", # Mayo Clinic Proceedings (IF ~9)
-    "pubmed_intern_med_j":            "innovation",    # Internal Medicine Journal / ANZMJ (IF ~2.5)
-    "pubmed_qjm":                     "innovation",    # QJM: Oxford (IF ~4)
-    "pubmed_intern_emerg_med":        "innovation",    # Internal and Emergency Medicine / SIMI (IF ~5)
-    "pubmed_am_j_med_sci":            "innovation",    # American J Medical Sciences / SSCI (IF ~3)
-    "pubmed_swiss_med_wkly":          "innovation",    # Swiss Medical Weekly / EMH (IF ~3)
-    "pubmed_j_investig_med":          "innovation",    # Journal of Investigative Medicine (IF ~3)
-    "pubmed_rev_med_interne":         "recommandation", # Revue de Médecine Interne / SNFMI (IF ~2)
-    # ── Médecine générale ─────────────────────────────────────────────────────
-    "pubmed_j_gen_intern_med":        "innovation",    # J Gen Intern Med / SGIM (IF ~7)
-    "pubmed_j_hypertens":             "innovation",    # J Hypertension / ESH (IF ~4)
-    "pubmed_prev_med":                "innovation",    # Preventive Medicine (IF ~5)
-    "pubmed_int_j_clin_pract":        "innovation",    # Int J Clinical Practice (IF ~3)
-    "pubmed_bjgp":                    "recommandation", # Br J Gen Pract / RCGP (IF ~5)
-    "pubmed_am_j_prev_med":           "innovation",    # Am J Preventive Medicine (IF ~5)
-    "pubmed_cmaj":                    "recommandation", # CMAJ / CMA (IF ~8) — guidelines & reviews
-    "pubmed_fam_pract":               "innovation",    # Family Practice / Oxford (IF ~4)
-    "pubmed_bmc_fam_pract":           "innovation",    # BMC Family Practice (IF ~3)
-    "pubmed_ann_fam_med":             "innovation",    # Annals of Family Medicine (IF ~7)
-    "pubmed_prim_care_diabetes":      "innovation",    # Primary Care Diabetes (IF ~3)
-    "pubmed_j_am_board_fam_med":      "recommandation", # J Am Board Fam Med / ABFM (IF ~4)
-    "pubmed_scand_j_prim_health":     "innovation",    # Scand J Primary Health Care / WONCA (IF ~3)
-    "pubmed_bmc_prim_care":           "innovation",    # BMC Primary Care (IF ~3)
-    "pubmed_npj_prim_care_respir":    "innovation",    # NPJ Prim Care Respir Med (IF ~4)
-    "pubmed_eur_j_gen_pract":         "recommandation", # Eur J Gen Pract / WONCA Europe (IF ~3)
-    # ── PubMed — anesthésiologie / réanimation ────────────────────────────────
-    "pubmed_anesthesiology":          "innovation",    # Anesthesiology / ASA (IF ~9)
-    "pubmed_bja":                     "innovation",    # British Journal of Anaesthesia / RCoA (IF ~9)
-    "pubmed_anesth_analg":            "innovation",    # Anesthesia & Analgesia / IARS (IF ~5)
-    "pubmed_anaesthesia":             "innovation",    # Anaesthesia / AAGBI (IF ~10)
-    "pubmed_eja":                     "innovation",    # European Journal of Anaesthesiology / ESAIC (IF ~5)
-    "pubmed_accpm":                   "innovation",    # Anaesth Crit Care & Pain Med (SFAR, IF ~7)
-    "pubmed_sfar_guidelines":         "recommandation",# SFAR — guidelines (canal dédié)
-    "pubmed_reg_anesth":              "innovation",    # Regional Anesthesia & Pain Medicine / ASRA (IF ~5)
-    "pubmed_intensive_care_med":      "innovation",    # Intensive Care Medicine / ESICM (IF ~22)
-    "pubmed_crit_care_med":           "innovation",    # Critical Care Medicine / SCCM (IF ~9)
-    "pubmed_crit_care":               "innovation",    # Critical Care / Springer (IF ~9)
-    "pubmed_jcva":                    "innovation",    # J Cardiothoracic Vasc Anesth / SOCCA (IF ~5)
-    "pubmed_acta_anaesthesiol_scand": "innovation",    # Acta Anaesthesiol Scand / SSAI (IF ~4)
-    "pubmed_can_j_anaesth":           "innovation",    # Canadian Journal of Anesthesia / CAS (IF ~4)
-    "pubmed_pain_iasp":               "innovation",    # PAIN / IASP flagship (IF ~7)
-    "pubmed_j_pain_res":              "innovation",    # Journal of Pain Research (open-access)
-    "pubmed_paediatr_anaesth":        "innovation",    # Paediatric Anaesthesia / APAGBI (IF ~3)
+    "piste_legi":                   "reglementaire",
+    "piste_circ":                   "reglementaire",
+    # ANSM — alertes et décisions réglementaires : toujours reglementaire par mandat
+    "ansm_securite":                "reglementaire",
+    "ansm_securite_med":            "reglementaire",
+    "ansm_securite_dm":             "reglementaire",
+    "ansm_ruptures_med":            "reglementaire",
+    "ansm_ruptures_vaccins":        "reglementaire",
+    "ansm_actualites":              "reglementaire",
+    "bo_social":                    "reglementaire",
+    # HAS — décisions formelles (accès précoce, bulletin officiel)
+    "has_acces_precoces":           "reglementaire",
+    "has_bo":                       "reglementaire",
+    # SPF / CNOM / caisses de retraite libérales — institutionnel
+    "spf_beh":                      "reglementaire",
+    "cnom":                         "reglementaire",
+    "ameli_medecin":                "reglementaire",  # Assurance Maladie — actualités médecins libéraux
+    "carmf":                        "reglementaire",  # Caisse retraite médecins
+    "carpimko":                     "reglementaire",  # Caisse retraite auxiliaires médicaux
+    # EMA / ECDC — alertes et décisions réglementaires européennes
+    "ema_news":                     "reglementaire",
+    "ecdc_risk":                    "reglementaire",
+    "ecdc_cdtr":                    "reglementaire",
+    # FDA — décisions réglementaires US
+    "fda_510k":                     "reglementaire",
+    "fda_pma":                      "reglementaire",
+    # Toutes les autres sources (journaux, sociétés savantes, presse médicale, PubMed…)
+    # → source_type déterminé par le LLM depuis le contenu (voir champ "source_type" dans le JSON)
 }
 
+def get_source_type(source: str | None) -> str | None:
+    """Retourne le source_type déterministe d'un candidat, ou None si le LLM doit trancher.
 
-def get_source_type(source: str | None) -> str:
-    """Retourne le source_type d'un candidat à partir de sa source.
-    Déterministe — pas d'appel LLM.
+    Seules les sources institutionnelles (JORF, ANSM, EMA news, ECDC, FDA, CNOM…)
+    ont un type garanti — elles figurent dans SOURCE_TO_TYPE.
+    Pour toutes les autres (journaux, sociétés savantes, presse médicale, PubMed…),
+    retourne None → le source_type est extrait du champ "source_type" dans le JSON LLM.
     """
-    return SOURCE_TO_TYPE.get(source or "", "reglementaire")
+    return SOURCE_TO_TYPE.get(source or "", None)
 
 KNOWN_SPECIALTIES = {
     # Médecine générale
@@ -1615,17 +858,32 @@ nouvelle indication thérapeutique, modification posologie/CI/contre-indication,
 remboursement d'un médicament ; alertes matériovigilance, problèmes de sécurité ou réglementation \
 concernant équipements médicaux, imagerie (IRM, scanner, échographe, radiologie), \
 implants, prothèses, instruments chirurgicaux, DM-DIV, réactifs de laboratoire
-   - exercice       : convention médicale, installation, déserts médicaux, gardes, \
-télémédecine, statut libéral, logiciels métier (LAP, DMP, DxCare…) ; \
-CCAM, NGAP, tarifs, cotations, honoraires, remboursement actes ; \
-obligations déclaratives, formations DPC, certifications, accréditations
+   - exercice       : Tout ce qui touche à l'exercice professionnel et à la gestion du \
+cabinet libéral — qu'il soit médical au sens strict ou administratif/entrepreneurial. \
+Le médecin libéral est un chef d'entreprise : tout ce qui impacte sa pratique compte. \
+\
+     Exemples MÉDICAUX : convention médicale, installation, déserts médicaux, gardes, \
+télémédecine, statut libéral, groupement (MSP, CPTS, GHT), logiciels métier (LAP, DMP, \
+DxCare…) ; CCAM, NGAP, NABM, tarifs, cotations, honoraires, remboursement d'actes ; \
+formation médicale continue (DPC), certifications, accréditations, obligations déclaratives. \
+\
+     Exemples ADMINISTRATIFS ET FINANCIERS (non strictement médicaux mais essentiels) : \
+statut juridique du cabinet (BNC, SELARL, SCP, SCM) ; fiscalité médicale, régime fiscal ; \
+protection sociale des libéraux (retraite CARMF/CARCDSF/CARPV, prévoyance, arrêt maladie) ; \
+cotisations URSSAF, charges sociales ; réforme de la convention ou de la protection sociale \
+impactant les revenus ; gestion administrative du cabinet (secrétariat, location local, \
+gestion des impayés CPAM) ; responsabilité civile professionnelle, assurance ; \
+droit du travail si le praticien emploie du personnel ; réglementation comptable.
 
    RÈGLES DE DISCRIMINATION (prioritaires sur les définitions ci-dessus) :
    - Molécule / DCI / spécialité pharmaceutique nommée / AMM → 'therapeutique'
    - Équipement, matériel, appareil, dispositif médical (y compris imagerie) → 'therapeutique'
    - Logiciel métier santé (LAP, DxCare, NETSoins, Cortexte, DMP) → 'exercice'
-   - Facturation, cotation CCAM/NGAP, honoraires, avenant tarifaire → 'exercice'
+   - Facturation, cotation CCAM/NGAP/NABM, honoraires, avenant tarifaire → 'exercice'
    - Dépistage, vaccination, alerte épidémique, plan national → 'clinique'
+   - Retraite CARMF, protection sociale libérale, URSSAF médecin → 'exercice'
+   - Statut juridique cabinet, fiscalité BNC/SELARL → 'exercice'
+   - Responsabilité civile professionnelle, assurance médecin → 'exercice'
 
    Exemples corrects :
        Alerte ANSM paracétamol 1 g          → therapeutique
@@ -1637,6 +895,10 @@ obligations déclaratives, formations DPC, certifications, accréditations
        Obligation utilisation LAP DMP       → exercice
        Recommandation HAS vaccination       → clinique
        Avenant tarifaire UNCAM              → exercice
+       Revalorisation cotisation CARMF      → exercice
+       Réforme protection sociale libérale  → exercice
+       Passage en SELARL : avantages fiscaux→ exercice
+       Gestion impayés CPAM en cabinet      → exercice
 
 7. TYPE DE PRATICIEN (type_praticien) — Détermine le profil professionnel PRINCIPALEMENT \
 concerné par ce texte. Choisis parmi :
@@ -1703,6 +965,42 @@ réforme des retraites médicales, protection sociale des libéraux.
      Rémunération honoraires dispensation officine       → pharmacien
      Certification périodique ordres professionnels      → tous
      Réforme conventionnement médical national           → tous
+
+8. TYPE DE SOURCE (source_type) — Détermine la nature du contenu, indépendamment \
+de qui le publie. Une société savante peut publier une étude clinique ET une guideline ; \
+un journal peut contenir un article original ET un consensus. Juge sur le CONTENU.
+
+   "recommandation" : guideline officielle, recommandation de bonne pratique (RBP), \
+RFE, consensus de société savante, référentiel de prise en charge, avis d'expert \
+structuré émis par une organisation médicale. Reconnaissable à : la source est \
+nommée comme auteur du texte ("ESVS recommande…", "HAS publie…", "consensus SFAR…") ; \
+pas de design d'étude primaire, pas de nouvelles données — c'est une synthèse normative.
+
+   "innovation" : étude originale de recherche clinique (RCT, cohorte, registre, \
+méta-analyse, série de cas), résultat de recherche, nouvelle technique en évaluation, \
+nouvelles données probantes sur un traitement ou une procédure. Reconnaissable à : \
+design d'étude explicite, population, critère de jugement, résultats statistiques, \
+auteurs de centres hospitaliers ou universitaires.
+
+   "reglementaire" : texte réglementaire officiel (loi, décret, arrêté, circulaire), \
+décision administrative formelle, alerte de sécurité officielle d'une autorité \
+(retrait produit, rappel de lot, suspension AMM), autorisation ou modification d'AMM. \
+RÉSERVÉ aux contenus émanant directement d'une autorité institutionnelle (JORF, ANSM, \
+EMA, FDA, CNOM) — si le texte provient d'un journal ou d'une société savante qui \
+commente une décision réglementaire, classe plutôt en "recommandation" ou "innovation".
+
+   Exemples :
+     Article EJVES sur outcomes EVAR n=420 (RCT)     → "innovation"
+     Guidelines ESVS 2024 sur anévrisme aortique      → "recommandation"
+     ESVS commentary on new ESC guidelines            → "recommandation"
+     JAMA Surgery — essai randomisé appendicite       → "innovation"
+     Annals of Surgery — méta-analyse hernie inguinal → "innovation"
+     SFAR — recommandations formalisées d'experts     → "recommandation"
+     SFAR — étude observationnelle sur prémédication  → "innovation"
+     Décret JORF parcours de soins cancer             → "reglementaire"
+     Alerte ANSM garrot chirurgical                   → "reglementaire"
+     Vascular News — compte-rendu résultats BEST-CLI  → "innovation"
+     Vascular News — synthèse guidelines SVS 2024     → "recommandation"
 
 IMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans markdown, \
 sans explication autour.
@@ -1840,6 +1138,7 @@ JSON attendu (strict, pas de markdown) :
   "score_density": <int 1-10>,
   "score_par_specialite": {{"<slug>": <int 1-10>}},
   "categorie": "<clinique|therapeutique|exercice>",
+  "source_type": "<recommandation|innovation|reglementaire>",
   "tri_json": {{
     "titre_court": "<≤12 mots>",
     "resume": "<2-3 phrases concrètes selon nature du texte>",
@@ -1864,7 +1163,7 @@ SOURCE_HINTS: dict[str, str] = {
     # Sources réglementaires
     "legifrance_jorf":                "JORF — texte réglementaire (loi, décret, arrêté)",
     "legifrance_jorf_remboursement":  "JORF — arrêté/décret remboursement : inscription/modification liste spécialités pharmaceutiques remboursables, LPP, tarifs de responsabilité, prix de cession, convention médicale ou avenant, nomenclature NGAP/CCAM/NABM, accès précoce",
-    "piste_kali":                     "Convention collective / accord UNCAM — impact sur honoraires et pratique libérale",
+    "piste_kali":                     "Convention collective santé — accord relatif aux salariés du secteur santé (assistants médicaux, secrétaires, personnel paramédical) : salaires, prévoyance, frais de santé, classifications",
     "piste_legi":            "Code de la santé publique — modification de texte codifié (CSP, CSS, CASF)",
     "piste_circ":            "Circulaire ou instruction ministérielle — directive santé ou social",
     "ansm_securite":         "ANSM — Information de sécurité (pharmacovigilance, matériovigilance)",
@@ -1949,7 +1248,10 @@ SOURCE_HINTS: dict[str, str] = {
     "has_ct":  "HAS Commission de la Transparence — Avis remboursement médicament (ASMR/SMR)",
     "has_dm":  "HAS — Avis sur les dispositifs médicaux (admission remboursement, conditions utilisation)",
     "spf_beh": "Santé publique France — Article épidémiologique (BEH, alerte sanitaire, vaccination)",
-    "cnom":    "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
+    "cnom":          "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
+    "ameli_medecin": "Assurance Maladie (ameli.fr) — Actualités médecins libéraux : convention médicale, honoraires, FMT/Donum, remboursements CCAM, téléconsultation, nouveaux actes, outils praticiens",
+    "carmf":         "CARMF (Caisse Autonome de Retraite des Médecins de France) — Retraite, cotisations, PSS, ASV, prévoyance médecins libéraux",
+    "carpimko":      "CARPIMKO (Caisse de Retraite des auxiliaires médicaux libéraux) — Retraite, cotisations, assiette sociale infirmiers, kinésithérapeutes, pédicures-podologues, orthophonistes, orthoptistes",
     # ── Sociétés savantes françaises (RSS + scraping) ─────────────────────
     "gpip":            "GPIP — Groupe de Pathologie Infectieuse Pédiatrique : recommandations antibiothérapie, vaccination, protocoles infectiologie pédiatrique",
     # ── Sources européennes (agences réglementaires EU) ───────────────────
@@ -2216,9 +1518,14 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     # specialty_hint="tous" : le LLM addendum de chaque spécialité filtre ce qui est pertinent.
     "legifrance_jorf":                "tous",        # JORF — lois, décrets, arrêtés santé
     "legifrance_jorf_remboursement":  "tous",        # JORF remboursement / nomenclature / conventions
-    "piste_kali":                     "tous",        # Conventions collectives (UNCAM)
+    "piste_kali":                     "tous",        # Conventions collectives secteur santé (salariés cabinets, cliniques)
     "piste_legi":                     "tous",        # Code de la santé publique (modifications)
     "piste_circ":                     "tous",        # Circulaires ministérielles santé
+    "ameli_medecin":                  "tous",        # ameli.fr — actualités médecins libéraux (convention, tarifs, outils)
+    "cnom":                           "tous",        # CNOM — déontologie, exercice libéral, toutes spécialités
+    "bo_social":                      "tous",        # BO Social — instructions DGS/DSS/DGOS, toutes spécialités
+    "carmf":                          "tous",        # CARMF — retraite/cotisations médecins libéraux
+    "carpimko":                       "tous",        # CARPIMKO — retraite auxiliaires médicaux (infirmiers, kiné, etc.)
     "has_rbp":                        "tous",        # HAS — Recommandations de bonne pratique
     "has_ct":                         "tous",        # HAS — Commission de Transparence (médicaments)
     "has_dm":                         "tous",        # HAS — Avis dispositifs médicaux
@@ -5090,6 +4397,56 @@ IX. RÈGLES DE SCORING SPÉCIFIQUES
 • Contexte FRANÇAIS : privilégier les études dont les conclusions sont applicables en France : \
   AMM EMA > FDA seule, pratiques CNGOF/HAS > guidelines US exclusivement, \
   données de vie réelle françaises (SNDS, registres FRANCIM/GynecoMat/FIGO-France)."
+
+EXEMPLES DE RÉDACTION (style BJOG / AJOG / Gynecologic Oncology / Fertility & Sterility — format cible) :
+
+Cancer de l'ovaire — chirurgie d'intervalle :
+  titre_court : "CHORUS vs standard : chirurgie intervalle BRCA+ — PFS identique, moins de complications"
+  resume : "Analyse poolée ICON8B/CHORUS (N=678, cancer ovaire stade IIIC-IV, BRCA1/2 muté) : \
+chirurgie d'intervalle (après 3 cycles CBDCA-paclitaxel) vs chirurgie primaire — SSP \
+19,8 vs 20,1 mois (HR 1,02 ; IC95% 0,82–1,26 ; non-significatif). Chirurgie d'intervalle \
+associée à moins de morbidité post-op sévère (grade ≥3) : 21 % vs 36 % (p=0,0001)."
+  impact_pratique : "En pratique : chez une patiente BRCA+ avec carcinose péritonéale étendue, \
+la chirurgie d'intervalle après 3 cycles est préférable — RCP oncogynécologique \
+avant toute décision."
+
+Endométriose — traitement médical :
+  titre_court : "EDELWEISS : linzagolix 200 mg réduit la dysménorrhée de 75 % à 24 semaines"
+  resume : "EDELWEISS 3 (RCT, N=512, endométriose confirmée, dysménorrhée EVA ≥5) : \
+linzagolix 200 mg/j (antagoniste GnRH oral) vs placebo — réduction EVA dysménorrhée \
+−4,6 vs −2,4 points (différence −2,2 ; IC95% −2,7/−1,8 ; p<0,001). Aménorrhée : 58 %. \
+AMM EMA 2022 ; ajout d'add-back œstrogène-progestatif recommandé si traitement >6 mois."
+  impact_pratique : "En pratique : linzagolix (ou relugolix) alternative orale aux agonistes GnRH \
+injectables pour l'endométriose douloureuse — ajouter add-back dès le 1er mois pour \
+limiter l'impact osseux et climatérique."
+
+Alerte ANSM / contraception hormonale :
+  titre_court : "ANSM : pilules 3e-4e génération — risque TVP × 2-3 vs lévonorgestrel confirmé"
+  resume : "Communication ANSM (actualisation 2024) : pilules combinées 3e génération \
+(désogestrel, gestodène) et 4e génération (drospirénone, diénogest) — risque TVP \
+relatif de 2,0-3,1 vs pilules 2e génération (lévonorgestrel). Données de vie réelle \
+SNDS françaises (N=4 600 cas) concordantes avec méta-analyses antérieures. \
+Aucun retrait du marché ; information renforcée des patients."
+  impact_pratique : "En pratique : privilégier lévonorgestrel en 1re intention chez toute \
+patiente sans contre-indication — réserver les nouvelles générations aux échecs \
+ou tolérances insuffisantes, avec information écrite sur le risque TVP."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : BJOG, American Journal of Obstetrics and Gynecology, Gynecologic Oncology.
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "Le traitement conservateur (méthotrexate) réduit le taux d'intervention chirurgicale secondaire de 41 % vs attente expectative — RR 0,59 ; IC95% 0,44–0,79 ; p<0,001 ; RCT, n=320, grossesses extra-utérines β-hCG <3 000 UI/L."
+  impact_pratique : "En pratique : proposer méthotrexate IM en 1re intention chez les patientes stables avec β-hCG <3 000 — évite la chirurgie dans 6 cas sur 10."
+
+Bon exemple 2 :
+  resume : "L'ajout de pembrolizumab à la chimiothérapie améliore la SSP médiane de 5,6 mois dans le cancer du col avancé — HR 0,62 ; IC95% 0,50–0,77 ; p<0,001 ; KEYNOTE-826, RCT, n=617."
+  impact_pratique : "À retenir : pembrolizumab + carboplatine/paclitaxel ± bévacizumab devient le standard 1re ligne col avancé — vérifier statut PD-L1 et éligibilité immuno avant prescription."
+
+Bon exemple 3 :
+  resume : "La ménopause chirurgicale avant 45 ans triple le risque d'ostéoporose sévère à 10 ans — OR 3,1 ; IC95% 2,2–4,4 ; cohorte prospective, n=4 820, suivi 10 ans."
+  impact_pratique : "En pratique : proposer THS systématiquement après ovariectomie bilatérale avant 45 ans sauf contre-indication formelle — réévaluer annuellement."
+
 """
 
 _SPECIALTY_ADDENDUM_HEMATOLOGIE = """\
@@ -5229,6 +4586,53 @@ méta-analyse ≥500 patients, données de registre EBMT/EUTOS/FIM modifiant la 
 endpoint clinique, corrélations génomiques sans traduction thérapeutique directe.
 • Contexte FRANÇAIS : AMM EMA > FDA seule ; données de registre françaises (FIMCRE, \
 LYSA, IFM, FIM) privilégiées ; mention des ATU/AC (Accès Compassionnel) si pertinent."
+
+EXEMPLES DE RÉDACTION (style Blood / Journal of Clinical Oncology / Haematologica / Leukemia — format cible) :
+
+Lymphome diffus grandes cellules B :
+  titre_court : "POLARIX : pola-R-CHP améliore la SSP de 27 % vs R-CHOP en LDGCB"
+  resume : "POLARIX (RCT, N=879, LDGCB IPI ≥2, 1re ligne) : polatuzumab védotin + R-CHP \
+vs R-CHOP — SSP à 2 ans : 76,7 % vs 70,2 % (HR 0,73 ; IC95% 0,57–0,95 ; p=0,02). \
+Pas de différence SG. Neuropathies périphériques grade ≥3 : 2,4 % vs 1,7 %. AMM EMA 2023 ; \
+remboursé France si IPI ≥2 en 1re ligne."
+  impact_pratique : "En pratique : pola-R-CHP désormais standard en 1re ligne LDGCB IPI ≥2 \
+en France — vérifier remboursement SS et AMM en cours d'élargissement."
+
+Myélome multiple rechute :
+  titre_court : "IKEMA : isatuximab + Kd réduit la progression de 47 % vs Kd seul au MM rechute"
+  resume : "IKEMA (RCT, N=302, MM en rechute/réfractaire 1-3 lignes, carfilzomib-dexaméthasone) : \
+isatuximab IV + Kd vs Kd — SSP médiane non atteinte vs 19,2 mois (HR 0,53 ; IC95% 0,32–0,89 ; \
+p=0,0007) à 20,7 mois de suivi. Réponse ≥ très bonne réponse partielle : 72 % vs 56 % (p=0,0011). \
+AMM EMA ; remboursé France."
+  impact_pratique : "À retenir : isatuximab-Kd à proposer en RCP dès la 1re rechute si carfilzomib \
+non contre-indiqué — alternative à daratumumab-Kd pour patients sans anti-CD38 antérieur."
+
+LLC — traitement de 1re ligne sans délétion 17p :
+  titre_court : "ELEVATE-TN : acalabrutinib + obinutuzumab : SSP à 4 ans 78 % en LLC 1re ligne"
+  resume : "ELEVATE-TN (RCT, N=535, LLC non traitée, sans délétion 17p) : acalabrutinib + \
+obinutuzumab vs chlorambucil + obinutuzumab — SSP à 4 ans : 78 % vs 28 % (HR 0,10 ; \
+IC95% 0,07–0,15 ; p<0,0001). Fibrillation auriculaire : 4,4 % (acalabrutinib) vs 3,7 %. \
+AMM EMA ; remboursé France."
+  impact_pratique : "En pratique : acalabrutinib + obinutuzumab devient une option de 1re ligne \
+en LLC sans del17p/TP53 — choix entre ibrutinib, acalabrutinib ou venetoclax+obinutuzumab \
+selon profil CV et préférence patient."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : Blood, Haematologica, Leukemia, New England Journal of Medicine (hémato).
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "L'ajout de vénétoclax à l'azacitidine double la survie globale médiane dans la LAM non éligible à l'intensification — 14,7 vs 9,6 mois ; HR 0,66 ; IC95% 0,52–0,85 ; p<0,001 ; VIALE-A, RCT, n=431."
+  impact_pratique : "En pratique : azacitidine + vénétoclax est le standard pour les LAM du sujet âgé ou fragile — vérifier myélogramme et mutations FLT3/IDH avant choix."
+
+Bon exemple 2 :
+  resume : "L'ibrutinib réduit la progression ou le décès de 42 % vs chlorambucil en LLC de novo — HR 0,58 ; IC95% 0,44–0,77 ; p<0,001 ; RESONATE-2, RCT, n=269, suivi médian 5 ans."
+  impact_pratique : "À retenir : ibrutinib en 1re ligne LLC sans del17p — contrôler ECG et PA avant initiation, surveillance fibrillation auriculaire."
+
+Bon exemple 3 :
+  resume : "La thérapie cellulaire CAR-T (axicabtagène) atteint 58 % de réponse complète durable à 2 ans dans les LBDGC réfractaires — suivi médian 27 mois ; ZUMA-1, étude de phase II, n=101."
+  impact_pratique : "En pratique : orienter précocement vers centre CAR-T les LBDGC en 2e ligne sans réponse — délai de fabrication 3–4 semaines à anticiper."
+
 """
 
 _SPECIALTY_ADDENDUM_INFECTIOLOGIE = """\
@@ -5393,6 +4797,55 @@ de résistance sans impact thérapeutique direct, modèles prédictifs non valid
 cas cliniques/séries <20 patients.
 • Contexte FRANÇAIS : AMM EMA > FDA seule ; recommandations SPILF/HAS/CMIT obligatoires ; \
 données françaises SNDS/registres RAISIN-BMR ; signalement ANSM ATU/AC si pertinent."
+
+EXEMPLES DE RÉDACTION (style Clinical Infectious Diseases / Lancet Infectious Diseases / JAC — format cible) :
+
+Antibiothérapie — durée courte :
+  titre_court : "Pneumonie communautaire sévère : 5j amoxicilline non inférieur à 10j"
+  resume : "SHORTEN (RCT, N=312, PAC sévère hospitalisée, CURB-65 ≥3, réponse clinique à J3) : \
+amoxicilline-clavulanate 5j vs 10j — échec clinique à J30 : 9,0 % vs 8,4 % \
+(différence 0,6 % ; IC90% −4,6–5,7 ; non-inférieur). Durée médiane hospitalisée réduite \
+de 1,2 jour. Pas de différence mortalité ni résistance émergente à 90j."
+  impact_pratique : "En pratique : antibiothérapie 5j pour toute PAC hospitalisée avec bonne \
+réponse clinique à J3 — arrêt prématuré non justifié seulement si immunodépression \
+ou agent atypique identifié."
+
+Infection fongique invasive — prophylaxie :
+  titre_court : "Isavuconazole prophylaxie aspergillose en greffe allogénique : non inférieur au voriconazole"
+  resume : "CONDOR (RCT, N=588, greffe allogénique CSH conditionnement myéloablatif) : isavuconazole \
+200 mg/j vs voriconazole — incidence aspergillose invasive prouvée/probable à J100 : \
+3,2 % vs 3,9 % (non-inférieur ; HR 0,82 ; IC95% 0,43–1,56). Isavuconazole associé à \
+moins d'interactions médicamenteuses (CYP3A4 faible inhibition) et moins de perturbations visuelles."
+  impact_pratique : "En pratique : isavuconazole alternative au voriconazole en prophylaxie \
+antifongique post-greffe CSH — préférer si polymédication ou risque hépatotoxique \
+(moins d'interactions CYP)."
+
+Résistances bactériennes — antibiothérapie de recours :
+  titre_court : "Ceftazidime-avibactam vs meropénem BSBLRE : mortalité à 28j identique"
+  resume : "REPRISE (étude de cohorte apparillée, N=240, infections à Klebsiella BSBLRE ou \
+Pseudomonas MDR confirmé, France/Espagne) : ceftazidime-avibactam vs meropénem \
+(souche sensible) — mortalité à 28j : 22 % vs 24 % (OR 0,90 ; IC95% 0,54–1,51 ; p=0,68). \
+Sélection de résistances sous ceftazidime-avibactam : 4,2 % (mutation OXA-48)."
+  impact_pratique : "En pratique : réserver ceftazidime-avibactam aux infections à Klebsiella \
+BSBLRE documentées — antibiogramme impératif avant usage ; signaler toute résistance \
+acquise à l'infectiologue référent."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : Clinical Infectious Diseases, Lancet Infectious Diseases, Journal of Antimicrobial Chemotherapy.
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "Le traitement de 5 jours par nirmatrelvir-ritonavir réduit le risque d'hospitalisation ou décès de 89 % chez les COVID-19 à risque — HR 0,11 ; IC95% 0,04–0,27 ; p<0,0001 ; EPIC-HR, RCT, n=2 246, non vaccinés."
+  impact_pratique : "En pratique : nirmatrelvir dès symptômes (<5 j) chez tout patient à risque élevé — vérifier interactions médicamenteuses (statines, anticoagulants) avant prescription."
+
+Bon exemple 2 :
+  resume : "La durée courte d'antibiotiques (5 j amoxicilline) est non-inférieure à 10 j dans les pneumonies communautaires légères à modérées — taux de guérison 88 % vs 90 % ; RR 0,98 ; IC95% 0,93–1,04 ; RCT, n=580."
+  impact_pratique : "À retenir : 5 jours suffisent pour les PAC sans critères de gravité — éviter la pression de sélection inutile, réévaluer à J3 si non-amélioration."
+
+Bon exemple 3 :
+  resume : "La prophylaxie par doxycycline post-exposition réduit de 78 % les IST bactériennes chez les HSH sous PrEP — OR 0,22 ; IC95% 0,09–0,50 ; p<0,001 ; doxy-PEP, RCT, n=501, suivi 12 mois."
+  impact_pratique : "En pratique : proposer doxy-PEP 200 mg dans les 72 h après rapport non protégé chez HSH à haut risque — information sur résistances et suivi ECBU trimestriel."
+
 """
 
 _SPECIALTY_ADDENDUM_INFIRMIERS = """\
@@ -5510,6 +4963,53 @@ sans critère clinique, études monocentriques <50 patients, articles de formati
 sans validation clinique.
 • Contexte FRANÇAIS : recommandations HAS/SFAP/SRLF applicables en France ; données \
 françaises (IQSS, SIPAQSS) ; décrets et textes réglementaires IDE (exercice professionnel)."
+
+EXEMPLES DE RÉDACTION (style Journal of Advanced Nursing / IJNS / Soins — format cible) :
+
+Prévention escarre — protocole repositionnement :
+  titre_court : "Repositionnement toutes les 2h vs 4h : pas de différence en escarre — essai TURN"
+  resume : "TURN (RCT, N=942, patients hospitalisés à haut risque d'escarre, matelas haute densité) : \
+repositionnement toutes les 2h vs 4h — incidence escarre grade ≥2 à J30 : 3,9 % vs 4,5 % \
+(RR 0,87 ; IC95% 0,55–1,38 ; p=0,55 ; non-significatif). Confort et sommeil significativement \
+améliorés dans le groupe 4h. Matelas adapté = facteur clé, fréquence secondaire."
+  impact_pratique : "En pratique : avec un matelas haute densité adapté, repositionnement toutes \
+les 4h suffisant — à adapter selon état cutané, mobilité et confort du patient."
+
+Douleur post-opératoire — rôle infirmier :
+  titre_court : "Évaluation systématique de la douleur par IDE réduit le recours aux opioïdes de 18 %"
+  resume : "Étude observationnelle prospective (N=1 230, chirurgie élective 12 services, France) : \
+évaluation douleur systématique par IDE (EN toutes les 4h) + protocole d'administration \
+anticipée vs évaluation à la demande — recours opioïdes post-op −18 % (p<0,01) ; \
+satisfaction patient +12 points NPS (p<0,001). Durée de séjour non modifiée."
+  impact_pratique : "En pratique : mettre en place une évaluation protocolisée de la douleur \
+(EN toutes les 4h les 48h post-op) et un accès aux antalgiques sans délai de prescription."
+
+Décret compétences IDE — prescription adaptée :
+  titre_court : "Décret 2023-135 : IDE habilité à renouveler certaines ordonnances en EHPAD"
+  resume : "Décret n° 2023-135 du 23 février 2023 (JO du 24 février) : extension de la compétence \
+IDE au renouvellement des prescriptions médicales pour 10 classes de médicaments courants \
+(antihypertenseurs, antidiabétiques, anticoagulants) dans les structures médico-sociales \
+(EHPAD, SSIAD) après formation validée. Applicable depuis le 1er mars 2023."
+  impact_pratique : "En pratique : formation à la prescription adaptée IDE désormais opposable \
+en EHPAD — vérifier les habilitations de l'équipe et mettre à jour le protocole de \
+coopération institutionnel."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : Journal of Advanced Nursing, International Journal of Nursing Studies, BMJ Quality & Safety.
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "Un protocole infirmier structuré de prévention des escarres réduit l'incidence de 47 % en soins intensifs — RR 0,53 ; IC95% 0,38–0,74 ; p<0,001 ; essai contrôlé, n=1 204, 6 services ICU."
+  impact_pratique : "En pratique : mettre en place le protocole de repositionnement toutes les 2 h + évaluation Braden à l'admission — former l'équipe aux points de pression critiques."
+
+Bon exemple 2 :
+  resume : "La télésurveillance infirmière post-opératoire réduit les réhospitalisations à 30 jours de 31 % — OR 0,69 ; IC95% 0,52–0,91 ; p=0,008 ; étude de cohorte, n=2 890, chirurgie cardiaque."
+  impact_pratique : "À retenir : appel infirmier à J3 et J7 post-sortie réduit significativement les ré-admissions — prioriser les patients sans aidant et comorbidités cardiaques."
+
+Bon exemple 3 :
+  resume : "La check-list de vérification médicamenteuse par l'infirmier diminue les erreurs d'administration de 62 % en médecine interne — IRR 0,38 ; IC95% 0,27–0,54 ; audit avant-après, n=14 000 administrations."
+  impact_pratique : "En pratique : imposer la double vérification (identité + voie + dose) pour les médicaments à risque — anticoagulants, insuline, électrolytes concentrés."
+
 """
 
 _SPECIALTY_ADDENDUM_KINESITHERAPIE = """\
@@ -5633,6 +5133,54 @@ clinique, études sur <20 patients, études d'opinion sans validation clinique.
 • Contexte FRANÇAIS : recommandations HAS (lombalgie, rééducation AVC, incontinence, \
 réhabilitation BPCO) ; recommandations SOFMER/SPLF/SFC applicables en France ; données \
 françaises PMSI-MPR, registres SOFMER. Décret d'actes kinésithérapiques (nomenclature NGAP)."
+
+EXEMPLES DE RÉDACTION (style Physical Therapy / JOSPT / Manual Therapy / BJSM — format cible) :
+
+Lombalgie chronique — approche active :
+  titre_court : "Lombalgie chronique : exercice actif > physiothérapie passive — méta-analyse"
+  resume : "Méta-analyse Cochrane (N=12 412, 249 RCTs, lombalgie chronique non spécifique) : \
+exercice actif vs traitement passif (TENS, ultrasons, massage) — réduction douleur \
+EVA −1,3 points (IC95% −1,7/−0,9) et incapacité (Oswestry) −4,5 points à 12 semaines. \
+Bénéfice similaire quelle que soit la modalité d'exercice (résistance, stretching, yoga). \
+HAS 2019 recommande l'activation précoce."
+  impact_pratique : "En pratique : prescrire un programme d'exercice actif supervisé dès la 1re \
+consultation — les techniques passives seules ne modifient pas l'histoire naturelle."
+
+Rupture du LCA — rééducation pré-opératoire :
+  titre_court : "Préhabilitation LCA : retour au sport 3 semaines plus tôt et meilleure force quadricipitale"
+  resume : "RCT (N=154, rupture LCA isolée, délai chirurgie 6-8 semaines) : préhabilitation \
+(6 séances kin + exercices quotidiens) vs aucune rééducation pré-op — force quad à J30 post-op \
+: 68 % vs 55 % du côté sain (p=0,01) ; délai retour au sport : 7,2 vs 7,9 mois (−3 semaines, \
+p=0,04). Résultats IKDC à 6 mois : 68 vs 58 points (p=0,03)."
+  impact_pratique : "En pratique : initier systématiquement 6 séances de préhabilitation ciblée \
+quad/ischio dès le diagnostic — améliore significativement la récupération fonctionnelle \
+post-opératoire."
+
+Techniques manuelles cervicalgie :
+  titre_court : "Manipulation cervicale vs mobilisation : efficacité équivalente, profil sécurité comparable"
+  resume : "Méta-analyse (N=2 517, 23 RCTs, cervicalgie mécanique non radiculaire aiguë/subaiguë) : \
+manipulation (HVLA) vs mobilisation (amplitude réduite) — réduction EVA à 4 semaines : \
+−1,8 vs −1,6 points (différence 0,2 ; IC95% −0,3–0,7 ; non significatif). \
+Complications graves (AVC vertébrobasilaire) : <1/1 000 000 séances pour les deux techniques."
+  impact_pratique : "En pratique : manipulation et mobilisation sont équivalentes en efficacité \
+et sécurité — adapter selon préférence patient et compétence du thérapeute."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : Journal of Physiotherapy, Physical Therapy, British Journal of Sports Medicine.
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "La kinésithérapie intensive précoce (J1 post-op) réduit la durée de séjour de 1,8 jours après prothèse totale de hanche — DM −1,8 j ; IC95% −2,3 à −1,3 ; p<0,001 ; RCT, n=420."
+  impact_pratique : "En pratique : initier la marche avec aide technique dès J1 post-PTH — coordination avec chirurgien pour lever les restrictions de mise en charge."
+
+Bon exemple 2 :
+  resume : "Les exercices de stabilisation lombaire réduisent la douleur chronique de 38 % à 6 mois vs physiothérapie passive — DM EVA −2,1/10 ; IC95% −2,8 à −1,4 ; RCT, n=312."
+  impact_pratique : "À retenir : programme de renforcement du gainage 3×/semaine pendant 8 semaines supérieur aux ultrasons ou TENS en lombalgies chroniques — personnaliser la progression."
+
+Bon exemple 3 :
+  resume : "La rééducation vestibulaire diminue le risque de chute de 44 % chez les patients avec névrite vestibulaire — RR 0,56 ; IC95% 0,38–0,82 ; p=0,003 ; RCT, n=180, suivi 6 mois."
+  impact_pratique : "En pratique : prescrire rééducation vestibulaire dès la phase subaiguë (J7–J14) — exercices de stabilisation du regard et habituation au mouvement, 2 séances/semaine."
+
 """
 
 _SPECIALTY_ADDENDUM_NEUROLOGIE = """\
@@ -5713,6 +5261,52 @@ dans les guidelines actuels.
 (anticorps monoclonaux SEP/migraine, onabotulinumtoxinA migraine, \
 RTU/AAP/ATU si pertinent), réseau filières AVC/SEP/Parkinson, \
 recommandations HAS/SFSEP/SFN."
+
+EXEMPLES DE RÉDACTION (style Lancet Neurology / Neurology / Brain / JNNP — format cible) :
+
+SEP-RR — traitement haute efficacité :
+  titre_court : "ULTIMATE I/II : ublituximab −59 % taux annualisé de rechutes vs tériflunomide"
+  resume : "ULTIMATE I+II pooled (RCT, N=1 094, SEP-RR, 96 semaines) : ublituximab 450 mg IV \
+q24 sem vs tériflunomide 14 mg — TAR 0,08 vs 0,19 (réduction 59 % ; RR 0,41 ; \
+IC95% 0,30–0,57 ; p<0,001). Lésions T2 nouvelles −97 %. Réactions perfusion grade 1-2 \
+à la 1re administration dans 47 %."
+  impact_pratique : "À retenir : ublituximab s'ajoute aux anti-CD20 disponibles en SEP-RR active — \
+choisir selon profil CV, parité planifiée et accès centre pour perfusion."
+
+AVC ischémique — thrombectomie tardive :
+  titre_court : "DAWN : thrombectomie jusqu'à 24h — mRS 0-2 à 90j : 49 % vs 13 %"
+  resume : "DAWN (RCT, N=206, NIHSS ≥10, occlusion ACM/ACI, 6-24h, mismatch clinico-imagerie) : \
+thrombectomie mécanique vs médical seul — indépendance (mRS 0-2) à 90j : 49 % vs 13 % \
+(OR 4,34 ; IC95% 2,33–8,10 ; p<0,001). Intégré guidelines AAN/ESO ; protocole RAPID ou \
+équivalent requis."
+  impact_pratique : "En pratique : tout AVC avec occlusion proximale au-delà de 6h doit bénéficier \
+d'une imagerie de perfusion — appel direct au centre thrombectomie, pas d'attente."
+
+Migraine — anti-CGRP remboursé :
+  titre_court : "Erenumab migraine épisodique fréquente : −2,9 j/mois, remboursé SS France"
+  resume : "ARISE (RCT, N=577, 4-14 jours de migraine/mois) : erenumab 70 mg SC vs placebo — \
+réduction jours migraine −2,9 vs −1,8/mois (différence −1,1 ; p<0,001) ; \
+répondeurs ≥50 % : 40 % vs 30 %. Remboursé SS France depuis 2021 \
+(≥8 jours/mois ou migraine chronique, après 2 échecs de préventifs classiques)."
+  impact_pratique : "En pratique : proposer après échec topiramate + propranolol — \
+prescription initialement hospitalière (neurologie), puis renouvellement possible en ville."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : Lancet Neurology, Neurology (AAN), NEJM (neurologie), Journal of Neurology Neurosurgery & Psychiatry.
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "La thrombectomie mécanique réduit le handicap fonctionnel à 90 jours de 19 points absolus dans les occlusions de grand vaisseaux — OR 2,35 ; IC95% 1,85–3,00 ; méta-analyse 5 RCTs, n=1 287."
+  impact_pratique : "En pratique : activer la filière thrombectomie pour tout AVC ischémique avec occlusion ICA/M1/M2 dans les 24 h — score NIHSS ≥6, pas de seuil d'âge strict."
+
+Bon exemple 2 :
+  resume : "Le natalizumab réduit le taux annualisé de rechutes de 68 % dans la SEP récurrente-rémittente active — RR 0,32 ; IC95% 0,25–0,41 ; p<0,001 ; AFFIRM, RCT, n=942, 2 ans."
+  impact_pratique : "À retenir : natalizumab en 2e ligne SEP active malgré interféron/acétate de glatiramère — vérifier sérologie JC avant initiation et à 6 mois."
+
+Bon exemple 3 :
+  resume : "La stimulation cérébrale profonde du GPi améliore le score moteur UPDRS-III de 52 % à 12 mois dans la maladie de Parkinson avancée — DM −20,4 points ; IC95% −25,1 à −15,7 ; RCT, n=255."
+  impact_pratique : "En pratique : orienter vers évaluation SCP les patients Parkinson avec fluctuations motrices invalidantes malgré optimisation médicamenteuse — fenêtre idéale avant déclin cognitif."
+
 """
 
 _SPECIALTY_ADDENDUM_NEUROCHIRURGIE = """\
@@ -5786,6 +5380,53 @@ déjà établies sans information nouvelle.
 • Contexte FRANÇAIS : accessibilité France (AMM TTFields, disponibilité \
 ivosidenib/vorasidenib, financement MIGAC/INCa), réseau neuro-oncologique \
 (RCP nationale INCa) ; recommandations SNCLF/HAS."
+
+EXEMPLES DE RÉDACTION (style Journal of Neurosurgery / Neurosurgery / Acta Neurochirurgica — format cible) :
+
+Glioblastome — traitement adjuvant :
+  titre_court : "EF-14 (TTFields + TMZ) : +4,9 mois survie globale vs TMZ seul en GBM"
+  resume : "EF-14 (RCT, N=695, GBM nouvelle souche après chimioradiation, MGMT méthylé ou non) : \
+TTFields (Optune 200 kHz) + témozolomide vs témozolomide seul — SG 20,9 vs 16,0 mois \
+(HR 0,63 ; IC95% 0,53–0,76 ; p<0,001) ; SSP 6,7 vs 4,0 mois. Compliance TTFields : \
+>18h/j corrélée à meilleur pronostic. AMM CE obtenue, remboursement France en cours \
+(MIGAC-INCa)."
+  impact_pratique : "En pratique : TTFields à discuter en RCP pour tout GBM post-chimioradiation — \
+vérifier le remboursement actuel et orienter vers centre INCa référent."
+
+Métastases cérébrales — radiochirurgie vs chirurgie :
+  titre_court : "SRS vs chirurgie métastase cérébrale unique ≤3 cm : contrôle local équivalent"
+  resume : "Revue systématique ASTRO (N=1 827, 12 études, métastase unique ≤3 cm accessible) : \
+SRS vs résection chirurgicale — contrôle local à 1 an 73 % vs 78 % (RR 1,06 ; \
+IC95% 0,95–1,19 ; p=0,31) ; pas de différence SG. SRS associée à moins de complications \
+post-procédure (8 % vs 22 %). Chirurgie préférée si masse effet et/ou diagnostic histologique requis."
+  impact_pratique : "En pratique : SRS privilégiée pour métastase unique ≤3 cm sans effet de masse \
+significatif — discussion RCP multidisciplinaire neuro-onco systématique."
+
+Hémorragie sous-arachnoïdienne — vasospasme :
+  titre_court : "Nimodipine HSA : réduction vasospasme symptomatique confirmée — dose orale = IV"
+  resume : "Méta-analyse (N=4 152, 9 RCTs, HSA anévrismale) : nimodipine 60 mg/4h PO pendant \
+21 jours — réduction vasospasme symptomatique 34 % vs placebo (RR 0,66 ; IC95% 0,59–0,75) ; \
+bénéfice neurologique (mRS 0-2) à 3 mois. Formulation IV non disponible en France ; \
+voie orale strictement équivalente si patient neurologique stable."
+  impact_pratique : "À retenir : nimodipine orale 60 mg/4h pendant 21 jours — standard non négociable \
+dans toute HSA anévrismale ; surveillance tensionnelle à chaque prise."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : Journal of Neurosurgery, Neurosurgery, Acta Neurochirurgica, Journal of Neuro-Oncology.
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "La résection étendue guidée par fluorescence (5-ALA) améliore la survie globale médiane de 4,5 mois dans les glioblastomes — 18,3 vs 13,8 mois ; HR 0,73 ; IC95% 0,57–0,94 ; RCT, n=322."
+  impact_pratique : "En pratique : utiliser systématiquement la 5-ALA pour les résections de glioblastome opérable — augmentation du taux de résection complète sans augmentation des déficits."
+
+Bon exemple 2 :
+  resume : "La radiochirurgie stéréotaxique (Gamma Knife) est non-inférieure à la microchirurgie pour les méningiomes de la base grade I ≤3 cm — contrôle tumoral à 10 ans 94 % vs 97 % ; HR 1,12 ; IC95% 0,74–1,71 ; cohorte prospective, n=892."
+  impact_pratique : "À retenir : proposer radiochirurgie en 1re intention pour méningiomes de la base <3 cm asymptomatiques — évite les risques opératoires sans compromettre le contrôle local."
+
+Bon exemple 3 :
+  resume : "Le clippage précoce (<24 h) réduit le risque de resaignement de 67 % après hémorragie sous-arachnoïdienne anévrismale — RR 0,33 ; IC95% 0,18–0,61 ; méta-analyse, n=3 840."
+  impact_pratique : "En pratique : clippage ou coiling dans les 24 h pour tout anévrisme rompu accessible — discuter en réunion neurovasculaire urgente dès admission."
+
 """
 
 _SPECIALTY_ADDENDUM_NEPHROLOGIE = """\
@@ -5854,6 +5495,52 @@ des biomarqueurs expérimentaux sans application clinique immédiate.
 • Contexte FRANÇAIS : disponibilité AMM en France (patiromer, sparsentan non \
 encore remboursés), réseau REIN (registre dialyse/greffe France), \
 SFNDT recommandations, HAS avis remboursement."
+
+EXEMPLES DE RÉDACTION (style JASN / Kidney International / NDT / CJASN — format cible) :
+
+Néphroprotection diabétique :
+  titre_court : "DAPA-CKD : dapagliflozine réduit de 39 % la progression rénale en MRC non diabétique"
+  resume : "DAPA-CKD (RCT, N=4 304, MRC stades 2-4 avec albuminurie, dont 32 % non-diabétiques) : \
+dapagliflozine 10 mg/j vs placebo — réduction composite rénale (−40 % eGFR, dialyse, \
+décès rénal/CV) de 39 % (HR 0,61 ; IC95% 0,51–0,72 ; p<0,001). Bénéfice confirmé \
+chez non-diabétiques (HR 0,50). AMM EMA étendue à la MRC sans diabète."
+  impact_pratique : "En pratique : dapagliflozine à proposer dans toute MRC avec DFG 25-75 mL/min \
+et albuminurie ≥200 mg/g, diabétique ou non — vérifier le remboursement actuel en France."
+
+Greffe rénale — immunosuppression :
+  titre_court : "Belatacept vs ciclosporine greffe rein : survie greffon +13 % à 7 ans"
+  resume : "BENEFIT extended (RCT, N=666, greffe rein donneur vivant/décédé à critères standard, \
+7 ans) : belatacept vs ciclosporine — survie patient-greffon 80 % vs 67 % (HR 0,57 ; \
+IC95% 0,40–0,83). DFG moyen +21 mL/min vs ciclosporine. Risque PTLD légèrement majoré \
+(EBV-naïfs exclus si possible)."
+  impact_pratique : "À retenir : belatacept confère une meilleure fonction rénale à long terme \
+que la ciclosporine — à discuter en RCP pour les greffes à risque de néphrotoxicité."
+
+Hyperkaliémie chronique — IRC :
+  titre_court : "Patiromer : maintien des inhibiteurs SRAA possible malgré hyperkaliémie chronique"
+  resume : "DIAMOND (RCT croisée, N=160, ICC ou MRC avec hyperkaliémie, traité IEC/ARA2) : \
+patiromer vs placebo — kaliémie moyenne 4,7 vs 5,2 mmol/L (différence −0,45 ; p<0,001). \
+Maintien de la dose maximale de spironolactone dans 66 % vs 43 % des cas (p=0,006). \
+Disponible en France, non remboursé à ce jour."
+  impact_pratique : "En pratique : patiromer permet de maintenir les inhibiteurs SRAA chez \
+les IRC/ICC hyperkaliémiques — discuter avec néphrologue et vérifier accès en France."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : JASN (Journal of the American Society of Nephrology), CJASN, NDT (Nephrology Dialysis Transplantation), KI (Kidney International).
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "Les iSGLT2 réduisent la progression vers l'insuffisance rénale terminale de 34 % dans la néphropathie diabétique — HR 0,66 ; IC95% 0,53–0,81 ; p<0,001 ; CREDENCE, RCT, n=4 401, suivi 2,6 ans."
+  impact_pratique : "En pratique : initier canagliflozine/dapagliflozine chez tout DT2 avec néphropathie et DFGe ≥20 mL/min — surveillance kaliémie et DFGe à 4 semaines."
+
+Bon exemple 2 :
+  resume : "La fistule artério-veineuse réduit la mortalité cardiovasculaire de 28 % vs cathéter central tunnellisé en hémodialyse — HR 0,72 ; IC95% 0,61–0,85 ; cohorte, n=12 400, suivi 3 ans."
+  impact_pratique : "À retenir : créer la FAV au moins 6 mois avant la dialyse prévisible — référence chirurgie vasculaire dès DFGe <20 mL/min chez les patients sans contre-indication."
+
+Bon exemple 3 :
+  resume : "L'avacopan remplace les corticoïdes en phase d'induction et réduit les rechutes de 40 % dans les vascularites ANCA — OR 0,60 ; IC95% 0,38–0,95 ; p=0,03 ; ADVOCATE, RCT, n=331."
+  impact_pratique : "En pratique : avacopan (300 mg × 2/j) + rituximab ou cyclophosphamide permet d'épargner les corticoïdes systémiques — à privilégier si diabète cortico-induit ou ostéoporose sévère."
+
 """
 
 _SPECIALTY_ADDENDUM_URGENCES = """\
@@ -5920,6 +5607,55 @@ des populations non représentatives des SAU français, confirmations de \
 pratiques déjà établies.
 • Contexte FRANÇAIS : disponibilité en France (AMM, accès SAU, \
 protocoles SAMU), réglementation CRRA-15/SMUR, financement MERRI/UHCD."
+
+EXEMPLES DE RÉDACTION (style Annals of Emergency Medicine / Resuscitation / Academic Emergency Medicine — format cible) :
+
+Arrêt cardiaque extrahospitalier :
+  titre_court : "ECMO-RCP (ECPR) : survie à bon pronostic neurologique × 2 vs RCP conventionnelle"
+  resume : "ARREST (RCT, N=30, AC réfractaire OHCA FV/TV sans pouls, arrêt <45 min, CAG accès <60 min) : \
+ECPR vs traitement standard — survie à la sortie avec CPC 1-2 : 43 % vs 7 % (OR 9,4 ; \
+IC95% 2,0–44,1 ; p=0,006). Étude stoppée prématurément. Population très sélectionnée \
+(jeune, témoin, rythme choquable)."
+  impact_pratique : "En pratique : ECPR à discuter en RCP réfractaire FV/TV avec équipe \
+spécialisée disponible — critères stricts (âge, délai, rythme) ; hors ces critères, \
+pas d'indication."
+
+Sepsis aux urgences :
+  titre_court : "SSC 2021 : antibiotiques dans l'heure — bénéfice confirmé si lactate ≥ 2"
+  resume : "Surviving Sepsis Campaign 2021 (recommandations actualisées) : antibiothérapie \
+dans l'heure recommandée (Grade 1B) pour sepsis avec lactate ≥ 4 mmol/L ou choc septique. \
+Antibiotiques dans les 3h si lactate 2-4 mmol/L sans choc. Chaque heure de retard associée \
+à +7% mortalité (étude observationnelle, N=49 331, IDSA/SCCM)."
+  impact_pratique : "En pratique : prélèvements hémocultures et administration simultanée — \
+ne pas retarder les antibiotiques en attendant les résultats microbiologiques si choc ou \
+lactate ≥ 4."
+
+Analgésie aux urgences :
+  titre_court : "Kétamine faible dose vs morphine douleur aiguë : efficacité équivalente, moins d'effets"
+  resume : "PAIN-FREE (RCT multicentrique, N=312, douleur EVA ≥ 5 aux urgences) : kétamine \
+sub-dissociative (0,3 mg/kg IV) vs morphine (0,1 mg/kg IV) — réduction EVA à 30 min : \
+−2,9 vs −2,8 points (différence 0,1 ; IC95% −0,6–0,8 ; non-inférieur). Nausées-vomissements : \
+9 % vs 22 % (p=0,003). Pas de différence sécurité."
+  impact_pratique : "En pratique : kétamine 0,3 mg/kg IV alternative valide à la morphine \
+pour douleurs aiguës modérées-sévères — privilégier si risque d'emesis ou contre-indication \
+aux opioïdes."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : Annals of Emergency Medicine, Emergency Medicine Journal, Resuscitation, Academic Emergency Medicine.
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "Le score HEART ≤3 permet d'exclure un STEMI/NSTEMI avec une valeur prédictive négative de 99,3 % en douleur thoracique aiguë — sensibilité 98 % ; RCT validationn, n=3 582, 30 centres."
+  impact_pratique : "En pratique : utiliser HEART + troponine hs à H0/H2 pour les douleurs thoraciques à bas risque — sortie possible à H2 si HEART ≤3 + troponine négative × 2."
+
+Bon exemple 2 :
+  resume : "Le kétamine IV à faible dose (0,3 mg/kg) est non-inférieure à la morphine pour l'analgésie des douleurs aiguës modérées-sévères aux urgences — EVA −3,4 vs −3,7 ; DM 0,3 ; IC95% −0,2 à 0,8 ; RCT, n=240."
+  impact_pratique : "À retenir : kétamine sub-dissociative alternative à la morphine en 1re ligne douleur aiguë — moins d'effets secondaires respiratoires, utile si dépendance opioïdes connue."
+
+Bon exemple 3 :
+  resume : "L'hypothermie thérapeutique post-ACR réduit la mortalité hospitalière de 23 % et améliore le pronostic neurologique — OR 0,77 ; IC95% 0,62–0,96 ; méta-analyse, 12 RCTs, n=3 219."
+  impact_pratique : "En pratique : initier refroidissement actif à 33°C dès RACS pour tout ACR extra-hospitalier FV/TV sans réveil immédiat — coordination SAMU/réa avant admission."
+
 """
 
 _SPECIALTY_ADDENDUM_MPR = """\
@@ -5990,6 +5726,50 @@ traitement de la spasticité, douleur neuropathique, rééducation cognitive.
 • Contexte FRANÇAIS : disponibilité en France (LPPR pour appareillage, \
 remboursement SS, autorisation AMM botox par indication), réseau SSR/ESSR, \
 nomenclature SOFMER-HAS."
+
+EXEMPLES DE RÉDACTION (style APMR / Journal of Rehabilitation Medicine / Disability & Rehabilitation — format cible) :
+
+Essai rééducation post-AVC :
+  titre_court : "Robot membre supérieur post-AVC : pas de supériorité vs rééducation intensive"
+  resume : "RATULS (RCT, N=770, AVC <6 semaines) : rééducation robotisée (MIT-Manus) vs \
+thérapie conventionnelle intensive — aucune différence sur score ARAT à 3 mois \
+(OR 1,15 ; IC95% 0,80–1,65 ; p=0,45). Résultats à 6 mois identiques. \
+Bénéfice équivalent si intensité horaire comparable."
+  impact_pratique : "À retenir : la robotique MS n'apporte pas de bénéfice additionnel si \
+l'intensité de rééducation conventionnelle est identique — arbitrage selon accès local."
+
+Spasticité / toxine botulique post-AVC :
+  titre_court : "Botox spasticité bras post-AVC : bénéfice fonctionnel conditionné à la rééducation"
+  resume : "Pooled analysis GRADES (N=936, 4 RCTs, abobotulinumtoxinA 500-1000 UI vs placebo) : \
+réduction de 1,4 points MAS poignet à 4 semaines (p<0,001) ; bénéfice fonctionnel (GAS) \
+uniquement si ≥3 séances de kinésithérapie dans les 4 semaines post-injection."
+  impact_pratique : "En pratique : couplage systématique de toute injection botulique à ≥3 séances \
+de rééducation dans le mois suivant — sans rééducation, pas de gain fonctionnel démontré."
+
+Recommandation réhabilitation BPCO sévère :
+  titre_court : "Réhabilitation respiratoire BPCO sévère : bénéfice maintenu à 2 ans si programme continu"
+  resume : "Cochrane meta-analysis (N=3 824, 65 RCTs, BPCO GOLD III-IV) : réhabilitation \
+respiratoire vs soins habituels — amélioration 6MWT +44 m (IC95% 38–51), dyspnée MRC −0,8 points, \
+maintenu à 24 mois uniquement si programme continu (>1 session/mois après phase initiale)."
+  impact_pratique : "En pratique : prescrire un programme de maintien (1 session mensuelle minimum) \
+après la phase initiale — l'effet disparaît à 12 mois sans suivi structuré."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : Annals of Physical and Rehabilitation Medicine, Archives of Physical Medicine and Rehabilitation, Disability and Rehabilitation.
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "La rééducation intensive en MPR réduit la durée de séjour post-AVC de 12 jours tout en améliorant le score de Barthel de 18 points — DM +18 ; IC95% +12 à +24 ; RCT, n=380, 8 centres."
+  impact_pratique : "En pratique : orienter vers unité MPR dès J5–J7 post-AVC si patient mobilisable — protocole 4 h/j minimum de thérapies combinées (motrice + cognitive + orthophonie)."
+
+Bon exemple 2 :
+  resume : "L'orthèse tibio-pédieuse de marche réduit la consommation énergétique de 18 % et améliore la vitesse de marche de 0,14 m/s dans les paralysies spastiques du membre inférieur — DM +0,14 m/s ; IC95% +0,09 à +0,19 ; méta-analyse, n=620."
+  impact_pratique : "À retenir : appareillage tibio-pédieux systématique dès que steppage persistant après 6 semaines de rééducation — évaluer la spasticité avant choix matériau (rigide vs articulé)."
+
+Bon exemple 3 :
+  resume : "Les injections de toxine botulique A réduisent la spasticité focale (score Ashworth) de 1,5 point et améliorent la fonction à 12 semaines — DM −1,5 ; IC95% −1,9 à −1,1 ; p<0,001 ; méta-analyse, 28 RCTs, n=2 604."
+  impact_pratique : "En pratique : injection toxine botulique A en association avec la rééducation intensive — délai d'action 3–5 jours, répétition possible à 12 semaines si réponse partielle."
+
 """
 
 _SPECIALTY_ADDENDUM_MEDECINE_INTERNE = """\
@@ -6062,6 +5842,39 @@ dans des maladies rarissimes sans aucune applicabilité.
 • Contexte FRANÇAIS : applicabilité aux autorisations AMM en France, \
 disponibilité des biothérapies (RTU, ATU/AAP si pertinent), réseau filières \
 maladies rares (FRRM), prise en charge ALD."
+
+EXEMPLES DE RÉDACTION (style Medicine / Lancet / JAMA Internal Medicine / Revue de Médecine Interne — format cible) :
+
+Lupus systémique — biothérapie :
+  titre_court : "BLISS-52/76 pool : belimumab réduit le taux de poussées sévères de 36 % vs placebo"
+  resume : "BLISS-52 + BLISS-76 pooled (RCT, N=1 684, lupus systémique actif SELENA-SLEDAI ≥6, \
+traitement standard) : belimumab 10 mg/kg IV vs placebo — réduction poussée sévère \
+(BILAG A ou aggravation SELENA-SLEDAI ≥3,5) à 52 sem : HR 0,64 (IC95% 0,52–0,79 ; p<0,001). \
+Remboursé France : lupus actif avec anticorps anti-ADNdb positifs, SLEDAI ≥8, \
+échec de l'hydroxychloroquine + immunosuppresseur."
+  impact_pratique : "En pratique : belimumab IV ou SC à proposer en RCP interne/rhumatologie \
+pour lupus avec anticorps anti-ADNdb positifs et poussées récurrentes malgré HCQ + \
+azathioprine ou MMF — vérifier critères de remboursement SS actuels."
+
+Vascularite ANCA — traitement d'induction :
+  titre_court : "RAVE : rituximab non inférieur à la cyclophosphamide dans les vascularites ANCA"
+  resume : "RAVE (RCT, N=197, GPA/MPA active sévère, BVAS/WG ≥3) : rituximab 375 mg/m² IV \
+×4 vs cyclophosphamide — rémission complète à 6 mois : 64 % vs 53 % (non-inférieur, p<0,001). \
+Supérieur pour les rechutes (p=0,009). Rituximab préféré si ANCA anti-PR3, forme sévère \
+ou rechute. AMM EMA ; remboursé SS France dans cette indication."
+  impact_pratique : "En pratique : rituximab en induction dans les vascularites ANCA anti-PR3 \
+sévères ou rechutes — cyclophosphamide réservé aux formes anti-MPO sévères ou si \
+contre-indication au rituximab."
+
+Sarcoïdose pulmonaire — corticothérapie :
+  titre_court : "Corticoïdes sarcoïdose stade II-III : bénéfice fonctionnel à 6 mois, pas de modification histoire naturelle"
+  resume : "Méta-analyse Cochrane (N=1 049, 13 RCTs, sarcoïdose stade II-IV) : corticothérapie \
+orale vs placebo/observation — amélioration DLCO +5 % (IC95% 2–8 %) et CVF +4 % à 6 mois. \
+Pas de différence significative à 24 mois. Pas de réduction du risque de fibrose à long terme. \
+Rechute à l'arrêt dans 74 % des cas."
+  impact_pratique : "En pratique : corticothérapie justifiée en cas de sarcoïdose symptomatique \
+(dyspnée, hypercalcémie, atteinte cardiaque ou neurologique) — pas de traitement préventif \
+de la fibrose ; surveillance spirométrique à 6 et 12 mois."
 """
 
 _SPECIALTY_ADDENDUM_MEDECINE_GENERALE = """\
@@ -6137,6 +5950,52 @@ dans les guides de pratique actuels.
 • Contexte FRANÇAIS : applicabilité aux patients en France (remboursement SS, \
 accès en ville, HAS/CNAM, CMU-C/ALD) ; signaler si molécule non disponible ou \
 non remboursée en France."
+
+EXEMPLES DE RÉDACTION (style BJGP / Annals of Family Medicine / JAMA Internal Medicine / Revue du Praticien — format cible) :
+
+Nouvelle recommandation HTA en soins primaires :
+  titre_court : "ESC/ESH 2023 : bithérapie d'emblée si PA ≥160/100 mmHg"
+  resume : "ESC/ESH guidelines 2023 (mise à jour) : bithérapie initiale recommandée dès \
+PA ≥ 160/100 mmHg ou risque CV élevé — objectif < 130/80 mmHg chez < 70 ans (classe I). \
+Privilégier association fixe (IEC/ARA2 + ICa ou diurétique thiazidique). Pas d'indication de \
+BPCO à l'usage des bêtabloquants en 1re ligne hors IC/coronaropathie associée."
+  impact_pratique : "En pratique : initier une bithérapie d'emblée pour tout patient avec \
+PA ≥ 160/100 mmHg — ne pas attendre l'échec de la monothérapie."
+
+Essai modifiant une prescription courante en cabinet :
+  titre_court : "SELECT (sémaglutide 2,4 mg) : −20 % événements CV chez obèses sans diabète"
+  resume : "SELECT (RCT, N=17 604, surpoids/obésité IMC ≥27, pas de diabète, ATCD CV) : \
+sémaglutide 2,4 mg sc hebdo vs placebo — réduction de 20 % des MACE à 3,3 ans \
+(HR 0,80 ; IC95% 0,72–0,90 ; p<0,001). Perte de poids moyenne −9,4 %. Pas d'indication \
+remboursée en France à ce jour hors diabète."
+  impact_pratique : "À retenir : bénéfice CV du sémaglutide démontré sans diabète — molécule \
+non remboursée en France hors DT2, mais à surveiller pour évolution des indications AMM."
+
+Alerte ANSM médicament courant en ville :
+  titre_court : "ANSM : restriction AINS ≥ 24 SA — rappel recommandations"
+  resume : "Communication ANSM (2024) : rappel de la contre-indication des AINS (ibuprofène, \
+kétoprofène, diclofénac) à partir de 24 SA (risque fermeture prématurée du canal artériel, \
+oligoamnios). En pratique, toute douleur ≥ 24 SA doit recourir au paracétamol. \
+Alerte suite à signalements de prescriptions inappropriées."
+  impact_pratique : "En pratique : vérifier systématiquement le terme de grossesse avant toute \
+prescription d'AINS — paracétamol seul dès 24 SA."
+
+## EXEMPLES DE RÉDACTION
+Style de référence : British Journal of General Practice, Annals of Family Medicine, BJGP, Family Practice.
+Phrase 1 = résultat chiffré. Phrase 2 = design condensé. Jamais ouvrir par la méthode.
+
+Bon exemple 1 :
+  resume : "Le dépistage systématique du diabète de type 2 par HbA1c en médecine générale réduit la mortalité cardiovasculaire à 10 ans de 17 % — HR 0,83 ; IC95% 0,70–0,99 ; ADDITION-Europe, RCT, n=3 057, suivi 10 ans."
+  impact_pratique : "En pratique : proposer HbA1c tous les 3 ans dès 45 ans avec ≥1 facteur de risque (surpoids, ATCD familial, HTA) — ne pas attendre la glycémie à jeun."
+
+Bon exemple 2 :
+  resume : "La déprescription des benzodiazépines avec entretien motivationnel réduit la consommation à 6 mois de 54 % en soins primaires — OR 0,46 ; IC95% 0,33–0,64 ; p<0,001 ; RCT, n=360."
+  impact_pratique : "À retenir : entretien structuré + plan de sevrage progressif (−25 %/2 semaines) suffisent dans 1 cas sur 2 — inutile de référer d'emblée en addictologie sauf dépendance sévère."
+
+Bon exemple 3 :
+  resume : "L'anticoagulation per os directe (rivaroxaban) réduit les AVC de 38 % chez les patients en FA non valvulaire en médecine générale — HR 0,62 ; IC95% 0,50–0,77 ; ROCKET-AF sous-groupe MG, n=4 100."
+  impact_pratique : "En pratique : initier anticoagulation directe dès CHA₂DS₂-VASc ≥2 (H) ou ≥3 (F) — calculer le score à chaque consultation FA, documenter le refus du patient si non-prescrit."
+
 """
 
 _SPECIALTY_ADDENDUM_ORL = """\
@@ -7905,10 +7764,36 @@ SOURCE_CONFIG: dict[str, dict] = {
         "min_llm_score": 5,
     },
     # ── CNOM — déontologie et exercice libéral ────────────────────────────
-    # Contenu institutionnel varié → whitelist médicale + seuil 5
+    # Source exclusivement médicale : toutes les publications sont soit
+    # pertinentes (exercice libéral, déontologie, honoraires) soit
+    # rejetées par le LLM. Pas besoin de whitelist JORF — les titres CNOM
+    # utilisent un vocabulaire institutionnel ("PDSA", "certification",
+    # "Ordre") absent de la whitelist sanitaire.
     # CGU CNOM autorisent RSS avec attribution ✅
     "cnom": {
-        "require_whitelist": True,
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    # ── ameli.fr/medecin — convention médicale, honoraires, CNAM ─────────────
+    # Source mixte : convention médicale / tarifs (reglementaire) ET outils
+    # praticiens (recommandation) → source_type déterminé par LLM.
+    # Pas de whitelist : contenu 100% médecins libéraux, pas de bruit.
+    "ameli_medecin": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    # ── CARMF — retraite et cotisations médecins libéraux ────────────────
+    # Source exclusivement médicale, ~3-5 articles/an.
+    # Contenu : PSS, taux cotisations CARMF, ASV, prévoyance médecins.
+    "carmf": {
+        "require_whitelist": False,
+        "min_llm_score": 5,
+    },
+    # ── CARPIMKO — retraite auxiliaires médicaux libéraux ─────────────────
+    # Source exclusivement para-médicale, ~6-12 articles/an.
+    # Contenu : cotisations, réforme assiette sociale, cumul emploi-retraite.
+    "carpimko": {
+        "require_whitelist": False,
         "min_llm_score": 5,
     },
     # Sources retirées après audit mars 2026 :
@@ -8542,8 +8427,8 @@ def specialty_prefilter(title: str, specialty_slug: str, source: str | None = No
     - Sources de type 'reglementaire' (ANSM, JORF, HAS BO…) — portée nationale multi-spé
     - Titres contenant un marqueur réglementaire explicite (décret, alerte, retrait…)
     """
-    # Bypass : source réglementaire → le LLM tranche la pertinence spécialité
-    if source and get_source_type(source) == "reglementaire":
+    # Bypass : source institutionnelle réglementaire (JORF, ANSM, EMA…) → portée nationale
+    if source and SOURCE_TO_TYPE.get(source) == "reglementaire":
         return True, None
     # Bypass : marqueur réglementaire dans le titre (toutes sources)
     if _REGULATORY_BYPASS_RE.search(title):
@@ -8687,6 +8572,27 @@ NOISY_SOURCES: frozenset[str] = frozenset({
     "spf_beh",   # SPF — articles sans résumé, dont beaucoup non actionnables
                  # (ruralité, sociologie, statistiques) → whitelist médicale obligatoire
 })
+
+# ---------------------------------------------------------------------------
+# bo_social : allowlist positive — seules les instructions/circulaires/notes
+# médicales passent. Les nominations, délégations de signature et compositions
+# de commissions RH sont rejetées même si leur titre contient un terme whitelist.
+# ---------------------------------------------------------------------------
+_BO_SOCIAL_ALLOW_PATTERNS = [
+    re.compile(r"(?i)^instruction\b"),
+    re.compile(r"(?i)^circulaire\b"),
+    re.compile(r"(?i)^note\s+d.information\b"),
+    re.compile(r"(?i)\bDGS/"),        # Direction Générale de la Santé
+    re.compile(r"(?i)\bDSS/"),        # Direction de la Sécurité Sociale
+    re.compile(r"(?i)\bDGOS/"),       # Direction Générale de l'Offre de Soins
+    re.compile(r"(?i)\bDREES/"),      # Direction de la Recherche, Études, Évaluation
+    re.compile(r"(?i)\bDGCS/"),       # Direction Générale de la Cohésion Sociale (médicosocial)
+    re.compile(r"(?i)\bCNAMTS?/"),    # Instructions CNAMTS (convention médicale)
+]
+
+
+def passes_bo_social_allowlist(title: str) -> bool:
+    return any(p.search(title) for p in _BO_SOCIAL_ALLOW_PATTERNS)
 
 # Dispositifs médicaux non-médicamenteux — hors scope de tous les praticiens libéraux.
 # NB : prothèses, implants, robots chirurgicaux, instruments de bloc sont CONSERVÉS

@@ -364,6 +364,72 @@ def admin_run_collect(request: Request):
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
+@app.post("/admin/scheduler/run-collect-regulation")
+def admin_run_collect_regulation(request: Request):
+    """Déclenche manuellement la collecte réglementation uniquement
+    (JORF, KALI, LEGI, CIRCULAIRES, ANSM, BO Social, CNOM, ameli.fr, CARMF, CARPIMKO)."""
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    try:
+        report = job_collect_regulation()
+        return {"ok": True, "job": "collect_regulation", "report": report}
+    except Exception as e:
+        _startup_logger.exception("Erreur admin run-collect-regulation")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
+@app.post("/admin/collect/cnom")
+def admin_collect_cnom(request: Request, days: int = 180):
+    """Scrape le site CNOM (actualités, communiqués, fiches pratiques).
+    Remplace le flux RSS CNOM qui retourne 0 entrées depuis 2026."""
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    try:
+        from app.web_scraper import collect_cnom
+        result = collect_cnom(days=days)
+        return {"ok": True, **result}
+    except Exception as e:
+        _startup_logger.exception("Erreur collect CNOM")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
+@app.post("/admin/collect/ameli-medecin")
+def admin_collect_ameli_medecin(request: Request, days: int = 180):
+    """Scrape ameli.fr/medecin/actualites (convention médicale, téléconsultation, CCAM…)."""
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    try:
+        from app.web_scraper import collect_ameli_medecin
+        result = collect_ameli_medecin(days=days)
+        return {"ok": True, **result}
+    except Exception as e:
+        _startup_logger.exception("Erreur collect ameli.fr médecin")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
+@app.post("/admin/collect/carmf")
+def admin_collect_carmf(request: Request, days: int = 180):
+    """Scrape le site CARMF (PSS, cotisations, ASV, retraite médecins libéraux)."""
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    try:
+        from app.web_scraper import collect_carmf
+        result = collect_carmf(days=days)
+        return {"ok": True, **result}
+    except Exception as e:
+        _startup_logger.exception("Erreur collect CARMF")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
+@app.post("/admin/collect/carpimko")
+def admin_collect_carpimko(request: Request, days: int = 180):
+    """Scrape le site CARPIMKO (cotisations, retraite auxiliaires médicaux libéraux)."""
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    try:
+        from app.web_scraper import collect_carpimko
+        result = collect_carpimko(days=days)
+        return {"ok": True, **result}
+    except Exception as e:
+        _startup_logger.exception("Erreur collect CARPIMKO")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
 @app.post("/admin/scheduler/run-send")
 def admin_run_send(request: Request):
     """Déclenche manuellement l'envoi des newsletters réglementation + recommandations."""

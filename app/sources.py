@@ -19,7 +19,9 @@ Champs communs sur chaque feed :
   url          : URL du flux RSS
   label        : libellé lisible
   source       : slug unique (clé dans SOURCE_TO_TYPE + SOURCE_SPECIALTY_HINTS)
-  source_type  : "reglementaire" | "recommandation" | "innovation" | "therapeutique"
+  source_type  : "reglementaire" | "recommandation" | "innovation" — indicatif uniquement.
+                 Pour les sources institutionnelles (JORF, ANSM…) : déterministe via SOURCE_TO_TYPE.
+                 Pour les journaux et sociétés savantes : déterminé par le LLM depuis le contenu.
   audience     : ["medecins"] | ["pharmaciens"] | ["medecins", "pharmaciens"] | …
   specialty_hint: slug spécialité (optionnel — absent = LLM route librement)
   min_score_hint: seuil LLM min (optionnel — absent = défaut 5)
@@ -54,7 +56,7 @@ FR_REGULATORY_FEEDS: list[dict] = [
         "url": "https://www.has-sante.fr/feed/Rss2.jsp?id=p_3081449",
         "label": "HAS — Commission de la Transparence (avis médicaments)",
         "source": "has_ct",
-        "source_type": "therapeutique",
+        "source_type": "recommandation",  # avis CT = recommandation (type déterminé par LLM)
         "audience": ["medecins", "pharmaciens"],
         "specialty_hint": "tous",
     },
@@ -1447,15 +1449,16 @@ CLINICAL_PRESS_FEEDS: list[dict] = [
     },
     # Double spécialité vasculaire + cardiologie interventionnelle.
     # specialty_hint absent → LLM route par contenu.
-    {
-        "url": "https://www.tctmd.com/feed",
-        "label": "TCTMD — Cardiovascular & Endovascular News (vasculaire + cardiac interventional)",
-        "source": "tctmd",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",
-        "min_score_hint": 8,
-    },
+    # DÉSACTIVÉ — tctmd.com retourne 403 pour tous les user-agents (anti-bot, 2025).
+    # {
+    #     "url": "https://www.tctmd.com/feed",
+    #     "label": "TCTMD — Cardiovascular & Endovascular News (vasculaire + cardiac interventional)",
+    #     "source": "tctmd",
+    #     "source_type": "innovation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "tous",
+    #     "min_score_hint": 8,
+    # },
     {
         "url": "https://www.evtoday.com/rss",
         "label": "Endovascular Today — Peripheral & Endovascular",
