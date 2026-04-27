@@ -351,6 +351,21 @@ async def admin_migrate(request: Request):
 # Routes scheduler (déclenchement manuel)
 # ======================
 
+@app.get("/admin/piste/debug")
+def admin_piste_debug(request: Request):
+    """Debug : vérifie les env vars PISTE vues par le process Render."""
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    import os
+    cid = os.environ.get("PISTE_CLIENT_ID", "")
+    csecret = os.environ.get("PISTE_CLIENT_SECRET", "")
+    env = os.environ.get("PISTE_ENV", "")
+    return {
+        "PISTE_CLIENT_ID": f"{cid[:4]}...{cid[-4:]}" if len(cid) > 8 else f"({'vide' if not cid else 'court:'+str(len(cid))})",
+        "PISTE_CLIENT_SECRET": f"{csecret[:4]}...{csecret[-4:]}" if len(csecret) > 8 else f"({'vide' if not csecret else 'court:'+str(len(csecret))})",
+        "PISTE_ENV": env or "(vide)",
+    }
+
+
 @app.post("/admin/scheduler/run-collect")
 def admin_run_collect(request: Request):
     """Déclenche manuellement collecte réglementation + recommandations."""
