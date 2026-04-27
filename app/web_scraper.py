@@ -715,6 +715,15 @@ def collect_cnom(days: int = 180, max_pages: int = 5) -> dict[str, Any]:
 
 _AMELI_BASE = "https://www.ameli.fr"
 _AMELI_LISTING = f"{_AMELI_BASE}/medecin/actualites"
+_AMELI_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Referer": "https://www.ameli.fr/",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+}
 
 # Regex date ameli.fr : format dd/mm/yyyy
 _AMELI_DATE_RE = re.compile(r"^(\d{2})/(\d{2})/(\d{4})$")
@@ -797,7 +806,7 @@ def collect_ameli_medecin(days: int = 180, max_pages: int = 20) -> dict[str, Any
 
     seen = inserted = deduped = skipped = too_old = 0
 
-    with httpx.Client(follow_redirects=True, timeout=20, headers=_HEADERS) as client:
+    with httpx.Client(follow_redirects=True, timeout=20, headers=_AMELI_HEADERS) as client:
         with get_conn() as conn:
             with conn.cursor() as cur:
                 for page in range(max_pages):

@@ -311,37 +311,56 @@ def job_collect_regulation() -> None:
         logger.error("JORF remboursement échoué : %s", e)
         report["jorf_remboursement"] = {"error": str(e)}
 
-    # ── 2. KALI / LEGI / CIRCULAIRES ─────────────────────────────
+    # ── 2. KALI / CIRCULAIRES ─────────────────────────────────────
+    # LEGI retiré : le fond LEGI ne supporte pas le endpoint /search (400 systématique).
+    # KALI  : pas de filtre champs côté PISTE (typeRecherche EXACTE non supporté sur KALI).
+    #         Filtre santé appliqué en Python sur le titre après récupération.
+    # CIRC  : pas de filtre DATE_PUBLICATION côté PISTE (500 serveur). Filtrage date en Python
+    #         sur titles[0].startDate retourné par l'API.
     try:
-        from app.piste_routes import EXTRA_FONDS
+        from app.piste_routes import _piste_call as pc, _extract_list as el, _parse_date10 as pd10, _sha256_hex as sh, _json_canonical_bytes as jcb
         from app.db import get_conn as _get_conn
         from app.llm_analysis import pre_filter_candidate as _pfc
+        import json as _json
+        import re as _re
+
+        FONDS_CONFIG = {
+            "KALI": "piste_kali",
+            "CIRC": "piste_circ",
+        }
+        # KALI : filtre Python sur titre — conventions collectives du secteur santé uniquement
+        _KALI_RE = _re.compile(
+            r"(?i)\b(m[eé]decin|pharmacien|infirmier|sage.femme|auxiliaire.m[eé]dical|"
+            r"cabinet.m[eé]dical|clinique|chirurgien|dentiste|kin[eé]sith[eé]rapeute|"
+            r"orthophoniste|professionnel.de.sant[eé])\b"
+        )
+
+        insert_sql = """
+        INSERT INTO candidates (source, official_url, official_date, title_raw, content_raw, raw_json, raw_sha256, dedupe_key, status)
+        VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, 'NEW') ON CONFLICT (dedupe_key) DO NOTHING;
+        """
         extra_report: dict[str, Any] = {}
-        for fond, src in EXTRA_FONDS.items():
+
+        for fond, src in FONDS_CONFIG.items():
             try:
                 today_d = date.today()
                 start_d = today_d - timedelta(days=120)
-                from app.piste_routes import _piste_call as pc, _extract_list as el, _parse_date10 as pd10, _sha256_hex as sh, _json_canonical_bytes as jcb, _build_titre_champs as _btc
                 ins = dup = s = filtered = 0
-                insert_sql = """
-                INSERT INTO candidates (source, official_url, official_date, title_raw, content_raw, raw_json, raw_sha256, dedupe_key, status)
-                VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, 'NEW') ON CONFLICT (dedupe_key) DO NOTHING;
-                """
-                # KALI : filtre titre sur secteur santé pour éviter les conventions non-médicales
-                # (BTP, hôtellerie, transports…). La convention médicale UNCAM est dans JORF,
-                # pas dans KALI — seules les conventions collectives des salariés de santé y figurent.
-                KALI_HEALTH_KEYWORDS = [
-                    "médecin", "professionnel de santé", "pharmacien", "infirmier",
-                    "sage-femme", "auxiliaire médical", "cabinet médical", "clinique",
-                    "chirurgien", "dentiste", "kinésithérapeute", "orthophoniste",
-                ]
-                extra_champs = _btc(KALI_HEALTH_KEYWORDS) if fond == "KALI" else None
+
                 with _get_conn() as conn:
                     with conn.cursor() as cur:
                         for pg in range(1, 21):
-                            recherche: dict = {"pageNumber": pg, "pageSize": 50, "operateur": "ET", "typePagination": "DEFAUT", "filtres": [{"facette": "DATE_PUBLICATION", "dates": {"start": start_d.strftime("%Y-%m-%dT00:00:00.000+0000"), "end": today_d.strftime("%Y-%m-%dT23:59:59.000+0000")}}]}
-                            if extra_champs:
-                                recherche["champs"] = extra_champs
+                            # KALI : filtre DATE_PUBLICATION côté PISTE (supporté)
+                            # CIRC : pas de filtre date côté PISTE, on filtre en Python
+                            recherche: dict = {
+                                "pageNumber": pg, "pageSize": 50,
+                                "operateur": "ET", "typePagination": "DEFAUT",
+                            }
+                            if fond == "KALI":
+                                recherche["filtres"] = [{"facette": "DATE_PUBLICATION", "dates": {
+                                    "start": start_d.strftime("%Y-%m-%dT00:00:00.000+0000"),
+                                    "end": today_d.strftime("%Y-%m-%dT23:59:59.000+0000"),
+                                }}]
                             data = pc("/search", {"fond": fond, "recherche": recherche})
                             items = el(data) if isinstance(data, dict) else []
                             if not items:
@@ -353,22 +372,32 @@ def job_collect_regulation() -> None:
                                 titles = it.get("titles") if isinstance(it.get("titles"), list) else []
                                 t0 = titles[0] if titles and isinstance(titles[0], dict) else {}
                                 text_id = t0.get("cid") or it.get("id") or ""
-                                title = t0.get("title") or "(no title)"
-                                pub_s = pd10(it.get("datePublication")) or pd10(it.get("date"))
+                                title = (t0.get("title") or "(no title)").strip()
+                                # Date : datePublication pour KALI, startDate dans t0 pour CIRC
+                                pub_s = (pd10(it.get("datePublication")) or pd10(it.get("date"))
+                                         or pd10(t0.get("startDate")))
                                 if not pub_s:
                                     continue
                                 pub_d_val = date.fromisoformat(pub_s)
                                 if not (start_d <= pub_d_val <= today_d):
                                     continue
+                                # KALI : filtre Python secteur santé
+                                if fond == "KALI" and not _KALI_RE.search(title):
+                                    filtered += 1
+                                    continue
                                 # Pré-filtre heuristique (nominations, événements…)
-                                keep, _reason = _pfc(title.strip(), source=src)
+                                keep, _reason = _pfc(title, source=src)
                                 if not keep:
                                     filtered += 1
                                     continue
-                                import json as _json
                                 dk = sh(f"{src}|{text_id}".encode())
                                 rs = sh(jcb(it))
-                                cur.execute(insert_sql, (src, f"https://www.legifrance.gouv.fr/{fond.lower()}/id/{text_id}", pub_d_val, title.strip(), None, _json.dumps(it, ensure_ascii=False), rs, dk))
+                                cur.execute(insert_sql, (
+                                    src,
+                                    f"https://www.legifrance.gouv.fr/{fond.lower()}/id/{text_id}",
+                                    pub_d_val, title, None,
+                                    _json.dumps(it, ensure_ascii=False), rs, dk,
+                                ))
                                 if cur.rowcount == 1:
                                     ins += 1
                                 else:
@@ -379,6 +408,7 @@ def job_collect_regulation() -> None:
             except Exception as e2:
                 logger.error("%s échoué : %s", fond, e2)
                 extra_report[fond] = {"error": str(e2)}
+
         report["piste_extra"] = extra_report
     except Exception as e:
         logger.error("PISTE extra fonds échoués : %s", e)
