@@ -32,8 +32,8 @@ def _get_piste_endpoints() -> tuple[str, str]:
 
 
 def get_piste_token() -> str:
-    client_id = os.environ.get("PISTE_CLIENT_ID")
-    client_secret = os.environ.get("PISTE_CLIENT_SECRET")
+    client_id = os.environ.get("PISTE_CLIENT_ID") or os.environ.get("LF_CLIENT_ID")
+    client_secret = os.environ.get("PISTE_CLIENT_SECRET") or os.environ.get("LF_CLIENT_SECRET")
 
     if not client_id or not client_secret:
         raise RuntimeError("Missing PISTE_CLIENT_ID / PISTE_CLIENT_SECRET")
