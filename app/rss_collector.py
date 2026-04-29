@@ -42,6 +42,41 @@ from app.has_scraper import scrape_has_page, build_enriched_content
 # has_ct   → SMR/ASMR/indication/population cible (avis médicaments CT)
 _HAS_ENRICHABLE_SOURCES = {"has_rbp", "has_ct", "has_dm"}
 
+# Sources RSS de journaux médicaux dont le flux ne contient que métadonnées.
+# Pour chacune, on interroge l'API PubMed par titre pour récupérer l'abstract.
+# ScienceDirect bloque les scrapers (403) — PubMed est la seule voie fiable.
+_JOURNAL_ENRICHABLE_SOURCES = {"ann_thorac_surg_rss", "jto_rss", "lung_cancer_rss"}
+
+
+def _fetch_pubmed_abstract_by_title(title: str) -> str | None:
+    """
+    Cherche un article PubMed par titre et retourne son abstract complet.
+    Utilisé pour enrichir les RSS de journaux dont le flux ne contient
+    que les métadonnées (auteurs, volume, numéro) sans abstract.
+    Retourne None si l'article n'est pas encore indexé (délai NLM 2-6 semaines).
+    """
+    try:
+        search = httpx.get(
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
+            params={"db": "pubmed", "term": title[:120], "retmode": "json", "retmax": 1},
+            timeout=10,
+        )
+        ids = search.json().get("esearchresult", {}).get("idlist", [])
+        if not ids:
+            return None
+        fetch = httpx.get(
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+            params={"db": "pubmed", "id": ids[0], "retmode": "text", "rettype": "abstract"},
+            timeout=10,
+        )
+        text = fetch.text.strip()
+        # Garde uniquement si l'abstract est substantiel (pas un éditorial sans abstract)
+        if any(kw in text for kw in ("BACKGROUND", "OBJECTIVE", "METHODS", "RESULTS", "INTRODUCTION")):
+            return text[:3000]
+        return None
+    except Exception:
+        return None
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -217,6 +252,19 @@ def collect_feed(feed_config: dict, days: int = 120) -> dict[str, int]:
                         enriched_content = build_enriched_content(summary, scraped)
                     except Exception as e:
                         logger.warning("[%s] has_scraper error for %s : %s", source, entry_url, e)
+
+                # ── Enrichissement journaux : lookup PubMed par titre ────────
+                # Les flux RSS ScienceDirect (Ann Thorac Surg, JTO, Lung Cancer)
+                # ne contiennent que les métadonnées. On interroge l'API eutils
+                # PubMed pour retrouver l'abstract complet. Articles non encore
+                # indexés (délai NLM 2-6 semaines) restent avec métadonnées seules.
+                if source in _JOURNAL_ENRICHABLE_SOURCES:
+                    abstract = _fetch_pubmed_abstract_by_title(title)
+                    if abstract:
+                        enriched_content = abstract
+                        logger.debug("[%s] pubmed_abstract OK '%s'", source, title[:60])
+                    else:
+                        logger.debug("[%s] pubmed_abstract non indexé '%s'", source, title[:60])
 
                 raw_payload = {
                     "id": entry_id,
