@@ -77,6 +77,66 @@ def _fetch_pubmed_abstract_by_title(title: str) -> str | None:
     except Exception:
         return None
 
+
+def _fetch_abstract_crossref_s2(title: str) -> str | None:
+    """
+    Fallback 1 quand PubMed n'a pas encore indexé l'article (délai NLM 2-6 semaines).
+    CrossRef (titre → DOI) → Semantic Scholar (DOI → abstract).
+    """
+    try:
+        r = httpx.get(
+            "https://api.crossref.org/works",
+            params={"query.title": title[:100], "rows": 1},
+            headers={"User-Agent": "MedNewsBot/1.0 (contact@mednews.fr)"},
+            timeout=10,
+        )
+        items = r.json().get("message", {}).get("items", [])
+        doi = items[0].get("DOI") if items else None
+        if not doi:
+            return None
+        r2 = httpx.get(
+            f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}",
+            params={"fields": "abstract"},
+            timeout=10,
+        )
+        if r2.status_code != 200:
+            return None
+        abstract = r2.json().get("abstract")
+        if abstract and len(abstract) > 100:
+            return abstract[:3000]
+        return None
+    except Exception:
+        return None
+
+
+def _fetch_abstract_openalex(title: str) -> str | None:
+    """
+    Fallback 2 : OpenAlex (~250M articles, bonne couverture articles récents).
+    L'abstract est stocké sous forme d'index inversé — on le reconstruit.
+    """
+    try:
+        r = httpx.get(
+            "https://api.openalex.org/works",
+            params={"search": title[:100], "per-page": 1, "select": "abstract_inverted_index"},
+            headers={"User-Agent": "MedNewsBot/1.0 (contact@mednews.fr)"},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            return None
+        results = r.json().get("results", [])
+        if not results:
+            return None
+        inv = results[0].get("abstract_inverted_index")
+        if not inv:
+            return None
+        words = sorted([(pos, word) for word, positions in inv.items() for pos in positions])
+        abstract = " ".join(w for _, w in words)
+        if abstract and len(abstract) > 100:
+            return abstract[:3000]
+        return None
+    except Exception:
+        return None
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -264,7 +324,17 @@ def collect_feed(feed_config: dict, days: int = 120) -> dict[str, int]:
                         enriched_content = abstract
                         logger.debug("[%s] pubmed_abstract OK '%s'", source, title[:60])
                     else:
-                        logger.debug("[%s] pubmed_abstract non indexé '%s'", source, title[:60])
+                        abstract = _fetch_abstract_crossref_s2(title)
+                        if abstract:
+                            enriched_content = abstract
+                            logger.debug("[%s] crossref_s2 OK '%s'", source, title[:60])
+                        else:
+                            abstract = _fetch_abstract_openalex(title)
+                            if abstract:
+                                enriched_content = abstract
+                                logger.debug("[%s] openalex OK '%s'", source, title[:60])
+                            else:
+                                logger.debug("[%s] abstract non trouvé '%s'", source, title[:60])
 
                 raw_payload = {
                     "id": entry_id,
