@@ -287,8 +287,8 @@ PUBMED_SOURCES: list[dict] = [
     # Seuil relevé à 7 pour ne retenir que les études à impact clinique réel.
     {
         "source": "pubmed_ann_thorac_surg",
-        "journal_term": f'"Ann Thorac Surg"[Journal] AND {_PT_FILTER}',
-        "label": "Annals of Thoracic Surgery — RCTs & méta-analyses",
+        "journal_term": f'"Ann Thorac Surg"[Journal] AND {_PT_OR_TITLE}',
+        "label": "Annals of Thoracic Surgery — RCTs, méta-analyses & guidelines",
         "source_type": "innovation",
         # specialty_hint absent → prompt générique (cardiaque + thoracique selon contenu)
         "min_score_hint": 7,
@@ -515,7 +515,7 @@ PUBMED_SOURCES: list[dict] = [
     # Seuil 6 pour les autres : volume suffisant, filtre addendum strict.
     {
         "source": "pubmed_jto",
-        "journal_term": f'"J Thorac Oncol"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Thorac Oncol"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Thoracic Oncology (JTO) — IASLC",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-thoracique",
@@ -523,7 +523,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_lung_cancer_thorac",
-        "journal_term": f'"Lung Cancer"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Lung Cancer"[Journal] AND {_PT_OR_TITLE}',
         "label": "Lung Cancer — IASLC affiliated (NSCLC résécable + systémique)",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-thoracique",
