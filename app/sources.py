@@ -439,7 +439,7 @@ FR_SOCIETIES_FEEDS: list[dict] = [
         "source": "sfm_microbiologie",
         "source_type": "recommandation",
         "audience": ["medecins"],
-        "specialty_hint": "infectiologie",
+        "specialty_hint": ["infectiologie", "biologiste"],
     },
 
     # ── Chirurgie vasculaire ───────────────────────────────────────────────

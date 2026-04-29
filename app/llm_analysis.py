@@ -188,10 +188,14 @@ lettres, errata, résultats préliminaires de phase 1-2 sans implication cliniqu
 (ex. nouvelle thérapie supérieure au standard, abandon d'un traitement établi) ;
   8+  : réservé aux ruptures majeures de pratique (rare pour des publications RSS \
 avant recommandation officielle).
-→ RÉDACTION pour articles de recherche (ton confraternel, pas directif) :
-  resume : "[Thérapie/technique/biomarqueur] — résultat principal de [type d'essai] \
-(N=[effectif]) chez [population] : [résultat chiffré si disponible]. \
-[Ce que ça confirme, nuance ou remet en question vs pratique actuelle]."
+→ RÉDACTION pour articles de recherche (style journal médical spécialisé — JACC, NEJM, \
+European Heart Journal) :
+  resume : "Phrase 1 : énonce le résultat clinique principal en ouverture — le chiffre \
+clé (réduction relative/absolue, HR/RR/OR + IC95% + p) est intégré en incise, \
+jamais en tête de phrase. Exemple : 'La dapagliflozine réduit de 18 % le risque \
+d'aggravation de l'IC dans l'HFpEF/HFmrEF (HR 0,82 ; IC95% 0,73–0,92 ; p<0,001).' \
+Phrase 2 : design en 1 ligne (acronyme si connu, type étude, N, population, durée). \
+Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude."
   impact_pratique : "À retenir : [implication clinique en langage naturel — \
 ce que le médecin gagne à savoir, sans injonction]. \
 Si résultats préliminaires : noter 'À suivre avant d'intégrer en pratique'."
@@ -1148,9 +1152,10 @@ JSON attendu (strict, pas de markdown) :
     "date_entree_en_vigueur": "<YYYY-MM-DD — date d'application effective, différente de date_publication si précisée dans le texte>"
   }},
   "lecture_json": {{
-    "points_cles": ["<bullet 1>", "..."],
-    "texte_long": "<~150 mots>",
-    "references": ["<NOR, ref légale, numéro AMM...>"]
+    "points_cles": ["<bullet 1 — fait chiffré ou décision clé>", "<bullet 2>", "<bullet 3>"],
+    // obligatoire : 3 bullets minimum, 5 maximum — jamais vide ni tableau à un seul élément
+    "texte_long": "<~200 mots — développement distinct du resume : contexte de l'étude, détail des résultats secondaires, comparaison au standard actuel, limites principales>",
+    "references": ["<NOR, ref légale, numéro AMM, PMID...>"]
   }}{evidence_block}
 }}
 """
@@ -1561,6 +1566,10 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_acvd":                  "cardiologie",
     "pubmed_esc_guidelines_cardio": "cardiologie",
     "pubmed_ehj_pharmacother":      "cardiologie",
+    "pubmed_jacc_intv":             "cardiologie",
+    "pubmed_eurointervention":      "cardiologie",
+    "pubmed_circ_cardiovasc_intv":  "cardiologie",
+    "pubmed_jacc_img":              "cardiologie",
     # ── Biologie médicale ─────────────────────────────────────────────────────
     "eflm_guidelines":              "biologiste",   # scraping EFLM (déjà SOURCE_TO_TYPE)
     "pubmed_clin_chem":             "biologiste",
@@ -2124,6 +2133,8 @@ thrombolyse CDT, EKOS, pontage infrainguinal, veine grande saphène (VGS), \
 prothèse PTFE / Dacron, endarterectomie carotide / rénale.
 
 EXEMPLES DE RÉDACTION (style EJVES / JVS / Vascular Specialist — format cible) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai clinique (innovation, presse ou académique) :
   titre_court : "DCB vs PTA pour lésions FP : CHALLENGER DCB 12 mois"
@@ -2211,6 +2222,8 @@ KCCQ (Kansas City Cardiomyopathy Questionnaire — QdV), STS score / EuroSCORE I
 Heart Team (décision interdisciplinaire chirurgien + cardiologue interventionnel).
 
 EXEMPLES DE RÉDACTION (style JTCVS / EJCTS / Arch Cardiovasc Dis — format cible) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai clinique TAVI (innovation) :
   titre_court : "TAVI vs SAVR risque faible : PARTNER 3 à 5 ans"
@@ -2308,6 +2321,8 @@ TRAM / DIEP bilatéral, flap delay, supercharge, perforasome, SCIP flap, MSCT \
 (mapping préopératoire perforateurs), BREAST-Q (patient-reported outcomes reconstruction).
 
 EXEMPLES DE RÉDACTION (style PRS / JPRAS / ACPE — format cible) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai clinique reconstruction mammaire :
   titre_court : "DIEP vs implant prépectoral : RCT satisfaction à 2 ans"
@@ -2415,6 +2430,8 @@ TW (tumeur de Wilms) stade I-V, ERACS (enhanced recovery after children's surger
 réhabilitation améliorée chirurgie pédiatrique).
 
 EXEMPLES DE RÉDACTION (style JPS / EJPS / PSI — format cible) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai clinique laparoscopie vs chirurgie ouverte :
   titre_court : "Appendicite AANC pédiatrique : cœlio vs ouverte — RCT 2 ans"
@@ -2519,6 +2536,8 @@ statut épileptique, déshydratation (score Gorelick), SRO (soluté de réhydrat
 prématurité (AG, PC à la naissance), courbes INTERGROWTH-21st.
 
 EXEMPLES DE RÉDACTION (style Pediatrics AAP / Archives of Disease in Childhood) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 RCT vaccin / prévention :
   titre_court : "Nirsévimab : protection RSV nourrisson 77 % — MELODY N=1 490"
@@ -2658,6 +2677,8 @@ Note : les 5 journaux flagship (Anesthesiology, BJA, Anesth&Analg, Anaesthesia, 
 utilisent _PT_OR_TITLE pour capter les articles récents non encore tagués NLM.
 
 EXEMPLES DE RÉDACTION (style Anesthesiology / BJA / Intensive Care Medicine / \
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 Annales Françaises d'Anesthésie et de Réanimation) :
 
 RCT technique anesthésique :
@@ -2810,6 +2831,8 @@ valeur critique (panic value — délai notification obligatoire), \
 pré-analytique (délai centrifugation, tube sec/EDTA/citrate, conservation).
 
 EXEMPLES DE RÉDACTION (style Clinical Chemistry / CCLM / \
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 Annales de Biologie Clinique / Journal de Biologie Médicale) :
 
 Nouveau seuil décisionnel validé :
@@ -2969,16 +2992,35 @@ TAVI (remplacement valvulaire aortique transcathéter — côté cardiologue Hea
 stress écho, échographie de contraste, GLS (global longitudinal strain).
 
 EXEMPLES DE RÉDACTION (style European Heart Journal / JACC / \
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 Archives de Maladies du Cœur et des Vaisseaux / La Revue du Praticien Cardiologie) :
 
 RCT nouvelle indication IC :
   titre_court : "Dapagliflozine dans l'IC à FEVG préservée : DELIVER confirme le bénéfice"
-  resume : "DELIVER (RCT, N=6 263, HFmrEF/HFpEF — FEVG > 40 %, NT-proBNP élevé, \
-suivi médian 2,3 ans) : dapagliflozine 10 mg/j réduit le critère composite \
-aggravation IC ou décès CV de 18 % vs placebo (HR 0,82 ; IC95% 0,73–0,92 ; \
-p < 0,001). Bénéfice homogène quelle que soit la FEVG (40-60 % et > 60 %). \
-Hospitalisations IC réduites de 23 % ; mortalité CV seule non significative \
-(HR 0,88 ; IC95% 0,74–1,05). Pas d'excès d'amputation ni de DKA."
+  resume : "La dapagliflozine réduit de 18 % le risque d'aggravation de l'IC ou de \
+décès CV dans l'HFpEF/HFmrEF (HR 0,82 ; IC95% 0,73–0,92 ; p<0,001) — DELIVER, \
+RCT multicentrique, N=6 263, FEVG >40 %, NT-proBNP élevé, suivi médian 2,3 ans. \
+Le bénéfice est homogène quelle que soit la FEVG (40–60 % et >60 %) ; les \
+hospitalisations pour IC sont réduites de 23 % ; la mortalité CV seule n'atteint \
+pas la significativité (HR 0,88 ; IC95% 0,74–1,05). Pas d'excès d'amputation ni de DKA."
+  points_cles : [
+    "Réduction de 18 % du critère composite aggravation IC/décès CV (HR 0,82 ; p<0,001) — premier iSGLT2 à démontrer ce bénéfice dans l'HFpEF",
+    "Hospitalisations pour IC réduites de 23 % (HR 0,77 ; IC95% 0,67–0,89)",
+    "Bénéfice homogène quelle que soit la FEVG (sous-groupes 40–60 % et >60 %)",
+    "Pas de signal de sécurité : amputation, fracture, DKA comparables au placebo",
+    "Efficacité indépendante du statut diabétique (interaction non significative)"
+  ]
+  texte_long : "DELIVER s'inscrit dans la continuité d'EMPEROR-Preserved (empagliflozine, \
+HR 0,79 ; p<0,001) et constitue la deuxième démonstration de classe confirmant le \
+bénéfice des iSGLT2 dans l'HFpEF. La population incluse est plus large qu'EMPEROR-Preserved \
+(FEVG >40 % sans borne supérieure), ce qui renforce la généralisabilité. Les résultats \
+secondaires — réduction du score de symptômes KCCQ (+2,5 points vs placebo, p<0,001) et \
+de la mortalité toutes causes (HR 0,90 ; IC95% 0,78–1,03, NS) — indiquent un bénéfice \
+fonctionnel cohérent sans atteindre la significativité sur la mortalité isolée. Limite \
+principale : l'étude n'était pas dimensionnée pour la mortalité CV seule. En pratique \
+française, la dapagliflozine dispose d'une AMM dans l'IC indépendamment de la FEVG \
+depuis 2023 ; DELIVER fournit la base de données pour le remboursement dans l'HFpEF."
   impact_pratique : "En pratique : la dapagliflozine est désormais indiquée dans \
 l'IC à FEVG préservée — à initier dès le diagnostic, indépendamment du diabète, \
 en complément du traitement diurétique."
@@ -3136,6 +3178,8 @@ thoracoscore / STS score (risque mortalité résection pulmonaire), \
 SBRT / SABR (stéréotaxie — inopérables, comparaison chirurgie).
 
 EXEMPLES DE RÉDACTION (style JTO / EJCTS / Annals of Thoracic Surgery — format cible) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai clinique résection pulmonaire :
   titre_court : "Segmentectomie non-inférieure à la lobectomie NSCLC ≤ 2 cm (CALGB 140503)"
@@ -3282,6 +3326,8 @@ métal-métal (abandon — toxicité chrome-cobalt), cupule presse-fit / ciment�
 tige sans ciment / cimentée, implant 3D / trabéculaire (titane poreux).
 
 EXEMPLES DE RÉDACTION (style JBJS / Bone & Joint J / OTSR — format cible) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai clinique arthroplastie :
   titre_court : "PTH sans ciment vs cimentée : résultats à 10 ans (NJR 120 000 PTH)"
@@ -3470,6 +3516,8 @@ ganglion sentinelle (SLNB), \
 TIL (tumour-infiltrating lymphocytes — thérapie adoptive mélanome).
 
 EXEMPLES DE RÉDACTION (style JAAD / BJD / JEADV / La Revue du Praticien Dermatologie) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 RCT biologique DA (head-to-head) :
   titre_court : "Upadacitinib vs dupilumab dans la DA sévère : Heads Up à 24 semaines"
@@ -3703,6 +3751,8 @@ ADT (androgen deprivation therapy — cancer prostate, ostéoporose masculine), 
 177Lu-DOTATATE (NETSPOT — thérapie PRRT phéo/paragangliome).
 
 EXEMPLES DE RÉDACTION (style Diabetes Care / Lancet Diabetes Endocrinol / JCEM / \
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 Ann Endocrinol — résultat d'abord, chiffres en contexte) :
 
 RCT iSGLT2 insuffisance cardiaque à FEVG préservée :
@@ -3964,6 +4014,8 @@ CADe/CADx (Computer-Aided Detection/Characterization — IA coloscopie), \
 RFA (radiofréquence ablation — Barrett).
 
 EXEMPLES DE RÉDACTION (style Gut / Gastroenterology / J Hepatol / Lancet GH — \
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 résultat d'abord, chiffres en contexte) :
 
 RCT biothérapie MICI — mirikizumab CU (LUCENT) :
@@ -4188,6 +4240,8 @@ EHPAD (établissement hébergement personnes âgées dépendantes), \
 HAD (hospitalisation à domicile), SSR (soins de suite et réadaptation), USLD.
 
 EXEMPLES DE RÉDACTION (style Age & Ageing / JAGS / Lancet Healthy Longevity / \
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 Alzheimer's & Dementia — résultat fonctionnel d'abord, impact vie quotidienne) :
 
 Essai pivot anti-amyloïde — lecanemab :
@@ -5844,6 +5898,8 @@ disponibilité des biothérapies (RTU, ATU/AAP si pertinent), réseau filières 
 maladies rares (FRRM), prise en charge ALD."
 
 EXEMPLES DE RÉDACTION (style Medicine / Lancet / JAMA Internal Medicine / Revue de Médecine Interne — format cible) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Lupus systémique — biothérapie :
   titre_court : "BLISS-52/76 pool : belimumab réduit le taux de poussées sévères de 36 % vs placebo"
@@ -6095,6 +6151,8 @@ UPPP (Uvulo-Palato-Pharyngoplastie), stimulation nerf hypoglosse, \
 DISE (Drug-Induced Sleep Endoscopy — exploration sous sédation).
 
 EXEMPLES DE RÉDACTION (style JAMA Otolaryngology / Otolaryngology HNS / Oral Oncology) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Biothérapie rhinologie :
   titre_court : "Dupilumab polypose réfractaire : réduction volume et olfaction (LIBERTY NP)"
@@ -6225,6 +6283,8 @@ NORB (Névrite Optique Rétrobulbaire), NOIA (Neuropathie Optique Ischémique \
 uvéite antérieure / intermédiaire / postérieure / panuvéite (classification SUN).
 
 EXEMPLES DE RÉDACTION (style Ophthalmology / JAMA Ophthalmology / EURETINA) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai anti-VEGF (DMLA) :
   titre_court : "Faricimab vs aflibercept DMLA humide : intervalles 16 sem. (TENAYA/LUCERNE)"
@@ -6350,6 +6410,8 @@ CIPN (Chimio-Induced Peripheral Neuropathy — neuropathie périphérique), \
 CINV (Chimio-Induced Nausea and Vomiting — échelle MASCC/ASCO).
 
 EXEMPLES DE RÉDACTION (style JCO / Annals of Oncology / Lancet Oncology) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai pivot (nouvelle thérapie ciblée) :
   titre_court : "T-DXd vs chimio : HER2-low sein métastatique (DESTINY-Breast04)"
@@ -6526,6 +6588,8 @@ SFR (stone-free rate — taux de vacuité lithiasique), \
 AMS-800 (sphincter artificiel urinaire).
 
 EXEMPLES DE RÉDACTION (style European Urology / J Urology / Eur Urol Oncol) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai pivot — cancer prostate métastatique (résultat centré) :
   titre_court : "177Lu-PSMA-617 vs cabazitaxel : OS supérieure en mCRPC post-AR \
@@ -6697,6 +6761,8 @@ gardasil 9 (nonavalent — génotypes 6, 11, 16, 18, 31, 33, 45, 52, 58), \
 Décret compétences SF (art. R.4127-318 CSP — périmètre prescription autorisé).
 
 EXEMPLES DE RÉDACTION (style BJOG / Midwifery / Birth) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai randomisé — prévention HPP (résultat centré) :
   titre_court : "Acide tranexamique précoce dans HPP : réduction mortalité maternelle \
@@ -6858,6 +6924,8 @@ tériparatide (PTH recombinante — anabolisant 24 mois), \
 NGF (nerve growth factor — tanézumab anti-NGF dans arthrose sévère).
 
 EXEMPLES DE RÉDACTION (style ARD / Arthritis & Rheumatology / RMD Open) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai pivot — sécurité JAK inhibiteurs (résultat en tête) :
   titre_court : "ORAL Surveillance : tofacitinib — surrisque MACE et cancers vs anti-TNF \
@@ -7017,6 +7085,8 @@ ASN (Autorité de Sûreté Nucléaire — radioprotection FR), \
 Dp (dose personnelle — dosimétrie opérateur RI).
 
 EXEMPLES DE RÉDACTION (style Radiology / European Radiology / J Nucl Med) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai randomisé — technique interventionnelle (résultat en tête) :
   titre_court : "Ablation micro-ondes vs chirurgie : HCC < 3 cm — survie identique à 3 ans"
@@ -7176,6 +7246,8 @@ BED (Binge Eating Disorder), \
 STOPP/START (critères iatrogénie gériatrique — interactions psychotropes).
 
 EXEMPLES DE RÉDACTION (style JAMA Psychiatry / Lancet Psychiatry / Am J Psychiatry) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai pivot — nouvelle molécule (résultat centré, pas de méthode en tête) :
   titre_court : "Zuranolone vs placebo : rémission EDC à 15 jours (LANDSCAPE/SHORELINE)"
@@ -7325,6 +7397,8 @@ EBUS (Endobronchial Ultrasound), \
 TM6M (test de marche de 6 minutes — distance, désaturation), SpO₂ effort.
 
 EXEMPLES DE RÉDACTION (style ERJ / AJRCCM / Lancet Respir Med) :
+Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+
 
 Essai pivot (biothérapie asthme) :
   titre_court : "Tézépélumab asthme sévère non-T2 : NAVIGATOR 52 semaines"
@@ -8670,6 +8744,230 @@ _ANSM_DM_LIBERAL_EXCLUDE_PATTERNS = [
 _ANSM_DM_LIBERAL_EXCLUDE_RES = [re.compile(p) for p in _ANSM_DM_LIBERAL_EXCLUDE_PATTERNS]
 
 
+# ---------------------------------------------------------------------------
+# ANSM — Filtre opérateur primaire
+# ---------------------------------------------------------------------------
+# Règle éditoriale : une alerte ANSM (DM ou médicament) ne va à une spécialité
+# que si le praticien en est l'opérateur ou le prescripteur PRIMAIRE.
+# "Présence au bloc" ne suffit pas — ce filtre est plus strict que specialty_prefilter.
+#
+# Structure : liste de (pattern_titre, frozenset_specialites_autorisees).
+# Si le titre matche un pattern, seules les spécialités listées passent.
+# Si aucun pattern ne matche, le filtre ne bloque pas (laisse passer pour évaluation LLM).
+# ---------------------------------------------------------------------------
+
+_ANSM_PRIMARY_OP_RULES: list[tuple[re.Pattern, frozenset]] = [
+
+    # ── Instruments électrochirurgicaux généraux (bistouri, pince coupante, coag, trocart) ──
+    # Opérateurs : chirurgiens qui tiennent l'instrument. Pas l'anesthésiste.
+    (re.compile(
+        r"(?i)\bbistouri\b"
+        r"|\bélectrochirurgi"
+        r"|\bpince\s+coup"
+        r"|\bcoagulat(?:eur|ion)\b(?!.*cardiaque)"   # exclure "coagulation sanguine" cardiaque
+        r"|\btrocart\b"
+        r"|\bagraf(?:e|euse)\b"
+        r"|\bstapl(?:er|euse)\b"
+        r"|\bdissect(?:eur|ion)\b"
+        r"|\bcordotome\b"
+    ),
+     frozenset({
+         "chirurgie-vasculaire", "chirurgie-cardiaque", "chirurgie-orthopedique",
+         "chirurgie-pediatrique", "chirurgie-plastique", "chirurgie-thoracique",
+         "neurochirurgie", "urologie", "gynecologie", "orl",
+     })),
+
+    # ── Garrots chirurgicaux ──
+    (re.compile(r"(?i)\bgarrot\b"),
+     frozenset({
+         "chirurgie-orthopedique", "chirurgie-vasculaire",
+         "chirurgie-pediatrique", "chirurgie-plastique",
+     })),
+
+    # ── Stimulateurs cardiaques / défibrillateurs / CRT / rythmologie ──
+    # Prescripteur primaire = cardiologue/rythmologue.
+    # Anesthésie conservée : gestion peropératoire du porteur (règle métier validée).
+    (re.compile(
+        r"(?i)\bstimulateurs?\s+cardiaque"
+        r"|\bpacemaker\b"
+        r"|\bdéfibrillateurs?\b"
+        r"|\bCRT[-\s]"
+        r"|\bICD\b"
+        r"|\brythm(?:olog|ique)"
+        r"|\bimplantable\s+cardiac"
+    ),
+     frozenset({
+         "chirurgie-cardiaque", "cardiologie", "anesthesiologie", "medecine-urgences",
+     })),
+
+    # ── Valves cardiaques / prothèses valvulaires / TAVI ──
+    (re.compile(
+        r"(?i)\bvalve\b|\bvalvulaire\b"
+        r"|\bbioprothèse\s+valv"
+        r"|\bTAVI\b|\bTAVR\b"
+        r"|\bannuloplastie\b"
+        r"|\bprothèse\s+valv"
+    ),
+     frozenset({"chirurgie-cardiaque", "cardiologie"})),
+
+    # ── Prothèses vasculaires / endoprothèses / filtres cave ──
+    (re.compile(
+        r"(?i)\bendoprothèse\b"
+        r"|\bprothèse\s+aortique\b"
+        r"|\bEVAR\b|\bTEVAR\b"
+        r"|\bfiltre\s+(?:cave|caval)"
+        r"|\bstent\s+(?:périphér|vascu|aort)"
+        r"|\bcathéter\s+(?:vascu|artér)"
+        r"|\bbypass\s+(?:aorto|fémoro|périph)"
+    ),
+     frozenset({"chirurgie-vasculaire", "chirurgie-cardiaque", "radiologie"})),
+
+    # ── Prothèses articulaires orthopédiques (hanche, genou, épaule, cheville) ──
+    (re.compile(
+        r"(?i)\bprothèse\s+(?:totale|de\s+hanche|de\s+genou|d'épaule|articulaire"
+        r"|tibiale|fémorale|acétabulaire)\b"
+        r"|\btige\s+fémorale\b"
+        r"|\bcotyle\b"
+        r"|\bimplant\s+orthop"
+        r"|\bmatériel\s+ancillaire\b"
+        r"|\bancillaire\s+(?:orthop|chirurg)"
+    ),
+     frozenset({"chirurgie-orthopedique"})),
+
+    # ── Implants rachidiens / neurochirugie ──
+    (re.compile(
+        r"(?i)\bimplant\s+rachid"
+        r"|\bcage\s+intervert"
+        r"|\bvis\s+pédiculaire"
+        r"|\bprothèse\s+discale\b"
+    ),
+     frozenset({"neurochirurgie", "chirurgie-orthopedique"})),
+
+    # ── Neurostimulateurs / stimulation cérébrale profonde ──
+    (re.compile(
+        r"(?i)\bneurostimulateur\b"
+        r"|\bstimulat(?:eur|ion)\s+céréb"
+        r"|\bDBS\b"
+        r"|\bstimulat(?:eur|ion)\s+médullaire\b"
+        r"|\bneuropacer\b"
+    ),
+     frozenset({"neurochirurgie", "neurologie"})),
+
+    # ── Équipements anesthésie / réanimation / voies aériennes ──
+    (re.compile(
+        r"(?i)\bventilateur\b"
+        r"|\brespirat(?:eur|ion\s+artificielle)\b"
+        r"|\bBavu\b"
+        r"|\bréanimateur\b"
+        r"|\bmasque\s+laryngé\b"
+        r"|\blaryngoscope\b"
+        r"|\bpousse[- ]seringue\b"
+        r"|\bperfuseur\b"
+        r"|\bvaporis(?:ateur|eur)\s+(?:d')?anesthés"
+    ),
+     frozenset({"anesthesiologie", "medecine-urgences"})),
+
+    # ── Instruments endoscopiques digestifs (flexible) ──
+    # Les instruments de chirurgie laparoscopique/thoracoscopique NE sont PAS ici.
+    (re.compile(
+        r"(?i)\bendoscope\s+(?:digestif|souple|flexible)\b"
+        r"|\bgastroscope\b"
+        r"|\bcolosco(?:pe|pie)\b"
+        r"|\brectoscope\b"
+        r"|\bcystoscope\b"
+        r"|\burétéroscope\b"
+        r"|\brésectoscope\b"
+    ),
+     frozenset({"gastro-enterologie", "urologie"})),
+
+    # ── Implants mammaires / chirurgie plastique ──
+    (re.compile(
+        r"(?i)\bimplant\s+mamm"
+        r"|\bprothèse\s+mamm"
+        r"|\bimplant\s+pectoral\b"
+    ),
+     frozenset({"chirurgie-plastique"})),
+
+    # ── DM ophtalmologiques ──
+    (re.compile(
+        r"(?i)\bimplant\s+(?:oculaire|intraoculaire|rétinien)\b"
+        r"|\bIOL\b"
+        r"|\bvitrectom"
+        r"|\bphaco(?:émulsif)"
+    ),
+     frozenset({"ophtalmologie"})),
+
+    # ── Médicaments anesthésie (anesthésiques, curares, halogénés) ──
+    # Prescripteur exclusif = anesthésiste.
+    (re.compile(
+        r"(?i)\bpropofol\b"
+        r"|\brémifentanil\b"
+        r"|\brémifentanil\b"
+        r"|\blocuronium\b|\\bvécuronium\b|\batracurium\b|\bcisatracurium\b"
+        r"|\bsévoflurane\b|\bisoflurane\b|\bdesflurane\b"
+        r"|\bkétamine\s+(?:injectable|IV|anesthés)"
+        r"|\bétomidate\b"
+        r"|\bsuxaméthonium\b|\bsuccinylcholine\b"
+    ),
+     frozenset({"anesthesiologie"})),
+
+    # ── Médicaments antipsychotiques / neuroleptiques ──
+    (re.compile(
+        r"(?i)\brispéridone\b"
+        r"|\bhalopéridol\b"
+        r"|\bolanzapine\b"
+        r"|\bclozapine\b"
+        r"|\baripiprazole\b"
+        r"|\bquétiapine\b"
+        r"|\bpalipéridone\b"
+    ),
+     frozenset({"psychiatrie", "medecine-generale", "neurologie", "geriatrie"})),
+
+    # ── Biothérapies / chimiothérapies oncologiques ──
+    (re.compile(
+        r"(?i)\btrastuzumab\b|\bogivri\b|\bherceptin\b"
+        r"|\bbevacizumab\b|\bavastin\b"
+        r"|\bnivolumab\b|\bopdivu\b"
+        r"|\bpembrolizumab\b|\bkeytruda\b"
+        r"|\bimatinib\b|\bglivec\b"
+        r"|\brituxumab\b|\bmabthera\b"
+    ),
+     frozenset({"oncologie", "hematologie"})),
+
+    # ── Insuline / analogues / antidiabétiques ──
+    (re.compile(
+        r"(?i)\binsul(?:ine|in)\b"
+        r"|\bglucagon\b"
+        r"|\bGLP-1\b"
+        r"|\bsemaglutide\b|\bliraglutide\b|\bdulaglutide\b"
+        r"|\bexénatide\b"
+    ),
+     frozenset({
+         "endocrinologie", "medecine-generale", "medecine-interne",
+         "geriatrie", "pediatrie",
+     })),
+
+    # ── Vaccins ──
+    (re.compile(r"(?i)\bvaccinat|\bvaccin\b"),
+     frozenset({"pediatrie", "medecine-generale", "infectiologie", "geriatrie"})),
+]
+
+
+def ansm_primary_operator_allowed(title: str, specialty_slug: str) -> bool:
+    """
+    Retourne True si la spécialité est opérateur/prescripteur primaire
+    pour le dispositif ou médicament décrit dans le titre ANSM.
+
+    Si aucune règle ne matche → True (pas de restriction, évaluation LLM normale).
+    Utilisable depuis les scripts d'insertion manuels pour validation préalable.
+    """
+    t = (title or "").strip()
+    for pattern, allowed_slugs in _ANSM_PRIMARY_OP_RULES:
+        if pattern.search(t):
+            return specialty_slug in allowed_slugs
+    return True  # aucune règle ne s'applique → pas de restriction
+
+
 def pre_filter_candidate(
     title: str,
     source: str | None = None,
@@ -8704,6 +9002,13 @@ def pre_filter_candidate(
     cfg = get_source_config(source)
     if cfg.get("require_whitelist") and not _passes_jorf_whitelist(t):
         return False, "jorf_no_health_term"
+    # Filtre opérateur primaire ANSM : un DM ou médicament ANSM ne va qu'à
+    # la spécialité dont le praticien est l'opérateur/prescripteur primaire.
+    # Plus strict que specialty_prefilter — codé en dur, pas de LLM.
+    _ANSM_ALL_SOURCES = _ANSM_SOURCES | {"ansm_securite_dm", "ansm_actualites"}
+    if specialty_slug and source in _ANSM_ALL_SOURCES:
+        if not ansm_primary_operator_allowed(t, specialty_slug):
+            return False, "ansm_not_primary_operator"
     # Filtre spécialité : sources "tous" sans pertinence pour la spé courante
     if specialty_slug and source_is_tous:
         keep, reason = specialty_prefilter(t, specialty_slug, source=source)

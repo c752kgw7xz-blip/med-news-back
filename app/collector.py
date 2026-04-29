@@ -670,7 +670,9 @@ def collect_by_specialty_sources(specialty_slug: str, days: int = 120) -> dict[s
     from app.rss_collector import collect_feed
     from app.pubmed_collector import PUBMED_SOURCES, collect_pubmed_source
 
-    def _matches(hint: str) -> bool:
+    def _matches(hint) -> bool:
+        if isinstance(hint, list):
+            return specialty_slug in hint or "tous" in hint
         return hint == specialty_slug or hint == "tous"
 
     report: dict[str, Any] = {"specialty": specialty_slug, "days": days}

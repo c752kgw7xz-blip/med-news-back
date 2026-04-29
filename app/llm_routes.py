@@ -294,16 +294,71 @@ def _process_one_candidate(candidate: dict) -> dict[str, Any]:
 @router.post("/run")
 def run_llm_analysis(
     request: Request,
-    candidate_id: Optional[str] = Query(default=None),
-    limit: int = Query(default=20, ge=1, le=200),
-    sources: Optional[str] = Query(default=None),
+    candidate_id: Optional[str] = Query(default=None, description="Analyser un seul candidat"),
+    limit: int = Query(default=20, ge=1, le=200, description="Nombre max de candidats à traiter"),
+    sources: Optional[str] = Query(default=None, description="Sources séparées par virgule (ex: pubmed_jvs,pubmed_ejves)"),
 ):
-    # DESACTIVE : triage manuel dans la conversation Claude Pro — jamais via API.
+    """
+    Lance l'analyse LLM sur les candidats NEW.
+    - Sans paramètre : traite les `limit` plus récents candidats NEW
+    - Avec candidate_id : traite uniquement ce candidat
+    - Avec sources : filtre par source(s)
+    Protégé par x-admin-secret.
+    """
     _require_admin(request)
-    raise HTTPException(
-        status_code=503,
-        detail="Triage LLM desactive : se fait manuellement dans la conversation Claude Pro.",
-    )
+
+    source_list = [s.strip() for s in sources.split(",")] if sources else None
+
+    unpaywall_stats: dict = {}
+    if not candidate_id:
+        try:
+            from app.unpaywall_client import enrich_with_unpaywall
+            unpaywall_stats = enrich_with_unpaywall(limit=limit, sources=source_list)
+            logger.info("[llm/run] Unpaywall enrichissement : %s", unpaywall_stats)
+        except Exception as _uw_err:
+            logger.warning("[llm/run] Unpaywall ignoré : %s", _uw_err)
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            candidates = _fetch_candidates_to_analyse(cur, candidate_id, limit, sources=source_list)
+
+    if not candidates:
+        return {
+            "ok": True,
+            "message": "Aucun candidat NEW à analyser",
+            "processed": 0,
+            "unpaywall": unpaywall_stats,
+            "reports": [],
+        }
+
+    reports = []
+    done = failed = not_pertinent = pre_filtered = 0
+
+    for i, candidate in enumerate(candidates):
+        logger.info("LLM [%d/%d] %s", i + 1, len(candidates), candidate["title_raw"][:60])
+        report = _process_one_candidate(candidate)
+        reports.append(report)
+
+        if report["status"] == "PRE_FILTERED":
+            pre_filtered += 1
+        elif report["status"] == "LLM_DONE":
+            done += 1
+        elif report["status"] == "LLM_DONE_NOT_PERTINENT":
+            not_pertinent += 1
+        else:
+            failed += 1
+
+    return {
+        "ok": True,
+        "processed": len(candidates),
+        "pre_filtered": pre_filtered,
+        "done": done,
+        "not_pertinent": not_pertinent,
+        "failed": failed,
+        "llm_calls": done + not_pertinent + failed,
+        "unpaywall": unpaywall_stats,
+        "reports": reports,
+    }
 
 @router.post("/reset-all")
 def reset_all_pipeline(request: Request):
@@ -512,12 +567,65 @@ class _RunBackgroundBody(BaseModel):
 
 @router.post("/run-background")
 def run_background(request: Request, body: "_RunBackgroundBody" = None):
-    # DESACTIVE : triage manuel dans la conversation Claude Pro — jamais via API.
+    """
+    Lance le traitement LLM dans un thread séparé — retourne immédiatement.
+    Un seul thread à la fois : si un traitement est déjà en cours, retourne 409.
+    Consulte /admin/llm/stats pour suivre la progression.
+    Body JSON : { "max_candidates": 200, "batch_size": 20 }
+    """
+    global _bg_running
     _require_admin(request)
-    raise HTTPException(
-        status_code=503,
-        detail="Triage LLM desactive : se fait manuellement dans la conversation Claude Pro.",
-    )
+    if body is None:
+        body = _RunBackgroundBody()
+    max_candidates = max(1, min(body.max_candidates, 10000))
+    batch_size = max(1, min(body.batch_size, 100))
+
+    with _bg_lock:
+        if _bg_running:
+            raise HTTPException(
+                status_code=409,
+                detail="Un traitement LLM est déjà en cours. Consultez /admin/llm/stats.",
+            )
+        _bg_running = True
+
+    def _bg_process(cap: int):
+        global _bg_running
+        try:
+            logger.info("run-background : démarrage thread, cap=%d", cap)
+            total = 0
+            while total < cap:
+                to_fetch = min(batch_size, cap - total)
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        candidates = _fetch_candidates_to_analyse(cur, None, to_fetch)
+                if not candidates:
+                    logger.info("run-background : terminé (NEW épuisés), %d traités", total)
+                    break
+                for candidate in candidates:
+                    _process_one_candidate(candidate)
+                    total += 1
+                logger.info("run-background : %d/%d traités", total, cap)
+            logger.info("run-background : arrêt — %d traités (plafond=%d)", total, cap)
+        except Exception:
+            logger.exception("run-background : ERREUR FATALE dans le thread")
+        finally:
+            with _bg_lock:
+                _bg_running = False
+
+    t = threading.Thread(target=_bg_process, args=(max_candidates,), daemon=True)
+    t.start()
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM candidates WHERE status = 'NEW';")
+            remaining = cur.fetchone()[0]
+
+    return {
+        "ok": True,
+        "message": f"Traitement lancé en arrière-plan — {min(max_candidates, remaining)} candidats à traiter ({remaining} NEW en attente au total).",
+        "candidates_to_process": min(max_candidates, remaining),
+        "candidates_remaining_total": remaining,
+    }
 
 @router.post("/pre-filter")
 def run_pre_filter(request: Request):
@@ -599,15 +707,56 @@ def run_pre_filter(request: Request):
 @router.post("/run-all")
 def run_llm_all(
     request: Request,
-    batch_size: int = Query(default=10, ge=1, le=50),
-    sources: Optional[str] = Query(default=None),
+    batch_size: int = Query(default=10, ge=1, le=50, description="Taille de chaque lot"),
+    sources: Optional[str] = Query(default=None, description="Sources séparées par virgule (ex: pubmed_jvs,pubmed_ejves)"),
 ):
-    # DESACTIVE : triage manuel dans la conversation Claude Pro — jamais via API.
+    """
+    Traite TOUS les candidats NEW + LLM_FAILED par lots.
+    Retourne le résumé global sans timeout.
+    Si sources est fourni, ne traite que les candidats de ces sources.
+    """
     _require_admin(request)
-    raise HTTPException(
-        status_code=503,
-        detail="Triage LLM desactive : se fait manuellement dans la conversation Claude Pro.",
-    )
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    source_list = [s.strip() for s in sources.split(",")] if sources else None
+
+    total_done = total_failed = total_not_pertinent = total_processed = total_pre_filtered = 0
+    workers = min(batch_size, 15)
+
+    while True:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                candidates = _fetch_candidates_to_analyse(cur, None, batch_size, sources=source_list)
+
+        if not candidates:
+            break
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {pool.submit(_process_one_candidate, c): c for c in candidates}
+            for future in as_completed(futures):
+                total_processed += 1
+                report = future.result()
+                logger.info("LLM-ALL [%d] %s", total_processed, futures[future]["title_raw"][:60])
+
+                if report["status"] == "PRE_FILTERED":
+                    total_pre_filtered += 1
+                elif report["status"] == "LLM_DONE":
+                    total_done += 1
+                elif report["status"] == "LLM_DONE_NOT_PERTINENT":
+                    total_not_pertinent += 1
+                else:
+                    total_failed += 1
+
+    return {
+        "ok": True,
+        "processed": total_processed,
+        "pre_filtered": total_pre_filtered,
+        "done": total_done,
+        "not_pertinent": total_not_pertinent,
+        "failed": total_failed,
+        "llm_calls": total_done + total_not_pertinent + total_failed,
+    }
 
 @router.get("/stats")
 def llm_stats(request: Request):

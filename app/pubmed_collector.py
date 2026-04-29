@@ -1803,7 +1803,7 @@ PUBMED_SOURCES: list[dict] = [
     # réadaptation cardiaque, IC aiguë, gestion multidisciplinaire.
     {
         "source": "pubmed_ejhf",
-        "journal_term": f'"Eur J Heart Fail"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Eur J Heart Fail"[Journal] AND {_PT_OR_TITLE}',
         "label": "European Journal of Heart Failure (EJHF — HFA/ESC, IF ~18)",
         "source_type": "innovation",
         "specialty_hint": "cardiologie",
@@ -1839,7 +1839,7 @@ PUBMED_SOURCES: list[dict] = [
     # titration, les biomarqueurs, les protocoles de réhabilitation cardiaque.
     {
         "source": "pubmed_jacc_hf",
-        "journal_term": f'"JACC Heart Fail"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"JACC Heart Fail"[Journal] AND {_PT_OR_TITLE}',
         "label": "JACC: Heart Failure — insuffisance cardiaque dédiée (IF ~14)",
         "source_type": "innovation",
         "specialty_hint": "cardiologie",
@@ -1853,7 +1853,7 @@ PUBMED_SOURCES: list[dict] = [
     # HRS/EHRA sur les arythmies.
     {
         "source": "pubmed_jacc_ep",
-        "journal_term": f'"JACC Clin Electrophysiol"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"JACC Clin Electrophysiol"[Journal] AND {_PT_OR_TITLE}',
         "label": "JACC: Clinical Electrophysiology — ablation, PM/DAI, arythmies",
         "source_type": "innovation",
         "specialty_hint": "cardiologie",
@@ -1866,7 +1866,7 @@ PUBMED_SOURCES: list[dict] = [
     # les dispositifs implantables, les nouvelles techniques d'ablation (PFA).
     {
         "source": "pubmed_heart_rhythm",
-        "journal_term": f'"Heart Rhythm"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Heart Rhythm"[Journal] AND {_PT_OR_TITLE}',
         "label": "Heart Rhythm (HRS flagship) — arythmies et dispositifs implantables",
         "source_type": "innovation",
         "specialty_hint": "cardiologie",
@@ -1880,7 +1880,7 @@ PUBMED_SOURCES: list[dict] = [
     # implantables en Europe, les registres européens de rythmologie.
     {
         "source": "pubmed_europace",
-        "journal_term": f'"Europace"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Europace"[Journal] AND {_PT_OR_TITLE}',
         "label": "Europace (EHRA/ESC) — FA, arythmies, dispositifs, guidelines EHRA",
         "source_type": "innovation",
         "specialty_hint": "cardiologie",
@@ -1931,6 +1931,60 @@ PUBMED_SOURCES: list[dict] = [
         "source": "pubmed_ehj_pharmacother",
         "journal_term": f'"Eur Heart J Cardiovasc Pharmacother"[Journal] AND {_PT_FILTER}',
         "label": "EHJ Cardiovascular Pharmacotherapy — pharmacologie CV, iSGLT2, PCSK9i",
+        "source_type": "innovation",
+        "specialty_hint": "cardiologie",
+        "min_score_hint": 6,
+    },
+
+    # ── JACC: Cardiovascular Interventions ───────────────────────────────────
+    # Sous-journal JACC dédié à la cardiologie interventionnelle. IF ~12.
+    # Publie les RCTs sur PCI (OCT-guidé, calcifications, bifurcations, tronc
+    # commun), TAVI, LAAC, MitraClip, TEER tricuspide, fermeture FOP/CIA.
+    {
+        "source": "pubmed_jacc_intv",
+        "journal_term": f'"JACC Cardiovasc Interv"[Journal] AND {_PT_OR_TITLE}',
+        "label": "JACC: Cardiovascular Interventions — PCI, TAVI, LAAC, TEER (IF ~12)",
+        "source_type": "innovation",
+        "specialty_hint": "cardiologie",
+        "min_score_hint": 6,
+    },
+
+    # ── EuroIntervention (EAPCI/ESC) ─────────────────────────────────────────
+    # Journal officiel de l'EAPCI (European Association of Percutaneous
+    # Cardiovascular Interventions). IF ~7. Publie les études européennes sur
+    # PCI complexe, TAVI (registres FRANCE-TAVI, PARTNER Europe), imagerie
+    # intracoronaire (OCT, IVUS), protection cérébrale péri-TAVI.
+    {
+        "source": "pubmed_eurointervention",
+        "journal_term": f'"EuroIntervention"[Journal] AND {_PT_OR_TITLE}',
+        "label": "EuroIntervention (EAPCI/ESC) — PCI, TAVI, registres européens (IF ~7)",
+        "source_type": "innovation",
+        "specialty_hint": "cardiologie",
+        "min_score_hint": 6,
+    },
+
+    # ── Circulation: Cardiovascular Interventions (AHA) ──────────────────────
+    # Sous-journal Circulation dédié à l'interventionnel. IF ~8. Publie les
+    # RCTs AHA sur PCI haute complexité (CTO, tronc commun, choc), TAVI,
+    # assistance ventriculaire (LVAD, Impella), cardiologie structurelle.
+    {
+        "source": "pubmed_circ_cardiovasc_intv",
+        "journal_term": f'"Circ Cardiovasc Interv"[Journal] AND {_PT_OR_TITLE}',
+        "label": "Circulation: Cardiovascular Interventions — PCI complexe, TAVI, LVAD (IF ~8)",
+        "source_type": "innovation",
+        "specialty_hint": "cardiologie",
+        "min_score_hint": 6,
+    },
+
+    # ── JACC: Cardiovascular Imaging ─────────────────────────────────────────
+    # Sous-journal JACC dédié à l'imagerie cardiaque. IF ~14. Publie les études
+    # sur échocardiographie (stress, 3D, strain), CMR (LGE, T1 mapping),
+    # scanner coronaire (CCTA, calcium score), imagerie nucléaire (PET-TEP).
+    # Indispensable pour cardiopathies structurelles et ATTR-CM.
+    {
+        "source": "pubmed_jacc_img",
+        "journal_term": f'"JACC Cardiovasc Imaging"[Journal] AND {_PT_OR_TITLE}',
+        "label": "JACC: Cardiovascular Imaging — écho, CMR, CCTA, imagerie nucléaire (IF ~14)",
         "source_type": "innovation",
         "specialty_hint": "cardiologie",
         "min_score_hint": 6,
