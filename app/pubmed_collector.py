@@ -257,7 +257,7 @@ PUBMED_SOURCES: list[dict] = [
         "journal_term": f'"Eur J Cardiothorac Surg"[Journal] AND {_PT_FILTER}',
         "label": "EJCTS — RCTs & méta-analyses",
         "source_type": "innovation",
-        "specialty_hint": "chirurgie-cardiaque",
+        # specialty_hint absent → prompt générique (cardiaque + thoracique selon contenu)
         "min_score_hint": 6,
     },
 
@@ -290,7 +290,7 @@ PUBMED_SOURCES: list[dict] = [
         "journal_term": f'"Ann Thorac Surg"[Journal] AND {_PT_FILTER}',
         "label": "Annals of Thoracic Surgery — RCTs & méta-analyses",
         "source_type": "innovation",
-        "specialty_hint": "chirurgie-cardiaque",
+        # specialty_hint absent → prompt générique (cardiaque + thoracique selon contenu)
         "min_score_hint": 7,
     },
 
@@ -537,17 +537,13 @@ PUBMED_SOURCES: list[dict] = [
         "specialty_hint": "chirurgie-thoracique",
         "min_score_hint": 6,
     },
-    {
-        "source": "pubmed_icvts",
-        "journal_term": f'"Interact Cardiovasc Thorac Surg"[Journal] AND {_PT_FILTER}',
-        "label": "Interactive CardioVascular and Thoracic Surgery — EACTS",
-        "source_type": "innovation",
-        "specialty_hint": "chirurgie-thoracique",
-        "min_score_hint": 6,
-    },
+    # pubmed_icvts SUPPRIMÉ : ICVTS a fusionné avec EJCTS en janvier 2023,
+    # plus aucune publication depuis 2022. Couvert désormais par pubmed_ejcts.
     {
         "source": "pubmed_semin_thorac",
-        "journal_term": f'"Semin Thorac Cardiovasc Surg"[Journal] AND {_PT_FILTER}',
+        # Seminars publie des reviews invitées — ni RCT ni meta-analyse dans le titre.
+        # Pas de _PT_FILTER ni _PT_OR_TITLE : on collecte tout, le LLM score filtre.
+        "journal_term": '"Semin Thorac Cardiovasc Surg"[Journal] NOT ("Letter"[pt] OR "Editorial"[pt] OR "Comment"[pt])',
         "label": "Seminars in Thoracic and Cardiovascular Surgery — reviews majeures",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-thoracique",
@@ -618,7 +614,7 @@ PUBMED_SOURCES: list[dict] = [
             '"lung resection"[tiab] OR "pulmonary resection"[tiab] OR '
             'VATS[tiab] OR RATS[tiab] OR thoracoscopic[tiab] OR '
             'pleural[tiab] OR mediastinal[tiab] OR mesothelioma[tiab]'
-            f') AND {_PT_FILTER}'
+            f') AND {_PT_OR_TITLE}'
         ),
         "label": "JTCVS — filtre chirurgie thoracique (résection / œsophage / plèvre)",
         "source_type": "innovation",
@@ -641,6 +637,45 @@ PUBMED_SOURCES: list[dict] = [
         "label": "ESTS Guidelines — European Journal of Cardio-Thoracic Surgery",
         "source_type": "recommandation",
         "specialty_hint": "chirurgie-thoracique",
+        "min_score_hint": 4,
+    },
+
+    # BTS guidelines publiées dans Thorax (BMJ).
+    # Filtre : guideline ou "British Thoracic Society" dans titre/abstract.
+    # Cross-specialty : pneumologie ET chirurgie-thoracique selon contenu.
+    {
+        "source": "pubmed_bts_guidelines",
+        "journal_term": (
+            '"Thorax"[Journal] AND ('
+            'guideline[Title] OR "British Thoracic Society"[tiab] OR '
+            '"BTS guideline"[tiab] OR "consensus statement"[Title] OR '
+            '"position statement"[Title] OR "expert panel"[Title] OR '
+            '"clinical practice guideline"[Title]'
+            ')'
+        ),
+        "label": "BTS Guidelines — Thorax / British Thoracic Society",
+        "source_type": "recommandation",
+        # specialty_hint absent → prompt générique (pneumologie + chirurgie-thoracique)
+        "min_score_hint": 4,
+    },
+    # ESMO guidelines thoraciques publiées dans Annals of Oncology.
+    # Filtre : contenu lung/esophage/thoracique + guideline dans titre.
+    # Cross-specialty : oncologie ET chirurgie-thoracique selon degré chirurgical.
+    {
+        "source": "pubmed_esmo_thorac_guidelines",
+        "journal_term": (
+            '"Ann Oncol"[Journal] AND ('
+            'lung[tiab] OR NSCLC[tiab] OR SCLC[tiab] OR esophageal[tiab] OR '
+            'oesophageal[tiab] OR mesothelioma[tiab] OR thoracic[tiab]'
+            ') AND ('
+            'guideline[Title] OR "clinical practice guideline"[Title] OR '
+            '"ESMO"[tiab] OR consensus[Title] OR "position paper"[Title] OR '
+            '"expert consensus"[Title] OR "management of"[Title]'
+            ')'
+        ),
+        "label": "ESMO Guidelines thoraciques — Annals of Oncology",
+        "source_type": "recommandation",
+        # specialty_hint absent → prompt générique (oncologie + chirurgie-thoracique)
         "min_score_hint": 4,
     },
 

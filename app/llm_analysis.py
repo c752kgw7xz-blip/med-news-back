@@ -1006,6 +1006,84 @@ commente une décision réglementaire, classe plutôt en "recommandation" ou "in
      Vascular News — compte-rendu résultats BEST-CLI  → "innovation"
      Vascular News — synthèse guidelines SVS 2024     → "recommandation"
 
+9. SOURCES CROSS-SPECIALTY — Ne jamais rejeter ; toujours affecter à la bonne spécialité
+
+Certaines sources scientifiques couvrent plusieurs domaines cliniques. Quand un article \
+provient d'une de ces sources, ne JAMAIS le rejeter au seul motif qu'il ne correspond pas \
+à la spécialité principalement traitée dans la session en cours. \
+Il faut l'affecter à la spécialité effectivement concernée par le contenu.
+
+RÈGLE OPÉRATOIRE :
+• Si le contenu est pertinent pour la spécialité de triage en cours → affecter à cette spécialité.
+• Si le contenu est pertinent pour une autre spécialité → affecter à cette autre spécialité \
+  (renseigner le slug correct dans "specialites").
+• Si le contenu n'est pertinent pour AUCUNE spécialité (score < 4, recherche fondamentale, \
+  éditorial sans données, hors praticien libéral) → alors seulement rejeter.
+
+Le rejet d'un article cross-specialty pour "mauvaise spécialité" est une erreur : \
+un article de qualité sur un sujet d'oncologie médicale rencontré lors du triage \
+de chirurgie thoracique doit être inséré en oncologie — pas écarté.
+
+SOURCES CROSS-SPECIALTY CONNUES et leur routage :
+
+JTO / jto_rss / pubmed_jto (Journal of Thoracic Oncology, IASLC, IF ~20) :
+  → chirurgie-thoracique : résection NSCLC résécable, timing chirurgical, \
+    staging médiastinal, VATS/RATS, immunothérapie péri-opératoire, pCR/MPR
+  → oncologie : traitement systémique NSCLC/SCLC sans composante chirurgicale, \
+    immunothérapie 1re/2e ligne, thérapies ciblées EGFR/ALK/KRAS, tumorigenèse
+
+Lung Cancer / lung_cancer_rss / pubmed_lung_cancer_thorac (IASLC/Elsevier, IF ~5) :
+  → chirurgie-thoracique : résection, staging, biomarqueurs guidant l'indication op.
+  → oncologie : traitement médical, lignes métastatiques, essais médicamenteux
+
+Chest (ACCP) / chest_rss / pubmed_chest (IF ~9) :
+  → pneumologie : BPCO, asthme, fibrose pulmonaire, HTP, sommeil, tabac, \
+    pathologies interstitielles — sans composante chirurgicale
+  → chirurgie-thoracique : empyème, épanchement pleural malin (PleurX vs talc), \
+    pneumothorax chirurgical, bilan pré-opératoire respiratoire
+
+Thorax (BTS/BMJ) / bmj_thorax / pubmed_thorax_bts (IF ~10) :
+  → pneumologie : BPCO, asthme, mucoviscidose, interstitielles, infections respi.
+  → chirurgie-thoracique : chirurgie pleurale, résection, drainage thoracique
+
+EJCTS / pubmed_ejcts (European Journal of Cardio-Thoracic Surgery, EACTS, IF ~4) :
+  → chirurgie-cardiaque : CABG, remplacement valvulaire, aorte, transplantation, \
+    assistance ventriculaire (LVAD/BiVAD)
+  → chirurgie-thoracique : résection pulmonaire, chirurgie œsophagienne, médiastin, \
+    plèvre, thymome
+
+Annals of Thoracic Surgery / ann_thorac_surg_rss / pubmed_ann_thorac_surg \
+(STS/Elsevier, IF ~4) :
+  → chirurgie-cardiaque : valvulopathies, coronaires, aorte, transplantation
+  → chirurgie-thoracique : résection pulmonaire, œsophage, plèvre, médiastin
+
+EACTS / eacts (European Association for Cardio-Thoracic Surgery) :
+  → chirurgie-cardiaque : guidelines chirurgie cardiaque adulte/congénitale, TAVI
+  → chirurgie-thoracique : guidelines résection pulmonaire, mésothéliome, œsophage
+
+SFCTCV / sfctcv (Société Française de Chirurgie Thoracique et Cardio-Vasculaire) :
+  → chirurgie-thoracique : recommandations résection pulmonaire, cancer bronchique, \
+    pleural, œsophage (SFCTCV = société mère SFCT pour thoracique)
+  → chirurgie-cardiaque : congénital adulte, transplantation, valve
+  → chirurgie-vasculaire : chirurgie artérielle, aortique (en collaboration SFCV)
+
+BTS Guidelines / pubmed_bts_guidelines (Thorax journal) :
+  → pneumologie : BPCO, asthme, infections respi., fibrose, sommeil
+  → chirurgie-thoracique : épanchement pleural, pneumothorax, préop respiratoire
+
+ESMO thoracique / pubmed_esmo_thorac_guidelines (Annals of Oncology) :
+  → oncologie : standards systémiques lung/esophageal (chimio, immuno, ciblée)
+  → chirurgie-thoracique : si la guideline concerne la décision chirurgicale, \
+    le timing opératoire, ou les traitements péri-opératoires (néoadjuvant/adjuvant)
+
+TCTMD / tctmd :
+  → chirurgie-vasculaire : TCAR, TEVAR, EVAR, pontage infrainguinal
+  → chirurgie-cardiaque : TAVI, MitraClip, fermeture FOP/CIA, ablation FA
+
+PRINCIPE GÉNÉRAL : lorsque le slug assigné est différent de la spécialité \
+principalement traitée, renseigner quand même le champ "specialites" avec le slug \
+correct — ne pas forcer le slug de la spécialité de triage si le contenu ne le justifie pas.
+
 IMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans markdown, \
 sans explication autour.
 """
@@ -1152,9 +1230,9 @@ JSON attendu (strict, pas de markdown) :
     "date_entree_en_vigueur": "<YYYY-MM-DD — date d'application effective, différente de date_publication si précisée dans le texte>"
   }},
   "lecture_json": {{
-    "points_cles": ["<bullet 1 — fait chiffré ou décision clé>", "<bullet 2>", "<bullet 3>"],
-    // obligatoire : 3 bullets minimum, 5 maximum — jamais vide ni tableau à un seul élément
-    "texte_long": "<~200 mots — développement distinct du resume : contexte de l'étude, détail des résultats secondaires, comparaison au standard actuel, limites principales>",
+    "points_cles": ["<bullet 1 — fait chiffré ou décision clé, style journal médical : donnée brute + contexte clinique, pas de jargon méthodologique>", "<bullet 2>", "<bullet 3>"],
+    // OBLIGATOIRE ABSOLU : 3 bullets minimum, 5 maximum — null, [] ou tableau à un seul élément = sortie invalide
+    "texte_long": "<OBLIGATOIRE ABSOLU — ne jamais laisser vide, null ou absent. ~200 mots — développement distinct du resume, même ton journal médical professionnel (EJVES, JVS, Lancet, JAMA) : constructions actives directes, données chiffrées (HR/OR/IC95%/p/n=) intégrées en contexte narratif — jamais listées brutes. Contenu : contexte de l'étude, résultats secondaires, comparaison au standard actuel, limites principales. INTERDIT : 'l'étude montre que', 'les résultats indiquent que', 'il semblerait que', ouverture par la méthode ou le design.>",
     "references": ["<NOR, ref légale, numéro AMM, PMID...>"]
   }}{evidence_block}
 }}
@@ -1386,9 +1464,10 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     # "tctmd": None  ← absent du dict = comportement générique automatique
     # ── Chirurgie cardiaque ────────────────────────────────────────────────
     "pubmed_jtcvs":               "chirurgie-cardiaque",
-    "pubmed_ejcts":               "chirurgie-cardiaque",
+    # pubmed_ejcts absent → prompt générique (cardiaque + thoracique selon contenu)
     "pubmed_ejcts_guidelines":    "chirurgie-cardiaque",
-    "pubmed_ann_thorac_surg":     "chirurgie-cardiaque",
+    # pubmed_ann_thorac_surg absent → prompt générique (cardiaque + thoracique selon contenu)
+    # ann_thorac_surg_rss absent → idem (nouveau RSS ScienceDirect Ann Thorac Surg)
     "pubmed_circulation_card":    "chirurgie-cardiaque",
     "pubmed_jacc_card":           "chirurgie-cardiaque",
     "pubmed_jacc_interv":         "chirurgie-cardiaque",
@@ -1399,21 +1478,20 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_esc_guidelines":      "chirurgie-cardiaque",  # ESC Guidelines via EHJ
     "pubmed_sts_guidelines":      "chirurgie-cardiaque",  # STS Guidelines via Ann Thorac Surg
     "arch_cardiovasc_dis":        "chirurgie-cardiaque",  # RSS ScienceDirect — SFC officiel
-    "eacts":                      "chirurgie-cardiaque",
-    "sfctcv":                     "chirurgie-cardiaque",
+    # eacts absent → prompt générique (cardiaque + thoracique — EACTS couvre les deux)
+    # sfctcv absent → prompt générique (thoracique + cardiaque + vasculaire)
     # ── Chirurgie thoracique ───────────────────────────────────────────────────
-    "jto_rss":                    "chirurgie-thoracique",  # RSS JTO (IASLC/Elsevier, IF ~20)
-    "pubmed_jto":                 "chirurgie-thoracique",  # JTO — IASLC
-    "pubmed_lung_cancer_thorac":  "chirurgie-thoracique",  # Lung Cancer — NSCLC résécable
-    "pubmed_dis_esophagus":       "chirurgie-thoracique",  # Diseases of the Esophagus — ISDE
-    "pubmed_icvts":               "chirurgie-thoracique",  # ICVTS — EACTS
-    "pubmed_semin_thorac":        "chirurgie-thoracique",  # Seminars Thoracic & Cardiovasc Surg
-    "pubmed_chest":               "chirurgie-thoracique",  # Chest — ACCP
-    "pubmed_thorax_bts":          "chirurgie-thoracique",  # Thorax — BTS/BMJ
-    "pubmed_ejso_thorac":         "chirurgie-thoracique",  # EJSO — filtre thoracique
-    "pubmed_ann_surg_oncol_thorac":"chirurgie-thoracique", # Ann Surg Oncol — filtre thoracique
-    "pubmed_jtcvs_thorac":        "chirurgie-thoracique",  # JTCVS — filtre thoracique
-    "pubmed_ests_guidelines":     "chirurgie-thoracique",  # ESTS Guidelines via EJCTS
+    # jto_rss / pubmed_jto / pubmed_lung_cancer_thorac absents → prompt générique
+    #   (oncologie + chirurgie-thoracique selon contenu — NSCLC résécable vs médical)
+    # pubmed_chest / pubmed_thorax_bts absents → prompt générique
+    #   (pneumologie + chirurgie-thoracique selon contenu — pleural, BPCO, bronchique)
+    "pubmed_dis_esophagus":        "chirurgie-thoracique",  # Diseases of the Esophagus — ISDE
+    # pubmed_icvts supprimé : ICVTS fusionné dans EJCTS en janv. 2023, source morte
+    "pubmed_semin_thorac":         "chirurgie-thoracique",  # Seminars Thoracic & Cardiovasc Surg
+    "pubmed_ejso_thorac":          "chirurgie-thoracique",  # EJSO — filtre thoracique
+    "pubmed_ann_surg_oncol_thorac":"chirurgie-thoracique",  # Ann Surg Oncol — filtre thoracique
+    "pubmed_jtcvs_thorac":         "chirurgie-thoracique",  # JTCVS — filtre thoracique
+    "pubmed_ests_guidelines":      "chirurgie-thoracique",  # ESTS Guidelines via EJCTS
     # ── Chirurgie orthopédique ─────────────────────────────────────────────────
     "pubmed_jbjs":                "chirurgie-orthopedique",
     "pubmed_bone_joint_j":        "chirurgie-orthopedique",
@@ -1993,8 +2071,9 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "fspf":                          "pharmacien",  # FSPF — Fédération syndicale pharmaciens France
     # ── Pneumologie ───────────────────────────────────────────────────────────
     "lancet_respir_med":             "pneumologie",  # RSS Lancet Respiratory Medicine (IF ~38)
-    "bmj_thorax":                    "pneumologie",  # RSS Thorax / BTS (IF ~10)
-    "chest_rss":                     "pneumologie",  # RSS Chest (ACCP, IF ~9)
+    # bmj_thorax absent → prompt générique (pneumologie + chirurgie-thoracique selon contenu)
+    # chest_rss absent → idem (Chest ACCP : BPCO/asthme/pleural/préop thoracique)
+    # lung_cancer_rss absent → prompt générique (oncologie + chirurgie-thoracique)
     "pubmed_eur_respir_j":           "pneumologie",
     "pubmed_ajrccm":                 "pneumologie",
     "pubmed_lancet_respir":          "pneumologie",
@@ -3133,18 +3212,24 @@ RETENIR :
 → Alertes ANSM / FDA : agrafeuses endoscopiques pulmonaires/œsophagiennes \
   défectueuses, instruments de curage médiastinal, endoscopes bronchiques
 
-REJETER :
-→ Oncologie médicale pure (chimio/immuno sans aucune composante chirurgicale \
-  ou staging chirurgical — relayer à oncologie)
-→ Pneumologie médicale pure (BPCO, asthme, fibrose pulmonaire sans impact \
-  sur résécabilité ou technique chirurgicale — relayer à pneumologie)
-→ Anesthésie-réanimation sans lien direct avec chirurgie thoracique
-→ Chirurgie cardiaque sans composante thoracique (CABG, valvulopathies \
-  — relayer à chirurgie-cardiaque)
-→ Radiothérapie/SBRT exclusive sans comparaison directe avec résection \
-  (études SBRT seules pour patients inopérables — relayer à radiologie/oncologie)
-→ Études endoscopiques digestives pures (œsophage — dilatations, POEM — sans \
-  composante chirurgicale thoracique ou résection)
+AFFECTER À UNE AUTRE SPÉCIALITÉ (ne pas rejeter — insérer avec le bon slug) :
+→ Oncologie médicale pure (chimio/immuno NSCLC/SCLC sans composante chirurgicale \
+  ni staging chirurgical) → specialty_slug = "oncologie"
+→ Pneumologie médicale pure (BPCO, asthme, fibrose pulmonaire, pathologies \
+  interstitielles, sans impact sur résécabilité ou technique) → specialty_slug = "pneumologie"
+→ Chirurgie cardiaque sans composante thoracique (CABG, valvulopathies, \
+  assistance ventriculaire) → specialty_slug = "chirurgie-cardiaque"
+→ Radiothérapie/SBRT exclusive sans comparaison avec résection chirurgicale \
+  (études SBRT patients inopérables) → specialty_slug = "oncologie" ou "radiologie"
+
+REJETER DÉFINITIVEMENT (contenu non pertinent pour aucune spécialité) :
+→ Anesthésie-réanimation sans lien direct avec chirurgie thoracique \
+  (bloc péri-opératoire général, sédation ICU — pas d'impact technique thoracique)
+→ Études endoscopiques digestives pures (dilatations œsophagiennes, POEM, \
+  résections endoscopiques muqueuses) sans composante chirurgicale thoracique
+→ Recherche fondamentale (biologie moléculaire, biomarqueurs sans implication \
+  clinique immédiate, modèles murins)
+→ Éditoriaux, lettres, commentaires sans données nouvelles
 
 TERMINOLOGIE — employer sans guillemets ni définition :
 VATS (Video-Assisted Thoracoscopic Surgery), RATS (Robot-Assisted — Da Vinci), \

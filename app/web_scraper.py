@@ -415,6 +415,138 @@ def scrape_source(config: dict) -> dict[str, int]:
 
 
 # ---------------------------------------------------------------------------
+# Scraper ESC Guidelines — 2 passes (site SPA Sitecore)
+# ---------------------------------------------------------------------------
+# Le site escardio.org est rendu côté client (SPA). La page principale
+# /Guidelines/Clinical-Practice-Guidelines ne contient que la navigation.
+# Stratégie :
+#   Pass 1 — /All-ESC-Practice-Guidelines : page statique listant ~30 guidelines
+#             groupées par sections "202X ESC Guidelines"
+#   Pass 2 — Chaque URL guideline : méta Sitecore esc-title + esc-start-time
+# ---------------------------------------------------------------------------
+
+_ESC_ALL_URL = "https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/All-ESC-Practice-Guidelines"
+_ESC_BASE = "https://www.escardio.org"
+_ESC_GUIDELINE_PATH_RE = re.compile(
+    r"/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/[^/]+/",
+    re.IGNORECASE,
+)
+_ESC_YEAR_RE = re.compile(r"(20[2-9]\d)")
+_ESC_START_DATE_RE = re.compile(r'name="esc-start-time"\s+content="(\d{4}-\d{2}-\d{2})', re.IGNORECASE)
+_ESC_TITLE_META_RE = re.compile(r'name="esc-title"\s+content="([^"]+)"', re.IGNORECASE)
+
+
+def _esc_parse_all_page(html: str) -> list[tuple[str, str, int | None]]:
+    """
+    Parse All-ESC-Practice-Guidelines → liste de (abs_url, full_title, year_hint).
+    Exploite les cards article-card : h5.card-title contient le titre complet avec année,
+    et le lien stretched-link pointe vers la page guideline.
+    """
+    results: list[tuple[str, str, int | None]] = []
+    seen: set[str] = set()
+    # Each card: <h5 class="card-title ...">TITLE</h5> ... <a class="... stretched-link ..." href="PATH">
+    cards = re.findall(
+        r'<h5 class="card-title[^"]*"[^>]*>(.*?)</h5>.*?'
+        r'href="(/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/[^"]+)"',
+        html,
+        re.DOTALL,
+    )
+    for raw_title, href in cards:
+        title = re.sub(r"<[^>]+>", "", raw_title).strip()
+        if not title or len(title) < 10:
+            continue
+        abs_url = _ESC_BASE + href.rstrip("/") + "/"
+        if abs_url in seen:
+            continue
+        seen.add(abs_url)
+        year_m = _ESC_YEAR_RE.search(title)
+        year = int(year_m.group(1)) if year_m else None
+        results.append((abs_url, title, year))
+    return results
+
+
+def collect_esc_guidelines() -> dict[str, Any]:
+    """
+    Scrape les guidelines ESC en deux passes.
+    Pass 1 : All-ESC-Practice-Guidelines → ~30 URLs avec année d'inférence.
+    Pass 2 : Chaque URL → esc-title + esc-start-time depuis meta Sitecore.
+    Insère avec source='esc_guidelines', dédup par URL.
+    """
+    import time as _time
+
+    source = "esc_guidelines"
+    label = "ESC — Clinical Practice Guidelines (cardiologie)"
+    today = date.today()
+    seen = inserted = deduped = skipped = 0
+
+    with httpx.Client(follow_redirects=True, timeout=20, headers=_HEADERS) as client:
+        try:
+            resp = client.get(_ESC_ALL_URL)
+            resp.raise_for_status()
+        except Exception as exc:
+            logger.warning("[esc_guidelines] pass 1 échouée : %s", exc)
+            return {"seen": 0, "inserted": 0, "deduped": 0, "skipped": 0, "error": str(exc)}
+
+        guideline_list = _esc_parse_all_page(resp.text)
+        logger.info("[esc_guidelines] pass 1 : %d guidelines trouvées", len(guideline_list))
+
+        with get_conn() as conn:
+            for abs_url, short_title, year_hint in guideline_list:
+                seen += 1
+                _time.sleep(0.4)
+
+                # Pass 2 — fetch individual guideline page for real title + date
+                title: str | None = None
+                pub_date: date | None = None
+                try:
+                    gr = client.get(abs_url, timeout=15)
+                    gr.raise_for_status()
+                    ghtml = gr.text
+                    title_m = _ESC_TITLE_META_RE.search(ghtml)
+                    date_m = _ESC_START_DATE_RE.search(ghtml)
+                    if title_m:
+                        title = title_m.group(1).strip()
+                    if date_m:
+                        y, mo, d = map(int, date_m.group(1).split("-"))
+                        pub_date = date(y, mo, d)
+                except Exception as exc:
+                    logger.debug("[esc_guidelines] fetch page %s : %s", abs_url, exc)
+
+                if not title:
+                    title = (f"{year_hint} ESC Guidelines — {short_title}" if year_hint
+                             else f"ESC Guidelines — {short_title}")
+                if not pub_date:
+                    pub_date = date(year_hint, 1, 1) if year_hint else today
+
+                keep, drop_reason = pre_filter_candidate(title, source=source)
+                if not keep:
+                    logger.debug("[esc_guidelines] pre_filter DROP '%s' (%s)", title[:60], drop_reason)
+                    skipped += 1
+                    continue
+
+                row = build_candidate_row(
+                    source=source,
+                    external_id=abs_url,
+                    official_url=abs_url,
+                    official_date=pub_date,
+                    title_raw=title,
+                    content_raw=None,
+                    raw_payload={"href": abs_url, "feed_source": source, "feed_label": label,
+                                 "scraped_date": str(today)},
+                )
+                with conn.cursor() as cur:
+                    if insert_candidate(cur, row):
+                        inserted += 1
+                        logger.info("[esc_guidelines] INS '%s' (%s)", title[:70], pub_date)
+                    else:
+                        deduped += 1
+                conn.commit()
+
+    logger.info("[esc_guidelines] vu=%d ins=%d dup=%d ign=%d", seen, inserted, deduped, skipped)
+    return {"seen": seen, "inserted": inserted, "deduped": deduped, "skipped": skipped}
+
+
+# ---------------------------------------------------------------------------
 # Collecteur global
 # ---------------------------------------------------------------------------
 
@@ -423,7 +555,8 @@ def scrape_all_web(sources: list[dict] | None = None) -> dict[str, Any]:
     Lance le scraping de toutes les sources HTML configurées (ou un sous-ensemble).
     Couvre :
       - Sources FR  (WEB_SCRAPER_SOURCES)       : SFH, SFR, SFO, SFPédiatrie, SOFCOT, SOFCPRE, INCa
-      - Sources EUR (EUROPE_WEB_SOURCES)         : ESC, EULAR, EAU, ESCMID, EAN, ESGE, EuSEM…
+      - Sources EUR (EUROPE_WEB_SOURCES)         : EULAR, EAU, ESCMID, EAN, ESGE, EuSEM… (ESC via collect_esc_guidelines)
+      - ESC Guidelines (collect_esc_guidelines)  : 2 passes — site SPA Sitecore
       - Congrès vasc. (VASCULAR_CONGRESS_SOURCES): désactivé (liste vide — couvert par TCTMD/VN)
     Volume faible → pas de parallélisme nécessaire.
     """
@@ -435,6 +568,13 @@ def scrape_all_web(sources: list[dict] | None = None) -> dict[str, Any]:
         except Exception as e:
             logger.error("[%s] erreur : %s", config["source"], e)
             results[config["source"]] = {"error": str(e)}
+    # ESC Guidelines — scraper dédié (SPA, 2 passes)
+    if sources is None:
+        try:
+            results["esc_guidelines"] = collect_esc_guidelines()
+        except Exception as e:
+            logger.error("[esc_guidelines] erreur : %s", e)
+            results["esc_guidelines"] = {"error": str(e)}
     return results
 
 
@@ -450,6 +590,12 @@ def scrape_europe_web() -> dict[str, Any]:
         except Exception as e:
             logger.error("[%s] erreur : %s", config["source"], e)
             results[config["source"]] = {"error": str(e)}
+    # ESC — scraper dédié
+    try:
+        results["esc_guidelines"] = collect_esc_guidelines()
+    except Exception as e:
+        logger.error("[esc_guidelines] erreur : %s", e)
+        results["esc_guidelines"] = {"error": str(e)}
     return results
 
 

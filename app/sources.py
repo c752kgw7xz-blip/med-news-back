@@ -403,13 +403,14 @@ FR_SOCIETIES_FEEDS: list[dict] = [
     # },
 
     # ── Chirurgie thoracique et cardio-vasculaire ─────────────────────────
+    # sfctcv absent de SOURCE_SPECIALTY_HINTS → prompt générique
+    #   (thoracique + cardiaque + vasculaire selon contenu)
     {
         "url": "https://www.sfctcv.org/feed",
         "label": "SFCTCV — Société Française de Chirurgie Thoracique et Cardio-Vasculaire",
         "source": "sfctcv",
         "source_type": "recommandation",
         "audience": ["medecins"],
-        "specialty_hint": "chirurgie-thoracique",
     },
 
     # ── Neurochirurgie ────────────────────────────────────────────────────
@@ -1281,14 +1282,33 @@ JOURNALS_FEEDS: list[dict] = [
         "specialty_hint": "pneumologie",
     },
 
-    # Chirurgie thoracique
+    # ── Chirurgie thoracique — RSS ScienceDirect ─────────────────────────────
+    # jto_rss : absent de SOURCE_SPECIALTY_HINTS → prompt générique
+    #   (oncologie + chirurgie-thoracique selon composante chirurgicale)
     {
         "url": "https://rss.sciencedirect.com/publication/science/15560864",
         "label": "Journal of Thoracic Oncology (IASLC, IF ~20) — cancer bronchique",
         "source": "jto_rss",
         "source_type": "innovation",
         "audience": ["medecins"],
-        "specialty_hint": "chirurgie-thoracique",
+    },
+    # Annals of Thoracic Surgery (STS/Elsevier, IF ~4) — RSS direct.
+    # Cross-specialty : cardiaque + thoracique selon contenu.
+    {
+        "url": "https://rss.sciencedirect.com/publication/science/00034975",
+        "label": "Annals of Thoracic Surgery (STS/Elsevier, IF ~4) — résection + valves",
+        "source": "ann_thorac_surg_rss",
+        "source_type": "innovation",
+        "audience": ["medecins"],
+    },
+    # Lung Cancer (IASLC/Elsevier, IF ~5) — RSS direct, complémentaire du PubMed.
+    # Cross-specialty : oncologie + chirurgie-thoracique selon composante chirurgicale.
+    {
+        "url": "https://rss.sciencedirect.com/publication/science/01695002",
+        "label": "Lung Cancer (IASLC/Elsevier, IF ~5) — NSCLC/SCLC résécable et médical",
+        "source": "lung_cancer_rss",
+        "source_type": "innovation",
+        "audience": ["medecins"],
     },
 
     # Chirurgie vasculaire
@@ -1903,16 +1923,8 @@ ALL_FEEDS: list[dict] = (
 
 EU_WEB_SOURCES: list[dict] = [
     # PRIORITÉ 1 — Impact médico-légal maximal
-    {
-        "url": "https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines",
-        "source": "esc_guidelines",
-        "label": "ESC — Clinical Practice Guidelines (cardiologie)",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "cardiologie",
-        "link_pattern": r"escardio\.org/",
-        "exclude_pattern": r"(?i)/(the-esc|membership|education|congresses|about|advocacy|newsroom|journal|login|register)(/|$)",
-    },
+    # ESC Guidelines : scraper dédié collect_esc_guidelines() dans web_scraper.py
+    # (site SPA Sitecore — 2 passes : All-ESC-Practice-Guidelines → meta esc-title/esc-start-time)
     {
         "url": "https://www.eular.org/recommendations-home",
         "source": "eular_recommendations",

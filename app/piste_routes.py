@@ -715,6 +715,9 @@ REMBOURSEMENT_KEYWORDS: list[str] = [
     "convention nationale",     # avenants conventions professionnels de santé (infirmiers, kinés…)
     "nomenclature",             # NGAP / CCAM / NABM — actes professionnels
     "accès précoce",            # autorisation accès précoce (ex-ATU) — arrêtés HAS/CEPS
+    "CCAM",                     # Classification Commune des Actes Médicaux — tarification radiologie libérale
+    "honoraires",               # arrêtés fixant les tarifs honoraires médecins (secteur 1/2)
+    "imagerie médicale",        # arrêtés spécifiques actes d'imagerie (radiologie libérale)
 ]
 
 
