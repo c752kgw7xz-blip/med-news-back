@@ -38,6 +38,7 @@ from app.web_scraper import scrape_all_web
 from app.has_scraper import scrape_has_page, build_enriched_content
 from app.ansm_scraper import scrape_ansm_page, build_ansm_enriched_content
 from app.cnom_scraper import scrape_cnom_page, build_cnom_enriched_content
+from app.carmf_scraper import collect_carmf as _collect_carmf_scraper
 
 # Sources HAS dont on enrichit le contenu par scraping de la page.
 # has_rbp  → résumé clinique + messages clés (RBP finales)
@@ -447,6 +448,11 @@ def collect_spf(days: int = 120) -> dict[str, Any]:
     # Santé publique France est exclu des sources retenues (épidémiologie,
     # pas réglementaire — voir docstring module). Aucun feed n'a source "spf".
     return {"inserted": 0, "skipped": 0, "errors": 0, "note": "source spf non activée"}
+
+
+def collect_carmf(days: int = 120) -> dict[str, Any]:
+    """Collecte les articles CARMF par scraping HTML (pas de RSS disponible)."""
+    return _collect_carmf_scraper(days=days)
 
 
 def collect_pratique(days: int = 120) -> dict[str, Any]:

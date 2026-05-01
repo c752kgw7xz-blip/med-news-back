@@ -188,14 +188,14 @@ FR_REGULATORY_FEEDS: list[dict] = [
         "min_score_hint": 7,
     },
     {
-        "url": "https://www.carmf.fr/rss/actualites.xml",  # RSS mort — site PHP statique sans flux
+        "url": None,  # Pas de RSS — collecte via carmf_scraper.collect_carmf()
         "label": "CARMF — Caisse de retraite médecins libéraux (cotisations, retraite, prévoyance)",
         "source": "carmf",
         "source_type": "reglementaire",
         "audience": ["medecins"],
         "specialty_hint": "tous",
         "min_score_hint": 6,
-        "disabled": True,
+        "disabled": True,  # Exclu de collect_feed() — utiliser collect_carmf() directement
     },
 
     # ── Académie Nationale de Médecine ────────────────────────────────────
