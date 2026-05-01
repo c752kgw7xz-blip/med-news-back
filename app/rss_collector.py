@@ -36,16 +36,26 @@ from app.llm_analysis import pre_filter_candidate, NOISY_SOURCES, _passes_jorf_w
 from app.sources import ALL_FEEDS, ALL_PRATIQUE_FEEDS
 from app.web_scraper import scrape_all_web
 from app.has_scraper import scrape_has_page, build_enriched_content
+from app.ansm_scraper import scrape_ansm_page, build_ansm_enriched_content
+from app.cnom_scraper import scrape_cnom_page, build_cnom_enriched_content
 
 # Sources HAS dont on enrichit le contenu par scraping de la page.
 # has_rbp  → résumé clinique + messages clés (RBP finales)
 # has_ct   → SMR/ASMR/indication/population cible (avis médicaments CT)
 _HAS_ENRICHABLE_SOURCES = {"has_rbp", "has_ct", "has_dm"}
 
+# Sources ANSM dont le flux RSS ne contient qu'une ligne de date.
+# On enrichit en scrapant la page pour récupérer le contenu clinique réel.
+_ANSM_ENRICHABLE_SOURCES = {"ansm_securite", "ansm_securite_med", "ansm_actualites"}
+
 # Sources RSS de journaux médicaux dont le flux ne contient que métadonnées.
 # Pour chacune, on interroge l'API PubMed par titre pour récupérer l'abstract.
 # ScienceDirect bloque les scrapers (403) — PubMed est la seule voie fiable.
 _JOURNAL_ENRICHABLE_SOURCES = {"ann_thorac_surg_rss", "jto_rss", "lung_cancer_rss"}
+
+# Sources médecin libéral dont le RSS ne contient que le titre + URL.
+# On scrape la page HTML pour récupérer le corps de l'article.
+_CNOM_ENRICHABLE_SOURCES = {"cnom"}
 
 
 def _fetch_pubmed_abstract_by_title(title: str) -> str | None:
@@ -312,6 +322,28 @@ def collect_feed(feed_config: dict, days: int = 120) -> dict[str, int]:
                         enriched_content = build_enriched_content(summary, scraped)
                     except Exception as e:
                         logger.warning("[%s] has_scraper error for %s : %s", source, entry_url, e)
+
+                # ── Enrichissement ANSM : scraping de la page de l'alerte ───
+                # Les flux RSS ANSM ne contiennent qu'une ligne de date.
+                # On va chercher le vrai contenu (mesures, produits, population)
+                # directement sur la page HTML pour que le LLM puisse scorer.
+                if source in _ANSM_ENRICHABLE_SOURCES and entry_url:
+                    try:
+                        scraped_ansm = scrape_ansm_page(entry_url)
+                        enriched_content = build_ansm_enriched_content(enriched_content, scraped_ansm)
+                    except Exception as e:
+                        logger.warning("[%s] ansm_scraper error for %s : %s", source, entry_url, e)
+
+                # ── Enrichissement CNOM : scraping de la page de l'article ──
+                # Le flux RSS CNOM ne contient que le titre + URL, sans corps.
+                # On scrape la page HTML (div.node-page__content) pour avoir
+                # le texte complet et permettre un scoring LLM pertinent.
+                if source in _CNOM_ENRICHABLE_SOURCES and entry_url:
+                    try:
+                        scraped_cnom = scrape_cnom_page(entry_url)
+                        enriched_content = build_cnom_enriched_content(enriched_content, scraped_cnom)
+                    except Exception as e:
+                        logger.warning("[%s] cnom_scraper error for %s : %s", source, entry_url, e)
 
                 # ── Enrichissement journaux : lookup PubMed par titre ────────
                 # Les flux RSS ScienceDirect (Ann Thorac Surg, JTO, Lung Cancer)

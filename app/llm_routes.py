@@ -935,7 +935,7 @@ def list_pending(
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = %s
-                  AND i.score_density >= %s
+                  AND COALESCE(i.score_density, 5) >= %s
                   {where_extra}
                 ORDER BY i.score_density DESC, c.official_date DESC
                 LIMIT %s;

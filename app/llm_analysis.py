@@ -110,6 +110,8 @@ SOURCE_TO_TYPE: dict[str, str] = {
     "cnom":                         "reglementaire",
     "ameli_medecin":                "reglementaire",  # Assurance Maladie — actualités médecins libéraux
     "carmf":                        "reglementaire",  # Caisse retraite médecins
+    "csmf":                         "reglementaire",  # CSMF — syndicat médecins libéraux
+    "mgfrance":                     "reglementaire",  # MG France — syndicat généralistes
     "carpimko":                     "reglementaire",  # Caisse retraite auxiliaires médicaux
     # EMA / ECDC — alertes et décisions réglementaires européennes
     "ema_news":                     "reglementaire",
@@ -855,13 +857,28 @@ recommandations]."
    → date_entree_en_vigueur : date de l'alerte (généralement immédiate).
 
 6. CATÉGORIE MÉTIER — Assigne UNE seule valeur parmi :
-   - clinique       : recommandations HAS, protocoles, guidelines diagnostiques ou thérapeutiques, \
-dépistage, vaccination, épidémies, prévention, plans de santé publique
-   - therapeutique  : alertes pharmacovigilance sur une MOLÉCULE nommée, retrait/suspension AMM, \
-nouvelle indication thérapeutique, modification posologie/CI/contre-indication, \
-remboursement d'un médicament ; alertes matériovigilance, problèmes de sécurité ou réglementation \
-concernant équipements médicaux, imagerie (IRM, scanner, échographe, radiologie), \
-implants, prothèses, instruments chirurgicaux, DM-DIV, réactifs de laboratoire
+   - clinique       : l'article informe sur MON ACTE MÉDICAL PERSONNEL — ce que je fais concrètement \
+avec le patient en face de moi : comment je diagnostique, comment je stratifie, quel geste je pose, \
+comment je surveille, quelle technique j'utilise. C'est "Ma pratique médicale" au sens strict de l'acte \
+de soin : la relation médecin-patient, la décision clinique individuelle, le geste technique. \
+Inclut : guidelines et recommandations guidant l'acte de soin, techniques diagnostiques ou chirurgicales, \
+comparaisons de stratégies thérapeutiques (NMA entre classes, head-to-head orienté choix clinicien), \
+épidémiologie actionnelle à l'échelle du patient individuel, dépistage (ce que je dois rechercher chez \
+mes patients), vaccination (schéma, indications pratiques). \
+NE PAS classer ici : plans de santé publique institutionnels sans impact sur l'acte individuel, \
+rapports épidémiologiques de surveillance populationnelle sans implication pratique directe.
+   - therapeutique  : l'article porte sur UN MÉDICAMENT OU DISPOSITIF SPÉCIFIQUE comme sujet principal — \
+son efficacité propre, sa sécurité, son statut réglementaire, ou sa tolérance à long terme. \
+TEST MNÉMOTECHNIQUE : "Si je supprime le nom du médicament/dispositif, l'article perd tout son sens." \
+→ Si oui : 'therapeutique'. Si non (le sujet reste une pathologie ou une décision clinique) : 'clinique'. \
+Exemples → therapeutique : données d'efficacité d'un médicament nommé en phase 3 (rocatinlimab ROCKET, \
+dupilumab CUPID-C) ; long terme d'un médicament approuvé (abrocitinib 1 an) ; \
+alertes pharmacovigilance (JAK inhibiteurs : augmentation LDL) ; approbation FDA/EMA/AMM ; \
+retrait/suspension AMM ; CI/posologie/monitoring d'un médicament nommé ; \
+alertes matériovigilance (équipements médicaux, imagerie IRM/scanner, implants, prothèses, DM-DIV). \
+Exemples → clinique : NMA comparant des CLASSES thérapeutiques pour orienter le choix clinicien ; \
+RCT head-to-head dont l'enjeu est la stratégie (upadacitinib vs dupilumab — "lequel pour ce patient ?") ; \
+épidémiologie d'une pathologie ; guidelines de prise en charge ; technique chirurgicale.
    - exercice       : Tout ce qui touche à l'exercice professionnel et à la gestion du \
 cabinet libéral — qu'il soit médical au sens strict ou administratif/entrepreneurial. \
 Le médecin libéral est un chef d'entreprise : tout ce qui impacte sa pratique compte. \
@@ -880,8 +897,11 @@ gestion des impayés CPAM) ; responsabilité civile professionnelle, assurance ;
 droit du travail si le praticien emploie du personnel ; réglementation comptable.
 
    RÈGLES DE DISCRIMINATION (prioritaires sur les définitions ci-dessus) :
-   - Molécule / DCI / spécialité pharmaceutique nommée / AMM → 'therapeutique'
+   - Essai pivot / données long terme sur un médicament nommé → 'therapeutique' \
+     (même s'il n'y a pas de signal de sécurité — l'efficacité propre de la molécule EST le sujet)
+   - Alerte pharmacovigilance ou retrait/suspension AMM → 'therapeutique'
    - Équipement, matériel, appareil, dispositif médical (y compris imagerie) → 'therapeutique'
+   - NMA ou head-to-head orienté choix de stratégie entre classes → 'clinique'
    - Logiciel métier santé (LAP, DxCare, NETSoins, Cortexte, DMP) → 'exercice'
    - Facturation, cotation CCAM/NGAP/NABM, honoraires, avenant tarifaire → 'exercice'
    - Dépistage, vaccination, alerte épidémique, plan national → 'clinique'
@@ -1313,7 +1333,9 @@ SOURCE_HINTS: dict[str, str] = {
     "pubmed_eur_j_pediatr":         "European Journal of Pediatrics",
     "sfnn":              "SFN — Recommandation néonatalogie",
     "sfsp":              "SFSP — Recommandation santé publique et prévention",
-    "sfdermato":         "SFDermato — Recommandation dermatologie",
+    "sfdermato":                "SFDermato — Recommandation dermatologie",
+    "pubmed_jeadv_guidelines":  "JEADV — Guidelines EADV (task force, consensus, position statements) : psoriasis, DA, acné, mélanome, lichen, GPP, hidradénite",
+    "pubmed_ann_derm_venereol": "Annales de Dermatologie et Vénéréologie — Recommandations SFD, PNDS, consensus d'experts français en dermatologie",
     "sfo":               "SFO — Recommandation ophtalmologie",
     "afsos":             "AFSOS — Recommandation soins oncologiques de support",
     "sfh":               "SFH — Recommandation hématologie",
@@ -1334,6 +1356,8 @@ SOURCE_HINTS: dict[str, str] = {
     "cnom":          "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
     "ameli_medecin": "Assurance Maladie (ameli.fr) — Actualités médecins libéraux : convention médicale, honoraires, FMT/Donum, remboursements CCAM, téléconsultation, nouveaux actes, outils praticiens",
     "carmf":         "CARMF (Caisse Autonome de Retraite des Médecins de France) — Retraite, cotisations, PSS, ASV, prévoyance médecins libéraux",
+    "csmf":          "CSMF (Confédération des Syndicats Médicaux Français) — Actualités syndicales : convention médicale, honoraires, conditions d'exercice, défense des libéraux",
+    "mgfrance":      "MG France (syndicat des généralistes) — Actualités médecine générale libérale : conventions, revalorisation actes, santé primaire, permanence des soins",
     "carpimko":      "CARPIMKO (Caisse de Retraite des auxiliaires médicaux libéraux) — Retraite, cotisations, assiette sociale infirmiers, kinésithérapeutes, pédicures-podologues, orthophonistes, orthoptistes",
     # ── Sociétés savantes françaises (RSS + scraping) ─────────────────────
     "gpip":            "GPIP — Groupe de Pathologie Infectieuse Pédiatrique : recommandations antibiothérapie, vaccination, protocoles infectiologie pédiatrique",
@@ -1608,6 +1632,8 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "cnom":                           "tous",        # CNOM — déontologie, exercice libéral, toutes spécialités
     "bo_social":                      "tous",        # BO Social — instructions DGS/DSS/DGOS, toutes spécialités
     "carmf":                          "tous",        # CARMF — retraite/cotisations médecins libéraux
+    "csmf":                           "tous",        # CSMF — syndicat médecins libéraux, exercice professionnel
+    "mgfrance":                       "tous",        # MG France — syndicat généralistes, médecine primaire
     "carpimko":                       "tous",        # CARPIMKO — retraite auxiliaires médicaux (infirmiers, kiné, etc.)
     "has_rbp":                        "tous",        # HAS — Recommandations de bonne pratique
     "has_ct":                         "tous",        # HAS — Commission de Transparence (médicaments)
@@ -1701,9 +1727,15 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_j_derm_treat":          "dermatologie",
     "pubmed_pediatr_derm":          "dermatologie",
     "pubmed_int_j_derm":            "dermatologie",
+    "pubmed_jeadv_guidelines":      "dermatologie",   # Guidelines EADV (task force, consensus)
+    "pubmed_ann_derm_venereol":     "dermatologie",   # Annales Dermato — recommandations SFD, PNDS
     # ── endocrinologie ────────────────────────────────────────────────────────
     "lancet_diab_endo_rss":         "endocrinologie",  # RSS Lancet Diabetes & Endocrinology (IF ~44)
     "diabetes_care_rss":            "endocrinologie",  # RSS Diabetes Care (ADA, IF ~16)
+    "clinical_endo_rss":            "endocrinologie",  # RSS Clinical Endocrinology (Wiley, IF ~3)
+    "endocrine_springer_rss":       "endocrinologie",  # RSS Endocrine (Springer, IF ~4)
+    "obesity_rss":                  "endocrinologie",  # RSS Obesity (TOS/Wiley, IF ~8)
+    "obesity_reviews_rss":          "endocrinologie",  # RSS Obesity Reviews (EASO/Wiley, IF ~9)
     "pubmed_diabetes_care":         "endocrinologie",
     "pubmed_lancet_diab_endo":      "endocrinologie",
     "pubmed_diabetologia":          "endocrinologie",
@@ -3652,6 +3684,43 @@ complet (homozygote)."
   impact_pratique : "En pratique : tester le statut DPD (uracilémie plasmatique) \
 avant toute prescription de 5-FU topique — le déficit partiel (hétérozygote) impose \
 une réduction de dose ou un traitement alternatif (imiquimod, cryothérapie)."
+
+RÈGLE DE DISCRIMINATION CATÉGORIE — DERMATO (prioritaire sur la règle générale "molécule nommée → therapeutique") :
+
+En dermatologie, presque tous les articles de recherche impliquent une molécule nommée \
+(dupilumab, bimekizumab, JAK inhibiteurs…). Appliquer "molécule nommée → therapeutique" \
+à la lettre viderait "clinique" de tout son contenu. La vraie distinction est :
+
+→ categorie = "clinique" : le sujet principal est une DÉCISION DE PRISE EN CHARGE \
+pour le patient — quelle stratégie thérapeutique choisir, dans quel ordre, pour quel profil. \
+Exemples : \
+  • RCT head-to-head (dupilumab vs baricitinib dans la DA) — le sujet est la stratégie, pas la molécule \
+  • NMA guidant le choix de séquence (adalimumab vs bimekizumab en 1re ligne HS) \
+  • Guidelines/consensus sur la prise en charge d'une pathologie (EADV, SFD, EADO) \
+  • Pronostic et facteurs de risque sans molécule en sujet principal (mélanome fin — récidive) \
+  • Épidémiologie cliniquement actionnable (HS pédiatrique — délai diagnostique) \
+  • Technique diagnostique ou procédure (patch-tests, Mohs, marges d'exérèse) \
+  • Données long terme d'efficacité en vie réelle (abrocitinib 1 an — le maintien de la réponse oriente la décision de continuer)
+
+→ categorie = "therapeutique" : le sujet principal est la MOLÉCULE ou le DISPOSITIF elle-même — \
+données d'efficacité, de sécurité, ou statut réglementaire d'un médicament ou dispositif nommé. \
+Exemples : \
+  • Données d'efficacité d'un médicament nommé dans un essai pivot ou une étude long terme \
+    (rocatinlimab ROCKET phase 3 DA ; abrocitinib 1 an en vie réelle ; dupilumab CUPID-C UCS) \
+  • Safety signal d'une molécule (JAK inhibiteurs : augmentation LDL ; réactivation VHB/VHC sous biologiques) \
+  • Données long terme de sécurité d'une molécule nommée (upadacitinib 6 ans — MACE, thrombose) \
+  • Approbation réglementaire FDA/EMA/AMM (dupilumab nouvelle indication UCS enfant) \
+  • Modification CI/posologie/monitoring d'un médicament nommé (réduction dose JAK1i) \
+  • Balance bénéfice/risque d'une molécule (sirolimus cSCC : -49% récidive MAIS arrêts ×8,6) \
+  • Alerte ANSM/EMA matériovigilance ou pharmacovigilance (5-FU topique restriction DPD) \
+  • Retrait ou suspension AMM \
+  Règle mnémotechnique : "Si je supprime le nom du médicament, l'article perd son sens → therapeutique." \
+    Rocatinlimab ROCKET = l'article n'existe que parce que c'est rocatinlimab. → therapeutique. \
+    NMA biologiques/JAK = l'article compare des CLASSES thérapeutiques pour aider le choix. → clinique.
+
+→ categorie = "exercice" : toujours hors de portée pour les articles dermatologie retenus \
+dans ce pipeline — se limite aux textes sur la facturation/cotation des actes dermatologiques \
+(CCAM) ou l'exercice libéral.
 """
 
 _SPECIALTY_ADDENDUM_ENDOCRINOLOGIE = """\
@@ -8007,11 +8076,11 @@ SOURCE_CONFIG: dict[str, dict] = {
     },
     # ── EMA — section Innovation ───────────────────────────────────────────
     # ema_new_medicines : ~200 AMM/an dont ~150 génériques/biosimilaires → bruit.
-    # Seuil 8 : seule l'innovation truly breakthrough passe (first-in-class,
-    # thérapie génique, pathologie sans alternative). Objectif : 5-15 items/an.
+    # Seuil 7 : innovations majeures + révisions EPAR d'indication (extensions,
+    # nouvelles populations, biosimilaires de référence). Objectif : 15-30 items/an.
     "ema_new_medicines": {
         "require_whitelist": False,
-        "min_llm_score": 8,
+        "min_llm_score": 7,
     },
     # ema_guidelines : guidelines CHMP/ICH — faible volume, haute valeur → seuil 5
     "ema_guidelines": {

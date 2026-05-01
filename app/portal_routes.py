@@ -134,9 +134,10 @@ def _build_audience_clause(audience: str | None, slug: str | None):
             (),
         )
     elif slug:
-        return "i.specialty_slug = %s", (slug,)
+        # Articles de la spécialité + transversaux tous médecins (exercice libéral, CNOM, CNAM…)
+        return "(i.specialty_slug = %s OR i.audience = 'TRANSVERSAL_LIBERAL')", (slug,)
     else:
-        return "i.audience = 'SPECIALITE'", ()
+        return "(i.audience = 'SPECIALITE' OR i.audience = 'TRANSVERSAL_LIBERAL')", ()
 
 
 @router.get("/articles")
@@ -162,17 +163,21 @@ def list_articles(
 
     # Filtrage croisé type_praticien × spécialité
     # Les items sans type_praticien (NULL) passent toujours (rétrocompatibilité).
+    # Les items TRANSVERSAL_LIBERAL sont exempts du filtre (pertinents pour tous).
     if slug in _INTERVENTIONAL_SLUGS:
         # Chirurgiens/anesthésistes : exclure articles prescripteurs sauf score très élevé (≥ 9)
         extra_clauses.append(
-            "(i.type_praticien IS NULL"
+            "(i.audience = 'TRANSVERSAL_LIBERAL'"
+            " OR i.type_praticien IS NULL"
             " OR i.type_praticien != 'prescripteur'"
             " OR i.score_density >= 9)"
         )
     elif slug in _PRESCRIPTEUR_SLUGS:
         # Prescripteurs : exclure articles interventionnels
         extra_clauses.append(
-            "(i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')"
+            "(i.audience = 'TRANSVERSAL_LIBERAL'"
+            " OR i.type_praticien IS NULL"
+            " OR i.type_praticien != 'interventionnel')"
         )
 
     # Filtre source_type (reglementaire | recommandation | innovation)
@@ -197,11 +202,13 @@ def list_articles(
     # Date range filter — from_date/to_date take priority over month.
     # Par défaut (aucun filtre explicite) : fenêtre mois courant + mois précédent,
     # alignée sur la logique newsletter (édition mensuelle).
+    # Les items TRANSVERSAL_LIBERAL sont exempts du filtre de date (pertinents en permanence).
+    TL = "i.audience = 'TRANSVERSAL_LIBERAL'"
     if from_date:
-        extra_clauses.append("c.official_date >= %s")
+        extra_clauses.append(f"({TL} OR c.official_date >= %s)")
         extra_params.append(from_date)
         if to_date:
-            extra_clauses.append("c.official_date <= %s")
+            extra_clauses.append(f"({TL} OR c.official_date <= %s)")
             extra_params.append(to_date)
     elif month and len(month) == 7:
         # Legacy exact-month filter (used by archives)
@@ -211,7 +218,7 @@ def list_articles(
             last_day = monthrange(year, mon)[1]
             start = f"{year:04d}-{mon:02d}-01"
             end = f"{year:04d}-{mon:02d}-{last_day}"
-            extra_clauses.append("c.official_date >= %s AND c.official_date <= %s")
+            extra_clauses.append(f"({TL} OR (c.official_date >= %s AND c.official_date <= %s))")
             extra_params.extend([start, end])
         except (ValueError, IndexError):
             pass
@@ -222,7 +229,7 @@ def list_articles(
             default_from = date(today.year - 1, 12, 1)
         else:
             default_from = date(today.year, today.month - 1, 1)
-        extra_clauses.append("c.official_date >= %s")
+        extra_clauses.append(f"({TL} OR c.official_date >= %s)")
         extra_params.append(default_from.isoformat())
 
     extra_where = (" AND " + " AND ".join(extra_clauses)) if extra_clauses else ""
@@ -322,8 +329,7 @@ def article_counts(
 
     with get_conn() as conn:
         with conn.cursor() as cur:
-            # Count per specialty per source_type, filtered by date range
-            # Applique les mêmes filtres type_praticien que /articles pour cohérence
+            # Count per specialty per source_type
             cur.execute(f"""
                 SELECT i.specialty_slug, COALESCE(i.source_type, 'innovation'), COUNT(*)
                 FROM items i
@@ -349,8 +355,30 @@ def article_counts(
                 per_spec[slug][key] = count
                 per_spec[slug]["total"] += count
 
+            # Compter les items TRANSVERSAL_LIBERAL — exempts du filtre de date
+            cur.execute(f"""
+                SELECT COALESCE(i.source_type, 'innovation'), COUNT(*)
+                FROM items i
+                JOIN candidates c ON c.id = i.candidate_id
+                WHERE i.review_status = 'APPROVED'
+                  AND COALESCE(i.score_density, 0) >= 3
+                  AND i.audience = 'TRANSVERSAL_LIBERAL'
+                GROUP BY COALESCE(i.source_type, 'innovation');
+            """)
+            tous_counts: dict = {"total": 0, "reglementaire": 0, "recommandation": 0, "innovation": 0}
+            for stype, count in cur.fetchall():
+                key = stype if stype in ("reglementaire", "recommandation", "innovation") else "reglementaire"
+                tous_counts[key] = count
+                tous_counts["total"] += count
+
+            # Injecter les TRANSVERSAL_LIBERAL dans chaque spécialité
+            for spec_data in per_spec.values():
+                for k in ("total", "reglementaire", "recommandation", "innovation"):
+                    spec_data[k] = spec_data.get(k, 0) + tous_counts.get(k, 0)
+
     return {
         "per_specialty": per_spec,
+        "tous_medecins": tous_counts,
     }
 
 
@@ -387,6 +415,7 @@ def article_months(
                   AND {aud_clause}
                   {extra_sql}
                   AND CASE
+                    WHEN i.audience = 'TRANSVERSAL_LIBERAL' THEN TRUE
                     WHEN i.specialty_slug = ANY(%s) THEN
                       (i.type_praticien IS NULL OR i.type_praticien != 'prescripteur' OR i.score_density >= 9)
                     WHEN i.specialty_slug = ANY(%s) THEN

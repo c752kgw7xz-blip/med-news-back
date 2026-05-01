@@ -2256,6 +2256,48 @@ PUBMED_SOURCES: list[dict] = [
         "min_score_hint": 7,
     },
 
+    # ── JEADV Guidelines — guidelines EADV publiées dans JEADV ───────────────
+    # Source dédiée aux guidelines/consensus/position statements EADV publiés dans
+    # JEADV — séparée de pubmed_jeadv (innovation) pour éviter que les guidelines
+    # ne se noient dans le flux RCT/méta-analyse. Cible : psoriasis, DA, acné,
+    # mélanome, infections cutanées, GPP, hidradénite, lichen — toutes pathologies
+    # pour lesquelles l'EADV publie des task-force guidelines.
+    # Filtre titre centré guideline/consensus/position statement.
+    {
+        "source": "pubmed_jeadv_guidelines",
+        "journal_term": (
+            '"J Eur Acad Dermatol Venereol"[Journal] AND '
+            '("guideline"[Title] OR "consensus"[Title] OR "recommendation"[Title] OR '
+            '"position statement"[Title] OR "task force"[Title] OR '
+            '"guideline"[pt] OR "practice guideline"[pt])'
+        ),
+        "label": "JEADV — Guidelines EADV (task force, consensus, position statements)",
+        "source_type": "recommandation",
+        "specialty_hint": "dermatologie",
+        "min_score_hint": 7,
+    },
+
+    # ── Annales de Dermatologie et Vénéréologie — journal SFD ────────────────
+    # IF ~3 — journal officiel de la Société Française de Dermatologie (SFD).
+    # Publie les recommandations et PNDS français en dermatologie : protocoles
+    # nationaux (PNDS génodermatoses, pemphigoïdes, DRESS, nécrolyse épidermique),
+    # guidelines SFD (psoriasis, DA, mélanome, acné, hidradénite, lichen),
+    # consensus d'experts HAS-SFD. Pertinence maximale pour la pratique française.
+    # Filtre titre strict : uniquement guidelines/recommandations/PNDS/consensus.
+    {
+        "source": "pubmed_ann_derm_venereol",
+        "journal_term": (
+            '"Ann Dermatol Venereol"[Journal] AND '
+            '("guideline"[Title] OR "consensus"[Title] OR "recommendation"[Title] OR '
+            '"recommandation"[Title] OR "PNDS"[Title] OR "protocol"[Title] OR '
+            '"position statement"[Title] OR "guideline"[pt] OR "practice guideline"[pt])'
+        ),
+        "label": "Annales de Dermatologie et Vénéréologie — Recommandations SFD, PNDS, consensus",
+        "source_type": "recommandation",
+        "specialty_hint": "dermatologie",
+        "min_score_hint": 7,
+    },
+
     # ==========================================================================
     # ── ENDOCRINOLOGIE, DIABÉTOLOGIE, MALADIES MÉTABOLIQUES ───────────────────
     # ==========================================================================

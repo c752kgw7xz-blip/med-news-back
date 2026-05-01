@@ -157,6 +157,46 @@ FR_REGULATORY_FEEDS: list[dict] = [
         "min_score_hint": 7,
     },
 
+    # ── Médecin libéral — Sources transversales tous médecins ─────────────
+    # Ces sources produisent du contenu audience='TOUS_MEDECINS' :
+    # convention médicale, honoraires, charges sociales, exercice libéral.
+    {
+        "url": "https://www.ameli.fr/rss/medecin/actualites",
+        "label": "Ameli.fr — Actualités médecins libéraux (convention, honoraires, téléconsultation)",
+        "source": "ameli_medecin",
+        "source_type": "reglementaire",
+        "audience": ["medecins"],
+        "specialty_hint": "tous",
+        "min_score_hint": 7,
+    },
+    {
+        "url": "https://www.csmf.org/feed/",
+        "label": "CSMF — Confédération des Syndicats Médicaux Français (convention, tarifs, politique de santé)",
+        "source": "csmf",
+        "source_type": "reglementaire",
+        "audience": ["medecins"],
+        "specialty_hint": "tous",
+        "min_score_hint": 7,
+    },
+    {
+        "url": "https://www.mgfrance.org/feed/",
+        "label": "MG France — Syndicat des médecins généralistes (accord conventionnel, rémunération)",
+        "source": "mgfrance",
+        "source_type": "reglementaire",
+        "audience": ["medecins"],
+        "specialty_hint": "tous",
+        "min_score_hint": 7,
+    },
+    {
+        "url": "https://www.carmf.fr/rss/actualites.xml",
+        "label": "CARMF — Caisse de retraite médecins libéraux (cotisations, retraite, prévoyance)",
+        "source": "carmf",
+        "source_type": "reglementaire",
+        "audience": ["medecins"],
+        "specialty_hint": "tous",
+        "min_score_hint": 6,
+    },
+
     # ── Académie Nationale de Médecine ────────────────────────────────────
     {
         "url": "https://www.academie-medecine.fr/feed/",
@@ -1212,6 +1252,43 @@ JOURNALS_FEEDS: list[dict] = [
         "source_type": "innovation",
         "audience": ["medecins"],
         "specialty_hint": "endocrinologie",
+    },
+    {
+        "url": "https://onlinelibrary.wiley.com/action/showFeed?jc=13652265&type=etoc&feed=rss",
+        "label": "Clinical Endocrinology (Wiley/BAE, IF ~3) — thyroïde, surrénales, hypophyse",
+        "source": "clinical_endo_rss",
+        "source_type": "innovation",
+        "audience": ["medecins"],
+        "specialty_hint": "endocrinologie",
+    },
+    {
+        "url": "https://link.springer.com/search.rss?query=&search-within=Journal&facet-journal-id=12020",
+        "label": "Endocrine (Springer, IF ~4) — endocrinologie clinique générale",
+        "source": "endocrine_springer_rss",
+        "source_type": "innovation",
+        "audience": ["medecins"],
+        "specialty_hint": "endocrinologie",
+        "min_score_hint": 7,
+    },
+
+    # Obésité
+    {
+        "url": "https://onlinelibrary.wiley.com/action/showFeed?jc=1930739X&type=etoc&feed=rss",
+        "label": "Obesity (The Obesity Society/Wiley, IF ~8) — obésité, GLP-1, chirurgie bariatrique",
+        "source": "obesity_rss",
+        "source_type": "innovation",
+        "audience": ["medecins"],
+        "specialty_hint": "endocrinologie",
+        "min_score_hint": 7,
+    },
+    {
+        "url": "https://onlinelibrary.wiley.com/action/showFeed?jc=1467789X&type=etoc&feed=rss",
+        "label": "Obesity Reviews (EASO/Wiley, IF ~9) — méta-analyses obésité, GLP-1, bariatrique",
+        "source": "obesity_reviews_rss",
+        "source_type": "innovation",
+        "audience": ["medecins"],
+        "specialty_hint": "endocrinologie",
+        "min_score_hint": 7,
     },
 
     # Rhumatologie
