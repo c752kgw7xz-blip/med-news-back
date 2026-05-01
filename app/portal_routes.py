@@ -200,30 +200,32 @@ def list_articles(
         extra_params.extend([pattern, pattern, pattern])
 
     # Date range filter — from_date/to_date take priority over month.
-    # Par défaut (aucun filtre explicite) : fenêtre mois courant + mois précédent,
-    # alignée sur la logique newsletter (édition mensuelle).
-    # Les items TRANSVERSAL_LIBERAL sont exempts du filtre de date (pertinents en permanence).
+    # Par défaut (aucun filtre explicite) : fenêtre mois courant + mois précédent.
+    # Les items TRANSVERSAL_LIBERAL sont exempts du filtre de date UNIQUEMENT dans la
+    # vue par défaut (fenêtre courante) — en vue d'archive (mois explicite ou from_date),
+    # ils respectent les mêmes bornes pour ne pas apparaître dans le mauvais mois.
     TL = "i.audience = 'TRANSVERSAL_LIBERAL'"
     if from_date:
-        extra_clauses.append(f"({TL} OR c.official_date >= %s)")
+        extra_clauses.append("c.official_date >= %s")
         extra_params.append(from_date)
         if to_date:
-            extra_clauses.append(f"({TL} OR c.official_date <= %s)")
+            extra_clauses.append("c.official_date <= %s")
             extra_params.append(to_date)
     elif month and len(month) == 7:
-        # Legacy exact-month filter (used by archives)
+        # Vue d'archive : filtre exact sur le mois demandé, TL inclus
         try:
             year, mon = int(month[:4]), int(month[5:7])
             from calendar import monthrange
             last_day = monthrange(year, mon)[1]
             start = f"{year:04d}-{mon:02d}-01"
             end = f"{year:04d}-{mon:02d}-{last_day}"
-            extra_clauses.append(f"({TL} OR (c.official_date >= %s AND c.official_date <= %s))")
+            extra_clauses.append("c.official_date >= %s AND c.official_date <= %s")
             extra_params.extend([start, end])
         except (ValueError, IndexError):
             pass
     else:
         # Fenêtre par défaut : 1er du mois précédent → aujourd'hui
+        # TL exempt : ils sont toujours pertinents dans la vue courante
         today = date.today()
         if today.month == 1:
             default_from = date(today.year - 1, 12, 1)

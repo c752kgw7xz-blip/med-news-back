@@ -179,7 +179,7 @@ FR_REGULATORY_FEEDS: list[dict] = [
         "min_score_hint": 7,
     },
     {
-        "url": "https://www.mgfrance.org/feed/",
+        "url": "https://www.mgfrance.org/index.php?option=com_content&view=featured&format=feed&type=rss",
         "label": "MG France — Syndicat des médecins généralistes (accord conventionnel, rémunération)",
         "source": "mgfrance",
         "source_type": "reglementaire",
@@ -188,13 +188,14 @@ FR_REGULATORY_FEEDS: list[dict] = [
         "min_score_hint": 7,
     },
     {
-        "url": "https://www.carmf.fr/rss/actualites.xml",
+        "url": "https://www.carmf.fr/rss/actualites.xml",  # RSS mort — site PHP statique sans flux
         "label": "CARMF — Caisse de retraite médecins libéraux (cotisations, retraite, prévoyance)",
         "source": "carmf",
         "source_type": "reglementaire",
         "audience": ["medecins"],
         "specialty_hint": "tous",
         "min_score_hint": 6,
+        "disabled": True,
     },
 
     # ── Académie Nationale de Médecine ────────────────────────────────────
