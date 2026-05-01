@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MedNews — La revue médicale par spécialité</title>
-<meta name="description" content="Réglementation, recommandations cliniques, innovations thérapeutiques — MedNews couvre l'intégralité du spectre médical avec la précision d'une revue spécialisée. Pour 36 disciplines.">
+<title>MedNews — Votre bouclier contre l'infobésité médicale</title>
+<meta name="description" content="Le savoir médical double tous les 73 jours. MedNews filtre l'essentiel : réglementation, recommandations cliniques, innovations — pour chacune des 36 spécialités.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
@@ -41,34 +41,35 @@ nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px sol
 .nav-cta:hover{opacity:.88}
 
 /* ── HERO ── */
-.hero{min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 32px;border-bottom:1px solid var(--border)}
-.hero-body{display:contents}
-.hero-phone-wide{display:none}
-.hero-eyebrow{font-size:0.72rem;font-weight:500;color:var(--accent);letter-spacing:.8px;text-transform:uppercase;margin-bottom:28px}
-h1{font-family:var(--serif);font-size:clamp(40px,5.5vw,70px);color:var(--text);line-height:1.1;letter-spacing:-.5px;max-width:820px;margin-bottom:20px}
+.hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:88px 32px 72px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(155,35,53,.04) 0%,transparent 70%);pointer-events:none}
+.hero-eyebrow{font-size:0.72rem;font-weight:500;color:var(--accent);letter-spacing:.8px;text-transform:uppercase;margin-bottom:28px;display:flex;align-items:center;gap:8px;justify-content:center}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';width:24px;height:1px;background:var(--accent);opacity:.4}
+h1{font-family:var(--serif);font-size:clamp(42px,5.8vw,76px);color:var(--text);line-height:1.08;letter-spacing:-.5px;max-width:860px;margin-bottom:24px}
 h1 em{font-style:italic;color:var(--text2)}
-.h1-line1{display:block}
-.h1-line2{display:block}
-.hero-sub{font-size:0.97rem;color:var(--text3);max-width:560px;line-height:1.75;margin-bottom:44px}
+.hero-sub{font-size:1rem;color:var(--text3);max-width:540px;line-height:1.75;margin-bottom:48px}
 .hero-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center}
-.btn-primary{font-size:0.86rem;font-weight:500;color:#fff;background:var(--accent);padding:12px 28px;border-radius:4px;text-decoration:none;transition:opacity .2s}
+.btn-primary{font-size:0.86rem;font-weight:500;color:#fff;background:var(--accent);padding:13px 30px;border-radius:4px;text-decoration:none;transition:opacity .2s}
 .btn-primary:hover{opacity:.88}
 .btn-secondary{font-size:0.86rem;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
 .btn-secondary:hover{color:var(--text)}
 .btn-secondary svg{transition:transform .2s}
 .btn-secondary:hover svg{transform:translateX(3px)}
-.hero-stats{margin-top:64px;display:flex;border-top:1px solid var(--border);padding-top:40px}
-.stat-item{text-align:center;padding:0 40px;border-right:1px solid var(--border)}
+
+/* hero stat strip */
+.hero-stats{margin-top:72px;display:flex;border-top:1px solid var(--border);padding-top:44px;gap:0}
+.stat-item{text-align:center;padding:0 44px;border-right:1px solid var(--border)}
 .stat-item:last-child{border-right:none}
-.stat-n{font-family:var(--serif);font-size:2.2rem;color:var(--text);line-height:1}
-.stat-l{font-size:0.72rem;color:var(--text3);margin-top:5px}
+.stat-n{font-family:var(--serif);font-size:2.4rem;color:var(--text);line-height:1}
+.stat-l{font-size:0.72rem;color:var(--text3);margin-top:6px;letter-spacing:.1px}
 
 /* ── REVEAL ── */
-.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
 .reveal-delay-1{transition-delay:.1s}
 .reveal-delay-2{transition-delay:.2s}
 .reveal-delay-3{transition-delay:.3s}
+.reveal-delay-4{transition-delay:.4s}
 
 /* ── DIVIDER ── */
 .divider-line{height:1px;background:var(--border)}
@@ -78,17 +79,41 @@ h1 em{font-style:italic;color:var(--text2)}
 .section-center{text-align:center}
 .section-center .section-sub{margin-left:auto;margin-right:auto}
 .section-tag{font-size:0.72rem;font-weight:500;color:var(--accent);letter-spacing:.6px;text-transform:uppercase;margin-bottom:12px;display:block}
-.section-title{font-family:var(--serif);font-size:clamp(26px,3.5vw,42px);color:var(--text);line-height:1.15;letter-spacing:-.3px;margin-bottom:16px}
+.section-title{font-family:var(--serif);font-size:clamp(26px,3.5vw,44px);color:var(--text);line-height:1.12;letter-spacing:-.3px;margin-bottom:16px}
 .section-title em{font-style:italic}
-.section-sub{font-size:0.93rem;color:var(--text3);max-width:460px;line-height:1.75;margin-bottom:52px}
+.section-sub{font-size:0.93rem;color:var(--text3);max-width:480px;line-height:1.75;margin-bottom:52px}
+
+/* ── PARADOX SECTION ── */
+.paradox-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.paradox-inner{max-width:1400px;margin:0 auto;padding:88px 40px}
+.paradox-grid{display:grid;grid-template-columns:1fr 1.8fr;gap:80px;align-items:start}
+.paradox-left{}
+.paradox-stat-big{font-family:var(--serif);font-size:clamp(56px,7vw,96px);color:var(--text);line-height:1;letter-spacing:-2px;margin-bottom:8px}
+.paradox-stat-big em{font-style:italic;color:var(--accent)}
+.paradox-stat-label{font-size:0.82rem;color:var(--text3);line-height:1.6;max-width:260px;margin-bottom:32px}
+.paradox-secondary{display:flex;flex-direction:column;gap:4px}
+.paradox-secondary-stat{display:flex;align-items:baseline;gap:10px}
+.paradox-secondary-n{font-family:var(--serif);font-size:1.8rem;color:var(--text2);line-height:1}
+.paradox-secondary-l{font-size:0.75rem;color:var(--text3)}
+.paradox-right{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.paradox-card{background:var(--surface);padding:28px 32px;display:flex;gap:20px;align-items:flex-start}
+.paradox-card-marker{font-family:var(--serif);font-size:0.95rem;font-style:italic;color:var(--text4);flex-shrink:0;width:64px;padding-top:2px}
+.paradox-card-body{}
+.paradox-card-title{font-size:0.86rem;font-weight:600;color:var(--text);margin-bottom:5px}
+.paradox-card-desc{font-size:0.82rem;color:var(--text3);line-height:1.65}
+.paradox-card.card-law .paradox-card-marker{color:var(--reg)}
+.paradox-card.card-risk .paradox-card-marker{color:var(--accent)}
+.paradox-card.card-reality .paradox-card-marker{color:var(--innov)}
 
 /* ── PILLARS ── */
 .pillar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden}
-.pillar-card{background:var(--surface);padding:32px 28px}
-.pillar-accent{width:28px;height:3px;border-radius:2px;margin-bottom:20px}
-.pillar-name{font-size:0.79rem;font-weight:500;color:var(--text);margin-bottom:8px}
-.pillar-desc{font-size:0.82rem;color:var(--text3);line-height:1.65;margin-bottom:16px}
-.pillar-sources{font-size:0.68rem;color:var(--text4);letter-spacing:.1px}
+.pillar-card{background:var(--surface);padding:36px 28px}
+.pillar-accent{width:28px;height:3px;border-radius:2px;margin-bottom:22px}
+.pillar-label{font-size:0.65rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.pillar-name{font-size:0.93rem;font-weight:500;color:var(--text);margin-bottom:10px}
+.pillar-desc{font-size:0.82rem;color:var(--text3);line-height:1.65;margin-bottom:20px}
+.pillar-badge{display:inline-block;font-size:0.65rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;padding:3px 8px;border-radius:2px;margin-bottom:16px}
+.pillar-sources{font-size:0.68rem;color:var(--text4);letter-spacing:.1px;line-height:1.7}
 
 /* ── HOW ── */
 .how-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:4px;overflow:hidden}
@@ -98,6 +123,24 @@ h1 em{font-style:italic;color:var(--text2)}
 .how-title{font-size:0.93rem;font-weight:500;color:var(--text);margin-bottom:8px}
 .how-desc{font-size:0.82rem;color:var(--text3);line-height:1.65}
 .how-tag{display:inline-flex;align-items:center;gap:5px;font-size:0.65rem;color:var(--text4);margin-top:16px}
+
+/* ── DELIVERY CHANNELS ── */
+.channels-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.channels-inner{max-width:1400px;margin:0 auto;padding:88px 40px}
+.channels-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-top:52px}
+.channel-card{background:var(--surface);padding:36px 28px;position:relative}
+.channel-num{font-family:var(--serif);font-size:0.75rem;font-style:italic;color:var(--text4);margin-bottom:20px;display:block}
+.channel-icon{width:36px;height:36px;border:1px solid var(--border);border-radius:4px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.channel-name{font-size:0.93rem;font-weight:600;color:var(--text);margin-bottom:8px}
+.channel-time{font-size:0.7rem;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+.channel-desc{font-size:0.82rem;color:var(--text3);line-height:1.65}
+
+/* ── VALUE / WHY ── */
+.value-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.value-card{background:var(--surface);padding:32px 28px}
+.value-n{font-family:var(--serif);font-size:2rem;color:var(--border-strong);font-style:italic;line-height:1;margin-bottom:16px}
+.value-title{font-size:0.93rem;font-weight:500;color:var(--text);margin-bottom:8px}
+.value-desc{font-size:0.82rem;color:var(--text3);line-height:1.65}
 
 /* ── COMPARE TABLE ── */
 .compare-wrap{overflow-x:auto;margin-top:0}
@@ -113,19 +156,6 @@ h1 em{font-style:italic;color:var(--text2)}
 .check-yes{color:var(--reco)}
 .check-no{color:var(--border-strong)}
 
-/* ── VALUE ── */
-.value-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden}
-.value-card{background:var(--surface);padding:28px}
-.value-icon{width:34px;height:34px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
-.value-title{font-size:0.93rem;font-weight:500;color:var(--text);margin-bottom:6px}
-.value-desc{font-size:0.85rem;color:var(--text3);line-height:1.65}
-
-/* ── SPEC ── */
-.spec-section{padding:88px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface)}
-.spec-inner{max-width:1400px;margin:0 auto;padding:0 40px}
-.spec-scroll{display:flex;gap:8px;flex-wrap:wrap;margin-top:36px}
-.spec-pill{font-size:0.72rem;padding:5px 14px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);white-space:nowrap;font-family:var(--sans);font-weight:400}
-
 /* ── PORTAL PREVIEW ── */
 .portal-preview-wrap{width:100%;max-width:1400px;margin:0 auto}
 .browser-frame{border-radius:4px;overflow:hidden;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.07)}
@@ -133,9 +163,8 @@ h1 em{font-style:italic;color:var(--text2)}
 .browser-dot{width:10px;height:10px;border-radius:50%}
 .dot-red{background:#e8b4b8}.dot-yellow{background:#e8d4b4}.dot-green{background:#b4d4b4}
 .browser-url{margin-left:12px;font-size:11px;color:var(--text4)}
-/* Iframe scaled down so content fits the preview proportionally */
 .portal-iframe-wrap{overflow:hidden;height:560px;position:relative}
-.portal-iframe{width:calc(100% / 0.72);height:calc(560px / 0.72);border:none;display:block;transform:scale(0.72);transform-origin:top left;}
+.portal-iframe{width:calc(100% / 0.72);height:calc(560px / 0.72);border:none;display:block;transform:scale(0.72);transform-origin:top left}
 
 /* ── NEWSLETTER ── */
 .newsletter-full{display:flex;align-items:flex-start;gap:64px;padding:88px 40px;max-width:1400px;margin:0 auto}
@@ -161,6 +190,12 @@ h1 em{font-style:italic;color:var(--text2)}
 .mobile-bullet-title{font-size:0.86rem;font-weight:500;color:var(--text);margin-bottom:2px}
 .mobile-bullet-desc{font-size:0.79rem;color:var(--text3);line-height:1.6}
 .phone-frame{width:240px;border-radius:20px;overflow:hidden;border:2px solid var(--border-strong);box-shadow:0 20px 60px rgba(0,0,0,.1);background:var(--surface)}
+
+/* ── SPEC ── */
+.spec-section{padding:88px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface)}
+.spec-inner{max-width:1400px;margin:0 auto;padding:0 40px}
+.spec-scroll{display:flex;gap:8px;flex-wrap:wrap;margin-top:36px}
+.spec-pill{font-size:0.72rem;padding:5px 14px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);white-space:nowrap;font-family:var(--sans);font-weight:400}
 
 /* ── PRICING ── */
 .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -194,23 +229,29 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
+  .paradox-grid{grid-template-columns:1fr;gap:48px}
   .newsletter-full{gap:40px}
   .mobile-section{gap:40px}
+  .channels-grid{grid-template-columns:1fr}
+  .value-row{grid-template-columns:1fr}
 }
 @media(max-width:768px){
   nav{padding:0 20px}
   .nav-links .nav-link{display:none}
-  .hero{padding:60px 20px;min-height:auto}
+  .hero{padding:64px 20px 56px;min-height:auto}
   .hero-stats{flex-wrap:wrap;justify-content:center}
   .stat-item{padding:0 24px;border-right:none;border-bottom:1px solid var(--border);width:50%;padding-bottom:20px;padding-top:20px}
   .stat-item:nth-child(odd){border-right:1px solid var(--border)}
   .stat-item:nth-last-child(-n+2){border-bottom:none}
   .section{padding:60px 20px}
+  .paradox-inner{padding:60px 20px}
+  .channels-inner{padding:60px 20px}
+  .channels-grid{grid-template-columns:1fr}
   .pillar-grid{grid-template-columns:1fr}
   .how-grid{grid-template-columns:1fr}
   .how-card{border-right:none;border-bottom:1px solid var(--border)}
   .how-card:last-child{border-bottom:none}
-  .value-grid{grid-template-columns:1fr}
+  .value-row{grid-template-columns:1fr}
   .pricing-grid{grid-template-columns:1fr}
   .newsletter-full{flex-direction:column;gap:40px;padding:60px 20px}
   .newsletter-full-text{flex:none;width:100%}
@@ -220,7 +261,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
   .spec-section{padding:60px 0}
   .cta-section{padding:72px 20px}
   footer{padding:20px;flex-direction:column;gap:10px;text-align:center}
-  h1{font-size:2.2rem}
+  h1{font-size:2.4rem}
   .section-title{font-size:1.6rem}
   .portal-preview-wrap{padding:0}
   #portal-section{padding-left:0!important;padding-right:0!important}
@@ -229,9 +270,9 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 }
 @media(max-width:480px){
   nav{padding:0 16px}
-  .hero{padding:48px 16px}
-  h1{font-size:1.72rem}
-  .hero-sub{font-size:0.86rem}
+  .hero{padding:48px 16px 44px}
+  h1{font-size:1.9rem}
+  .hero-sub{font-size:0.88rem}
   .section{padding:48px 16px}
   .spec-inner{padding:0 16px}
   .cta-section{padding:56px 16px}
@@ -239,83 +280,143 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
   .portal-iframe{height:calc(480px / 0.72)}
   .newsletter-iframe{height:420px}
   .browser-bar{display:none}
+  .paradox-inner{padding:48px 16px}
+  .channels-inner{padding:48px 16px}
 }
 </style>
 </head>
 <body>
 
+<!-- ── NAV ── -->
 <nav>
   <a href="/" class="nav-logo"><em>Med</em><b>News</b></a>
   <div class="nav-links">
+    <a href="#paradoxe" class="nav-link">Le paradoxe</a>
     <a href="#dimensions" class="nav-link">Dimensions</a>
     <a href="#comment" class="nav-link">Fonctionnement</a>
     <a href="#specialites" class="nav-link">Spécialités</a>
-    <a href="#tarifs" class="nav-link">Accès</a>
+    <a href="#tarifs" class="nav-link">Tarifs</a>
     <a href="/login" class="nav-link">Connexion</a>
     <a href="/signup" class="nav-cta">S'inscrire</a>
   </div>
 </nav>
 
+<!-- ── HERO ── -->
 <section class="hero">
-  <div class="hero-body">
-    <div class="hero-eyebrow">La revue médicale par spécialité</div>
-    <h1>
-      <span class="h1-line1">L'information médicale</span>
-      <em class="h1-line2">à la précision de votre discipline</em>
-    </h1>
-    <p class="hero-sub">Réglementation française et européenne, guidelines des sociétés savantes, publications PubMed, NEJM, Lancet, JAMA — MedNews agrège l'intégralité du spectre médical avec la rigueur d'une revue spécialisée, pour chacune des 36 disciplines couvertes.</p>
-    <div class="hero-actions">
-      <a href="/signup" class="btn-primary">Accéder à MedNews</a>
-      <a href="#dimensions" class="btn-secondary">
-        Découvrir les 3 dimensions
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-    </div>
-    <div class="hero-stats">
+  <div class="hero-eyebrow">Votre bouclier contre l'infobésité médicale</div>
+  <h1>Le savoir médical<br><em>double tous les 73 jours.</em><br>Vous, non.</h1>
+  <p class="hero-sub">Pour rester en conformité totale avec la science et la loi, un praticien devrait consacrer 7 heures par semaine à la veille. MedNews filtre l'essentiel — réglementation, recommandations, innovations — pour chacune des 36 spécialités.</p>
+  <div class="hero-actions">
+    <a href="/signup" class="btn-primary">Accéder à MedNews gratuitement</a>
+    <a href="#paradoxe" class="btn-secondary">
+      Comprendre le paradoxe
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+  <div class="hero-stats">
     <div class="stat-item">
-      <div class="stat-n" data-count="3" data-suffix="">3</div>
-      <div class="stat-l">Dimensions couvertes</div>
+      <div class="stat-n"><em style="font-style:italic;font-family:var(--serif)">73</em></div>
+      <div class="stat-l">jours pour doubler le savoir médical</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n">7<span style="font-size:1.1rem;font-family:var(--sans);color:var(--text2)">h</span></div>
+      <div class="stat-l">de veille / semaine pour rester à jour</div>
     </div>
     <div class="stat-item">
       <div class="stat-n" data-count="36" data-suffix="">36</div>
-      <div class="stat-l">Spécialités médicales</div>
+      <div class="stat-l">Spécialités couvertes</div>
     </div>
     <div class="stat-item">
-      <div class="stat-n" data-count="500" data-prefix="+" >+500</div>
-      <div class="stat-l">Sources analysées / mois</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-n">1<span style="font-size:18px;font-family:var(--sans);color:var(--text2)">×</span></div>
-      <div class="stat-l">Par semaine, dans votre boîte</div>
+      <div class="stat-n">5<span style="font-size:1.1rem;font-family:var(--sans);color:var(--text2)">min</span></div>
+      <div class="stat-l">pour lire votre newsletter hebdo</div>
     </div>
   </div>
-  </div><!-- /hero-body -->
 </section>
 
 <div class="divider-line"></div>
 
-<!-- 3 DIMENSIONS -->
+<!-- ── LE PARADOXE ── -->
+<section class="paradox-section" id="paradoxe">
+  <div class="paradox-inner">
+    <div class="paradox-grid">
+      <div class="paradox-left reveal">
+        <span class="section-tag">Le paradoxe du médecin en 2026</span>
+        <div class="paradox-stat-big">7<em>h</em></div>
+        <p class="paradox-stat-label">de veille hebdomadaire seraient nécessaires pour exercer en conformité totale avec la science et le droit.</p>
+        <div class="paradox-secondary">
+          <div style="margin-bottom:16px">
+            <div class="paradox-secondary-stat">
+              <span class="paradox-secondary-n">21h</span>
+              <span class="paradox-secondary-l">de DPC imposées par an</span>
+            </div>
+            <div style="font-size:0.72rem;color:var(--text4);margin-top:3px">soit 20× moins que le temps nécessaire</div>
+          </div>
+          <div>
+            <div class="paradox-secondary-stat">
+              <span class="paradox-secondary-n">&lt;5 ans</span>
+              <span class="paradox-secondary-l">pour une pratique obsolète</span>
+            </div>
+            <div style="font-size:0.72rem;color:var(--text4);margin-top:3px">fragilité juridique face aux contentieux</div>
+          </div>
+        </div>
+      </div>
+      <div class="paradox-right reveal reveal-delay-1">
+        <div class="paradox-card card-law">
+          <div class="paradox-card-marker">La loi</div>
+          <div class="paradox-card-body">
+            <div class="paradox-card-title">Le DPC impose 21h/an — soit 20× moins que le nécessaire</div>
+            <div class="paradox-card-desc">L'obligation légale de formation continue est structurellement insuffisante face à l'évolution réelle de la science et du droit d'exercice. Cotations, facturation, Loi Rist : chaque changement non intégré est une fragilité.</div>
+          </div>
+        </div>
+        <div class="paradox-card card-risk">
+          <div class="paradox-card-marker">Le risque</div>
+          <div class="paradox-card-body">
+            <div class="paradox-card-title">Une pratique obsolète en moins de 5 ans</div>
+            <div class="paradox-card-desc">Sans veille active, les recommandations des sociétés savantes se périme silencieusement. En cas de complication, c'est votre alignement avec les dernières guidelines qui détermine votre position juridique.</div>
+          </div>
+        </div>
+        <div class="paradox-card card-reality">
+          <div class="paradox-card-marker">La réalité</div>
+          <div class="paradox-card-body">
+            <div class="paradox-card-title">Entre deux consultations, pas le temps de trier</div>
+            <div class="paradox-card-desc">Les revues spécialisées produisent un volume considérable. Distinguer le signal du bruit prend du temps que vous n'avez pas. C'est précisément ce filtre que MedNews réalise pour vous.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
+<!-- ── 3 DIMENSIONS ── -->
 <section class="section" id="dimensions">
-  <span class="section-tag reveal">Les 3 dimensions</span>
-  <div class="section-title reveal reveal-delay-1">Toute la médecine,<br><em>dans un seul portail</em></div>
-  <p class="section-sub reveal reveal-delay-2">MedNews surveille en continu des dizaines de revues spécialisées françaises, européennes et américaines. L'ensemble condensé, qualifié et filtré pour chaque discipline — sans angle mort.</p>
+  <span class="section-tag reveal">Notre solution : le renseignement actionnable</span>
+  <div class="section-title reveal reveal-delay-1">Trois piliers.<br><em>Un filtre intelligent.</em></div>
+  <p class="section-sub reveal reveal-delay-2">MedNews n'est pas un journal de plus. C'est un filtre qui ne vous transmet que ce qui impacte directement votre spécialité — classé en trois dimensions stratégiques.</p>
   <div class="pillar-grid reveal reveal-delay-3">
     <div class="pillar-card">
       <div class="pillar-accent" style="background:var(--reg)"></div>
-      <div class="pillar-name" style="color:var(--reg)">Réglementation</div>
-      <div class="pillar-desc">Textes officiels, décrets et circulaires qui impactent votre droit d'exercer, vos obligations légales et les conditions de votre cabinet.</div>
-      <div class="pillar-sources">JORF · HAS · ANSM · BO Social · EUR-Lex · directives CE · Conseil de l'Ordre</div>
+      <div class="pillar-label" style="color:var(--reg)">Réglementation</div>
+      <div class="pillar-name">Votre sécurité administrative</div>
+      <div class="pillar-badge" style="background:rgba(59,82,164,.08);color:var(--reg)">Bouclier juridique</div>
+      <div class="pillar-desc">Changements de cotation, facturation, droit du travail et nouvelles lois. Ce que vous devez savoir pour exercer en conformité — rien de superflu.</div>
+      <div class="pillar-sources">JORF · HAS · ANSM · KALI · Loi Rist · Conseil de l'Ordre · EUR-Lex · BO Social</div>
     </div>
     <div class="pillar-card" style="border-left:1px solid var(--border);border-right:1px solid var(--border)">
       <div class="pillar-accent" style="background:var(--reco)"></div>
-      <div class="pillar-name" style="color:var(--reco)">Recommandations cliniques</div>
-      <div class="pillar-desc">Guidelines, référentiels et mises à jour des bonnes pratiques issus des sociétés savantes, de la HAS et des instances internationales.</div>
-      <div class="pillar-sources">HAS · Sociétés savantes · ESC · ACC · AHA · CPRE · PubMed · NEJM · Lancet · JAMA · BMJ</div>
+      <div class="pillar-label" style="color:var(--reco)">Recommandation</div>
+      <div class="pillar-name">Votre bouclier clinique</div>
+      <div class="pillar-badge" style="background:rgba(26,107,92,.08);color:var(--reco)">Ce qui valide votre geste</div>
+      <div class="pillar-desc">Synthèses des sociétés savantes françaises, européennes et américaines. Ce qui valide votre geste en cas de complication — toujours sourcé, toujours vérifiable.</div>
+      <div class="pillar-sources">HAS · ESC · ACC · AHA · CPRE · PubMed · NEJM · Lancet · JAMA · BMJ · sociétés savantes</div>
     </div>
     <div class="pillar-card">
       <div class="pillar-accent" style="background:var(--innov)"></div>
-      <div class="pillar-name" style="color:var(--innov)">Innovation</div>
-      <div class="pillar-desc">Nouvelles thérapeutiques, dispositifs médicaux, résultats d'essais majeurs et avancées de la recherche clinique à fort impact pratique.</div>
+      <div class="pillar-label" style="color:var(--innov)">Innovation</div>
+      <div class="pillar-name">Votre avance technique</div>
+      <div class="pillar-badge" style="background:rgba(155,87,20,.08);color:var(--innov)">Avant la norme</div>
+      <div class="pillar-desc">Essais cliniques à haut impact, nouveaux dispositifs médicaux et ruptures technologiques mondiales. Accédez aux innovations américaines et européennes avant qu'elles deviennent la norme.</div>
       <div class="pillar-sources">PubMed · NEJM · Lancet · Nature Medicine · JAMA · Annals · EMA · FDA · essais de phase III</div>
     </div>
   </div>
@@ -323,7 +424,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 
 <div class="divider-line"></div>
 
-<!-- PORTAL PREVIEW -->
+<!-- ── PORTAL PREVIEW ── -->
 <section class="section section-center" id="portal-section" style="padding:80px 32px">
   <span class="section-tag reveal">Le portail</span>
   <div class="section-title reveal reveal-delay-1">Votre revue en un coup d'œil</div>
@@ -345,6 +446,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 
 <div class="divider-line"></div>
 
+<!-- ── FONCTIONNEMENT ── -->
 <section class="section" id="comment">
   <span class="section-tag reveal">Fonctionnement</span>
   <div class="section-title reveal reveal-delay-1">De la source<br><em>à votre portail</em></div>
@@ -356,13 +458,13 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
       <div class="how-desc">MedNews agrège en continu les textes officiels, les guidelines des sociétés savantes et les publications d'une trentaine de revues spécialisées françaises, européennes et américaines — NEJM, Lancet, JAMA, BMJ, Nature Medicine, et leurs équivalents par discipline.</div>
       <div class="how-tag">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        JORF · HAS · ANSM · EUR-Lex · PubMed · NEJM · Lancet · JAMA · BMJ · sociétés savantes
+        JORF · HAS · ANSM · EUR-Lex · PubMed · NEJM · Lancet · JAMA · BMJ
       </div>
     </div>
     <div class="how-card reveal reveal-delay-2">
       <div class="how-n">02</div>
-      <div class="how-title">Analyse par dimension &amp; spécialité</div>
-      <div class="how-desc">Chaque document est qualifié selon sa dimension (réglementaire, clinique, innovation) et scoré par spécialité. Seul ce qui vous concerne atteint votre portail.</div>
+      <div class="how-title">Tri par IA, relecture humaine</div>
+      <div class="how-desc">Notre moteur d'intelligence artificielle qualifie chaque document selon sa dimension (réglementaire, clinique, innovation) et le score par spécialité. Chaque résumé est ensuite relu et validé par notre équipe éditoriale — pour une fiabilité sans compromis.</div>
       <div class="how-tag">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
         Dimension · Spécialité · Priorité · Résumé actionnable
@@ -382,7 +484,47 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 
 <div class="divider-line"></div>
 
-<!-- NEWSLETTER -->
+<!-- ── CANAUX DE LIVRAISON ── -->
+<section class="channels-section" id="canaux">
+  <div class="channels-inner">
+    <span class="section-tag reveal">L'information qui vient à vous</span>
+    <div class="section-title reveal reveal-delay-1">Conçu pour<br><em>les interstices de votre journée</em></div>
+    <p class="section-sub reveal reveal-delay-2" style="max-width:520px">Nous avons conçu MedNews pour s'insérer dans les moments disponibles — entre deux consultations, en fin de garde, le dimanche soir.</p>
+    <div class="channels-grid">
+      <div class="channel-card reveal reveal-delay-1">
+        <span class="channel-num">01</span>
+        <div class="channel-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="channel-name">La Newsletter Hebdomadaire</div>
+        <div class="channel-time">Lu en 5 minutes</div>
+        <div class="channel-desc">Le condensé de ce qu'il ne fallait pas rater cette semaine. Structurée en trois rubriques, rédigée pour votre spécialité, classée par niveau de priorité clinique.</div>
+      </div>
+      <div class="channel-card reveal reveal-delay-2" style="border-left:1px solid var(--border);border-right:1px solid var(--border)">
+        <span class="channel-num">02</span>
+        <div class="channel-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <div class="channel-name">L'App Mobile</div>
+        <div class="channel-time">Sans publicité</div>
+        <div class="channel-desc">Une interface claire, structurée par rubriques : Ma Pratique, Mes Dispositifs, Mon Administratif. Favoris, recherche en archives, alertes urgentes — sans friction.</div>
+      </div>
+      <div class="channel-card reveal reveal-delay-3">
+        <span class="channel-num">03</span>
+        <div class="channel-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        </div>
+        <div class="channel-name">Le Focus Spécialité</div>
+        <div class="channel-time">Zéro bruit</div>
+        <div class="channel-desc">Si vous êtes cardiologue, vous ne recevez pas les alertes de dermatologie. Chaque discipline reçoit une analyse calibrée sur son référentiel propre et ses sociétés savantes.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
+<!-- ── NEWSLETTER PREVIEW ── -->
 <div class="newsletter-full">
   <div class="newsletter-full-text reveal">
     <span class="section-tag" style="margin-bottom:16px">La newsletter</span>
@@ -442,7 +584,33 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 
 <div class="divider-line"></div>
 
-<!-- COMPARE -->
+<!-- ── POURQUOI MEDNEWS ── -->
+<section class="section" id="pourquoi">
+  <span class="section-tag reveal">Pourquoi choisir MedNews ?</span>
+  <div class="section-title reveal reveal-delay-1">Nous lisons des milliers de pages<br><em>pour que vous n'en lisiez que trois.</em></div>
+  <p class="section-sub reveal reveal-delay-2">Trois bénéfices concrets, mesurables dès la première newsletter.</p>
+  <div class="value-row reveal reveal-delay-3">
+    <div class="value-card">
+      <div class="value-n">01</div>
+      <div class="value-title">Gain de temps</div>
+      <div class="value-desc">Nous lisons des milliers de pages pour que vous n'ayez à en lire que trois. Votre newsletter hebdo se lit en 5 minutes — l'essentiel, pas l'exhaustif.</div>
+    </div>
+    <div class="value-card" style="border-left:1px solid var(--border);border-right:1px solid var(--border)">
+      <div class="value-n">02</div>
+      <div class="value-title">Sérénité juridique</div>
+      <div class="value-desc">L'assurance d'être toujours aligné avec les dernières recommandations de votre société savante. En cas de complication, vous avez suivi les guidelines — c'est votre bouclier.</div>
+    </div>
+    <div class="value-card">
+      <div class="value-n">03</div>
+      <div class="value-title">Compétitivité</div>
+      <div class="value-desc">Accédez aux innovations américaines et européennes avant qu'elles ne deviennent la norme en France. Être informé en avance, c'est exercer en avance.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
+<!-- ── COMPARE ── -->
 <section class="section">
   <span class="section-tag reveal">Positionnement</span>
   <div class="section-title reveal reveal-delay-1">Une couverture<br><em>sans équivalent</em></div>
@@ -515,7 +683,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 
 <div class="divider-line"></div>
 
-<!-- MOBILE -->
+<!-- ── MOBILE ── -->
 <div class="mobile-section">
   <div class="mobile-section-text reveal">
     <span class="section-tag" style="margin-bottom:16px">Mobile</span>
@@ -553,13 +721,14 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
   </div>
   <div class="mobile-section-device reveal reveal-delay-2">
     <div class="phone-frame">
-      <img src="/img/mobile-preview.png" alt="Portail MedNews sur mobile" style="width:100%;display:block;">
+      <img src="med-news-front/img/mobile-preview.png" alt="Portail MedNews sur mobile" style="width:100%;display:block;">
     </div>
   </div>
 </div>
 
 <div class="divider-line"></div>
 
+<!-- ── SPÉCIALITÉS ── -->
 <section class="spec-section" id="specialites">
   <div class="spec-inner">
     <span class="section-tag reveal">Couverture</span>
@@ -606,61 +775,53 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
   </div>
 </section>
 
+<!-- ── TARIFS ── -->
 <section class="section" id="tarifs">
-  <span class="section-tag reveal">Accès</span>
+  <span class="section-tag reveal">Tarifs</span>
   <div class="section-title reveal reveal-delay-1">Simple et transparent</div>
-  <p class="section-sub reveal reveal-delay-2">Accès entièrement gratuit pendant le lancement — pour les 50 premiers inscrits.</p>
-  <div class="pricing-grid">
-    <div class="pricing-card reveal reveal-delay-1">
-      <div class="pricing-name">Découverte</div>
-      <div class="pricing-price">0<span>€</span></div>
-      <div class="pricing-period">/ toujours gratuit</div>
-      <div class="pricing-features">
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Portail mensuel complet</div>
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>3 rubriques (réglementaire, clinique, innovation)</div>
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Filtre par spécialité</div>
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span style="color:var(--text4)">Newsletter email</span></div>
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span style="color:var(--text4)">Archives complètes</span></div>
-      </div>
-      <a href="/signup" class="pricing-btn outline">Créer un compte</a>
-    </div>
-    <div class="pricing-card featured reveal reveal-delay-2">
-      <div class="pricing-badge">Offre de lancement</div>
+  <p class="section-sub reveal reveal-delay-2">Premier mois offert — annulable à tout moment.</p>
+  <div class="pricing-grid" style="grid-template-columns:1fr;max-width:640px;margin-left:auto;margin-right:auto">
+    <div class="pricing-card featured reveal reveal-delay-1">
+      <div class="pricing-badge">Premier mois offert</div>
       <div class="pricing-name">Praticien</div>
-      <div class="pricing-price">0<span>€</span></div>
-      <div class="pricing-period">/ gratuit · 50 premiers inscrits</div>
+      <div class="pricing-price">18<span style="font-size:1.4rem;font-family:var(--serif);color:var(--text)">,99</span><span>€</span></div>
+      <div class="pricing-period">/ mois · annulable à tout moment</div>
       <div class="pricing-features">
-        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Tout le plan Découverte</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Portail complet — 3 rubriques</div>
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Newsletter hebdomadaire par spécialité</div>
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Archives complètes depuis le lancement</div>
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Alertes urgentes par email</div>
         <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Favoris et recherche avancée</div>
+        <div class="pf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B5C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Focus spécialité — zéro bruit</div>
       </div>
-      <a href="/signup" class="pricing-btn dark">Rejoindre gratuitement</a>
+      <a href="/signup" class="pricing-btn dark">Commencer — 1 mois offert</a>
     </div>
   </div>
 </section>
 
+<!-- ── CTA ── -->
 <section class="cta-section">
-  <div class="cta-title reveal">L'information médicale<br><em>à la hauteur de votre pratique</em></div>
-  <p class="cta-sub reveal reveal-delay-1">Rejoignez les praticiens qui lisent MedNews.</p>
+  <div class="cta-title reveal">Arrêtez de subir<br><em>l'infobésité médicale.</em></div>
+  <p class="cta-sub reveal reveal-delay-1">Rejoignez les praticiens qui lisent MedNews — 5 minutes par semaine pour ne plus rien rater.</p>
   <a href="/signup" class="btn-primary reveal reveal-delay-2" style="display:inline-block">Accéder à MedNews gratuitement</a>
-  <div class="cta-note reveal reveal-delay-3">Aucune carte bancaire requise · Accès immédiat</div>
+  <div class="cta-note reveal reveal-delay-3">Premier mois offert · Carte bancaire requise · Annulable à tout moment</div>
 </section>
 
 <footer>
   <div class="footer-logo"><em>Med</em><b>News</b></div>
-  <div class="footer-text">© 2026 MedNews · Mentions légales · Contact</div>
+  <div class="footer-text">© 2026 MedNews · <a href="mentions-legales.html" style="color:var(--text4);text-decoration:none">Mentions légales</a> · <a href="politique-confidentialite.html" style="color:var(--text4);text-decoration:none">Confidentialité</a> · <a href="cgv.html" style="color:var(--text4);text-decoration:none">CGV</a> · <a href="mailto:contact@mednews.fr" style="color:var(--text4);text-decoration:none">Contact</a></div>
 </footer>
 
 <script>
+/* Reveal on scroll */
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); }
   });
-}, {threshold:0.12, rootMargin:'0px 0px -40px 0px'});
+}, {threshold:0.10, rootMargin:'0px 0px -32px 0px'});
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
+/* Animate counter */
 function animateCounter(el, target, prefix, suffix, duration) {
   const start = performance.now();
   const update = (time) => {
@@ -673,7 +834,6 @@ function animateCounter(el, target, prefix, suffix, duration) {
   };
   requestAnimationFrame(update);
 }
-
 const statsObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if(e.isIntersecting){
@@ -690,11 +850,12 @@ const statsObserver = new IntersectionObserver((entries) => {
 const statsEl = document.querySelector('.hero-stats');
 if(statsEl) statsObserver.observe(statsEl);
 
+/* Smooth scroll for anchor links */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
     const target = document.querySelector(a.getAttribute('href'));
-    if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    if(target) window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 64, behavior: 'smooth'});
   });
 });
 </script>

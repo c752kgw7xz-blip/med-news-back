@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mentions légales — MedNews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F4EF;--surface:#FDFCF9;--surface2:#ECEAE2;
+  --border:#D6D2C8;--border-strong:#B4B0A6;
+  --text:#1A1714;--text2:#3E3A34;--text3:#706860;--text4:#908880;
+  --accent:#9B2335;
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'Outfit',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;overflow-x:hidden}
+nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 40px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--serif);font-size:1.18rem;color:var(--text);letter-spacing:-.2px;text-decoration:none}
+.nav-logo em{font-style:italic}.nav-logo b{font-weight:700;font-style:normal}
+.nav-back{font-size:0.82rem;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+.nav-back:hover{color:var(--text)}
+.page-wrap{max-width:760px;margin:0 auto;padding:72px 40px 96px}
+.page-title{font-family:var(--serif);font-size:clamp(28px,4vw,44px);color:var(--text);line-height:1.1;letter-spacing:-.3px;margin-bottom:8px}
+.page-date{font-size:0.75rem;color:var(--text4);margin-bottom:56px}
+.legal-section{margin-bottom:48px}
+.legal-section h2{font-family:var(--serif);font-size:1.15rem;color:var(--text);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.legal-section p{font-size:0.88rem;color:var(--text3);line-height:1.75;margin-bottom:12px}
+.legal-section p:last-child{margin-bottom:0}
+.field{display:inline-block;background:var(--surface2);border:1px dashed var(--border-strong);border-radius:3px;padding:1px 8px;font-size:0.82rem;color:var(--text4);font-style:italic}
+footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-items:center;justify-content:space-between}
+.footer-logo{font-family:var(--serif);font-size:1rem;color:var(--text2)}
+.footer-logo em{font-style:italic}.footer-logo b{font-weight:700;font-style:normal}
+.footer-text{font-size:0.72rem;color:var(--text4)}
+@media(max-width:640px){
+  nav{padding:0 20px}
+  .page-wrap{padding:48px 20px 72px}
+  footer{padding:20px;flex-direction:column;gap:10px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo"><em>Med</em><b>News</b></a>
+  <a href="index.html" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Retour
+  </a>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-title">Mentions légales</div>
+  <div class="page-date">Dernière mise à jour : <span class="field">JJ/MM/AAAA</span></div>
+
+  <div class="legal-section">
+    <h2>Éditeur du site</h2>
+    <p>Le site <strong>mednews.fr</strong> est édité par :</p>
+    <p>
+      <strong>Raison sociale :</strong> <span class="field">Nom de la société</span><br>
+      <strong>Forme juridique :</strong> <span class="field">SAS / SARL / …</span><br>
+      <strong>Capital social :</strong> <span class="field">X XXX €</span><br>
+      <strong>SIRET :</strong> <span class="field">XXX XXX XXX XXXXX</span><br>
+      <strong>RCS :</strong> <span class="field">Ville d'immatriculation</span><br>
+      <strong>Siège social :</strong> <span class="field">Adresse complète</span><br>
+      <strong>Téléphone :</strong> <span class="field">+33 X XX XX XX XX</span><br>
+      <strong>Email :</strong> <span class="field">contact@mednews.fr</span>
+    </p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Directeur de la publication</h2>
+    <p>
+      <strong>Nom :</strong> <span class="field">Prénom Nom</span><br>
+      <strong>Qualité :</strong> <span class="field">Président / Gérant</span>
+    </p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Hébergement</h2>
+    <p>
+      <strong>Hébergeur :</strong> <span class="field">Nom de l'hébergeur</span><br>
+      <strong>Adresse :</strong> <span class="field">Adresse de l'hébergeur</span><br>
+      <strong>Site web :</strong> <span class="field">https://</span>
+    </p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Propriété intellectuelle</h2>
+    <p>L'ensemble des contenus présents sur le site mednews.fr (textes, résumés, structure éditoriale, graphismes, logo) est la propriété exclusive de <span class="field">Nom de la société</span>, sauf mention contraire explicite.</p>
+    <p>Toute reproduction, représentation, modification, publication ou adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite sans autorisation écrite préalable.</p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Responsabilité</h2>
+    <p>Les informations publiées sur MedNews sont rédigées à titre informatif et ne constituent pas des conseils médicaux personnalisés. Elles ne sauraient se substituer à une consultation médicale ou à l'avis d'un professionnel de santé qualifié.</p>
+    <p>MedNews s'efforce d'assurer l'exactitude et la mise à jour des informations diffusées, sans pouvoir garantir leur exhaustivité ou leur absence d'erreur.</p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Contact</h2>
+    <p>Pour toute question relative aux présentes mentions légales : <span class="field">contact@mednews.fr</span></p>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo"><em>Med</em><b>News</b></div>
+  <div class="footer-text">© 2026 MedNews · <a href="mentions-legales.html" style="color:var(--text4);text-decoration:none">Mentions légales</a> · <a href="politique-confidentialite.html" style="color:var(--text4);text-decoration:none">Confidentialité</a> · <a href="cgv.html" style="color:var(--text4);text-decoration:none">CGV</a></div>
+</footer>
+
+</body>
+</html>
