@@ -313,14 +313,21 @@ def article_counts(
 ):
     date_clause = ""
     date_params: list[Any] = []
+    tl_date_clause = ""   # même logique mais TL exempt en vue défaut
+    tl_date_params: list[Any] = []
     if from_date:
         date_clause += " AND c.official_date >= %s"
         date_params.append(from_date)
+        tl_date_clause += " AND c.official_date >= %s"
+        tl_date_params.append(from_date)
         if to_date:
             date_clause += " AND c.official_date <= %s"
             date_params.append(to_date)
+            tl_date_clause += " AND c.official_date <= %s"
+            tl_date_params.append(to_date)
     else:
         # Fenêtre par défaut : 1er du mois précédent → aujourd'hui
+        # Items spé : filtrés ; TL : exempts (toujours visibles en vue courante)
         today = date.today()
         if today.month == 1:
             default_from = date(today.year - 1, 12, 1)
@@ -328,6 +335,7 @@ def article_counts(
             default_from = date(today.year, today.month - 1, 1)
         date_clause += " AND c.official_date >= %s"
         date_params.append(default_from.isoformat())
+        # tl_date_clause reste vide → pas de filtre date sur TL en vue défaut
 
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -357,7 +365,7 @@ def article_counts(
                 per_spec[slug][key] = count
                 per_spec[slug]["total"] += count
 
-            # Compter les items TRANSVERSAL_LIBERAL — exempts du filtre de date
+            # Compter les items TRANSVERSAL_LIBERAL — filtrés en vue archive, exempts en vue défaut
             cur.execute(f"""
                 SELECT COALESCE(i.source_type, 'innovation'), COUNT(*)
                 FROM items i
@@ -365,8 +373,9 @@ def article_counts(
                 WHERE i.review_status = 'APPROVED'
                   AND COALESCE(i.score_density, 0) >= 3
                   AND i.audience = 'TRANSVERSAL_LIBERAL'
+                  {tl_date_clause}
                 GROUP BY COALESCE(i.source_type, 'innovation');
-            """)
+            """, tl_date_params)
             tous_counts: dict = {"total": 0, "reglementaire": 0, "recommandation": 0, "innovation": 0}
             for stype, count in cur.fetchall():
                 key = stype if stype in ("reglementaire", "recommandation", "innovation") else "reglementaire"
