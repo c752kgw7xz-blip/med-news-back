@@ -81,8 +81,13 @@
     var banner = document.createElement('div');
     banner.id = 'mednews-dev-banner';
     banner.setAttribute('style', [
-      'position:relative',
-      'z-index:9999',
+      'position:fixed',
+      'top:0',
+      'left:0',
+      'right:0',
+      'width:100%',
+      'box-sizing:border-box',
+      'z-index:99999',
       'background:#fffbeb',
       'border-bottom:1px solid #f5d87a',
       'color:#78450a',
