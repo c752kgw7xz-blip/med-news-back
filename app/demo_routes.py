@@ -1,5 +1,5 @@
 # app/demo_routes.py
-"""Routes publiques (sans auth) pour le mode démo."""
+"""Routes publiques (sans auth) pour le mode démo — logique miroir du vrai portail."""
 from __future__ import annotations
 import calendar
 from datetime import date
@@ -10,15 +10,6 @@ from app.portal_routes import _INTERVENTIONAL_SLUGS, _PRESCRIPTEUR_SLUGS
 router = APIRouter(tags=["demo"])
 DEMO_SPECIALTY = "chirurgie-vasculaire"
 
-DEMO_SLUGS = [
-    "chirurgie-vasculaire", "anesthesiologie-reanimation", "cardiologie",
-    "medecine-generale", "chirurgie-orthopedique", "biologie-medicale",
-    "pediatrie", "psychiatrie", "gynecologie-obstetrique", "neurologie",
-    "gastro-enterologie", "dermatologie", "endocrinologie", "ophtalmologie",
-    "oto-rhino-laryngologie", "rhumatologie", "pneumologie", "nephrologie",
-    "radiologie", "chirurgie-generale",
-]
-
 def _type_filter(slug: str) -> str:
     if slug in _INTERVENTIONAL_SLUGS:
         return " AND (i.type_praticien IS NULL OR i.type_praticien != 'prescripteur' OR i.score_density >= 9)"
@@ -26,8 +17,12 @@ def _type_filter(slug: str) -> str:
         return " AND (i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')"
     return ""
 
+def _month_range(m: date) -> tuple[str, str]:
+    last_day = calendar.monthrange(m.year, m.month)[1]
+    return m.isoformat(), date(m.year, m.month, last_day).isoformat()
+
 def _latest_active_month(slug: str) -> tuple[str, str]:
-    """Retourne (from_date, to_date) du dernier mois ayant des articles APPROVED."""
+    """Dernier mois avec articles APPROVED pour cette spécialité (ou TRANSVERSAL_LIBERAL)."""
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
@@ -35,19 +30,17 @@ def _latest_active_month(slug: str) -> tuple[str, str]:
                 FROM items i JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
                   AND COALESCE(i.score_density, 0) >= 3
-                  AND i.specialty_slug = %s
+                  AND (i.specialty_slug = %s OR i.audience = 'TRANSVERSAL_LIBERAL')
                 ORDER BY 1 DESC LIMIT 1
             """, (slug,))
             row = cur.fetchone()
     if row and row[0]:
-        m: date = row[0]
-        last_day = calendar.monthrange(m.year, m.month)[1]
-        return m.isoformat(), date(m.year, m.month, last_day).isoformat()
+        return _month_range(row[0])
     today = date.today()
-    last_day = calendar.monthrange(today.year, today.month)[1]
-    return date(today.year, today.month, 1).isoformat(), date(today.year, today.month, last_day).isoformat()
+    return _month_range(date(today.year, today.month, 1))
 
 def _fetch_demo_articles(slug: str, from_date: str, to_date: str, limit: int = 50) -> list[dict]:
+    """Articles du dernier mois actif pour slug + TRANSVERSAL_LIBERAL (miroir du vrai portail)."""
     tf = _type_filter(slug)
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -64,7 +57,7 @@ def _fetch_demo_articles(slug: str, from_date: str, to_date: str, limit: int = 5
                     JOIN candidates c ON c.id = i.candidate_id
                     WHERE i.review_status = 'APPROVED'
                       AND COALESCE(i.score_density, 0) >= 3
-                      AND i.specialty_slug = %s
+                      AND (i.specialty_slug = %s OR i.audience = 'TRANSVERSAL_LIBERAL')
                       AND c.official_date >= %s
                       AND c.official_date <= %s
                       {tf}
@@ -84,16 +77,9 @@ def _fetch_demo_articles(slug: str, from_date: str, to_date: str, limit: int = 5
         for r in rows
     ]
 
-@router.get("/demo/articles")
-def demo_articles(specialty: str = Query(default=DEMO_SPECIALTY), per_page: int = Query(default=50, ge=1, le=100)):
-    from_date, to_date = _latest_active_month(specialty)
-    articles = _fetch_demo_articles(specialty, from_date, to_date, per_page)
-    return {"articles": articles, "total": len(articles), "from_date": from_date, "to_date": to_date}
-
-@router.get("/demo/counts")
-def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
-    from_date, to_date = _latest_active_month(specialty)
-    tf = _type_filter(slug := specialty)
+def _counts_for_month(slug: str, from_date: str, to_date: str) -> dict:
+    """Counts par source_type pour slug + TRANSVERSAL_LIBERAL sur une période donnée."""
+    tf = _type_filter(slug)
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(f"""
@@ -101,7 +87,7 @@ def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
                 FROM items i JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
                   AND COALESCE(i.score_density, 0) >= 3
-                  AND i.specialty_slug = %s
+                  AND (i.specialty_slug = %s OR i.audience = 'TRANSVERSAL_LIBERAL')
                   AND c.official_date >= %s
                   AND c.official_date <= %s
                   {tf}
@@ -113,44 +99,72 @@ def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
         if stype in counts:
             counts[stype] = n
     counts["total"] = sum(counts.values())
+    return counts
+
+@router.get("/demo/articles")
+def demo_articles(specialty: str = Query(default=DEMO_SPECIALTY), per_page: int = Query(default=50, ge=1, le=100)):
+    from_date, to_date = _latest_active_month(specialty)
+    articles = _fetch_demo_articles(specialty, from_date, to_date, per_page)
+    return {"articles": articles, "total": len(articles), "from_date": from_date, "to_date": to_date}
+
+@router.get("/demo/counts")
+def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
+    from_date, to_date = _latest_active_month(specialty)
+    counts = _counts_for_month(specialty, from_date, to_date)
     counts["from_date"] = from_date
     counts["to_date"] = to_date
     return counts
 
 @router.get("/demo/counts-all")
 def demo_counts_all():
-    """Retourne en une requête les counts du dernier mois actif pour toutes les spés démo."""
+    """Counts du dernier mois actif pour toutes les spés — une seule requête."""
     with get_conn() as conn:
         with conn.cursor() as cur:
-            # Dernier mois actif par spécialité
+            # 1. Toutes les spés de la table specialties
+            cur.execute("SELECT slug, name FROM specialties ORDER BY name")
+            all_specs = cur.fetchall()
+
+            # 2. Dernier mois actif par spécialité (incluant TL)
             cur.execute("""
                 SELECT i.specialty_slug,
                        DATE_TRUNC('month', MAX(c.official_date))::date AS last_month
                 FROM items i JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
                   AND COALESCE(i.score_density, 0) >= 3
-                  AND i.specialty_slug = ANY(%s)
+                  AND i.specialty_slug IS NOT NULL
                 GROUP BY i.specialty_slug
-            """, (DEMO_SLUGS,))
+            """)
             last_months = {r[0]: r[1] for r in cur.fetchall()}
 
-            # Counts par spécialité + source_type sur le dernier mois
+            # 3. TRANSVERSAL_LIBERAL : dernier mois actif global
+            cur.execute("""
+                SELECT DATE_TRUNC('month', MAX(c.official_date))::date
+                FROM items i JOIN candidates c ON c.id = i.candidate_id
+                WHERE i.review_status = 'APPROVED'
+                  AND COALESCE(i.score_density, 0) >= 3
+                  AND i.audience = 'TRANSVERSAL_LIBERAL'
+            """)
+            tl_last = cur.fetchone()
+            tl_last_month: date | None = tl_last[0] if tl_last else None
+
             result = {}
-            for slug in DEMO_SLUGS:
+            for slug, name in all_specs:
                 m = last_months.get(slug)
+                # Prendre le mois le plus récent entre spé et TL
+                if tl_last_month and (not m or tl_last_month > m):
+                    m = tl_last_month
                 if not m:
-                    result[slug] = {"reglementaire": 0, "recommandation": 0, "innovation": 0, "total": 0, "from_date": None, "to_date": None}
+                    result[slug] = {"reglementaire": 0, "recommandation": 0, "innovation": 0, "total": 0,
+                                    "from_date": None, "to_date": None, "name": name}
                     continue
-                last_day = calendar.monthrange(m.year, m.month)[1]
-                from_date = m.isoformat()
-                to_date = date(m.year, m.month, last_day).isoformat()
+                from_date, to_date = _month_range(m)
                 tf = _type_filter(slug)
                 cur.execute(f"""
                     SELECT COALESCE(i.source_type, 'reglementaire'), COUNT(DISTINCT i.candidate_id)
                     FROM items i JOIN candidates c ON c.id = i.candidate_id
                     WHERE i.review_status = 'APPROVED'
                       AND COALESCE(i.score_density, 0) >= 3
-                      AND i.specialty_slug = %s
+                      AND (i.specialty_slug = %s OR i.audience = 'TRANSVERSAL_LIBERAL')
                       AND c.official_date >= %s
                       AND c.official_date <= %s
                       {tf}
@@ -163,5 +177,6 @@ def demo_counts_all():
                 counts["total"] = sum(counts.values())
                 counts["from_date"] = from_date
                 counts["to_date"] = to_date
+                counts["name"] = name
                 result[slug] = counts
     return result
