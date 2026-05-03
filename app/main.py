@@ -207,7 +207,7 @@ DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
 MIGRATE_SECRET = os.environ.get("MIGRATE_SECRET")
 ADMIN_SECRET = os.environ.get("ADMIN_SECRET")
 
-ALLOW_SIGNUP = os.environ.get("ALLOW_SIGNUP", "false").strip().lower() == "true"
+ALLOW_SIGNUP = os.environ.get("ALLOW_SIGNUP", "true").strip().lower() == "true"
 
 INIT_SQL = """
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
