@@ -3418,7 +3418,18 @@ function toggleSidebar() {
           .catch(() => { favoritesSet.delete(id); })
       )).then(() => updateSidebarFavCount());
     }
-    await Promise.all([loadSpecialties(), loadCounts(), loadMonthCounts()]);
+    await Promise.all([loadSpecialties(), loadMonthCounts()]);
+    // Sélectionner par défaut le mois le plus récent avec des articles
+    const _latestMonth = Object.keys(_monthCountsMap).sort().reverse()[0];
+    if (_latestMonth) {
+      const [_ly, _lm] = _latestMonth.split('-').map(Number);
+      _activeMonth = _latestMonth;
+      _customFrom  = _latestMonth + '-01';
+      _customUntil = _latestMonth + '-' + String(new Date(_ly, _lm, 0).getDate()).padStart(2, '0');
+      const _lbl = document.getElementById('month-picker-label');
+      if (_lbl) _lbl.textContent = MONTHS[_lm - 1] + ' ' + _ly;
+    }
+    await loadCounts();
     console.log('[MedNews] specialties+counts done');
     buildSidebar();
     console.log('[MedNews] buildSidebar done');
