@@ -55,15 +55,15 @@ def _fetch_demo_articles(slug: str, from_date: str, limit: int = 50) -> list[dic
 
 @router.get("/demo/articles")
 def demo_articles(specialty: str = Query(default=DEMO_SPECIALTY), per_page: int = Query(default=50, ge=1, le=100)):
-    today = date.today()
-    from_date = f"{today.year}-{today.month:02d}-01"
+    from datetime import timedelta
+    from_date = (date.today() - timedelta(days=120)).isoformat()
     articles = _fetch_demo_articles(specialty, from_date, per_page)
     return {"articles": articles, "total": len(articles), "from_date": from_date}
 
 @router.get("/demo/counts")
 def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
-    today = date.today()
-    from_date = f"{today.year}-{today.month:02d}-01"
+    from datetime import timedelta
+    from_date = (date.today() - timedelta(days=120)).isoformat()
     tf = _type_filter(specialty)
     with get_conn() as conn:
         with conn.cursor() as cur:
