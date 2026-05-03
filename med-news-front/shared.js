@@ -75,6 +75,43 @@
     } catch (e) { return raw; }
   }
 
+  // Bandeau "site en développement" — injecté en haut de toutes les pages
+  function injectDevBanner() {
+    if (sessionStorage.getItem('mednews-devbanner-closed')) return;
+    var banner = document.createElement('div');
+    banner.id = 'mednews-dev-banner';
+    banner.setAttribute('style', [
+      'position:relative',
+      'z-index:9999',
+      'background:#fffbeb',
+      'border-bottom:1px solid #f5d87a',
+      'color:#78450a',
+      'font-family:inherit',
+      'font-size:0.78rem',
+      'line-height:1.4',
+      'padding:8px 48px 8px 16px',
+      'text-align:center',
+      'letter-spacing:0.1px',
+    ].join(';'));
+    banner.innerHTML =
+      '🚧 <strong>Site en cours de développement</strong> — ' +
+      'l’accès est <strong>gratuit pendant toute la phase de développement</strong>. ' +
+      'MedNews deviendra payant à l’issue du développement complet, ' +
+      'prévu <strong>dans environ 2 mois</strong>.' +
+      '<button onclick="(function(){sessionStorage.setItem(\'mednews-devbanner-closed\',\'1\');' +
+      'document.getElementById(\'mednews-dev-banner\').remove();})()" ' +
+      'style="position:absolute;right:12px;top:50%;transform:translateY(-50%);' +
+      'background:none;border:none;cursor:pointer;font-size:1rem;color:#78450a;' +
+      'line-height:1;padding:2px 4px;" aria-label="Fermer">×</button>';
+    if (document.body.firstChild) {
+      document.body.insertBefore(banner, document.body.firstChild);
+    } else {
+      document.body.appendChild(banner);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', injectDevBanner);
+
   // Export global
   window.MedNews = {
     setTheme: setTheme,
