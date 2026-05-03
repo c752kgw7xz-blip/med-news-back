@@ -98,13 +98,19 @@
       'text-align:center',
       'letter-spacing:0.1px',
     ].join(';'));
+    var _closeHandler = "(function(){" +
+      "sessionStorage.setItem('mednews-devbanner-closed','1');" +
+      "document.getElementById('mednews-dev-banner').remove();" +
+      "document.body.style.paddingTop='';" +
+      "var h=document.querySelector('header');if(h)h.style.top='';" +
+      "var s=document.querySelector('.sidebar');if(s){s.style.top='';s.style.height='';}" +
+      "})()";
     banner.innerHTML =
-      'Version bêta — accès gratuit jusqu’au lancement officiel (<strong>dans ~ 2 mois</strong>).' +
-      '<button onclick="(function(){sessionStorage.setItem(\'mednews-devbanner-closed\',\'1\');' +
-      'document.getElementById(\'mednews-dev-banner\').remove();document.body.style.paddingTop='';var _h=document.querySelector('header');if(_h)_h.style.top='';var _s=document.querySelector('.sidebar');if(_s){_s.style.top='';_s.style.height='';}})()" ' +
-      'style="position:absolute;right:12px;top:50%;transform:translateY(-50%);' +
-      'background:none;border:none;cursor:pointer;font-size:1rem;color:#78450a;' +
-      'line-height:1;padding:2px 4px;" aria-label="Fermer">×</button>';
+      "Version bêta — accès gratuit jusqu'au lancement officiel (<strong>dans ~ 2 mois</strong>)." +
+      "<button onclick=\"" + _closeHandler + "\"" +
+      " style=\"position:absolute;right:12px;top:50%;transform:translateY(-50%);" +
+      "background:none;border:none;cursor:pointer;font-size:1rem;color:#78450a;" +
+      "line-height:1;padding:2px 4px;\" aria-label=\"Fermer\">×</button>";
     if (document.body.firstChild) {
       document.body.insertBefore(banner, document.body.firstChild);
     } else {
