@@ -100,6 +100,7 @@
       <input type="text" id="last_name" required autocomplete="family-name" placeholder="Dupont">
       <label for="email">Adresse email</label>
       <input type="email" id="email" required autocomplete="email" placeholder="vous@exemple.fr">
+      <span class="field-hint">Pensez à vérifier vos spams si vous ne recevez pas l'email de validation.</span>
       <label for="password">Mot de passe</label>
       <input type="password" id="password" required minlength="8" autocomplete="new-password">
       <span class="field-hint">8 caract&#232;res minimum, avec au moins 1 majuscule et 1 chiffre</span>
@@ -190,7 +191,6 @@ form.addEventListener('submit', async (e) => {
         <strong>Cliquez sur le lien dans cet email pour activer votre compte.</strong><br>
         <span style="color:var(--amber,#b56808);font-weight:500;">Pensez \u00e0 v\u00e9rifier vos spams si n\u00e9cessaire.</span>
       </span>
-      <a href="/login" style="display:inline-block;margin-top:14px;padding:8px 20px;background:var(--green);color:#fff;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.82rem;">Aller \u00e0 la connexion \u2192</a>
     `;
     successEl.style.display = 'block';
   } catch (err) {
