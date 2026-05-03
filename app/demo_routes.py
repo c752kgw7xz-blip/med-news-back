@@ -17,7 +17,32 @@ def _type_filter(slug: str) -> str:
         return " AND (i.type_praticien IS NULL OR i.type_praticien != 'interventionnel')"
     return ""
 
-def _fetch_demo_articles(slug: str, from_date: str, limit: int = 50) -> list[dict]:
+def _latest_active_month(slug: str) -> tuple[str, str]:
+    """Retourne (from_date, to_date) du dernier mois ayant des articles APPROVED."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT DATE_TRUNC('month', c.official_date)::date
+                FROM items i JOIN candidates c ON c.id = i.candidate_id
+                WHERE i.review_status = 'APPROVED'
+                  AND COALESCE(i.score_density, 0) >= 3
+                  AND i.specialty_slug = %s
+                ORDER BY 1 DESC LIMIT 1
+            """, (slug,))
+            row = cur.fetchone()
+    if row and row[0]:
+        m: date = row[0]
+        # Dernier jour du mois
+        import calendar
+        last_day = calendar.monthrange(m.year, m.month)[1]
+        return m.isoformat(), date(m.year, m.month, last_day).isoformat()
+    # Fallback : mois courant
+    today = date.today()
+    import calendar
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    return date(today.year, today.month, 1).isoformat(), date(today.year, today.month, last_day).isoformat()
+
+def _fetch_demo_articles(slug: str, from_date: str, to_date: str, limit: int = 50) -> list[dict]:
     tf = _type_filter(slug)
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -36,12 +61,13 @@ def _fetch_demo_articles(slug: str, from_date: str, limit: int = 50) -> list[dic
                       AND COALESCE(i.score_density, 0) >= 3
                       AND i.specialty_slug = %s
                       AND c.official_date >= %s
+                      AND c.official_date <= %s
                       {tf}
                     ORDER BY i.candidate_id, i.score_density DESC
                 ) deduped
                 ORDER BY source_type, official_date DESC, score_density DESC
                 LIMIT %s
-            """, (slug, from_date, limit))
+            """, (slug, from_date, to_date, limit))
             rows = cur.fetchall()
     return [
         {
@@ -55,15 +81,13 @@ def _fetch_demo_articles(slug: str, from_date: str, limit: int = 50) -> list[dic
 
 @router.get("/demo/articles")
 def demo_articles(specialty: str = Query(default=DEMO_SPECIALTY), per_page: int = Query(default=50, ge=1, le=100)):
-    from datetime import timedelta
-    from_date = (date.today() - timedelta(days=120)).isoformat()
-    articles = _fetch_demo_articles(specialty, from_date, per_page)
-    return {"articles": articles, "total": len(articles), "from_date": from_date}
+    from_date, to_date = _latest_active_month(specialty)
+    articles = _fetch_demo_articles(specialty, from_date, to_date, per_page)
+    return {"articles": articles, "total": len(articles), "from_date": from_date, "to_date": to_date}
 
 @router.get("/demo/counts")
 def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
-    from datetime import timedelta
-    from_date = (date.today() - timedelta(days=120)).isoformat()
+    from_date, to_date = _latest_active_month(specialty)
     tf = _type_filter(specialty)
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -75,13 +99,16 @@ def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
                   AND COALESCE(i.score_density, 0) >= 3
                   AND i.specialty_slug = %s
                   AND c.official_date >= %s
+                  AND c.official_date <= %s
                   {tf}
                 GROUP BY 1
-            """, (specialty, from_date))
+            """, (specialty, from_date, to_date))
             rows = cur.fetchall()
     counts = {"reglementaire": 0, "recommandation": 0, "innovation": 0}
     for stype, n in rows:
         if stype in counts:
             counts[stype] = n
     counts["total"] = sum(counts.values())
+    counts["from_date"] = from_date
+    counts["to_date"] = to_date
     return counts

@@ -2801,6 +2801,16 @@ async function loadDemoData() {
           recommandation: cntData.recommandation || 0,
           innovation: cntData.innovation || 0,
         };
+        // Positionner le month picker sur le mois actif retourné par l'API
+        if (artData.from_date && artData.to_date) {
+          _customFrom = artData.from_date;
+          _customUntil = artData.to_date;
+          _activeMonth = artData.from_date.substring(0, 7);
+          const [y, m] = _activeMonth.split('-').map(Number);
+          const label = MONTHS[m - 1] + ' ' + y;
+          const labelEl = document.getElementById('month-picker-label');
+          if (labelEl) labelEl.textContent = label;
+        }
       } else {
         _demoCache = [...DEMO_ARTICLES];
       }
