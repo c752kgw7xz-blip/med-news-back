@@ -1,5 +1,5 @@
 (function () {
-  var KEY = 'mednews-devbanner-closed';
+  var KEY = 'mednews-devbanner-v2';
   if (sessionStorage.getItem(KEY)) return;
 
   var banner = document.createElement('div');
