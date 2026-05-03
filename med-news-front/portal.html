@@ -1211,7 +1211,9 @@
 
 <script>
 const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
-let _demoCache = null; // articles dynamiques fetchés, fallback sur DEMO_ARTICLES
+let _demoCache = null; // articles chirurgie-vasculaire (spé principale démo)
+let _demoCacheBySlug = {}; // cache articles par slug, chargé à la demande
+let _demoDatesBySlug = {}; // { slug: { from_date, to_date } } — dernier mois actif par spé
 const API = window.location.origin;
 let currentPage = 1;
 const perPage = 20;
@@ -2335,16 +2337,54 @@ async function resetAndLoad() {
   document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
 
   if (DEMO_MODE) {
-    const _base = _demoCache || DEMO_ARTICLES;
-    allLoadedArticles = activeSpecSlug === 'chirurgie-vasculaire' ? demoFilterByMonth(_base) : [];
-    totalArticles = allLoadedArticles.length;
+    const slug = activeSpecSlug;
+    // Afficher le spinner le temps du fetch éventuel
+    document.getElementById('loading').style.display = '';
+    document.getElementById('content').style.display = 'none';
+    // Charger les articles si pas encore en cache pour ce slug
+    if (!_demoCacheBySlug[slug]) {
+      try {
+        const res = await fetch(`/demo/articles?specialty=${encodeURIComponent(slug)}`);
+        if (res.ok) {
+          const data = await res.json();
+          _demoCacheBySlug[slug] = data.articles && data.articles.length > 0 ? data.articles : [];
+          if (data.from_date) _demoDatesBySlug[slug] = { from_date: data.from_date, to_date: data.to_date };
+        } else {
+          _demoCacheBySlug[slug] = [];
+        }
+      } catch { _demoCacheBySlug[slug] = []; }
+    }
+    const base = _demoCacheBySlug[slug] || [];
+    // Filtrer par mois actif si un mois est sélectionné
+    const dates = _demoDatesBySlug[slug];
+    let filtered;
+    if (_activeMonth) {
+      filtered = base.filter(a => a.official_date && a.official_date.startsWith(_activeMonth));
+    } else if (dates) {
+      filtered = base.filter(a => a.official_date && a.official_date >= dates.from_date && a.official_date <= dates.to_date);
+    } else {
+      filtered = [...base];
+    }
+    // Filtrer par source_type si actif
+    if (activeSourceType && activeSourceType !== 'all') {
+      filtered = filtered.filter(a => a.source_type === activeSourceType);
+    }
+    allLoadedArticles = filtered;
+    totalArticles = filtered.length;
     document.getElementById('articles-container').innerHTML = '';
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
-    renderGroupedArticles();
+    if (filtered.length === 0) {
+      const monthLabel = _activeMonth ? (MONTHS[parseInt(_activeMonth.split('-')[1]) - 1] + ' ' + _activeMonth.split('-')[0]) : 'cette période';
+      document.getElementById('articles-container').innerHTML =
+        `<div class="empty">Aucun article pour ${monthLabel} dans cette spécialité.</div>`;
+    } else {
+      renderGroupedArticles();
+    }
     updateRubrique();
     updateCounters();
     document.getElementById('load-more').style.display = 'none';
+    if (window.lucide) lucide.createIcons();
     return;
   }
 
@@ -2782,43 +2822,45 @@ async function loadDemoData() {
   activeAudience = 'MY_SPEC';
   document.getElementById('spec-label').textContent = userSpecName;
   allSpecialties = DEMO_SPECIALTIES;
-  specTypeCounts = {
-    'chirurgie-vasculaire': { total:278, reglementaire:21, recommandation:13, innovation:244 },
-  };
+  specTypeCounts = { 'chirurgie-vasculaire': { total:19, reglementaire:3, recommandation:4, innovation:12 } };
   try {
-    const [artRes, cntRes] = await Promise.all([
-      fetch('/demo/articles?specialty=chirurgie-vasculaire'),
-      fetch('/demo/counts?specialty=chirurgie-vasculaire'),
-    ]);
-    if (artRes.ok && cntRes.ok) {
+    // 1. Charger counts + dates de tous les spés en une requête
+    const allCntsRes = await fetch('/demo/counts-all');
+    if (allCntsRes.ok) {
+      const allCnts = await allCntsRes.json();
+      specTypeCounts = {};
+      Object.entries(allCnts).forEach(([slug, c]) => {
+        specTypeCounts[slug] = { total: c.total||0, reglementaire: c.reglementaire||0, recommandation: c.recommandation||0, innovation: c.innovation||0 };
+        if (c.from_date) _demoDatesBySlug[slug] = { from_date: c.from_date, to_date: c.to_date };
+      });
+    }
+    // 2. Charger les articles de la spé principale (chirurgie-vasculaire)
+    const artRes = await fetch('/demo/articles?specialty=chirurgie-vasculaire');
+    if (artRes.ok) {
       const artData = await artRes.json();
-      const cntData = await cntRes.json();
       if (artData.articles && artData.articles.length > 0) {
         _demoCache = artData.articles;
-        specTypeCounts['chirurgie-vasculaire'] = {
-          total: cntData.total || 0,
-          reglementaire: cntData.reglementaire || 0,
-          recommandation: cntData.recommandation || 0,
-          innovation: cntData.innovation || 0,
-        };
-        // Positionner le month picker sur le mois actif retourné par l'API
+        _demoCacheBySlug['chirurgie-vasculaire'] = artData.articles;
+        // Positionner le month picker sur le mois actif
         if (artData.from_date && artData.to_date) {
           _customFrom = artData.from_date;
           _customUntil = artData.to_date;
           _activeMonth = artData.from_date.substring(0, 7);
           const [y, m] = _activeMonth.split('-').map(Number);
-          const label = MONTHS[m - 1] + ' ' + y;
           const labelEl = document.getElementById('month-picker-label');
-          if (labelEl) labelEl.textContent = label;
+          if (labelEl) labelEl.textContent = MONTHS[m - 1] + ' ' + y;
         }
       } else {
         _demoCache = [...DEMO_ARTICLES];
+        _demoCacheBySlug['chirurgie-vasculaire'] = _demoCache;
       }
     } else {
       _demoCache = [...DEMO_ARTICLES];
+      _demoCacheBySlug['chirurgie-vasculaire'] = _demoCache;
     }
   } catch (e) {
     _demoCache = [...DEMO_ARTICLES];
+    _demoCacheBySlug['chirurgie-vasculaire'] = _demoCache;
   }
   // Persister les articles en localStorage pour l'historique inter-sessions
   try { localStorage.setItem('mednews-article-cache', JSON.stringify(_demoCache)); } catch(e) {}
@@ -3212,28 +3254,15 @@ async function selectMonth(key, label) {
   const until = key + '-' + String(last).padStart(2, '0');
 
   if (DEMO_MODE) {
-    // Réinitialiser les filtres actifs
     activeFilter = 'all';
     document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-
-    // Filtrer les articles par mois sélectionné
-    const base = _demoCache || DEMO_ARTICLES || [];
-    const filtered = demoFilterByMonth(base);
-    allLoadedArticles = filtered;
-
     document.getElementById('spec-splash').style.display = 'none';
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
     const rh = document.getElementById('rubrique-header');
     if (rh) rh.style.display = '';
-
-    if (filtered.length === 0) {
-      document.getElementById('articles-container').innerHTML =
-        `<div class="empty">Aucun article pour ${label}.<br><span style="font-size:0.86rem;color:var(--text5);">La démo ne contient que des articles d'avril 2026.</span></div>`;
-    } else {
-      renderGroupedArticles();
-    }
-    if (window.lucide) lucide.createIcons();
+    // Recharger via resetAndLoad qui gère le cache et le filtre mois
+    await resetAndLoad();
     return;
   }
 

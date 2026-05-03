@@ -1,14 +1,23 @@
 # app/demo_routes.py
 """Routes publiques (sans auth) pour le mode démo."""
 from __future__ import annotations
+import calendar
 from datetime import date
-from typing import Optional
 from fastapi import APIRouter, Query
 from app.db import get_conn
 from app.portal_routes import _INTERVENTIONAL_SLUGS, _PRESCRIPTEUR_SLUGS
 
 router = APIRouter(tags=["demo"])
 DEMO_SPECIALTY = "chirurgie-vasculaire"
+
+DEMO_SLUGS = [
+    "chirurgie-vasculaire", "anesthesiologie-reanimation", "cardiologie",
+    "medecine-generale", "chirurgie-orthopedique", "biologie-medicale",
+    "pediatrie", "psychiatrie", "gynecologie-obstetrique", "neurologie",
+    "gastro-enterologie", "dermatologie", "endocrinologie", "ophtalmologie",
+    "oto-rhino-laryngologie", "rhumatologie", "pneumologie", "nephrologie",
+    "radiologie", "chirurgie-generale",
+]
 
 def _type_filter(slug: str) -> str:
     if slug in _INTERVENTIONAL_SLUGS:
@@ -32,13 +41,9 @@ def _latest_active_month(slug: str) -> tuple[str, str]:
             row = cur.fetchone()
     if row and row[0]:
         m: date = row[0]
-        # Dernier jour du mois
-        import calendar
         last_day = calendar.monthrange(m.year, m.month)[1]
         return m.isoformat(), date(m.year, m.month, last_day).isoformat()
-    # Fallback : mois courant
     today = date.today()
-    import calendar
     last_day = calendar.monthrange(today.year, today.month)[1]
     return date(today.year, today.month, 1).isoformat(), date(today.year, today.month, last_day).isoformat()
 
@@ -88,13 +93,12 @@ def demo_articles(specialty: str = Query(default=DEMO_SPECIALTY), per_page: int 
 @router.get("/demo/counts")
 def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
     from_date, to_date = _latest_active_month(specialty)
-    tf = _type_filter(specialty)
+    tf = _type_filter(slug := specialty)
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(f"""
                 SELECT COALESCE(i.source_type, 'reglementaire'), COUNT(DISTINCT i.candidate_id)
-                FROM items i
-                JOIN candidates c ON c.id = i.candidate_id
+                FROM items i JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
                   AND COALESCE(i.score_density, 0) >= 3
                   AND i.specialty_slug = %s
@@ -102,7 +106,7 @@ def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
                   AND c.official_date <= %s
                   {tf}
                 GROUP BY 1
-            """, (specialty, from_date, to_date))
+            """, (slug, from_date, to_date))
             rows = cur.fetchall()
     counts = {"reglementaire": 0, "recommandation": 0, "innovation": 0}
     for stype, n in rows:
@@ -112,3 +116,52 @@ def demo_counts(specialty: str = Query(default=DEMO_SPECIALTY)):
     counts["from_date"] = from_date
     counts["to_date"] = to_date
     return counts
+
+@router.get("/demo/counts-all")
+def demo_counts_all():
+    """Retourne en une requête les counts du dernier mois actif pour toutes les spés démo."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            # Dernier mois actif par spécialité
+            cur.execute("""
+                SELECT i.specialty_slug,
+                       DATE_TRUNC('month', MAX(c.official_date))::date AS last_month
+                FROM items i JOIN candidates c ON c.id = i.candidate_id
+                WHERE i.review_status = 'APPROVED'
+                  AND COALESCE(i.score_density, 0) >= 3
+                  AND i.specialty_slug = ANY(%s)
+                GROUP BY i.specialty_slug
+            """, (DEMO_SLUGS,))
+            last_months = {r[0]: r[1] for r in cur.fetchall()}
+
+            # Counts par spécialité + source_type sur le dernier mois
+            result = {}
+            for slug in DEMO_SLUGS:
+                m = last_months.get(slug)
+                if not m:
+                    result[slug] = {"reglementaire": 0, "recommandation": 0, "innovation": 0, "total": 0, "from_date": None, "to_date": None}
+                    continue
+                last_day = calendar.monthrange(m.year, m.month)[1]
+                from_date = m.isoformat()
+                to_date = date(m.year, m.month, last_day).isoformat()
+                tf = _type_filter(slug)
+                cur.execute(f"""
+                    SELECT COALESCE(i.source_type, 'reglementaire'), COUNT(DISTINCT i.candidate_id)
+                    FROM items i JOIN candidates c ON c.id = i.candidate_id
+                    WHERE i.review_status = 'APPROVED'
+                      AND COALESCE(i.score_density, 0) >= 3
+                      AND i.specialty_slug = %s
+                      AND c.official_date >= %s
+                      AND c.official_date <= %s
+                      {tf}
+                    GROUP BY 1
+                """, (slug, from_date, to_date))
+                counts = {"reglementaire": 0, "recommandation": 0, "innovation": 0}
+                for stype, n in cur.fetchall():
+                    if stype in counts:
+                        counts[stype] = n
+                counts["total"] = sum(counts.values())
+                counts["from_date"] = from_date
+                counts["to_date"] = to_date
+                result[slug] = counts
+    return result
