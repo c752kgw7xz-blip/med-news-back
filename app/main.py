@@ -655,6 +655,22 @@ def admin_activate_user(user_id: str, request: Request):
     return {"ok": True, "user_id": user_id, "is_active": True}
 
 
+@app.delete("/admin/users/{user_id}")
+def admin_delete_user(user_id: str, request: Request):
+    """Supprime définitivement un compte médecin (libère l'adresse email)."""
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM users WHERE id = %s AND is_admin = FALSE RETURNING id;",
+                (user_id,),
+            )
+            row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="user not found or is admin")
+    return {"ok": True, "user_id": user_id, "deleted": True}
+
+
 @app.get("/_version")
 def version():
     return {"commit": os.environ.get("RENDER_GIT_COMMIT", "unknown")}

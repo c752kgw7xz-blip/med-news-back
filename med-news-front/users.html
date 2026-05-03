@@ -382,8 +382,8 @@ function render() {
     const actionBtn = u.is_admin
       ? '<span style="color:var(--text3);font-size:12px">—</span>'
       : u.is_active
-        ? `<button class="btn-action btn-deactivate" onclick="setActive('${u.id}', false, this)">Désactiver</button>`
-        : `<button class="btn-action btn-activate" onclick="setActive('${u.id}', true, this)">Réactiver</button>`;
+        ? `<button class="btn-action btn-deactivate" onclick="deleteUser('${u.id}', this)">Supprimer</button>`
+        : `<button class="btn-action btn-deactivate" onclick="deleteUser('${u.id}', this)">Supprimer</button>`;
 
     return `<tr class="${u.is_active ? '' : 'inactive'}">
       <td><span class="email-cell" title="${u.email}">${u.email}</span>${adminBadge}</td>
@@ -397,16 +397,15 @@ function render() {
 }
 
 // ── Actions ───────────────────────────────────────────────────────────────────
-async function setActive(userId, activate, btn) {
+async function deleteUser(userId, btn) {
+  if (!confirm('Supprimer définitivement ce compte ? L\'adresse email pourra être réutilisée pour une nouvelle inscription.')) return;
   btn.disabled = true;
-  const endpoint = activate ? 'activate' : 'deactivate';
-  const r = await authFetch(`${API}/admin/users/${userId}/${endpoint}`, { method: 'POST' });
+  const r = await authFetch(`${API}/admin/users/${userId}`, { method: 'DELETE' });
   if (!r || !r.ok) { toast('Erreur'); btn.disabled = false; return; }
-  const user = allUsers.find(u => u.id === userId);
-  if (user) user.is_active = activate;
+  allUsers = allUsers.filter(u => u.id !== userId);
   updateStats();
   render();
-  toast(activate ? 'Compte réactivé' : 'Compte désactivé');
+  toast('Compte supprimé');
 }
 
 function toast(msg) {
