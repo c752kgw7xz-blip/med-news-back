@@ -99,10 +99,7 @@
       'letter-spacing:0.1px',
     ].join(';'));
     banner.innerHTML =
-      '🚧 <strong>Site en cours de développement</strong> — ' +
-      'l’accès est <strong>gratuit pendant toute la phase de développement</strong>. ' +
-      'MedNews deviendra payant à l’issue du développement complet, ' +
-      'prévu <strong>dans environ 2 mois</strong>.' +
+      'Version bêta — accès gratuit jusqu’au lancement officiel (<strong>dans ~ 2 mois</strong>).' +
       '<button onclick="(function(){sessionStorage.setItem(\'mednews-devbanner-closed\',\'1\');' +
       'document.getElementById(\'mednews-dev-banner\').remove();})()" ' +
       'style="position:absolute;right:12px;top:50%;transform:translateY(-50%);' +
