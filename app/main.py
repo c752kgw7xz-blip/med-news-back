@@ -179,11 +179,12 @@ def serve_newsletter_demo():
 @app.get("/newsletter-preview")
 def newsletter_preview(specialty: str = "chirurgie-vasculaire"):
     from fastapi.responses import HTMLResponse
+    from datetime import date as _date
     from app.newsletter_builder import build_newsletter
     from app.demo_routes import _fetch_demo_articles, _latest_active_month
     from_date, to_date = _latest_active_month(specialty)
     items = _fetch_demo_articles(specialty, from_date, to_date)
-    _, html, _ = build_newsletter(specialty, items)
+    _, html, _ = build_newsletter(specialty, items, emission_date=_date.fromisoformat(from_date))
     return HTMLResponse(content=html, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 @app.get("/portal-demo")
