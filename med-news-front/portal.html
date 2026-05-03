@@ -2875,21 +2875,15 @@ async function loadDemoData() {
     if (artRes.ok) {
       const artData = await artRes.json();
       if (artData.articles && artData.articles.length > 0) {
-        // Remapper les official_date sur le mois courant
-        const _nowD = new Date();
-        const _curYM = _nowD.getFullYear() + '-' + String(_nowD.getMonth() + 1).padStart(2, '0');
-        const _artMonth = artData.from_date ? artData.from_date.substring(0, 7) : null;
-        const remapped = artData.articles.map(a => {
-          if (_artMonth && a.official_date && a.official_date.startsWith(_artMonth))
-            return { ...a, official_date: _curYM + a.official_date.substring(7) };
-          return a;
-        });
-        _demoCache = remapped;
-        _demoCacheBySlug['chirurgie-vasculaire'] = remapped;
-        // Positionner le month picker sur le mois courant
-        _activeMonth = null;
-        const labelEl = document.getElementById('month-picker-label');
-        if (labelEl) labelEl.textContent = MONTHS[_nowD.getMonth()] + ' ' + _nowD.getFullYear();
+        _demoCache = artData.articles;
+        _demoCacheBySlug['chirurgie-vasculaire'] = artData.articles;
+        // Positionner le month picker sur le mois des articles (avril 2026)
+        if (artData.from_date) {
+          _activeMonth = artData.from_date.substring(0, 7);
+          const [_y, _m] = _activeMonth.split('-').map(Number);
+          const labelEl = document.getElementById('month-picker-label');
+          if (labelEl) labelEl.textContent = MONTHS[_m - 1] + ' ' + _y;
+        }
       } else {
         _demoCache = [...DEMO_ARTICLES];
         _demoCacheBySlug['chirurgie-vasculaire'] = _demoCache;
