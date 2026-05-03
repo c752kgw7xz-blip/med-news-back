@@ -18,7 +18,7 @@ import secrets
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
 from app.db import get_conn
@@ -918,3 +918,42 @@ def resend_verification(user_id: str = Depends(_get_current_user_id)):
     send_verification_email(email, raw_token)
 
     return {"ok": True, "message": "Email de vérification envoyé"}
+
+
+class ResendVerificationPublicPayload(BaseModel):
+    email: str
+
+
+@router.post("/auth/resend-verification-public")
+def resend_verification_public(payload: ResendVerificationPublicPayload, request: Request):
+    """Renvoie l'email de vérification sans JWT — rate limit par IP."""
+    from app.main import normalize_email, email_lookup_hash
+    from app.security import check_login_rate_limit
+
+    client_ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown")
+    check_login_rate_limit(client_ip)
+
+    email_norm = normalize_email(payload.email)
+    lookup = email_lookup_hash(email_norm)
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, email_verified_at FROM users WHERE email_lookup = %s;",
+                (lookup,),
+            )
+            row = cur.fetchone()
+
+    if not row:
+        # Ne pas révéler si l'email existe
+        return {"ok": True, "message": "Si ce compte existe, un email vous a été envoyé."}
+
+    user_id, verified_at = row
+    if verified_at is not None:
+        return {"ok": True, "message": "Ce compte est déjà vérifié. Vous pouvez vous connecter."}
+
+    check_resend_verification_rate_limit(str(user_id))
+    raw_token = generate_verification_token(str(user_id))
+    send_verification_email(email_norm, raw_token)
+
+    return {"ok": True, "message": "Email de vérification renvoyé. Vérifiez vos spams."}
