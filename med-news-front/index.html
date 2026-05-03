@@ -284,6 +284,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
   .channels-inner{padding:48px 16px}
 }
 </style>
+<script src="/banner.js"></script>
 </head>
 <body>
 
@@ -813,24 +814,6 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 </footer>
 
 <script>
-// Dev banner
-  (function() {
-    if (sessionStorage.getItem('mednews-devbanner-closed')) return;
-    var b = document.createElement('div');
-    b.id = 'mednews-dev-banner';
-    b.setAttribute('style', 'position:fixed;top:0;left:0;right:0;width:100%;box-sizing:border-box;z-index:99999;background:#fffbeb;border-bottom:1px solid #f5d87a;color:#78450a;font-family:inherit;font-size:0.78rem;line-height:1.4;padding:8px 48px 8px 16px;text-align:center;letter-spacing:0.1px');
-    b.innerHTML = "Version bêta — accès gratuit jusqu'au lancement officiel (<strong>dans ~ 2 mois</strong>).<button onclick=\"(function(){sessionStorage.setItem('mednews-devbanner-closed','1');document.getElementById('mednews-dev-banner').remove();document.body.style.paddingTop='';var _h=document.querySelector('header');if(_h)_h.style.top='';var _s=document.querySelector('.sidebar');if(_s){_s.style.top='';_s.style.height='';}})()\" style=\"position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:#78450a;line-height:1;padding:2px 4px;\" aria-label=\"Fermer\">×</button>";
-    document.addEventListener('DOMContentLoaded', function() {
-      if (document.body.firstChild) document.body.insertBefore(b, document.body.firstChild);
-      else document.body.appendChild(b);
-      var h = b.offsetHeight;
-      document.body.style.paddingTop = h + 'px';
-      var hdr = document.querySelector('header');
-      if (hdr) hdr.style.top = h + 'px';
-      var sidebar = document.querySelector('.sidebar');
-      if (sidebar) { sidebar.style.top = (52 + h) + 'px'; sidebar.style.height = 'calc(100vh - ' + (52 + h) + 'px)'; }
-    });
-  })();
 
 /* Reveal on scroll */
 const observer = new IntersectionObserver((entries) => {

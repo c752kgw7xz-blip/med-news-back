@@ -198,6 +198,10 @@ def serve_portal_demo():
 def serve_shared_js():
     return FileResponse(os.path.join(_FRONT_DIR, "shared.js"), media_type="application/javascript", headers=_NO_CACHE)
 
+@app.get("/banner.js")
+def serve_banner_js():
+    return FileResponse(os.path.join(_FRONT_DIR, "banner.js"), media_type="application/javascript", headers=_NO_CACHE)
+
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
 MIGRATE_SECRET = os.environ.get("MIGRATE_SECRET")
