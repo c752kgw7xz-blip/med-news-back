@@ -869,6 +869,8 @@ def update_preferences(payload: PreferencesUpdate, user_id: str = Depends(_get_c
     if payload.notif_newsletter is not None:
         fields.append("notif_newsletter = %s")
         values.append(payload.notif_newsletter)
+        fields.append("is_unsubscribed = %s")
+        values.append(not payload.notif_newsletter)
     if payload.notif_urgent is not None:
         fields.append("notif_urgent = %s")
         values.append(payload.notif_urgent)
