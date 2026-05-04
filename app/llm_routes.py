@@ -1101,7 +1101,10 @@ def newsletter_preview(
 
     with get_conn() as conn:
         with conn.cursor() as cur:
-            conditions = ["i.review_status = 'APPROVED'"]
+            conditions = [
+                "i.review_status = 'APPROVED'",
+                "i.created_at >= NOW() - INTERVAL '7 days'",
+            ]
             params: list[Any] = []
 
             if specialty:
@@ -1166,7 +1169,10 @@ def newsletter_send_test(
 
     with get_conn() as conn:
         with conn.cursor() as cur:
-            conditions = ["i.review_status = 'APPROVED'"]
+            conditions = [
+                "i.review_status = 'APPROVED'",
+                "i.created_at >= NOW() - INTERVAL '7 days'",
+            ]
             params: list[Any] = []
             if specialty:
                 conditions.append(
@@ -1200,7 +1206,10 @@ def newsletter_send_test(
     ]
 
     subject, html, plain = build_newsletter(specialty, items)
-    result = send_email(email, f"[TEST] {subject}", html, plain)
+    try:
+        result = send_email(email, f"[TEST] {subject}", html, plain)
+    except RuntimeError as e:
+        return {"ok": False, "recipient": email, "article_count": len(items), "error": str(e)}
 
     return {
         "ok": result.success,
@@ -1242,7 +1251,7 @@ def newsletter_send_all(
             slugs = [specialty] if specialty else list(SPECIALTY_LABELS.keys())
 
             for slug in slugs:
-                # Récupérer les articles APPROVED pour cette spécialité (sans filtre de date)
+                # Récupérer les articles APPROVED de la semaine écoulée pour cette spécialité
                 with get_conn() as conn:
                     with conn.cursor() as cur:
                         cur.execute(
@@ -1255,6 +1264,7 @@ def newsletter_send_all(
                             FROM items i
                             JOIN candidates c ON c.id = i.candidate_id
                             WHERE i.review_status = 'APPROVED'
+                              AND i.created_at >= NOW() - INTERVAL '7 days'
                               AND (i.specialty_slug = %s OR i.audience = 'TRANSVERSAL_LIBERAL')
                               AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins')
                             ORDER BY i.score_density DESC, c.official_date DESC

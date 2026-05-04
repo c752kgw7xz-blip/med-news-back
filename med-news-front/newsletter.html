@@ -343,7 +343,7 @@
 
 <div class="page">
   <div class="page-title">Newsletter</div>
-  <div class="page-subtitle">Prévisualiser et envoyer la newsletter par spécialité.</div>
+  <div class="page-subtitle" id="page-subtitle">Prévisualiser et envoyer la newsletter par spécialité. Articles des 7 derniers jours.</div>
 
   <div class="stats-bar">
     <div class="stat-chip"><div class="stat-val" id="stat-approved">—</div><div class="stat-lbl">Articles approuvés</div></div>
@@ -731,9 +731,20 @@ function toast(msg, type = 'success') {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+// ── Date window ───────────────────────────────────────────────────────────────
+function setDateWindow() {
+  const now = new Date();
+  const from = new Date(now);
+  from.setDate(from.getDate() - 7);
+  const fmt = d => d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  document.getElementById('page-subtitle').textContent =
+    `Prévisualiser et envoyer la newsletter par spécialité. Articles approuvés du ${fmt(from)} au ${fmt(now)}.`;
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 checkAdmin();
 loadData();
+setDateWindow();
 </script>
 </body>
 </html>
