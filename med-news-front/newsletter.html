@@ -735,7 +735,7 @@ function toast(msg, type = 'success') {
 function setDateWindow() {
   const now = new Date();
   const from = new Date(now);
-  from.setDate(from.getDate() - 7);
+  from.setDate(from.getDate() - 15);
   const fmt = d => d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   document.getElementById('page-subtitle').textContent =
     `Prévisualiser et envoyer la newsletter par spécialité. Articles approuvés du ${fmt(from)} au ${fmt(now)}.`;

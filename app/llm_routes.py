@@ -1103,7 +1103,7 @@ def newsletter_preview(
         with conn.cursor() as cur:
             conditions = [
                 "i.review_status = 'APPROVED'",
-                "(c.official_date >= CURRENT_DATE - INTERVAL '7 days' OR c.official_date IS NULL)",
+                "(c.official_date >= CURRENT_DATE - INTERVAL '15 days' OR c.official_date IS NULL)",
             ]
             params: list[Any] = []
 
@@ -1172,7 +1172,7 @@ def newsletter_send_test(
         with conn.cursor() as cur:
             conditions = [
                 "i.review_status = 'APPROVED'",
-                "(c.official_date >= CURRENT_DATE - INTERVAL '7 days' OR c.official_date IS NULL)",
+                "(c.official_date >= CURRENT_DATE - INTERVAL '15 days' OR c.official_date IS NULL)",
             ]
             params: list[Any] = []
             if specialty:
@@ -1266,7 +1266,7 @@ def newsletter_send_all(
                             FROM items i
                             JOIN candidates c ON c.id = i.candidate_id
                             WHERE i.review_status = 'APPROVED'
-                              AND (c.official_date >= CURRENT_DATE - INTERVAL '7 days' OR c.official_date IS NULL)
+                              AND (c.official_date >= CURRENT_DATE - INTERVAL '15 days' OR c.official_date IS NULL)
                               AND (i.specialty_slug = %s OR i.audience = 'TRANSVERSAL_LIBERAL')
                               AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins')
                             ORDER BY i.score_density DESC, c.official_date DESC
