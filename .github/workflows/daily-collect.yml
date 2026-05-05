@@ -52,18 +52,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install \
-            "psycopg[binary]>=3.1" \
-            "psycopg-pool>=3.1" \
-            psycopg2-binary \
-            "httpx>=0.27" \
-            feedparser \
-            beautifulsoup4 \
-            python-dotenv \
-            apscheduler \
-            lxml \
-            "pydantic[email]>=2.7" \
-            requests
+          pip install -r requirements.txt
+          pip install psycopg2-binary lxml requests  # extras non listés dans requirements.txt
 
       - name: Vérifier connexion DB
         run: |
