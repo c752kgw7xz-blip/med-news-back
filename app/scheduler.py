@@ -483,7 +483,7 @@ def job_collect_regulation() -> None:
 # JOB 1b — Collecte recommandations (chaque lundi)
 # ---------------------------------------------------------------------------
 
-def job_collect_recommendations() -> None:
+def job_collect_recommendations(specialty_slug: str | None = None) -> None:
     logger.info("=" * 60)
     logger.info("JOB COLLECTE RECOMMANDATIONS démarré — %s", date.today().isoformat())
     logger.info("=" * 60)
@@ -515,7 +515,7 @@ def job_collect_recommendations() -> None:
     # Guidelines publiées 2-10/an par société → collecte hebdo suffit.
     try:
         from app.web_scraper import scrape_all_web
-        web_report = scrape_all_web()
+        web_report = scrape_all_web(specialty_slug=specialty_slug)
         report["web_scraping"] = web_report
         total_web_ins = sum(v.get("inserted", 0) for v in web_report.values() if isinstance(v, dict))
         logger.info("Web scraping (FR + EU) : %d sources, %d insérés", len(web_report), total_web_ins)
@@ -580,7 +580,7 @@ def collect_by_specialty(specialty_slug: str, days: int = 120) -> dict[str, Any]
         report["regulation"] = {"error": str(e)}
 
     try:
-        report["recommendations"] = job_collect_recommendations()
+        report["recommendations"] = job_collect_recommendations(specialty_slug=specialty_slug)
     except Exception as e:
         logger.error("[%s] Recommandations échouées : %s", specialty_slug, e)
         report["recommendations"] = {"error": str(e)}

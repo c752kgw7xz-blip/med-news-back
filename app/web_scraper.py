@@ -550,26 +550,33 @@ def collect_esc_guidelines() -> dict[str, Any]:
 # Collecteur global
 # ---------------------------------------------------------------------------
 
-def scrape_all_web(sources: list[dict] | None = None) -> dict[str, Any]:
+_ESC_SPECIALTIES = {"cardiologie", "chirurgie-cardiaque"}
+
+
+def scrape_all_web(sources: list[dict] | None = None, specialty_slug: str | None = None) -> dict[str, Any]:
     """
-    Lance le scraping de toutes les sources HTML configurées (ou un sous-ensemble).
-    Couvre :
-      - Sources FR  (WEB_SCRAPER_SOURCES)       : SFH, SFR, SFO, SFPédiatrie, SOFCOT, SOFCPRE, INCa
-      - Sources EUR (EUROPE_WEB_SOURCES)         : EULAR, EAU, ESCMID, EAN, ESGE, EuSEM… (ESC via collect_esc_guidelines)
-      - ESC Guidelines (collect_esc_guidelines)  : 2 passes — site SPA Sitecore
-      - Congrès vasc. (VASCULAR_CONGRESS_SOURCES): désactivé (liste vide — couvert par TCTMD/VN)
-    Volume faible → pas de parallélisme nécessaire.
+    Lance le scraping des sources HTML configurées.
+    Si specialty_slug est fourni, seules les sources dont specialty_hint correspond sont scrapées.
     """
-    targets = sources or (WEB_SCRAPER_SOURCES + EUROPE_WEB_SOURCES + VASCULAR_CONGRESS_SOURCES)
+    def _matches(hint) -> bool:
+        if specialty_slug is None:
+            return True
+        if isinstance(hint, list):
+            return specialty_slug in hint or "tous" in hint
+        return hint in (specialty_slug, "tous", None, "")
+
+    all_sources = sources or (WEB_SCRAPER_SOURCES + EUROPE_WEB_SOURCES + VASCULAR_CONGRESS_SOURCES)
     results: dict[str, Any] = {}
-    for config in targets:
+    for config in all_sources:
+        if not _matches(config.get("specialty_hint")):
+            continue
         try:
             results[config["source"]] = scrape_source(config)
         except Exception as e:
             logger.error("[%s] erreur : %s", config["source"], e)
             results[config["source"]] = {"error": str(e)}
-    # ESC Guidelines — scraper dédié (SPA, 2 passes)
-    if sources is None:
+    # ESC Guidelines — uniquement pour les spécialités cardio
+    if sources is None and (specialty_slug is None or specialty_slug in _ESC_SPECIALTIES):
         try:
             results["esc_guidelines"] = collect_esc_guidelines()
         except Exception as e:
