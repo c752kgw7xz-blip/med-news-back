@@ -491,25 +491,28 @@ def job_collect_recommendations(specialty_slug: str | None = None) -> None:
     report: dict[str, Any] = {}
 
     # ── HAS + sociétés savantes (RSS) ────────────────────────────
-    try:
-        from app.rss_collector import collect_has, collect_pratique
-        report["has"] = collect_has(days=120)           # légère marge > 7 jours
-        report["pratique"] = collect_pratique(days=120)
-        logger.info("Recommandations RSS collectées")
-    except Exception as e:
-        logger.error("RSS recommandations échoué : %s", e)
-        report["rss"] = {"error": str(e)}
+    # Skippé si specialty_slug fourni : ces sources sont déjà collectées
+    # par collect_by_specialty_sources() via les FEEDS (specialty_hint="tous").
+    if specialty_slug is None:
+        try:
+            from app.rss_collector import collect_has, collect_pratique
+            report["has"] = collect_has(days=120)
+            report["pratique"] = collect_pratique(days=120)
+            logger.info("Recommandations RSS collectées")
+        except Exception as e:
+            logger.error("RSS recommandations échoué : %s", e)
+            report["rss"] = {"error": str(e)}
 
-    # ── HAS CT (avis médicaments — source_type déterminé par LLM) ────
-    try:
-        from app.rss_collector import collect_feed, FEEDS
-        for feed in FEEDS:
-            if feed["source"] == "has_ct":
-                r = collect_feed(feed, days=120)
-                report["has_ct"] = r
-                logger.info("[has_ct] ins=%d", r.get("inserted", 0))
-    except Exception as e:
-        logger.error("has_ct échoué : %s", e)
+        # ── HAS CT (avis médicaments — source_type déterminé par LLM) ────
+        try:
+            from app.rss_collector import collect_feed, FEEDS
+            for feed in FEEDS:
+                if feed["source"] == "has_ct":
+                    r = collect_feed(feed, days=120)
+                    report["has_ct"] = r
+                    logger.info("[has_ct] ins=%d", r.get("inserted", 0))
+        except Exception as e:
+            logger.error("has_ct échoué : %s", e)
 
     # ── Web scraping européen (ESC, EULAR, EAU, ESCMID…) ────────
     # Guidelines publiées 2-10/an par société → collecte hebdo suffit.
