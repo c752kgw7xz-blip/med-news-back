@@ -31,6 +31,16 @@ jobs:
       PYTHONPATH: ${{ github.workspace }}
 
     steps:
+      - name: Debug secrets
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "ERREUR: DATABASE_URL est vide — secrets non chargés depuis l'environnement 'env'"
+            exit 1
+          else
+            echo "DATABASE_URL: chargé (${#DATABASE_URL} chars)"
+            echo "PISTE_CLIENT_ID: ${PISTE_CLIENT_ID:0:8}..."
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
 
