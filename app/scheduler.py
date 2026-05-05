@@ -491,17 +491,23 @@ def job_collect_recommendations(specialty_slug: str | None = None) -> None:
     report: dict[str, Any] = {}
 
     # ── HAS + sociétés savantes (RSS) ────────────────────────────
-    # Skippé si specialty_slug fourni : ces sources sont déjà collectées
-    # par collect_by_specialty_sources() via les FEEDS (specialty_hint="tous").
+    # En mode spécialité : collect_pratique filtrée par specialty_hint.
+    # En mode global : collect_pratique + collect_has sans filtre.
+    try:
+        from app.rss_collector import collect_pratique
+        report["pratique"] = collect_pratique(days=120, specialty_slug=specialty_slug)
+        logger.info("Recommandations RSS collectées (specialty=%s)", specialty_slug)
+    except Exception as e:
+        logger.error("RSS recommandations échoué : %s", e)
+        report["pratique"] = {"error": str(e)}
+
     if specialty_slug is None:
         try:
-            from app.rss_collector import collect_has, collect_pratique
+            from app.rss_collector import collect_has
             report["has"] = collect_has(days=120)
-            report["pratique"] = collect_pratique(days=120)
-            logger.info("Recommandations RSS collectées")
         except Exception as e:
-            logger.error("RSS recommandations échoué : %s", e)
-            report["rss"] = {"error": str(e)}
+            logger.error("collect_has échoué : %s", e)
+            report["has"] = {"error": str(e)}
 
         # ── HAS CT (avis médicaments — source_type déterminé par LLM) ────
         try:

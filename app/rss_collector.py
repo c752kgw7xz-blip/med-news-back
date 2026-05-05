@@ -455,19 +455,28 @@ def collect_carmf(days: int = 120) -> dict[str, Any]:
     return _collect_carmf_scraper(days=days)
 
 
-def collect_pratique(days: int = 120) -> dict[str, Any]:
+def collect_pratique(days: int = 120, specialty_slug: str | None = None) -> dict[str, Any]:
     """
     Collecte les sources pratiques médicales :
     - Flux RSS : recommandations, bon usage, sociétés savantes (ALL_PRATIQUE_FEEDS)
     - Scraping HTML : sociétés sans RSS (SFH, SFR, SFO, SFPédiatrie, SOFCOT)
 
-    Par défaut days=120 pour capturer l'historique récent des nouveaux feeds.
-    Le scraping HTML n'utilise pas le paramètre days (pas de date dans les pages).
+    Si specialty_slug est fourni, seules les sources dont specialty_hint correspond
+    à la spécialité (ou "tous") sont collectées.
     """
     results: dict[str, Any] = {}
 
     # ── Flux RSS ─────────────────────────────────────────────────────────
     for feed in ALL_PRATIQUE_FEEDS:
+        if feed.get("disabled"):
+            continue
+        hint = feed.get("specialty_hint")
+        if specialty_slug is not None:
+            if isinstance(hint, list):
+                if specialty_slug not in hint and "tous" not in hint:
+                    continue
+            elif hint not in (specialty_slug, "tous", None, ""):
+                continue
         try:
             results[feed["source"]] = collect_feed(feed, days=days)
         except Exception as e:
@@ -475,7 +484,7 @@ def collect_pratique(days: int = 120) -> dict[str, Any]:
             results[feed["source"]] = {"error": str(e)}
 
     # ── Scraping HTML (sociétés sans RSS) ─────────────────────────────────
-    web_results = scrape_all_web()
+    web_results = scrape_all_web(specialty_slug=specialty_slug)
     results.update(web_results)
 
     return results
