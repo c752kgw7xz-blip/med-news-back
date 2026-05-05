@@ -1,4 +1,4 @@
-name: MedNews — Collecte quotidienne spécialités 21-30
+name: MedNews — Collecte quotidienne spécialités 11-20
 
 on:
   schedule:
@@ -18,7 +18,7 @@ on:
 
 jobs:
   collect:
-    name: Collecte spécialités 21-30
+    name: Collecte spécialités 11-20
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: env
@@ -68,35 +68,32 @@ jobs:
           print("Connexion DB OK")
           EOF
 
-      - name: Collecter — medecine-interne
-        run: python3 scripts/collect_specialty.py medecine-interne ${{ github.event.inputs.days || '120' }}
+      - name: Collecter — endocrinologie
+        run: python3 scripts/collect_specialty.py endocrinologie ${{ github.event.inputs.days || '120' }}
 
-      - name: Collecter — medecine-physique
-        run: python3 scripts/collect_specialty.py medecine-physique ${{ github.event.inputs.days || '120' }}
+      - name: Collecter — gastro-enterologie
+        run: python3 scripts/collect_specialty.py gastro-enterologie ${{ github.event.inputs.days || '120' }}
 
-      - name: Collecter — neurochirurgie
-        run: python3 scripts/collect_specialty.py neurochirurgie ${{ github.event.inputs.days || '120' }}
+      - name: Collecter — geriatrie
+        run: python3 scripts/collect_specialty.py geriatrie ${{ github.event.inputs.days || '120' }}
 
-      - name: Collecter — neurologie
-        run: python3 scripts/collect_specialty.py neurologie ${{ github.event.inputs.days || '120' }}
+      - name: Collecter — gynecologie
+        run: python3 scripts/collect_specialty.py gynecologie ${{ github.event.inputs.days || '120' }}
 
-      - name: Collecter — nephrologie
-        run: python3 scripts/collect_specialty.py nephrologie ${{ github.event.inputs.days || '120' }}
+      - name: Collecter — hematologie
+        run: python3 scripts/collect_specialty.py hematologie ${{ github.event.inputs.days || '120' }}
 
-      - name: Collecter — orl
-        run: python3 scripts/collect_specialty.py orl ${{ github.event.inputs.days || '120' }}
+      - name: Collecter — infectiologie
+        run: python3 scripts/collect_specialty.py infectiologie ${{ github.event.inputs.days || '120' }}
 
-      - name: Collecter — oncologie
-        run: python3 scripts/collect_specialty.py oncologie ${{ github.event.inputs.days || '120' }}
+      - name: Collecter — infirmiers
+        run: python3 scripts/collect_specialty.py infirmiers ${{ github.event.inputs.days || '120' }}
 
-      - name: Collecter — ophtalmologie
-        run: python3 scripts/collect_specialty.py ophtalmologie ${{ github.event.inputs.days || '120' }}
+      - name: Collecter — kinesitherapie
+        run: python3 scripts/collect_specialty.py kinesitherapie ${{ github.event.inputs.days || '120' }}
 
-      - name: Collecter — pharmacien
-        run: python3 scripts/collect_specialty.py pharmacien ${{ github.event.inputs.days || '120' }}
-
-      - name: Collecter — pneumologie
-        run: python3 scripts/collect_specialty.py pneumologie ${{ github.event.inputs.days || '120' }}
+      - name: Collecter — medecine-generale
+        run: python3 scripts/collect_specialty.py medecine-generale ${{ github.event.inputs.days || '120' }}
 
       - name: Résumé final
         if: always()
@@ -109,8 +106,9 @@ jobs:
           cur = conn.cursor()
 
           slugs = [
-              'medecine-interne','medecine-physique','neurochirurgie','neurologie',
-              'nephrologie','orl','oncologie','ophtalmologie','pharmacien','pneumologie'
+              'endocrinologie','gastro-enterologie','geriatrie','gynecologie',
+              'hematologie','infectiologie','infirmiers','kinesitherapie',
+              'medecine-generale'
           ]
           since = datetime.utcnow() - timedelta(hours=3)
 
