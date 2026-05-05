@@ -424,7 +424,7 @@ def job_collect_regulation() -> None:
         # BO Social et CNOM depuis FEEDS, filtrés sur source_type = reglementaire
         reg_sources = {s for s, t in SOURCE_TO_TYPE.items() if t == "reglementaire"}
         for feed in FEEDS:
-            if feed["source"] in reg_sources and not feed["source"].startswith("ansm"):
+            if feed["source"] in reg_sources and not feed["source"].startswith("ansm") and not feed.get("disabled"):
                 try:
                     r = collect_feed(feed, days=120)
                     report[feed["source"]] = r

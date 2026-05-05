@@ -17,9 +17,9 @@ def _get_piste_endpoints() -> tuple[str, str]:
     """
     Détermine les endpoints OAuth + API selon l'env.
     """
-    env = os.environ.get("PISTE_ENV", "sandbox").lower()
+    env = os.environ.get("PISTE_ENV", "production").lower()
 
-    if env == "prod":
+    if env in ("prod", "production"):
         return (
             "https://oauth.piste.gouv.fr/api/oauth/token",
             "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app",
