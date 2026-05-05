@@ -68,6 +68,9 @@ jobs:
           print("Connexion DB OK")
           EOF
 
+      - name: Collecter — dermatologie
+        run: python3 scripts/collect_specialty.py dermatologie ${{ github.event.inputs.days || '120' }}
+
       - name: Collecter — endocrinologie
         run: python3 scripts/collect_specialty.py endocrinologie ${{ github.event.inputs.days || '120' }}
 
@@ -106,9 +109,9 @@ jobs:
           cur = conn.cursor()
 
           slugs = [
-              'endocrinologie','gastro-enterologie','geriatrie','gynecologie',
-              'hematologie','infectiologie','infirmiers','kinesitherapie',
-              'medecine-generale'
+              'dermatologie','endocrinologie','gastro-enterologie','geriatrie',
+              'gynecologie','hematologie','infectiologie','infirmiers',
+              'kinesitherapie','medecine-generale'
           ]
           since = datetime.utcnow() - timedelta(hours=3)
 
