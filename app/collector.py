@@ -23,6 +23,7 @@ from __future__ import annotations
 import logging
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from typing import Any
 
@@ -687,28 +688,34 @@ def collect_by_specialty_sources(
 
     report: dict[str, Any] = {"specialty": specialty_slug, "days": days}
 
-    # ── RSS (ALL_FEEDS filtré par spécialité) ────────────────────────────
+    # ── RSS (ALL_FEEDS filtré par spécialité) — parallèle ───────────────
+    rss_feeds = [f for f in ALL_FEEDS if not f.get("disabled") and _matches(f.get("specialty_hint", ""))]
     rss_results: dict = {}
-    for feed in ALL_FEEDS:
-        if feed.get("disabled"):
-            continue
-        if _matches(feed.get("specialty_hint", "")):
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {executor.submit(collect_feed, feed, days): feed["source"] for feed in rss_feeds}
+        for future in as_completed(futures):
+            src_name = futures[future]
             try:
-                rss_results[feed["source"]] = collect_feed(feed, days=days)
+                rss_results[src_name] = future.result()
             except Exception as e:
-                rss_results[feed["source"]] = {"error": str(e)}
+                rss_results[src_name] = {"error": str(e)}
     report["rss"] = rss_results
     total_rss = sum(r.get("inserted", 0) for r in rss_results.values() if isinstance(r, dict))
     logger.info("[%s] RSS : %d sources, %d insérés", specialty_slug, len(rss_results), total_rss)
 
-    # ── PubMed filtré par spécialité ─────────────────────────────────────
+    # ── PubMed filtré par spécialité — parallèle ────────────────────────
+    # max_workers=5 : respecte la limite NCBI 10 req/s avec clé API
+    # (chaque source = 1 esearch + N efetch — 5 sources concurrentes ≤ 10 req/s)
+    pubmed_srcs = [s for s in PUBMED_SOURCES if _matches(s.get("specialty_hint", ""))]
     pubmed_results: dict = {}
-    for src in PUBMED_SOURCES:
-        if _matches(src.get("specialty_hint", "")):
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(collect_pubmed_source, src, days): src["source"] for src in pubmed_srcs}
+        for future in as_completed(futures):
+            src_name = futures[future]
             try:
-                pubmed_results[src["source"]] = collect_pubmed_source(src, days=days)
+                pubmed_results[src_name] = future.result()
             except Exception as e:
-                pubmed_results[src["source"]] = {"error": str(e)}
+                pubmed_results[src_name] = {"error": str(e)}
     report["pubmed"] = pubmed_results
     total_pub = sum(r.get("inserted", 0) for r in pubmed_results.values() if isinstance(r, dict))
     logger.info("[%s] PubMed : %d sources, %d insérés", specialty_slug, len(pubmed_results), total_pub)
