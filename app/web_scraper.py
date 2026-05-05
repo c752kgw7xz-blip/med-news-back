@@ -946,6 +946,10 @@ def collect_ameli_medecin(days: int = 180, max_pages: int = 20) -> dict[str, Any
     car le contenu est mixte : convention médicale (reglementaire) et outils
     pratiques / guides (recommandation).
 
+    Proxy : si AMELI_PROXY est défini dans l'env (ex. "http://user:pass@host:port"),
+    les requêtes sont routées via ce proxy — nécessaire depuis GitHub Actions
+    (IPs AWS bloquées par ameli.fr).
+
     Args:
         days: Fenêtre temporelle en arrière depuis aujourd'hui.
         max_pages: Nombre maximum de pages à parcourir (10 articles/page).
@@ -953,13 +957,16 @@ def collect_ameli_medecin(days: int = 180, max_pages: int = 20) -> dict[str, Any
     Returns:
         Dict de stats : seen / inserted / deduped / skipped / too_old.
     """
+    import os as _os
     source = "ameli_medecin"
     today = date.today()
     cutoff = today - timedelta(days=days)
 
     seen = inserted = deduped = skipped = too_old = 0
 
-    with httpx.Client(follow_redirects=True, timeout=20, headers=_AMELI_HEADERS) as client:
+    _proxy = _os.environ.get("AMELI_PROXY")
+    _proxies = {"http://": _proxy, "https://": _proxy} if _proxy else None
+    with httpx.Client(follow_redirects=True, timeout=20, headers=_AMELI_HEADERS, proxies=_proxies) as client:
         with get_conn() as conn:
             with conn.cursor() as cur:
                 for page in range(max_pages):

@@ -50,7 +50,7 @@ try:
     # CARPIMKO, CSMF, BO Social, JORF via PISTE, fonds sociaux...
     logger.info("--- [1/4] Réglementation ---")
     try:
-        reg = job_collect_regulation()
+        reg = job_collect_regulation(days=days)
         reg_ins = sum(v.get("inserted", 0) for v in reg.values() if isinstance(v, dict))
         logger.info("Réglementation : %d insérés", reg_ins)
         total += reg_ins

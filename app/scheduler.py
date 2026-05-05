@@ -147,9 +147,9 @@ _recommendation_period = _weekly_period
 # JOB 1a — Collecte réglementation (1er du mois)
 # ---------------------------------------------------------------------------
 
-def job_collect_regulation() -> None:
+def job_collect_regulation(days: int = 120) -> None:
     logger.info("=" * 60)
-    logger.info("JOB COLLECTE RÉGLEMENTATION démarré — %s", date.today().isoformat())
+    logger.info("JOB COLLECTE RÉGLEMENTATION démarré — %s (fenêtre %d j)", date.today().isoformat(), days)
     logger.info("=" * 60)
 
     report: dict[str, Any] = {}
@@ -165,7 +165,7 @@ def job_collect_regulation() -> None:
 
         source = "legifrance_jorf"
         today = date.today()
-        start = today - timedelta(days=120)
+        start = today - timedelta(days=days)
         page_size, max_pages = 50, 40
         seen = ins = dup = 0
 
@@ -241,7 +241,7 @@ def job_collect_regulation() -> None:
 
         source_rm = "legifrance_jorf_remboursement"
         today_rm = date.today()
-        start_rm = today_rm - timedelta(days=180)  # fenêtre plus large : textes sortent en continu
+        start_rm = today_rm - timedelta(days=days)
         pg_size_rm, max_pg_rm = 50, 40
         seen_rm = ins_rm = dup_rm = 0
 
@@ -344,7 +344,7 @@ def job_collect_regulation() -> None:
         for fond, src in FONDS_CONFIG.items():
             try:
                 today_d = date.today()
-                start_d = today_d - timedelta(days=120)
+                start_d = today_d - timedelta(days=days)
                 ins = dup = s = filtered = 0
 
                 with _get_conn() as conn:
@@ -419,14 +419,14 @@ def job_collect_regulation() -> None:
         from app.rss_collector import collect_ansm, collect_feed, FEEDS
         from app.llm_analysis import SOURCE_TO_TYPE
 
-        report["ansm"] = collect_ansm(days=120)
+        report["ansm"] = collect_ansm(days=days)
 
         # BO Social et CNOM depuis FEEDS, filtrés sur source_type = reglementaire
         reg_sources = {s for s, t in SOURCE_TO_TYPE.items() if t == "reglementaire"}
         for feed in FEEDS:
             if feed["source"] in reg_sources and not feed["source"].startswith("ansm") and not feed.get("disabled"):
                 try:
-                    r = collect_feed(feed, days=120)
+                    r = collect_feed(feed, days=days)
                     report[feed["source"]] = r
                     logger.info("[%s] ins=%d", feed["source"], r.get("inserted", 0))
                 except Exception as e3:
@@ -438,7 +438,7 @@ def job_collect_regulation() -> None:
     # ── 4. CNOM — scraper (RSS vide depuis 2026) ─────────────────
     try:
         from app.web_scraper import collect_cnom
-        report["cnom_scraper"] = collect_cnom(days=180)
+        report["cnom_scraper"] = collect_cnom(days=days)
         logger.info("CNOM scraper : ins=%d", report["cnom_scraper"].get("inserted", 0))
     except Exception as e:
         logger.error("CNOM scraper échoué : %s", e)
@@ -447,7 +447,7 @@ def job_collect_regulation() -> None:
     # ── 5. ameli.fr/medecin — actualités CNAM (pas de RSS) ───────
     try:
         from app.web_scraper import collect_ameli_medecin
-        report["ameli_medecin"] = collect_ameli_medecin(days=180)
+        report["ameli_medecin"] = collect_ameli_medecin(days=days)
         logger.info("ameli.fr médecin : ins=%d", report["ameli_medecin"].get("inserted", 0))
     except Exception as e:
         logger.error("ameli.fr médecin échoué : %s", e)
@@ -456,7 +456,7 @@ def job_collect_regulation() -> None:
     # ── 6. CARMF — retraite et cotisations médecins libéraux ─────
     try:
         from app.web_scraper import collect_carmf
-        report["carmf"] = collect_carmf(days=180)
+        report["carmf"] = collect_carmf(days=days)
         logger.info("CARMF : ins=%d", report["carmf"].get("inserted", 0))
     except Exception as e:
         logger.error("CARMF échoué : %s", e)
@@ -465,7 +465,7 @@ def job_collect_regulation() -> None:
     # ── 7. CARPIMKO — retraite auxiliaires médicaux libéraux ─────
     try:
         from app.web_scraper import collect_carpimko
-        report["carpimko"] = collect_carpimko(days=180)
+        report["carpimko"] = collect_carpimko(days=days)
         logger.info("CARPIMKO : ins=%d", report["carpimko"].get("inserted", 0))
     except Exception as e:
         logger.error("CARPIMKO échoué : %s", e)

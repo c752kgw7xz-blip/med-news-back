@@ -23,6 +23,7 @@ jobs:
       PISTE_CLIENT_ID: ${{ secrets.PISTE_CLIENT_ID }}
       PISTE_CLIENT_SECRET: ${{ secrets.PISTE_CLIENT_SECRET }}
       NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
+      AMELI_PROXY: ${{ secrets.AMELI_PROXY }}
       PISTE_ENV: 'production'
       SCHEDULER_ENABLED: 'false'
       PYTHONPATH: ${{ github.workspace }}
