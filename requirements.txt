@@ -32,3 +32,8 @@ apscheduler>=3.10
 
 # Variables d'environnement
 python-dotenv>=1.0
+
+# Extras requis par les scripts de collecte GitHub Actions
+psycopg2-binary>=2.9
+lxml>=5.0
+requests>=2.31

@@ -2,8 +2,8 @@ name: MedNews — Collecte quotidienne spécialités 21-30
 
 on:
   schedule:
-    # 2h00 UTC = 4h00 Paris (CEST) — avant les routines triage Anthropic (5h-7h UTC)
-    - cron: '0 2 * * *'
+    # 4h00 UTC = 6h00 Paris (CEST) — décalé pour éviter collision avec les 2 autres workflows
+    - cron: '0 4 * * *'
   # Déclenchement manuel depuis l'onglet Actions si besoin
   workflow_dispatch:
     inputs:
@@ -27,6 +27,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PISTE_CLIENT_ID: ${{ secrets.PISTE_CLIENT_ID }}
       PISTE_CLIENT_SECRET: ${{ secrets.PISTE_CLIENT_SECRET }}
+      NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
       SCHEDULER_ENABLED: 'false'
       PYTHONPATH: ${{ github.workspace }}
 
@@ -53,7 +54,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install psycopg2-binary lxml requests  # extras non listés dans requirements.txt
 
       - name: Vérifier connexion DB
         run: |

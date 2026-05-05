@@ -703,13 +703,12 @@ def collect_by_specialty_sources(specialty_slug: str, days: int = 120) -> dict[s
 
     # ── API filtré par spécialité ─────────────────────────────────────────
     api_results: dict = {}
-    api_days = max(days, 120)
     for src in API_SOURCES:
         if _matches(src.get("specialty_hint", "")):
             fn = _API_DISPATCH.get(src["collector"])
             if fn:
                 try:
-                    api_results[src["source"]] = fn(days=api_days)
+                    api_results[src["source"]] = fn(days=days)
                 except Exception as e:
                     api_results[src["source"]] = {"error": str(e)}
     if api_results:
