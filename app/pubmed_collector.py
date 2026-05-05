@@ -2,7 +2,7 @@
 """
 Collecteur PubMed via NCBI E-utilities.
 
-512 sources configurées couvrant 36 spécialités :
+513 sources configurées couvrant 36 spécialités :
   chirurgie-vasculaire, chirurgie-cardiaque, chirurgie-thoracique,
   chirurgie-orthopedique, chirurgie-plastique, chirurgie-pediatrique,
   chirurgie-pediatrique (urologie), pediatrie, anesthesiologie,
@@ -4335,6 +4335,35 @@ PUBMED_SOURCES: list[dict] = [
         "specialty_hint": "medecine-generale",
         "min_score_hint": 7,
     },
+    # ── JAMA Internal Medicine ────────────────────────────────────────────────
+    # IF ~24 — journal AMA. Référence medecine-interne : maladies systémiques, guidelines ACP/AMA,
+    # déprescription, polypharmacie, maladies chroniques, sécurité médicaments. Déplacé de
+    # medecine-generale → medecine-interne (specialty_hint) — reste cross-spé via SOURCE_TO_TYPE.
+    # _PT_OR_TITLE pour les guidelines AMA.
+    {
+        "source": "pubmed_jama_intern_med",
+        "journal_term": f'"JAMA Intern Med"[Journal] AND {_PT_OR_TITLE}',
+        "label": "JAMA Internal Medicine (AMA, IF ~24) — maladies systémiques, déprescription, guidelines AMA",
+        "source_type": "recommandation",
+        "specialty_hint": "medecine-interne",
+        "min_score_hint": 6,
+    },
+
+    # ── BMJ (British Medical Journal) ─────────────────────────────────────────
+    # IF ~107 — journal officiel BMA. Articles de recherche courts à fort impact,
+    # revues cliniques pratiques (BMJ Learning), analyses politiques de santé.
+    # Très lu par les médecins généralistes britanniques et européens. Publie les
+    # guidelines NICE reformatées. _PT_OR_TITLE pour capter les guidelines publiées
+    # sous format BMJ (NICE, BTS, SIGN...).
+    {
+        "source": "pubmed_bmj",
+        "journal_term": f'"BMJ"[Journal] AND {_PT_OR_TITLE}',
+        "label": "BMJ (British Medical Journal, IF ~107) — essais cliniques, revues pratiques, guidelines NICE",
+        "source_type": "innovation",
+        "specialty_hint": "medecine-generale",
+        "min_score_hint": 6,
+    },
+
     # ── Médecine interne ──────────────────────────────────────────────────────
     {
         "source": "pubmed_ann_intern_med",
@@ -4346,7 +4375,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_am_j_med",
-        "journal_term": f'"Am J Med"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Am J Med"[Journal] AND {_PT_OR_TITLE}',
         "label": "American Journal of Medicine (Elsevier, IF ~4) — médecine interne générale",
         "source_type": "innovation",
         "specialty_hint": "medecine-interne",
@@ -4354,7 +4383,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_medicine_baltimore",
-        "journal_term": f'"Medicine (Baltimore)"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Medicine (Baltimore)"[Journal] AND {_PT_OR_TITLE}',
         "label": "Medicine (Baltimore) / Wolters Kluwer — revues systématiques et séries cliniques",
         "source_type": "innovation",
         "specialty_hint": "medecine-interne",
@@ -4362,7 +4391,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_bmc_med",
-        "journal_term": f'"BMC Med"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"BMC Med"[Journal] AND {_PT_OR_TITLE}',
         "label": "BMC Medicine (IF ~9) — essais cliniques et méta-analyses multimorbidité",
         "source_type": "innovation",
         "specialty_hint": "medecine-interne",
@@ -4370,7 +4399,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_eur_j_clin_invest",
-        "journal_term": f'"Eur J Clin Invest"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Eur J Clin Invest"[Journal] AND {_PT_OR_TITLE}',
         "label": "European J Clinical Investigation (EFIM, IF ~4) — pathologies systémiques, métabolisme",
         "source_type": "innovation",
         "specialty_hint": "medecine-interne",
@@ -4386,7 +4415,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_j_intern_med",
-        "journal_term": f'"J Intern Med"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Intern Med"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Internal Medicine (Wiley/SNFMI-EFIM, IF ~8) — pathologies multisystémiques",
         "source_type": "innovation",
         "specialty_hint": "medecine-interne",
@@ -4410,7 +4439,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_intern_med_j",
-        "journal_term": f'"Intern Med J"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Intern Med J"[Journal] AND {_PT_OR_TITLE}',
         "label": "Internal Medicine Journal (ANZMJ, IF ~2.5) — médecine interne Australasie",
         "source_type": "innovation",
         "specialty_hint": "medecine-interne",
@@ -4426,7 +4455,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_intern_emerg_med",
-        "journal_term": f'"Intern Emerg Med"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Intern Emerg Med"[Journal] AND {_PT_OR_TITLE}',
         "label": "Internal and Emergency Medicine (Springer, IF ~5) — SIMI, pathologies aiguës",
         "source_type": "innovation",
         "specialty_hint": "medecine-interne",
@@ -4434,7 +4463,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_am_j_med_sci",
-        "journal_term": f'"Am J Med Sci"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Am J Med Sci"[Journal] AND {_PT_OR_TITLE}',
         "label": "American J Medical Sciences (SSCI, IF ~3) — pathologies systémiques, cas cliniques",
         "source_type": "innovation",
         "specialty_hint": "medecine-interne",
@@ -4450,7 +4479,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_j_investig_med",
-        "journal_term": f'"J Investig Med"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Investig Med"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Investigative Medicine (BMJ/AFMR, IF ~3) — pathologies métaboliques/systémiques",
         "source_type": "innovation",
         "specialty_hint": "medecine-interne",
@@ -4463,6 +4492,14 @@ PUBMED_SOURCES: list[dict] = [
         "source_type": "recommandation",
         "specialty_hint": "medecine-interne",
         "min_score_hint": 7,
+    },
+    {
+        "source": "pubmed_eclinicalmedicine",
+        "journal_term": f'"EClinicalMedicine"[Journal] AND {_PT_OR_TITLE}',
+        "label": "EClinicalMedicine (Lancet group, IF ~15) — essais cliniques et méta-analyses multimorbidité",
+        "source_type": "innovation",
+        "specialty_hint": "medecine-interne",
+        "min_score_hint": 6,
     },
     # ── Médecine physique et de réadaptation ──────────────────────────────────
     {

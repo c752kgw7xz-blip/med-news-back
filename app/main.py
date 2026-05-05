@@ -453,6 +453,27 @@ def admin_collect_carpimko(request: Request, days: int = 180):
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
+@app.post("/admin/collect/specialty/{slug}")
+def admin_collect_specialty(slug: str, request: Request, days: int = 120):
+    """Déclenche la collecte complète (PubMed + RSS + réglementation + recommandations) pour une spécialité."""
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    try:
+        from app.db import get_conn
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT slug FROM specialties WHERE slug = %s", (slug,))
+                if not cur.fetchone():
+                    raise HTTPException(status_code=404, detail=f"Spécialité inconnue : {slug}")
+        from app.scheduler import collect_by_specialty
+        report = collect_by_specialty(slug, days=days)
+        return {"ok": True, "specialty": slug, "report": report}
+    except HTTPException:
+        raise
+    except Exception as e:
+        _startup_logger.exception("Erreur collect specialty %s", slug)
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
 @app.post("/admin/scheduler/run-send")
 def admin_run_send(request: Request):
     """Déclenche manuellement l'envoi des newsletters réglementation + recommandations."""

@@ -1139,6 +1139,11 @@ _INNOVATION_SOURCES: frozenset[str] = frozenset({
     "pubmed_burns", "pubmed_acpe", "pubmed_prs_global_open", "pubmed_wound_repair",
     # EMA nouvelles AMM
     "ema_new_medicines",
+    # PubMed — Sage-femme
+    "pubmed_midwifery", "pubmed_birth", "pubmed_women_birth", "pubmed_j_midwifery",
+    "pubmed_prenat_diagn", "pubmed_j_matern_fetal", "pubmed_breastfeed_med",
+    "pubmed_j_hum_lact", "pubmed_arch_womens_ment_health",
+    "pubmed_matern_child_nutr", "pubmed_int_breastfeed_j",
 })
 
 # Sources presse médicale professionnelle — traitement différent des journaux académiques :
@@ -1391,6 +1396,7 @@ SOURCE_HINTS: dict[str, str] = {
     "clinical_chemistry": "Clinical Chemistry (AACC) — Article de recherche en biologie médicale (nouveaux biomarqueurs, méthodes analytiques, DM-DIV)",
     "ptj_kine":           "Physical Therapy Journal (PTJ/APTA) — Essai clinique ou méta-analyse en kinésithérapie et rééducation fonctionnelle",
     "bjog":               "BJOG (British Journal of Obstetrics and Gynaecology) — Essai clinique ou méta-analyse en obstétrique et pratique sage-femme",
+    "rcog_guidelines":    "RCOG Green-Top Guideline (Royal College of Obstetricians and Gynaecologists) — Recommandation officielle RCOG en obstétrique, maïeutique ou gynécologie : prééclampsie, HPP, diabète gestationnel, mouvements fœtaux, présentation du siège, RCIU, thrombose gravidique, placenta praevia, gémellité monochoriale…",
     "cpt_pharmacol":      "Clinical Pharmacology & Therapeutics (ASCPT) — Article de recherche en pharmacologie clinique (pharmacocinétique, interactions, nouvelles molécules)",
     "jdr_dental":         "Journal of Dental Research (IADR) — Essai clinique ou étude en chirurgie dentaire, parodontologie, implantologie, orthodontie",
     "jan_nursing":        "Journal of Advanced Nursing (JAN) — Essai clinique ou étude en sciences infirmières et pratiques de soins",
@@ -1429,6 +1435,18 @@ SOURCE_HINTS: dict[str, str] = {
     "pubmed_jpu":              "Journal of Pediatric Urology (JPU/ESPU/EAU) — Essai clinique, méta-analyse ou étude multicentrique en urologie pédiatrique : hypospadias, cryptorchidie, RVU, VUP, SJPU, lithiase, neurologie urinaire pédiatrique",
     "pubmed_jpu_guidelines":   "JPU Guidelines EAU Pediatric / ESPU — Recommandation ou position statement EAU Pediatric Urology / ESPU en urologie pédiatrique publiée dans le Journal of Pediatric Urology",
     "eupsa_pediatrique":       "EUPSA — Guideline ou position statement de l'European Paediatric Surgeons' Association en chirurgie pédiatrique",
+    # ── Sage-femme ───────────────────────────────────────────────────────────
+    "pubmed_midwifery":             "Midwifery (RCM/Elsevier, IF ~3) — Essai clinique ou méta-analyse en pratique maïeutique : accouchement physiologique, douleur du travail, expérience de naissance",
+    "pubmed_birth":                 "Birth (Wiley/ICEA, IF ~3) — Essai clinique en obstétrique physiologique : travail, positions, analgésie, mode d'accouchement, expérience périnatale",
+    "pubmed_women_birth":           "Women and Birth (ACMI/Elsevier, IF ~3) — Essai clinique ou méta-analyse en maïeutique australienne et internationale : suivi de grossesse, décisions intrapartum, post-partum",
+    "pubmed_j_midwifery":           "J Midwifery & Women's Health (ACNM, IF ~2) — Guideline ACNM ou essai clinique en soins sage-femme : planification familiale, IVG médicamenteuse, suivi gynécologique de prévention",
+    "pubmed_prenat_diagn":          "Prenatal Diagnosis (Wiley, IF ~3) — Essai clinique ou méta-analyse en dépistage prénatal : cfADN T21, marqueurs sériques T1/T2, échographie morphologique, diagnostic invasif (amniocentèse, biopsie trophoblaste)",
+    "pubmed_j_matern_fetal":        "J Matern Fetal Neonatal Med (T&F, IF ~3) — Essai clinique en grossesse pathologique : prééclampsie, MAP, RCIU, diabète gestationnel, nouveau-né à terme",
+    "pubmed_breastfeed_med":        "Breastfeeding Medicine (ABM, IF ~3) — Protocole ABM ou essai clinique en allaitement maternel : galactogènes, lactation induite, sevrage, supplémentation, complications",
+    "pubmed_j_hum_lact":            "Journal of Human Lactation (ILCA, IF ~3) — Essai clinique en pratiques d'allaitement en maternité : soutien IBCLC, alimentation mixte, exclusivité OMS, sevrage",
+    "pubmed_arch_womens_ment_health":"Archives of Women's Mental Health (Springer, IF ~4) — Essai clinique ou méta-analyse en santé mentale périnatale : dépression post-partum (EPDS), anxiété gestationnelle, PTSD obstétrical, psychose puerpérale",
+    "pubmed_matern_child_nutr":     "Maternal & Child Nutrition (Wiley, IF ~4) — Essai clinique en nutrition pendant la grossesse et l'allaitement : folates, vitamine D, fer, iode, DHA, diversification nourrisson",
+    "pubmed_int_breastfeed_j":      "International Breastfeeding Journal (BMC OA, IF ~3) — Étude de pratiques d'allaitement : adhésion recommandations OMS/HAS, interventions de soutien en maternité",
 }
 
 # ---------------------------------------------------------------------------
@@ -1983,7 +2001,10 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pmrj_rss":                       "medecine-physique",  # RSS PM&R Journal (AAPM&R/Wiley)
     # ── Médecine interne ─────────────────────────────────────────────────────
     "ann_intern_med_rss":           "medecine-interne",  # RSS Ann Intern Med (ACP, IF ~51)
+    # jama_intern_med_rss : RSS bloqué (403) — couvert par pubmed_jama_intern_med
     "pubmed_ann_intern_med":        "medecine-interne",
+    "pubmed_jama_intern_med":       "medecine-interne",  # JAMA Internal Medicine (IF ~24) — déplacé de MG
+    "pubmed_eclinicalmedicine":     "medecine-interne",  # EClinicalMedicine (Lancet, IF ~15)
     "pubmed_am_j_med":              "medecine-interne",
     "pubmed_medicine_baltimore":    "medecine-interne",
     "pubmed_bmc_med":               "medecine-interne",
@@ -2018,6 +2039,8 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_bmc_prim_care":         "medecine-generale",
     "pubmed_npj_prim_care_respir":  "medecine-generale",
     "pubmed_eur_j_gen_pract":       "medecine-generale",
+    # pubmed_jama_intern_med → déplacé en medecine-interne (journal de spé principale)
+    "pubmed_bmj":                   "medecine-generale",  # BMJ (IF ~107) — essais cliniques, guidelines NICE
     # ── ORL ───────────────────────────────────────────────────────────────────
     "otohns_rss":                   "orl",  # RSS Otolaryngology HNS (AAO-HNS/SAGE, IF ~3)
     "laryngoscope_rss":             "orl",  # RSS Laryngoscope (ALA/Wiley, IF ~3)
@@ -2185,6 +2208,7 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_matern_child_nutr":      "sage-femme",
     "pubmed_int_breastfeed_j":       "sage-femme",
     "cnsf":                          "sage-femme",    # CNSF (Collège National des Sages-Femmes)
+    "rcog_guidelines":               "sage-femme",    # RCOG Green-Top Guidelines (obstétrique/maïeutique)
     "bjog":                          "sage-femme",    # BJOG RSS (RCOG — obstétrique/maïeutique)
     "eshre_guidelines":              "sage-femme",    # ESHRE guidelines (procréation, grossesse)
     # ── Urologie ──────────────────────────────────────────────────────────────
@@ -6877,6 +6901,18 @@ RETENIR :
   suivi gynécologique de prévention élargi, prescription adaptations médicaments \
   en urgence), arrêtés ANSM sur prescriptions autorisées, conditions de télésuivi \
   de grossesse (téléconsultation HAS)
+
+SOURCES SPÉCIFIQUES SAGE-FEMME — à scanner lors de tout triage :
+→ Sources PubMed dédiées : pubmed_midwifery, pubmed_birth, pubmed_women_birth, \
+  pubmed_j_midwifery, pubmed_prenat_diagn, pubmed_j_matern_fetal, \
+  pubmed_breastfeed_med, pubmed_j_hum_lact, pubmed_arch_womens_ment_health, \
+  pubmed_matern_child_nutr, pubmed_int_breastfeed_j
+→ RSS obstétrique : bjog (BJOG/RCOG — Wiley)
+→ Guidelines officielles : rcog_guidelines (RCOG Green-Top Guidelines — \
+  recommandations obstétrico-maïeutiques de référence mondiale), \
+  cngof_recommandations (CNGOF — recommandations françaises gynéco-obstétrique, \
+  inclut protocoles accouchement, HPP, prééclampsie, MAP — à vérifier \
+  AUSSI lors du triage sage-femme même si hint principal = gynécologie)
 
 REJETER :
 → Chirurgie obstétricale complexe (hystérectomie d'hémostase, césarienne avec \

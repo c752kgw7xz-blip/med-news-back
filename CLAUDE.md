@@ -61,6 +61,24 @@ Réévaluer avec les critères actuels. Passer en REJECTED ce qui échoue. Réé
 ### Étape 4 — Triage des candidats NEW + liste cross-spé en temps réel
 Filtre praticien ~15-20%. Scanner impérativement les sources réglementaires ET recommandations (voir RÈGLE 2) en plus des sources spécialisées.
 
+#### 🔴 ORDRE DE TRIAGE OBLIGATOIRE — PubMed en premier, sans exception
+
+Le triage des candidats NEW doit toujours respecter cet ordre :
+
+1. **Sources PubMed spécialisées** (`pubmed_*`) — en premier, toujours
+2. **Sources RSS spécialisées** (`*_rss`) — en second
+3. **Sources réglementaires/cross-spé** (ANSM, HAS, EMA, JORF, **FDA 510k/PMA**, NEJM, Lancet, JAMA…) — en dernier
+
+**Raison :** si la session est interrompue par manque de contexte, les articles PubMed (articles primaires complets, signal le plus fort) ne doivent jamais être sacrifiés au profit des RSS. Commencer par les RSS = faute grave : les articles scientifiques les plus importants seront ceux laissés en attente.
+
+**Avant de commencer le triage :** afficher le décompte par type de source :
+```sql
+SELECT source, COUNT(*) FROM candidates
+WHERE source IN (/* sources spé */) AND status = 'NEW'
+GROUP BY source ORDER BY source;
+```
+→ trier les résultats : d'abord les lignes `pubmed_*`, puis les `*_rss`, puis le reste.
+
 **OBLIGATOIRE pendant le triage :** tenir une liste cross-spé au fil de la lecture. Dès qu'un article issu d'une source spécifique à la spé X relève en réalité d'une autre spécialité Y, l'ajouter immédiatement à la liste :
 
 ```
@@ -224,17 +242,46 @@ Règle de choix rapide :
 | Source | Contenu | Yield |
 |---|---|---|
 | `ansm_securite` | Alertes pharmacovigilance | ~42% |
+| `ansm_securite_dm` | Alertes matériovigilance DM | ~15% |
 | `ansm_ruptures_med` | Ruptures stock | ~90% |
 | `ansm_ruptures_vaccins` | Ruptures vaccins | ~100% |
 | `has_acces_precoces` | Accès précoces (ex-ATU) | ~68% |
 | `has_rbp` | Recommandations bonne pratique | ~60% |
 | `has_ct` | Avis Commission Transparence | ~67% |
+| `has_dm` | Avis CNEDiMTS dispositifs médicaux (LPPR) | ~20% |
 | `legifrance_jorf` | Textes JORF (AMM, arrêtés) | ~2,5% |
 | `ema_new_medicines` | Nouvelles AMM EMA | ~20-30% |
+| `fda_510k` | Clearances FDA dispositifs et logiciels (510k) | ~3% |
+| `fda_pma` | Approbations FDA PMA (dispositifs classe III) | ~5% |
 | `nejm`, `lancet`, `jama` | Générales — essais majeurs | ~2-5% |
 | `cnom`, `ameli_medecin`, `carmf`, `csmf`, `mgfrance` | Médecin libéral — exercice professionnel | variable |
 
 **Si reglementaire = 0 dans le lot → le lot N'EST PAS complet.** Chercher et insérer avant de clôturer.
+
+### Protocole spécifique FDA 510k / PMA
+
+Les sources `fda_510k` et `fda_pma` couvrent **tous** les dispositifs médicaux (dentaire, orthopédique, cardiaque, IA, imagerie…) — yield par spécialité très bas (~3-5%), mais certaines clearances sont majeures.
+
+**Filtre obligatoire par mots-clés spé-spécifiques** (pas de lecture article par article) :
+```sql
+SELECT id::text, title_raw, official_date FROM candidates
+WHERE source IN ('fda_510k','fda_pma') AND status = 'NEW'
+  AND (title_raw ILIKE '%<mot-clé spé>%' OR title_raw ILIKE '%<IA>%' OR ...)
+ORDER BY official_date DESC;
+```
+
+**Critères de sélection FDA (STRICT) — ne retenir que :**
+- IA/logiciel avec indication clinique spécifique et validée (510k ou PMA) → `innovation`, `clinique`
+- PMA Original (première approbation d'un dispositif de classe III) → `innovation`, `therapeutique`
+- Dispositif thérapeutique nouveau ou indication significativement élargie → `innovation`, `therapeutique`
+
+**Rejeter systématiquement :**
+- 510k "Substantially Equivalent" pour variante/taille d'un dispositif existant
+- PMA "30-Day Notice" ou "Real-Time Process" (suppléments mineurs à un PMA existant)
+- Dispositifs dentaires, lentilles de contact, prothèses esthétiques, matériel chirurgical générique
+- Tout dispositif sans impact direct sur la décision clinique du praticien MedNews
+
+**Destination :** specialty_slug spécifique (pas TRANSVERSAL_LIBERAL — les clearances FDA sont par définition spécialité-ciblées). Exceptionnellement TRANSVERSAL si outil utilisé par toutes les spécialités (ex. IA ECG généraliste).
 
 SQL de vérification après chaque lot :
 ```sql

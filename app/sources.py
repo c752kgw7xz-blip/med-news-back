@@ -1327,10 +1327,11 @@ JOURNALS_FEEDS: list[dict] = [
         "url": "https://www.acpjournals.org/action/showFeed?jc=aim&type=etoc&feed=rss",
         "label": "Annals of Internal Medicine (ACP, IF ~51)",
         "source": "ann_intern_med_rss",
-        "source_type": "innovation",
+        "source_type": "recommandation",
         "audience": ["medecins"],
         "specialty_hint": "medecine-interne",
     },
+    # jama_intern_med_rss : JAMA Network bloque les RSS (403 Forbidden) — couvert par pubmed_jama_intern_med
 
     # Médecine générale
     {
@@ -2119,16 +2120,18 @@ EU_WEB_SOURCES: list[dict] = [
         "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|education|news|join|login)(/|$)",
     },
     # Médecine interne
-    {
-        "url": "https://efim.org/education/publications",
-        "source": "efim_guidelines",
-        "label": "EFIM — European Federation Internal Medicine (guidelines médecine interne)",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "medecine-interne",
-        "link_pattern": r"efim\.org/",
-        "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|news|grants|jobs|working-groups)(/|$)",
-    },
+    # NOTE: efim_guidelines désactivé — scraper capturait la navigation du site (59 pages/menus)
+    # au lieu des publications. Le contenu EJIM est couvert par pubmed_eur_j_intern_med.
+    # {
+    #     "url": "https://efim.org/education/publications",
+    #     "source": "efim_guidelines",
+    #     "label": "EFIM — European Federation Internal Medicine (guidelines médecine interne)",
+    #     "source_type": "recommandation",
+    #     "audience": ["medecins"],
+    #     "specialty_hint": "medecine-interne",
+    #     "link_pattern": r"efim\.org/",
+    #     "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|news|grants|jobs|working-groups)(/|$)",
+    # },
     # Biologie médicale
     {
         "url": "https://www.eflm.eu/site/eflm-publications",
@@ -2194,6 +2197,30 @@ EU_WEB_SOURCES: list[dict] = [
         "specialty_hint": "pharmacien",
         "link_pattern": r"eahp\.eu/",
         "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|education|news|jobs|grants|awards|press)(/|$)",
+    },
+
+    # ── Obstétrique & sage-femme — RCOG Green-Top Guidelines ─────────────
+    # Page listant les ~70 Green-Top Guidelines (GTG) du Royal College of
+    # Obstetricians and Gynaecologists (RCOG) — référence internationale
+    # en obstétrique et maïeutique (équivalent des recommandations HAS/CNGOF
+    # pour le Royaume-Uni, mais adoptées mondialement).
+    # Contenu : prééclampsie, HPP, mouvements fœtaux, siège, thrombose,
+    # placenta praevia, RCIU, prématurité, diabète gestationnel, etc.
+    # Volume : ~5-10 nouvelles GTG ou mises à jour par an.
+    # Dédup : par URL — les GTG existantes ne sont pas re-insérées.
+    # Date : extraite du titre si présente, sinon date du scraping (acceptable
+    #        car les GTG ont des titres stables non datés).
+    {
+        "url": "https://www.rcog.org.uk/guidance/browse-all-guidance/green-top-guidelines/",
+        "source": "rcog_guidelines",
+        "label": "RCOG — Green-Top Guidelines (obstétrique, sage-femme, gynécologie)",
+        "source_type": "recommandation",
+        "audience": ["medecins"],
+        "specialty_hint": "sage-femme",
+        # Inclure uniquement les pages individuelles de guidelines (au moins un slug après green-top-guidelines/)
+        "link_pattern": r"rcog\.org\.uk/guidance/browse-all-guidance/green-top-guidelines/[^/]+/",
+        # Exclure la page de listing elle-même
+        "exclude_pattern": r"/guidance/browse-all-guidance/green-top-guidelines/$",
     },
 ]
 
