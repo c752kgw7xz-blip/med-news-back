@@ -704,11 +704,11 @@ def collect_by_specialty_sources(
     logger.info("[%s] RSS : %d sources, %d insérés", specialty_slug, len(rss_results), total_rss)
 
     # ── PubMed filtré par spécialité — parallèle ────────────────────────
-    # max_workers=5 : respecte la limite NCBI 10 req/s avec clé API
-    # (chaque source = 1 esearch + N efetch — 5 sources concurrentes ≤ 10 req/s)
+    # max_workers=3 : limite NCBI 10 req/s avec clé API ; avec des réponses
+    # < 300ms (days=1, no PMIDs), 5 workers dépassait 10 req/s → 429.
     pubmed_srcs = [s for s in PUBMED_SOURCES if _matches(s.get("specialty_hint", ""))]
     pubmed_results: dict = {}
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {executor.submit(collect_pubmed_source, src, days): src["source"] for src in pubmed_srcs}
         for future in as_completed(futures):
             src_name = futures[future]

@@ -455,7 +455,7 @@ def collect_carmf(days: int = 120) -> dict[str, Any]:
     return _collect_carmf_scraper(days=days)
 
 
-def collect_pratique(days: int = 120, specialty_slug: str | None = None) -> dict[str, Any]:
+def collect_pratique(days: int = 120, specialty_slug: str | None = None, skip_global_hint: bool = False) -> dict[str, Any]:
     """
     Collecte les sources pratiques médicales :
     - Flux RSS : recommandations, bon usage, sociétés savantes (ALL_PRATIQUE_FEEDS)
@@ -463,6 +463,8 @@ def collect_pratique(days: int = 120, specialty_slug: str | None = None) -> dict
 
     Si specialty_slug est fourni, seules les sources dont specialty_hint correspond
     à la spécialité (ou "tous") sont collectées.
+    Si skip_global_hint=True, les sources hint="tous" sont ignorées (déjà couvertes
+    par collect_global.py).
     """
     results: dict[str, Any] = {}
 
@@ -471,6 +473,10 @@ def collect_pratique(days: int = 120, specialty_slug: str | None = None) -> dict
         if feed.get("disabled"):
             continue
         hint = feed.get("specialty_hint")
+        # Skip hint="tous" sources when already collected by collect_global
+        if skip_global_hint:
+            if hint == "tous" or (isinstance(hint, list) and "tous" in hint):
+                continue
         if specialty_slug is not None:
             if isinstance(hint, list):
                 if specialty_slug not in hint and "tous" not in hint:

@@ -483,7 +483,7 @@ def job_collect_regulation() -> None:
 # JOB 1b — Collecte recommandations (chaque lundi)
 # ---------------------------------------------------------------------------
 
-def job_collect_recommendations(specialty_slug: str | None = None) -> None:
+def job_collect_recommendations(specialty_slug: str | None = None, skip_global_hint: bool = False) -> None:
     logger.info("=" * 60)
     logger.info("JOB COLLECTE RECOMMANDATIONS démarré — %s", date.today().isoformat())
     logger.info("=" * 60)
@@ -493,9 +493,10 @@ def job_collect_recommendations(specialty_slug: str | None = None) -> None:
     # ── HAS + sociétés savantes (RSS) ────────────────────────────
     # En mode spécialité : collect_pratique filtrée par specialty_hint.
     # En mode global : collect_pratique + collect_has sans filtre.
+    # skip_global_hint=True : sources hint="tous" ignorées (déjà collectées)
     try:
         from app.rss_collector import collect_pratique
-        report["pratique"] = collect_pratique(days=120, specialty_slug=specialty_slug)
+        report["pratique"] = collect_pratique(days=120, specialty_slug=specialty_slug, skip_global_hint=skip_global_hint)
         logger.info("Recommandations RSS collectées (specialty=%s)", specialty_slug)
     except Exception as e:
         logger.error("RSS recommandations échoué : %s", e)
@@ -597,7 +598,10 @@ def collect_by_specialty(
             report["regulation"] = {"error": str(e)}
 
     try:
-        report["recommendations"] = job_collect_recommendations(specialty_slug=specialty_slug)
+        report["recommendations"] = job_collect_recommendations(
+            specialty_slug=specialty_slug,
+            skip_global_hint=skip_global,
+        )
     except Exception as e:
         logger.error("[%s] Recommandations échouées : %s", specialty_slug, e)
         report["recommendations"] = {"error": str(e)}

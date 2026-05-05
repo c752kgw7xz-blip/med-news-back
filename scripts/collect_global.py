@@ -39,7 +39,7 @@ logger.info("=== Collecte globale — fenêtre %d jours ===", days)
 
 try:
     from app.scheduler import job_collect_regulation, job_collect_recommendations
-    from app.sources import ALL_FEEDS, API_SOURCES
+    from app.sources import ALL_FEEDS, API_SOURCES, FR_REGULATORY_FEEDS
     from app.rss_collector import collect_feed
     from app.collector import _API_DISPATCH
 
@@ -72,10 +72,16 @@ try:
     # ── 3. RSS innovation cross-spé (hint="tous") ─────────────────────────
     # NEJM, Lancet, JAMA, EMA new medicines/news/guidelines, nature_medicine,
     # eclinmedicine, healio_hemato_onco, medpage_surgery, quotidien_medecin...
-    # (les sources réglementaires hint="tous" déjà couvertes en étape 1 — doublons
-    #  ignorés par raw_sha256 mais on les collecte quand même pour fiabilité)
+    # FR_REGULATORY_FEEDS (HAS rbp/ct/dm, ANSM, BO…) exclus : déjà couverts
+    # par job_collect_regulation() [1/4] et collect_pratique() [2/4].
     logger.info("--- [3/4] RSS cross-spé ---")
-    rss_global = [f for f in ALL_FEEDS if f.get("specialty_hint") == "tous" and not f.get("disabled")]
+    _pratique_sources = {f["source"] for f in FR_REGULATORY_FEEDS}
+    rss_global = [
+        f for f in ALL_FEEDS
+        if f.get("specialty_hint") == "tous"
+        and not f.get("disabled")
+        and f["source"] not in _pratique_sources
+    ]
     rss_ins = 0
     rss_errors = []
     for feed in rss_global:
