@@ -1,0 +1,130 @@
+name: MedNews — Collecte quotidienne spécialités 21-30
+
+on:
+  schedule:
+    # 2h00 UTC = 4h00 Paris (CEST) — avant les routines triage Anthropic (5h-7h UTC)
+    - cron: '0 2 * * *'
+  # Déclenchement manuel depuis l'onglet Actions si besoin
+  workflow_dispatch:
+    inputs:
+      specialties:
+        description: 'Spécialités à collecter (séparées par virgule, vide = toutes les 10)'
+        required: false
+        default: ''
+      days:
+        description: 'Fenêtre de collecte en jours'
+        required: false
+        default: '120'
+
+jobs:
+  collect:
+    name: Collecte spécialités 21-30
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PISTE_CLIENT_ID: ${{ secrets.PISTE_CLIENT_ID }}
+      PISTE_CLIENT_SECRET: ${{ secrets.PISTE_CLIENT_SECRET }}
+      SCHEDULER_ENABLED: 'false'
+      PYTHONPATH: ${{ github.workspace }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            "psycopg[binary]>=3.1" \
+            psycopg2-binary \
+            "httpx>=0.27" \
+            feedparser \
+            beautifulsoup4 \
+            python-dotenv \
+            apscheduler \
+            lxml \
+            "pydantic[email]>=2.7" \
+            requests
+
+      - name: Vérifier connexion DB
+        run: |
+          python3 - <<'EOF'
+          import psycopg2, os
+          conn = psycopg2.connect(os.environ['DATABASE_URL'])
+          cur = conn.cursor()
+          cur.execute("SELECT COUNT(*) FROM candidates WHERE status='NEW'")
+          print(f"Candidats NEW actuels : {cur.fetchone()[0]}")
+          conn.close()
+          print("Connexion DB OK")
+          EOF
+
+      - name: Collecter — medecine-interne
+        run: python3 scripts/collect_specialty.py medecine-interne ${{ github.event.inputs.days || '120' }}
+
+      - name: Collecter — medecine-physique
+        run: python3 scripts/collect_specialty.py medecine-physique ${{ github.event.inputs.days || '120' }}
+
+      - name: Collecter — neurochirurgie
+        run: python3 scripts/collect_specialty.py neurochirurgie ${{ github.event.inputs.days || '120' }}
+
+      - name: Collecter — neurologie
+        run: python3 scripts/collect_specialty.py neurologie ${{ github.event.inputs.days || '120' }}
+
+      - name: Collecter — nephrologie
+        run: python3 scripts/collect_specialty.py nephrologie ${{ github.event.inputs.days || '120' }}
+
+      - name: Collecter — orl
+        run: python3 scripts/collect_specialty.py orl ${{ github.event.inputs.days || '120' }}
+
+      - name: Collecter — oncologie
+        run: python3 scripts/collect_specialty.py oncologie ${{ github.event.inputs.days || '120' }}
+
+      - name: Collecter — ophtalmologie
+        run: python3 scripts/collect_specialty.py ophtalmologie ${{ github.event.inputs.days || '120' }}
+
+      - name: Collecter — pharmacien
+        run: python3 scripts/collect_specialty.py pharmacien ${{ github.event.inputs.days || '120' }}
+
+      - name: Collecter — pneumologie
+        run: python3 scripts/collect_specialty.py pneumologie ${{ github.event.inputs.days || '120' }}
+
+      - name: Résumé final
+        if: always()
+        run: |
+          python3 - <<'EOF'
+          import psycopg2, os
+          from datetime import datetime, timedelta
+
+          conn = psycopg2.connect(os.environ['DATABASE_URL'])
+          cur = conn.cursor()
+
+          slugs = [
+              'medecine-interne','medecine-physique','neurochirurgie','neurologie',
+              'nephrologie','orl','oncologie','ophtalmologie','pharmacien','pneumologie'
+          ]
+          since = datetime.utcnow() - timedelta(hours=3)
+
+          print("\n=== RÉSUMÉ COLLECTE ===")
+          total = 0
+          cur.execute(
+              "SELECT source, COUNT(*) FROM candidates WHERE created_at > %s GROUP BY source ORDER BY COUNT(*) DESC",
+              (since,)
+          )
+          rows = cur.fetchall()
+          for source, count in rows:
+              print(f"  {source:50s} {count:5d}")
+              total += count
+          print(f"\nTotal insérés (3 dernières heures) : {total}")
+
+          cur.execute("SELECT COUNT(*) FROM candidates WHERE status='NEW'")
+          print(f"Total candidats NEW en attente de triage : {cur.fetchone()[0]}")
+          conn.close()
+          EOF
