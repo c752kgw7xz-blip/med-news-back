@@ -680,6 +680,8 @@ def collect_by_specialty_sources(specialty_slug: str, days: int = 120) -> dict[s
     # ── RSS (ALL_FEEDS filtré par spécialité) ────────────────────────────
     rss_results: dict = {}
     for feed in ALL_FEEDS:
+        if feed.get("disabled"):
+            continue
         if _matches(feed.get("specialty_hint", "")):
             try:
                 rss_results[feed["source"]] = collect_feed(feed, days=days)

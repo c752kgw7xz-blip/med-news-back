@@ -168,6 +168,7 @@ FR_REGULATORY_FEEDS: list[dict] = [
         "audience": ["medecins"],
         "specialty_hint": "tous",
         "min_score_hint": 7,
+        "disabled": True,  # RSS 403 depuis GitHub Actions (AWS IPs) — collecte via web_scraper.collect_ameli_medecin()
     },
     {
         "url": "https://www.csmf.org/feed/",
