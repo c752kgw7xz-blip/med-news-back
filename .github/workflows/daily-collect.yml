@@ -21,6 +21,7 @@ jobs:
     name: Collecte spécialités 21-30
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    environment: env
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
