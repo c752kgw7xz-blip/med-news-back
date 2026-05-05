@@ -658,7 +658,11 @@ def collect_all(days: int = 120) -> dict[str, Any]:
 # COLLECTE PAR SPÉCIALITÉ (sources uniquement — sans LLM ni réglementation)
 # =============================================================================
 
-def collect_by_specialty_sources(specialty_slug: str, days: int = 120) -> dict[str, Any]:
+def collect_by_specialty_sources(
+    specialty_slug: str,
+    days: int = 120,
+    skip_global: bool = False,
+) -> dict[str, Any]:
     """
     Collecte toutes les sources d'innovation filtrées par specialty_hint.
 
@@ -666,11 +670,17 @@ def collect_by_specialty_sources(specialty_slug: str, days: int = 120) -> dict[s
     Ces étapes restent dans scheduler.collect_by_specialty().
 
     Filtre : specialty_hint == slug OU specialty_hint == "tous"
+    Si skip_global=True, les sources hint="tous" sont ignorées (déjà collectées
+    par collect_global.py en début de workflow).
     """
     from app.rss_collector import collect_feed
     from app.pubmed_collector import PUBMED_SOURCES, collect_pubmed_source
 
     def _matches(hint) -> bool:
+        if skip_global:
+            if isinstance(hint, list):
+                return specialty_slug in hint
+            return hint == specialty_slug
         if isinstance(hint, list):
             return specialty_slug in hint or "tous" in hint
         return hint == specialty_slug or hint == "tous"

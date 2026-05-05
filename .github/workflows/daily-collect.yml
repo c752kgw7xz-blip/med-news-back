@@ -68,34 +68,57 @@ jobs:
           print("Connexion DB OK")
           EOF
 
+      - name: Collecter — sources globales (cross-spécialités)
+        run: python3 scripts/collect_global.py ${{ github.event.inputs.days || '120' }}
+
       - name: Collecter — dermatologie
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py dermatologie ${{ github.event.inputs.days || '120' }}
 
       - name: Collecter — endocrinologie
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py endocrinologie ${{ github.event.inputs.days || '120' }}
 
       - name: Collecter — gastro-enterologie
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py gastro-enterologie ${{ github.event.inputs.days || '120' }}
 
       - name: Collecter — geriatrie
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py geriatrie ${{ github.event.inputs.days || '120' }}
 
       - name: Collecter — gynecologie
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py gynecologie ${{ github.event.inputs.days || '120' }}
 
       - name: Collecter — hematologie
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py hematologie ${{ github.event.inputs.days || '120' }}
 
       - name: Collecter — infectiologie
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py infectiologie ${{ github.event.inputs.days || '120' }}
 
       - name: Collecter — infirmiers
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py infirmiers ${{ github.event.inputs.days || '120' }}
 
       - name: Collecter — kinesitherapie
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py kinesitherapie ${{ github.event.inputs.days || '120' }}
 
       - name: Collecter — medecine-generale
+        env:
+          MEDNEWS_SKIP_GLOBAL: 'true'
         run: python3 scripts/collect_specialty.py medecine-generale ${{ github.event.inputs.days || '120' }}
 
       - name: Résumé final
@@ -108,11 +131,6 @@ jobs:
           conn = psycopg2.connect(os.environ['DATABASE_URL'])
           cur = conn.cursor()
 
-          slugs = [
-              'dermatologie','endocrinologie','gastro-enterologie','geriatrie',
-              'gynecologie','hematologie','infectiologie','infirmiers',
-              'kinesitherapie','medecine-generale'
-          ]
           since = datetime.utcnow() - timedelta(hours=3)
 
           print("\n=== RÉSUMÉ COLLECTE ===")

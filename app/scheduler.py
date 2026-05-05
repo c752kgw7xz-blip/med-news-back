@@ -564,7 +564,11 @@ def job_collect_innovation() -> None:
 # Collecte par spécialité (cœur de la Routine)
 # ---------------------------------------------------------------------------
 
-def collect_by_specialty(specialty_slug: str, days: int = 120) -> dict[str, Any]:
+def collect_by_specialty(
+    specialty_slug: str,
+    days: int = 120,
+    skip_global: bool = False,
+) -> dict[str, Any]:
     """
     Collecte COMPLÈTE pour une spécialité — un seul déclencheur, tout inclus :
 
@@ -574,19 +578,23 @@ def collect_by_specialty(specialty_slug: str, days: int = 120) -> dict[str, Any]
       4. Analyse LLM (prompt spé-spécifique via SOURCE_SPECIALTY_HINTS)
 
     La déduplication DB garantit l'idempotence si plusieurs spés tournent le même jour.
+
+    Si skip_global=True (GitHub Actions après collect_global.py), la réglementation
+    globale et les sources hint="tous" sont ignorées — déjà collectées.
     """
     logger.info("=" * 60)
     logger.info("COLLECTE [%s] démarrée — %s", specialty_slug, date.today().isoformat())
     logger.info("=" * 60)
 
     from app.collector import collect_by_specialty_sources
-    report = collect_by_specialty_sources(specialty_slug, days=days)
+    report = collect_by_specialty_sources(specialty_slug, days=days, skip_global=skip_global)
 
-    try:
-        report["regulation"] = job_collect_regulation()
-    except Exception as e:
-        logger.error("[%s] Réglementation échouée : %s", specialty_slug, e)
-        report["regulation"] = {"error": str(e)}
+    if not skip_global:
+        try:
+            report["regulation"] = job_collect_regulation()
+        except Exception as e:
+            logger.error("[%s] Réglementation échouée : %s", specialty_slug, e)
+            report["regulation"] = {"error": str(e)}
 
     try:
         report["recommendations"] = job_collect_recommendations(specialty_slug=specialty_slug)

@@ -37,11 +37,13 @@ if missing:
 # SCHEDULER_ENABLED=false pour éviter de lancer APScheduler
 os.environ.setdefault("SCHEDULER_ENABLED", "false")
 
-logger.info("=== Collecte [%s] — fenêtre %d jours ===", slug, days)
+skip_global = os.environ.get("MEDNEWS_SKIP_GLOBAL", "false").lower() == "true"
+
+logger.info("=== Collecte [%s] — fenêtre %d jours | skip_global=%s ===", slug, days, skip_global)
 
 try:
     from app.scheduler import collect_by_specialty
-    report = collect_by_specialty(slug, days=days)
+    report = collect_by_specialty(slug, days=days, skip_global=skip_global)
 
     # Résumé lisible
     logger.info("--- Rapport [%s] ---", slug)
