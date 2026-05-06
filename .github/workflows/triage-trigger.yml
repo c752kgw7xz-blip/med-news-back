@@ -1,13 +1,22 @@
 name: MedNews — Déclenchement triage Hetzner
 
 on:
-  # Déclenché automatiquement après la collecte quotidienne
+  # Slot 1 — déclenché automatiquement après la collecte (workflow_run)
   workflow_run:
-    workflows: ["MedNews — Collecte quotidienne"]
+    workflows: ["MedNews — Collecte tous les deux jours"]
     types: [completed]
+  # Slot 2 — 10h UTC (≈ 12h Paris) les jours de collecte
+  # Slot 3 — 16h UTC (≈ 18h Paris) les jours de collecte
+  schedule:
+    - cron: '0 10 */2 * *'
+    - cron: '0 16 */2 * *'
   # Déclenchement manuel (test, rattrapage)
   workflow_dispatch:
     inputs:
+      slot:
+        description: 'Slot de triage (1, 2 ou 3)'
+        required: true
+        default: '1'
       dry_run:
         description: 'Dry-run (affiche les commandes sans les exécuter)'
         required: false
@@ -17,12 +26,29 @@ jobs:
   trigger-triage:
     name: Déclencher triage sur Hetzner
     runs-on: ubuntu-latest
-    # Ne lancer le triage que si la collecte a réussi (sauf déclenchement manuel)
+    # Ne lancer le triage que si la collecte a réussi (sauf schedule/manuel)
     if: >
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
       github.event.workflow_run.conclusion == 'success'
 
     steps:
+      - name: Déterminer le slot
+        id: slot
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            echo "slot=1" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            HOUR=$(date -u +%H)
+            if [[ "$HOUR" -ge 9 && "$HOUR" -lt 14 ]]; then
+              echo "slot=2" >> "$GITHUB_OUTPUT"
+            else
+              echo "slot=3" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "slot=${{ github.event.inputs.slot }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Vérification prérequis
         run: |
           if [ -z "${{ secrets.HETZNER_IP }}" ]; then
@@ -33,7 +59,7 @@ jobs:
             echo "ERREUR : secret HETZNER_DEPLOY_KEY manquant"
             exit 1
           fi
-          echo "Cible : ${{ secrets.HETZNER_IP }}"
+          echo "Cible : ${{ secrets.HETZNER_IP }} — Slot : ${{ steps.slot.outputs.slot }}"
 
       - name: Configurer clé SSH
         run: |
@@ -57,11 +83,11 @@ jobs:
 
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
             root@${{ secrets.HETZNER_IP }} \
-            "nohup /opt/mednews/scripts/triage_orchestrator.sh $DRY_RUN_FLAG \
+            "nohup /opt/mednews/scripts/triage_orchestrator.sh --slot ${{ steps.slot.outputs.slot }} $DRY_RUN_FLAG \
               > /var/log/mednews/gha_trigger_$(date +%Y%m%d_%H%M%S).log 2>&1 &
-             echo \"Triage lancé (PID \$!)\""
+             echo \"Triage slot ${{ steps.slot.outputs.slot }} lancé (PID \$!)\""
 
       - name: Confirmation
         run: |
-          echo "Triage lancé sur ${{ secrets.HETZNER_IP }}"
+          echo "Triage slot ${{ steps.slot.outputs.slot }} lancé sur ${{ secrets.HETZNER_IP }}"
           echo "Logs disponibles sur le serveur : /var/log/mednews/"
