@@ -86,14 +86,38 @@ cat > /etc/logrotate.d/mednews << 'EOF'
 }
 EOF
 
-# ─── 7. Firewall UFW ─────────────────────────────────────────────────────────
-echo "[7/7] Configuration firewall..."
+# ─── 7. Cron triage (3 créneaux tous les 2 jours) ────────────────────────────
+echo "[7/8] Configuration cron triage..."
+
+# Même fréquence que la collecte GHA (*/2)
+# Slot 1 — 05h UTC = 06h Paris (CET) / 07h Paris (CEST) — après fin de collecte (~05h UTC)
+# Slot 2 — 11h UTC = 12h Paris (CET) / 13h Paris (CEST)
+# Slot 3 — 17h UTC = 18h Paris (CET) / 19h Paris (CEST)
+cat > /etc/cron.d/mednews-triage << 'EOF'
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Slot 1 — matin (après collecte GHA)
+0 5 */2 * * root /opt/mednews/scripts/triage_orchestrator.sh --slot 1 >> /var/log/mednews/cron.log 2>&1
+
+# Slot 2 — midi
+0 11 */2 * * root /opt/mednews/scripts/triage_orchestrator.sh --slot 2 >> /var/log/mednews/cron.log 2>&1
+
+# Slot 3 — soir
+0 17 */2 * * root /opt/mednews/scripts/triage_orchestrator.sh --slot 3 >> /var/log/mednews/cron.log 2>&1
+EOF
+chmod 644 /etc/cron.d/mednews-triage
+echo "  Cron configuré : slots 1/2/3 à 05h/11h/17h UTC tous les 2 jours"
+
+# ─── 8. Firewall UFW ─────────────────────────────────────────────────────────
+echo "[8/8] Configuration firewall..."
 ufw --force reset >/dev/null
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow ssh
 ufw --force enable
 echo "  UFW actif — SSH autorisé, tout sortant autorisé (Neon port 5432 OK)"
+echo "  Note : triage-trigger.yml GitHub Actions non utilisé (crons locaux suffisent)"
 
 echo ""
 echo "═══════════════════════════════════════════════"
