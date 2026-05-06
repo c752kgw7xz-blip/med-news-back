@@ -38,6 +38,14 @@ if [[ "$SLOT" != "1" && "$SLOT" != "2" && "$SLOT" != "3" ]]; then
     exit 1
 fi
 
+# ─── Lock par slot — empêche deux runs simultanés du même créneau ────────────
+LOCKFILE="/tmp/mednews_triage_slot${SLOT}.lock"
+exec 9>"$LOCKFILE"
+if ! flock -n 9; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] SKIP — slot $SLOT déjà en cours (lock $LOCKFILE)"
+    exit 0
+fi
+
 # Chargement DATABASE_URL depuis .env
 # shellcheck disable=SC1091
 [[ -f "$REPO_DIR/.env" ]] && { set -a; source "$REPO_DIR/.env"; set +a; }
