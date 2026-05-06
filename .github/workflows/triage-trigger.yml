@@ -1,0 +1,67 @@
+name: MedNews — Déclenchement triage Hetzner
+
+on:
+  # Déclenché automatiquement après la collecte quotidienne
+  workflow_run:
+    workflows: ["MedNews — Collecte quotidienne"]
+    types: [completed]
+  # Déclenchement manuel (test, rattrapage)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry-run (affiche les commandes sans les exécuter)'
+        required: false
+        default: 'false'
+
+jobs:
+  trigger-triage:
+    name: Déclencher triage sur Hetzner
+    runs-on: ubuntu-latest
+    # Ne lancer le triage que si la collecte a réussi (sauf déclenchement manuel)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Vérification prérequis
+        run: |
+          if [ -z "${{ secrets.HETZNER_IP }}" ]; then
+            echo "ERREUR : secret HETZNER_IP manquant"
+            exit 1
+          fi
+          if [ -z "${{ secrets.HETZNER_DEPLOY_KEY }}" ]; then
+            echo "ERREUR : secret HETZNER_DEPLOY_KEY manquant"
+            exit 1
+          fi
+          echo "Cible : ${{ secrets.HETZNER_IP }}"
+
+      - name: Configurer clé SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.HETZNER_DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.HETZNER_IP }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Pull dernières modifications sur le serveur
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            root@${{ secrets.HETZNER_IP }} \
+            "git -C /opt/mednews pull --ff-only"
+
+      - name: Déclencher triage (background)
+        run: |
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            root@${{ secrets.HETZNER_IP }} \
+            "nohup /opt/mednews/scripts/triage_orchestrator.sh $DRY_RUN_FLAG \
+              > /var/log/mednews/gha_trigger_$(date +%Y%m%d_%H%M%S).log 2>&1 &
+             echo \"Triage lancé (PID \$!)\""
+
+      - name: Confirmation
+        run: |
+          echo "Triage lancé sur ${{ secrets.HETZNER_IP }}"
+          echo "Logs disponibles sur le serveur : /var/log/mednews/"

@@ -177,6 +177,80 @@ GROUP BY 1;
 
 ---
 
+## 🔴 PROTOCOLE "triage global" — Sources communes (hint="tous")
+
+Exécuté **une seule fois, AVANT tous les "lance X"** dans le pipeline automatique Hetzner.
+Traite toutes les candidates NEW des sources partagées entre spécialités.
+Après cette session, ces candidates sont `status='LLM_DONE'` — invisibles aux sessions "lance X" suivantes.
+
+> En session interactive manuelle, ce protocole n'est pas utilisé : "lance X" couvre les sources globales via RÈGLE 2.
+
+### Étape 1 — Décompte candidates NEW sources globales
+
+```sql
+SELECT source, COUNT(*) FROM candidates
+WHERE source IN (
+  -- Générales (essais majeurs)
+  'nejm','lancet','jama','bmj',
+  -- HAS
+  'has_rbp','has_ct','has_dm','has_acces_precoces','has_bo',
+  -- ANSM
+  'ansm_securite','ansm_securite_med','ansm_securite_dm',
+  'ansm_actualites','ansm_ruptures_med','ansm_ruptures_vaccins',
+  -- EMA
+  'ema_news','ema_guidelines','ema_new_medicines',
+  -- FDA
+  'fda_510k','fda_pma',
+  -- JORF / réglementaire FR
+  'legifrance_jorf','legifrance_jorf_remboursement',
+  'piste_kali','piste_legi','piste_circ','bo_social',
+  -- Médecin libéral
+  'cnom','ameli_medecin','carmf','csmf','mgfrance','carpimko'
+) AND status = 'NEW'
+GROUP BY source ORDER BY source;
+```
+
+Afficher le décompte. Si total = 0 → session terminée immédiatement.
+
+### Étape 2 — Ordre de triage obligatoire
+
+1. **NEJM, Lancet, JAMA, BMJ** — essais majeurs cross-spé
+2. **HAS** (rbp, ct, dm, acces_precoces, bo) — recommandations
+3. **ANSM** (securite, securite_med, securite_dm, ruptures) — réglementaire
+4. **EMA** (new_medicines, guidelines, news) — réglementaire EU
+5. **FDA 510k / PMA** — innovation dispositifs (filtre mots-clés obligatoire, voir RÈGLE 2)
+6. **JORF / piste** (legifrance_jorf, legifrance_jorf_remboursement, piste_*) — réglementaire FR
+7. **TRANSVERSAL_LIBERAL** (cnom, ameli_medecin, carmf, csmf, mgfrance, carpimko) — en dernier
+
+### Étape 3 — Pour chaque article retenu
+
+**Routing specialty_slug :**
+- Lire le contenu → déterminer la ou les spécialités concernées
+- Article mono-spé → insérer avec le `specialty_slug` cible
+- Article multi-spé → insérer une fois par spécialité concernée (UUIDs distincts, même `candidate_id`)
+- Article médecin libéral (sources TRANSVERSAL_LIBERAL) → `audience='TRANSVERSAL_LIBERAL'`, `specialty_slug=NULL`
+
+Mêmes règles qu'en "lance X" : filtre praticien ~15-20%, structure JSON RÈGLE 1, `score_density=7`, ton RÈGLE 3.
+
+```python
+cur.execute("UPDATE candidates SET status='LLM_DONE' WHERE id=%s", (cand_id,))
+```
+→ Marquer LLM_DONE immédiatement après chaque candidate traitée (retenu ou rejeté).
+
+### Étape 4 — Stats post-insertion
+
+```sql
+SELECT COALESCE(specialty_slug, 'TRANSVERSAL') as cible,
+       source_type, COUNT(*)
+FROM items
+WHERE llm_created_at > NOW() - INTERVAL '2 hours'
+GROUP BY 1, 2 ORDER BY 1, 3 DESC;
+```
+
+Afficher le tableau. C'est le seul Q1 de cette session (pas de Q2-Q5 par spécialité — ceux-ci sont faits dans chaque "lance X").
+
+---
+
 ## 🔴 RÈGLE 1 — Structure JSON obligatoire à chaque INSERT (bug récurrent numéro 1 & 2)
 
 `review.html` et `newsletter_builder.py` lisent des champs exacts. Tout nom différent = zone vide dans l'UI.
@@ -238,6 +312,8 @@ Règle de choix rapide :
 ## 🔴 RÈGLE 2 — Toujours inclure sources réglementaires ET recommandations dans tout triage
 
 **Jamais de triage 100% PubMed.** Après chaque lot de candidates spécialisées, scanner OBLIGATOIREMENT :
+
+> **Pipeline automatique Hetzner :** le "triage global" s'exécute avant chaque "lance X". Les sources "tous" (ANSM, HAS, JORF, EMA…) sont déjà `status='LLM_DONE'` — elles n'apparaissent plus comme NEW dans les sessions "lance X". La RÈGLE 2 reste valide pour les sessions manuelles interactives.
 
 | Source | Contenu | Yield |
 |---|---|---|
