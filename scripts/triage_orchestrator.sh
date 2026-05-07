@@ -122,7 +122,7 @@ run_stream() {
             ((done++)) || true
         else
             local slug_log="$LOG_DIR/${slug}_$(date +%Y%m%d).log"
-            if su - "$user" -c "cd $REPO_DIR && claude --print 'lance $slug' --dangerously-skip-permissions" \
+            if setsid su - "$user" -c "cd $REPO_DIR && claude --print 'lance $slug' --dangerously-skip-permissions" \
                 >> "$slug_log" 2>&1; then
                 log "[$user] DONE     $slug"
                 ((done++)) || true
@@ -156,7 +156,7 @@ run_global() {
     if [[ -n "$DRY_RUN" ]]; then
         log "[global] DRY-RUN — claude -p 'triage global'"
     else
-        su - "$user" -c "cd $REPO_DIR && claude --print 'triage global' --dangerously-skip-permissions" \
+        setsid su - "$user" -c "cd $REPO_DIR && claude --print 'triage global' --dangerously-skip-permissions" \
             >> "$LOG_DIR/global_$(date +%Y%m%d).log" 2>&1
         log "[global] DONE"
         sleep "$PAUSE_BETWEEN_SESSIONS"
