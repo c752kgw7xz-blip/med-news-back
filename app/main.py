@@ -20,7 +20,7 @@ from app.scheduler import (
 from app.sources_routes import router as sources_router
 
 import psycopg
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Depends
 from pydantic import BaseModel, EmailStr
 
 from app.db import get_conn
@@ -586,8 +586,44 @@ def list_specialties():
     return [{"slug": s, "name": n} for (s, n) in rows]
 
 
+def _try_flush_pending_emails() -> None:
+    """Tente d'envoyer les emails en queue immédiatement (best-effort)."""
+    from app.mailer import send_email
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, to_email, subject, html_body, plain_body
+                FROM pending_emails
+                WHERE sent_at IS NULL AND attempts < max_attempts
+                ORDER BY created_at
+                LIMIT 10
+            """)
+            rows = cur.fetchall()
+            for email_id, to_email, subject, html, plain in rows:
+                try:
+                    result = send_email(to_email, subject, html, plain)
+                    if result.success:
+                        cur.execute(
+                            "UPDATE pending_emails SET sent_at = now() WHERE id = %s",
+                            (email_id,)
+                        )
+                        _startup_logger.info("Email envoyé immédiatement : %s", email_id)
+                    else:
+                        cur.execute(
+                            "UPDATE pending_emails SET attempts = attempts + 1, last_error = %s WHERE id = %s",
+                            (result.error, email_id)
+                        )
+                        _startup_logger.warning("Envoi immédiat échoué (%s) — sera retenté par le cron", result.error)
+                except Exception as e:
+                    cur.execute(
+                        "UPDATE pending_emails SET attempts = attempts + 1, last_error = %s WHERE id = %s",
+                        (str(e), email_id)
+                    )
+                    _startup_logger.warning("Exception envoi immédiat (%s) — sera retenté par le cron", e)
+
+
 @app.post("/users", status_code=201)
-def create_user(payload: UserCreate):
+def create_user(payload: UserCreate, background_tasks: BackgroundTasks):
     if not ALLOW_SIGNUP:
         raise HTTPException(status_code=403, detail="signup disabled")
     email_norm = normalize_email(payload.email)
@@ -631,6 +667,8 @@ def create_user(payload: UserCreate):
             from app.portal_routes import generate_verification_token, queue_verification_email
             raw_token = generate_verification_token(str(user_id))
             queue_verification_email(email_norm, raw_token)
+            # Tente l'envoi immédiat en arrière-plan — le cron prend le relais si ça échoue
+            background_tasks.add_task(_try_flush_pending_emails)
         except Exception as e:
             _startup_logger.error("Échec mise en queue email vérification pour user %s : %s", user_id, e)
 
