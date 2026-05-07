@@ -487,6 +487,50 @@ def admin_run_send(request: Request):
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
 
 
+@app.post("/admin/process-pending-emails")
+def admin_process_pending_emails(request: Request):
+    """Traite la queue pending_emails — appelé par le cron GitHub Actions."""
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    from app.mailer import send_email
+    sent, failed, skipped = 0, 0, 0
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, to_email, subject, html_body, plain_body
+                FROM pending_emails
+                WHERE sent_at IS NULL AND attempts < max_attempts
+                ORDER BY created_at
+                LIMIT 50
+            """)
+            rows = cur.fetchall()
+            for row in rows:
+                email_id, to_email, subject, html, plain = row
+                try:
+                    result = send_email(to_email, subject, html, plain)
+                    if result.success:
+                        cur.execute(
+                            "UPDATE pending_emails SET sent_at = now() WHERE id = %s",
+                            (email_id,)
+                        )
+                        sent += 1
+                    else:
+                        cur.execute(
+                            "UPDATE pending_emails SET attempts = attempts + 1, last_error = %s WHERE id = %s",
+                            (result.error, email_id)
+                        )
+                        failed += 1
+                        _startup_logger.error("Échec envoi pending email %s : %s", email_id, result.error)
+                except Exception as e:
+                    cur.execute(
+                        "UPDATE pending_emails SET attempts = attempts + 1, last_error = %s WHERE id = %s",
+                        (str(e), email_id)
+                    )
+                    failed += 1
+                    _startup_logger.error("Exception pending email %s : %s", email_id, e)
+    _startup_logger.info("process-pending-emails : sent=%d failed=%d skipped=%d", sent, failed, skipped)
+    return {"ok": True, "sent": sent, "failed": failed}
+
+
 @app.post("/admin/test-email")
 def admin_test_email(request: Request):
     """Teste l'envoi email et retourne le résultat + config active."""
@@ -584,11 +628,11 @@ def create_user(payload: UserCreate):
                 )
     else:
         try:
-            from app.portal_routes import generate_verification_token, send_verification_email
+            from app.portal_routes import generate_verification_token, queue_verification_email
             raw_token = generate_verification_token(str(user_id))
-            send_verification_email(email_norm, raw_token)
-        except Exception:
-            pass  # Don't block signup if email fails
+            queue_verification_email(email_norm, raw_token)
+        except Exception as e:
+            _startup_logger.error("Échec mise en queue email vérification pour user %s : %s", user_id, e)
 
     return {"id": str(user_id), "created_at": created_at.isoformat()}
 

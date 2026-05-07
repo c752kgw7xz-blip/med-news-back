@@ -713,19 +713,10 @@ def _build_verification_html(verify_url: str) -> str:
 </html>"""
 
 
-def send_verification_email(email: str, raw_token: str) -> None:
-    """Envoie l'email de vérification."""
-    from app.mailer import send_email
-
-    base_url = os.environ.get("BASE_URL", "").rstrip("/")
-    if not base_url:
-        logger.warning(
-            "BASE_URL non défini — les liens de vérification email "
-            "pointeront vers une URL vide. Définir BASE_URL en production."
-        )
-        base_url = "http://localhost:8000"
+def _build_verification_email_parts(raw_token: str) -> tuple[str, str, str]:
+    """Construit subject, html, plain pour un token donné."""
+    base_url = os.environ.get("BASE_URL", "http://localhost:8000").rstrip("/")
     verify_url = f"{base_url}/verify-email?token={raw_token}"
-
     subject = "MedNews — Vérifiez votre adresse email"
     html = _build_verification_html(verify_url)
     plain = (
@@ -737,7 +728,25 @@ def send_verification_email(email: str, raw_token: str) -> None:
         "MedNews — Veille réglementaire pour médecins libéraux\n"
         "Cet email a été envoyé automatiquement, merci de ne pas y répondre."
     )
+    return subject, html, plain
 
+
+def queue_verification_email(email: str, raw_token: str) -> None:
+    """Insère l'email de vérification dans pending_emails pour envoi asynchrone."""
+    subject, html, plain = _build_verification_email_parts(raw_token)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO pending_emails (to_email, subject, html_body, plain_body)
+                VALUES (%s, %s, %s, %s)
+            """, (email, subject, html, plain))
+    logger.info("Email de vérification mis en queue pour %s", email[:3] + "***")
+
+
+def send_verification_email(email: str, raw_token: str) -> None:
+    """Envoie l'email de vérification directement (fallback / usage interne)."""
+    from app.mailer import send_email
+    subject, html, plain = _build_verification_email_parts(raw_token)
     try:
         result = send_email(email, subject, html, plain)
         if not result.success:
@@ -915,7 +924,7 @@ def resend_verification(user_id: str = Depends(_get_current_user_id)):
     email = decrypt_email(row[0])
 
     raw_token = generate_verification_token(user_id)
-    send_verification_email(email, raw_token)
+    queue_verification_email(email, raw_token)
 
     return {"ok": True, "message": "Email de vérification envoyé"}
 
@@ -954,6 +963,6 @@ def resend_verification_public(payload: ResendVerificationPublicPayload, request
 
     check_resend_verification_rate_limit(str(user_id))
     raw_token = generate_verification_token(str(user_id))
-    send_verification_email(email_norm, raw_token)
+    queue_verification_email(email_norm, raw_token)
 
     return {"ok": True, "message": "Email de vérification renvoyé. Vérifiez vos spams."}

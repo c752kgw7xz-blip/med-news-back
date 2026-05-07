@@ -1,0 +1,35 @@
+name: MedNews — Envoi emails en attente
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  send-emails:
+    name: Traiter la queue pending_emails
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: env
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+      MAIL_FROM: ${{ secrets.MAIL_FROM }}
+      MAIL_FROM_NAME: ${{ secrets.MAIL_FROM_NAME }}
+      PYTHONPATH: ${{ github.workspace }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer dépendances
+        run: pip install psycopg2-binary httpx
+
+      - name: Traiter les emails en attente
+        run: python3 scripts/process_pending_emails.py
