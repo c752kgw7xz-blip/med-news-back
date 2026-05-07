@@ -92,22 +92,22 @@ echo "[7/8] Configuration cron triage..."
 # Même fréquence que la collecte GHA (*/2)
 # Slot 1 — 05h UTC = 06h Paris (CET) / 07h Paris (CEST) — après fin de collecte (~05h UTC)
 # Slot 2 — 11h UTC = 12h Paris (CET) / 13h Paris (CEST)
-# Slot 3 — 17h UTC = 18h Paris (CET) / 19h Paris (CEST)
+# Slot 3 — 19h UTC = 21h Paris (CEST) — 6h après slot 2, rate limits régénérés
 cat > /etc/cron.d/mednews-triage << 'EOF'
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-# Slot 1 — matin (après collecte GHA)
-0 5 */2 * * root /opt/mednews/scripts/triage_orchestrator.sh --slot 1 >> /var/log/mednews/cron.log 2>&1
+# Slot 1 — 08h UTC = 10h Paris (CEST) — après collecte GHA (~6h25 UTC + marge délai queue)
+0 8 */2 * * root /opt/mednews/scripts/triage_orchestrator.sh --slot 1 >> /var/log/mednews/cron.log 2>&1
 
-# Slot 2 — midi
-0 11 */2 * * root /opt/mednews/scripts/triage_orchestrator.sh --slot 2 >> /var/log/mednews/cron.log 2>&1
+# Slot 2 — 14h UTC = 16h Paris (CEST)
+0 14 */2 * * root /opt/mednews/scripts/triage_orchestrator.sh --slot 2 >> /var/log/mednews/cron.log 2>&1
 
-# Slot 3 — soir
-0 17 */2 * * root /opt/mednews/scripts/triage_orchestrator.sh --slot 3 >> /var/log/mednews/cron.log 2>&1
+# Slot 3 — 20h UTC = 22h Paris (CEST)
+0 20 */2 * * root /opt/mednews/scripts/triage_orchestrator.sh --slot 3 >> /var/log/mednews/cron.log 2>&1
 EOF
 chmod 644 /etc/cron.d/mednews-triage
-echo "  Cron configuré : slots 1/2/3 à 05h/11h/17h UTC tous les 2 jours"
+echo "  Cron configuré : slots 1/2/3 à 08h/14h/20h UTC tous les 2 jours"
 
 # ─── 8. Firewall UFW ─────────────────────────────────────────────────────────
 echo "[8/8] Configuration firewall..."
