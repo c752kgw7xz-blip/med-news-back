@@ -982,6 +982,125 @@
   .month-picker-item.active { color:var(--green);font-weight:500; background:rgba(155,35,53,.05); }
   .month-picker-item .mp-month { font-family:'Instrument Serif',Georgia,serif;font-style:italic; }
   .month-picker-item .mp-count { font-size:0.65rem;color:var(--text4);font-family:'DM Mono',monospace; }
+
+  /* ── Swipe Deck (mobile only) ───────────────────────────────── */
+  @media (min-width: 769px) { #swipe-deck { display: none !important; } }
+
+  #swipe-deck {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 0 100px;
+    min-height: 60vh;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .swipe-counter {
+    font-size: 0.72rem;
+    color: var(--text4);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .4px;
+    margin-bottom: 10px;
+    align-self: center;
+  }
+
+  .swipe-card {
+    width: calc(100% - 0px);
+    max-width: 440px;
+    background: var(--surface);
+    border: 3px solid #3B52A4;
+    border-radius: 14px;
+    padding: 22px 20px 26px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.14);
+    touch-action: pan-y;
+    cursor: grab;
+    will-change: transform;
+    transition: box-shadow .15s;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .swipe-card:active { cursor: grabbing; }
+
+  .swipe-card-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.70rem;
+    font-weight: 700;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    align-self: flex-start;
+  }
+
+  .swipe-card-title {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.28rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.35;
+    margin: 0;
+  }
+
+  .swipe-card-points {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .swipe-card-points li {
+    font-size: 0.85rem;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .swipe-card-resume {
+    font-size: 0.82rem;
+    color: var(--text3);
+    line-height: 1.55;
+    margin: 0;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  .swipe-hints {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 440px;
+    padding: 0 4px;
+    margin-top: 14px;
+    pointer-events: none;
+  }
+  .swipe-hint-left, .swipe-hint-right {
+    font-size: 0.76rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity .15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .swipe-hint-left  { color: var(--text4); }
+  .swipe-hint-right { color: #1A6B5C; }
+
+  .swipe-done {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text3);
+    font-size: 0.9rem;
+  }
+  .swipe-done-icon { font-size: 2.4rem; }
 </style>
 </head>
 <body>
@@ -1124,6 +1243,16 @@
         </div>
         <p class="spec-splash-hint">Sélectionnez une catégorie pour commencer</p>
         <div class="spec-splash-cats" id="spec-splash-cats"></div>
+      </div>
+
+      <!-- Swipe Deck — mobile only, articles de la dernière collecte -->
+      <div id="swipe-deck" style="display:none;">
+        <div class="swipe-counter" id="swipe-counter"></div>
+        <div class="swipe-card" id="swipe-card"></div>
+        <div class="swipe-hints">
+          <span class="swipe-hint-left" id="swipe-hint-left">✕ Ignorer</span>
+          <span class="swipe-hint-right" id="swipe-hint-right">★ Favori</span>
+        </div>
       </div>
     </div>
   </div>
@@ -3382,6 +3511,202 @@ function toggleSidebar() {
 })();
 
 // ── Init ──────────────────────────────────────────────────────
+// ── Swipe Deck (mobile only) ─────────────────────────────────────────────────
+const _SWIPE_STORE_KEY = 'mednews-swiped-v1';
+const _SWIPE_TTL = 8 * 24 * 3600 * 1000; // 8 days — couvre un cycle collecte
+
+function _swipedIds() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(_SWIPE_STORE_KEY) || '{}');
+    if (!raw.ts || Date.now() - raw.ts > _SWIPE_TTL) return new Set();
+    return new Set(raw.ids || []);
+  } catch { return new Set(); }
+}
+
+function _markSwiped(id) {
+  const seen = _swipedIds();
+  seen.add(id);
+  localStorage.setItem(_SWIPE_STORE_KEY, JSON.stringify({ ids: [...seen], ts: Date.now() }));
+}
+
+let _swipeArticles = [];
+let _swipeIdx = 0;
+let _swipeTouchStartX = 0;
+let _swipeTouchStartY = 0;
+let _swipeDragging = false;
+
+async function initSwipeDeck() {
+  if (window.innerWidth > 768) return;
+  if (!userSpecSlug) return;
+
+  const from = new Date();
+  from.setDate(from.getDate() - 5);
+  const fromStr = from.toISOString().slice(0, 10);
+
+  try {
+    const res = await authFetch(`${API}/articles?per_page=50&from_date=${fromStr}&specialty=${encodeURIComponent(userSpecSlug)}`);
+    if (!res?.ok) return;
+    const data = await res.json();
+    const seen = _swipedIds();
+    _swipeArticles = (data.items || []).filter(a => !seen.has(a.id));
+    if (_swipeArticles.length === 0) return;
+    _swipeIdx = 0;
+    _showSwipeDeck();
+  } catch (e) {
+    console.warn('[swipe] init error', e);
+  }
+}
+
+function _showSwipeDeck() {
+  document.getElementById('swipe-deck').style.display = 'flex';
+  document.getElementById('spec-splash').style.display = 'none';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'none';
+  const rh = document.getElementById('rubrique-header');
+  if (rh) rh.style.display = 'none';
+  _renderSwipeCard();
+  _attachSwipeListeners();
+}
+
+function _hideSwipeDeck() {
+  document.getElementById('swipe-deck').style.display = 'none';
+  // After exhaustion, show specialty splash
+  const accordId = Object.keys(_accordSpecMap).find(k => _accordSpecMap[k].slug === userSpecSlug);
+  if (accordId) showSpecSplash(accordId);
+}
+
+function _renderSwipeCard() {
+  const counter = document.getElementById('swipe-counter');
+  const card = document.getElementById('swipe-card');
+  if (!card) return;
+
+  if (_swipeIdx >= _swipeArticles.length) {
+    _hideSwipeDeck();
+    return;
+  }
+
+  const art = _swipeArticles[_swipeIdx];
+  const tri = art.tri_json || {};
+  const lect = art.lecture_json || {};
+  const stype = art.source_type || 'innovation';
+  const colours = { reglementaire: '#3B52A4', recommandation: '#1A6B5C', innovation: '#9B5714' };
+  const bgs = { reglementaire: 'rgba(59,82,164,.13)', recommandation: 'rgba(26,107,92,.13)', innovation: 'rgba(155,87,20,.13)' };
+  const labels = { reglementaire: 'Réglementation', recommandation: 'Recommandation', innovation: 'Innovation' };
+  const col = colours[stype] || colours.innovation;
+
+  card.dataset.id = art.id;
+  card.style.borderColor = col;
+  card.style.transform = '';
+  card.style.opacity = '1';
+  card.style.transition = '';
+
+  const points = Array.isArray(lect.points_cles) ? lect.points_cles : [];
+  const resume = tri.resume || '';
+  const titre = tri.titre_court || art.title || '';
+
+  card.innerHTML = `
+    <div class="swipe-card-badge" style="background:${bgs[stype]};color:${col};">${labels[stype]}</div>
+    <h2 class="swipe-card-title">${esc(titre)}</h2>
+    ${points.length ? `<ul class="swipe-card-points">${points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
+    ${resume ? `<p class="swipe-card-resume">${esc(resume.length > 320 ? resume.slice(0, 320) + '…' : resume)}</p>` : ''}
+  `;
+
+  if (counter) counter.textContent = `${_swipeIdx + 1} / ${_swipeArticles.length}`;
+  document.getElementById('swipe-hint-left').style.opacity = '0';
+  document.getElementById('swipe-hint-right').style.opacity = '0';
+}
+
+function _attachSwipeListeners() {
+  const card = document.getElementById('swipe-card');
+  if (!card || card._swipeListened) return;
+  card._swipeListened = true;
+
+  card.addEventListener('touchstart', e => {
+    _swipeTouchStartX = e.touches[0].clientX;
+    _swipeTouchStartY = e.touches[0].clientY;
+    _swipeDragging = true;
+    card.style.transition = '';
+  }, { passive: true });
+
+  card.addEventListener('touchmove', e => {
+    if (!_swipeDragging) return;
+    const dx = e.touches[0].clientX - _swipeTouchStartX;
+    const dy = e.touches[0].clientY - _swipeTouchStartY;
+    if (Math.abs(dy) > Math.abs(dx) + 10) { _swipeDragging = false; return; }
+    const rot = dx * 0.04;
+    card.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+    const progress = Math.min(Math.abs(dx) / 100, 1);
+    if (dx > 0) {
+      document.getElementById('swipe-hint-right').style.opacity = String(progress);
+      document.getElementById('swipe-hint-left').style.opacity = '0';
+    } else {
+      document.getElementById('swipe-hint-left').style.opacity = String(progress);
+      document.getElementById('swipe-hint-right').style.opacity = '0';
+    }
+  }, { passive: true });
+
+  card.addEventListener('touchend', e => {
+    if (!_swipeDragging) return;
+    _swipeDragging = false;
+    const dx = e.changedTouches[0].clientX - _swipeTouchStartX;
+    if (dx > 80) {
+      _doSwipe('right', dx);
+    } else if (dx < -80) {
+      _doSwipe('left', dx);
+    } else {
+      card.style.transition = 'transform .3s cubic-bezier(.25,.46,.45,.94)';
+      card.style.transform = '';
+      document.getElementById('swipe-hint-left').style.opacity = '0';
+      document.getElementById('swipe-hint-right').style.opacity = '0';
+    }
+  }, { passive: true });
+
+  // Mouse fallback for dev/desktop testing
+  let _mouseDown = false, _mouseStartX = 0;
+  card.addEventListener('mousedown', e => { _mouseDown = true; _mouseStartX = e.clientX; card.style.transition = ''; });
+  document.addEventListener('mousemove', e => {
+    if (!_mouseDown || window.innerWidth > 768) return;
+    const dx = e.clientX - _mouseStartX;
+    card.style.transform = `translateX(${dx}px) rotate(${dx * 0.04}deg)`;
+  });
+  document.addEventListener('mouseup', e => {
+    if (!_mouseDown) return;
+    _mouseDown = false;
+    if (window.innerWidth > 768) return;
+    const dx = e.clientX - _mouseStartX;
+    if (dx > 80) _doSwipe('right', dx);
+    else if (dx < -80) _doSwipe('left', dx);
+    else { card.style.transition = 'transform .3s'; card.style.transform = ''; }
+  });
+}
+
+function _doSwipe(dir, dx) {
+  const card = document.getElementById('swipe-card');
+  if (!card) return;
+  const art = _swipeArticles[_swipeIdx];
+  if (!art) return;
+
+  const flyX = dir === 'right' ? '120vw' : '-120vw';
+  card.style.transition = 'transform .35s cubic-bezier(.55,.0,.1,1), opacity .35s';
+  card.style.transform = `translateX(${flyX}) rotate(${dir === 'right' ? 20 : -20}deg)`;
+  card.style.opacity = '0';
+
+  _markSwiped(art.id);
+
+  if (dir === 'right') {
+    authFetch(`${API}/favorites/${art.id}`, { method: 'POST' })
+      .then(r => { if (r?.ok) { favoritesSet.add(art.id); updateSidebarFavCount?.(); } })
+      .catch(() => {});
+  }
+
+  setTimeout(() => {
+    _swipeIdx++;
+    _renderSwipeCard();
+    card._swipeListened = false;
+    _attachSwipeListeners();
+  }, 360);
+}
+
 (async () => {
   if (DEMO_MODE) { loadDemoData(); return; }
   if (!getToken()) { window.location.href = '/login'; return; }
@@ -3415,6 +3740,8 @@ function toggleSidebar() {
     console.log('[MedNews] specialties+counts done');
     buildSidebar();
     console.log('[MedNews] buildSidebar done');
+    // Swipe deck sur mobile (avant le splash classique)
+    await initSwipeDeck();
     // Ne pas charger les articles au démarrage — le splash s'affiche, articles chargés au clic sous-catégorie
   } catch (e) {
     console.error('[MedNews] Init error:', e);
