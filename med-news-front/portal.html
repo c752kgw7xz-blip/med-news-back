@@ -1201,6 +1201,142 @@
     font-size: 1.6rem;
     box-shadow: 0 6px 24px rgba(196,30,58,.22);
   }
+
+  /* ── Story stack (mobile article feed) ────────────────────────── */
+  /* Story-specific elements: hidden on desktop, shown in story mode */
+  .story-header { display: none; }
+  .story-body   { display: none; }
+  .story-footer { display: none; }
+
+  /* Gradients per source_type */
+  .story-stack-mode .article-card[data-source-type="reglementaire"] .story-header {
+    background: linear-gradient(150deg, #1a237e 0%, #3B52A4 100%);
+  }
+  .story-stack-mode .article-card[data-source-type="recommandation"] .story-header {
+    background: linear-gradient(150deg, #1B5E20 0%, #2e7d32 100%);
+  }
+  .story-stack-mode .article-card[data-source-type="innovation"] .story-header {
+    background: linear-gradient(150deg, #C41E3A 0%, #FF5F3F 100%);
+  }
+
+  .story-type-pill {
+    font-size: 0.62rem; font-weight: 700; letter-spacing: .9px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px;
+    background: rgba(255,255,255,.22); color: #fff; border: 1px solid rgba(255,255,255,.3);
+    align-self: flex-start; backdrop-filter: blur(4px);
+  }
+  .story-title {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.4rem; font-weight: 400; font-style: italic;
+    color: #fff; line-height: 1.28; margin: 0;
+    text-shadow: 0 1px 8px rgba(0,0,0,.25);
+  }
+  .story-points {
+    margin: 0; padding: 0; list-style: none;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .story-points li {
+    font-size: 0.86rem; color: var(--text2); line-height: 1.52;
+    padding-left: 18px; position: relative;
+  }
+  .story-points li::before {
+    content: ''; position: absolute; left: 0; top: 7px;
+    width: 7px; height: 7px; border-radius: 50%; background: #C41E3A;
+  }
+  .story-resume {
+    font-size: 0.79rem; color: var(--text3); line-height: 1.62;
+    padding: 10px 14px; background: var(--surface2); border-radius: 10px;
+    border-left: 3px solid #C41E3A;
+  }
+  .story-date { font-size: 0.68rem; color: var(--text4); font-family: 'DM Mono', monospace; }
+  .story-actions { display: flex; align-items: center; gap: 10px; }
+  .story-fav-btn {
+    background: transparent; border: none; cursor: pointer; padding: 6px 8px;
+    color: var(--text4); font-size: 1.2rem; transition: color .15s;
+    -webkit-tap-highlight-color: transparent; line-height: 1;
+  }
+  .story-fav-btn.active { color: var(--amber, #b56808); }
+  .story-read-btn {
+    padding: 8px 16px; background: var(--green); color: #fff; border: none;
+    border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (max-width: 768px) {
+    /* Story stack layout */
+    .story-stack-mode .content-area {
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      height: calc(100dvh - 52px - 60px) !important;
+      overflow: hidden !important;
+    }
+    .story-stack-mode .rubrique-header {
+      flex-shrink: 0 !important;
+      padding: 8px 16px 10px !important;
+    }
+    .story-stack-mode .pills-wrap { display: none !important; }
+    .story-stack-mode #content {
+      flex: 1; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .story-stack-mode #articles-container {
+      flex: 1;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    .story-stack-mode .org-group { display: contents !important; }
+    .story-stack-mode .article-card {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+      border-radius: 0 !important;
+      border: none !important;
+      border-bottom: 1px solid var(--border) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      cursor: default !important;
+      overflow: hidden !important;
+      background: var(--surface);
+    }
+    .story-stack-mode .article-card.story-expanded {
+      flex: 0 0 auto;
+      min-height: 100%;
+      scroll-snap-align: none;
+    }
+    .story-stack-mode .card-top,
+    .story-stack-mode .card-summary,
+    .story-stack-mode .card-impact { display: none !important; }
+    .story-stack-mode .card-detail { display: none !important; }
+    .story-stack-mode .article-card.story-expanded .card-detail { display: block !important; }
+    .story-stack-mode #load-more { display: none !important; }
+
+    /* Story card inner layout */
+    .story-stack-mode .story-header {
+      display: flex; flex-direction: column; gap: 12px;
+      padding: 22px 20px 26px; flex-shrink: 0;
+    }
+    .story-stack-mode .story-body {
+      display: flex; flex-direction: column; gap: 14px;
+      flex: 1; overflow-y: auto; padding: 16px 20px 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .story-stack-mode .story-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px 16px;
+      border-top: 1px solid var(--border); flex-shrink: 0;
+      background: var(--surface);
+    }
+    /* Dot colors per type */
+    .story-stack-mode .article-card[data-source-type="reglementaire"] .story-points li::before { background: #3B52A4; }
+    .story-stack-mode .article-card[data-source-type="recommandation"] .story-points li::before { background: #1A6B5C; }
+    .story-stack-mode .article-card[data-source-type="reglementaire"] .story-resume { border-left-color: #3B52A4; }
+    .story-stack-mode .article-card[data-source-type="recommandation"] .story-resume { border-left-color: #1A6B5C; }
+  }
 </style>
 </head>
 <body>
@@ -1862,9 +1998,30 @@ function renderArticle(a, idx) {
     ? `<div class="detail-refs">R\u00e9f. : ${refs.map(r => esc(r)).join(' \u00b7 ')}</div>` : '';
 
   const isFav = favoritesSet.has(a.id);
+  const stypeLabels = { reglementaire: 'Réglementation', recommandation: 'Recommandation', innovation: 'Innovation' };
+  const storyHeader = `<div class="story-header">
+    <span class="story-type-pill">${stypeLabels[stype] || stype}</span>
+    <h2 class="story-title">${esc(titre)}</h2>
+  </div>`;
+  const storyBody = `<div class="story-body">
+    ${points.length ? `<ul class="story-points">${points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
+    ${resume ? `<div class="story-resume">${esc(resume)}</div>` : ''}
+  </div>`;
+  const storyFooter = `<div class="story-footer">
+    <span class="story-date">${esc(MedNews.formatDate(datePub))}</span>
+    <div class="story-actions">
+      <button class="story-fav-btn btn-fav${isFav ? ' active' : ''}" data-item-id="${a.id}"
+        title="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}"
+        onclick="toggleFavorite(event,'${a.id}')">★</button>
+      ${a.official_url ? `<a style="font-size:0.72rem;color:var(--text4);text-decoration:none;" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();">↗ Source</a>` : ''}
+      <button class="story-read-btn" onclick="event.stopPropagation();openStoryDetail(this.closest('.article-card'))">Analyser</button>
+    </div>
+  </div>`;
+
   return `
   <div class="article-card prio-${prio}" onclick="toggleDetail(event, this)" data-priority="${prio}" data-categorie="${categorie || ''}" data-source-type="${a.source_type || 'reglementaire'}" data-item-id="${a.id}"
        style="animation-delay:${delay}ms;">
+    ${storyHeader}${storyBody}${storyFooter}
     <div class="card-top">
       <div class="card-top-left">
         ${urgencyPill(score)}
@@ -1938,6 +2095,7 @@ function renderGroupedArticles() {
   container.innerHTML = html;
   if (window.lucide) lucide.createIcons();
   applyFilters();
+  if (window.innerWidth <= 768) enableStoryMode();
 }
 
 function esc(s) {
@@ -1948,6 +2106,8 @@ function esc(s) {
 }
 
 function toggleDetail(e, card) {
+  // In story mode card taps are handled by the Analyser button
+  if (document.querySelector('.content-area')?.classList.contains('story-stack-mode')) return;
   // Track in history
   const itemId = card.dataset.itemId;
   const titre = card.querySelector('.card-title')?.textContent?.trim() || '';
@@ -1978,7 +2138,27 @@ function collapseCard(btn) {
   const card = btn.closest('.article-card');
   card.querySelector('.card-detail').style.display = 'none';
   card.classList.remove('expanded');
+  card.classList.remove('story-expanded');
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Story stack mode ──────────────────────────────────────────
+function enableStoryMode() {
+  document.querySelector('.content-area')?.classList.add('story-stack-mode');
+}
+
+function disableStoryMode() {
+  document.querySelector('.content-area')?.classList.remove('story-stack-mode');
+}
+
+function openStoryDetail(card) {
+  if (!card) return;
+  card.classList.add('story-expanded');
+  const detail = card.querySelector('.card-detail');
+  if (detail) {
+    detail.style.display = 'block';
+    setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
 }
 
 // ── Logique de filtrage commune (AND : catégorie × source_type) ───────────
@@ -2217,6 +2397,7 @@ async function toggleFavorite(event, itemId) {
 }
 
 async function showFavorites() {
+  disableStoryMode();
   favoritesMode = true;
   historyMode = false;
   document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
@@ -2362,6 +2543,7 @@ let _activeSubId   = null;    // id of active subitem element
 const _accordSpecMap = {};    // accordId -> { slug, name, counts }
 
 function showSpecSplash(accordId) {
+  disableStoryMode();
   const spec   = _accordSpecMap[accordId] || {};
   const counts = spec.counts || {};
   const cats = [
@@ -3549,6 +3731,7 @@ function updateHistoryCount() {
   if (el) el.textContent = _sessionHistory.length;
 }
 function showHistory() {
+  disableStoryMode();
   historyMode = true;
   favoritesMode = false;
   document.querySelectorAll('.sidebar-subitem').forEach(el => el.classList.remove('active'));
