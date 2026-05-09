@@ -1263,13 +1263,16 @@
   }
 
   @media (max-width: 768px) {
+    /* Swipe deck — masquer le header pour plein écran */
+    body.swipe-deck-active header { display: none !important; }
+    body.swipe-deck-active #swipe-deck { top: 0 !important; }
+
     /* Story stack layout */
-    .story-stack-mode header { display: none !important; }
     .story-stack-mode .content-area {
       padding: 0 !important;
       display: flex !important;
       flex-direction: column !important;
-      height: calc(100dvh - 60px) !important;
+      height: calc(100dvh - 52px - 60px) !important;
       overflow: hidden !important;
     }
     .story-stack-mode .rubrique-header {
@@ -3842,6 +3845,7 @@ async function initSwipeDeck() {
 }
 
 function _showSwipeDeck() {
+  document.body.classList.add('swipe-deck-active');
   document.getElementById('swipe-deck').style.display = 'flex';
   document.getElementById('spec-splash').style.display = 'none';
   document.getElementById('loading').style.display = 'none';
@@ -3853,6 +3857,7 @@ function _showSwipeDeck() {
 }
 
 function _hideSwipeDeck() {
+  document.body.classList.remove('swipe-deck-active');
   document.getElementById('swipe-deck').style.display = 'none';
   // After exhaustion, show specialty splash
   const accordId = Object.keys(_accordSpecMap).find(k => _accordSpecMap[k].slug === userSpecSlug);
