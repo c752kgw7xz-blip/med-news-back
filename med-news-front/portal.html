@@ -194,21 +194,77 @@
     .portal-page-title { padding: 0 4px; }
     .portal-page-title h2 { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .portal-page-title p { font-size: 0.62rem; letter-spacing: .2px; white-space: normal; overflow-wrap: break-word; }
-    /* ── Splash mobile ── */
-    #spec-splash { padding: 24px 16px 28px; min-height: 55vh; overflow: hidden; }
-    #spec-splash-name { font-size: 1.9rem; white-space: normal; word-break: break-word; max-width: 100%; }
-    .spec-splash-hint { font-size: 0.82rem; margin-bottom: 20px; }
-    .spec-splash-cats { flex-direction: column; gap: 8px; width: 100%; }
-    .spec-splash-cat-btn {
-      width: 100%; min-width: 0;
-      flex-direction: row; justify-content: space-between; align-items: center;
-      padding: 16px 20px; gap: 12px;
-      font-size: 0.92rem; border-width: 2px;
-      background: var(--surface2, var(--surface));
-      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    /* ── Splash mobile — Tinder-style ── */
+    #spec-splash {
+      padding: 0 !important; min-height: calc(100dvh - 52px - 60px);
+      align-items: stretch !important; justify-content: flex-start !important;
+      text-align: left !important; overflow: hidden;
     }
-    .spec-splash-cat-btn .splash-count { font-size: 1.5rem; order: 2; flex-shrink: 0; }
-    .spec-splash-cat-btn > span:not(.splash-count) { order: 1; flex: 1; text-align: left; font-weight: 600; }
+    .splash-hero { padding: 22px 20px 18px; flex-shrink: 0; border-bottom: 1px solid var(--border); }
+    .splash-hero-eyebrow {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+      color: var(--green); margin-bottom: 6px;
+    }
+    #spec-splash-name { font-size: 2rem !important; white-space: normal; word-break: break-word; max-width: 100%; margin: 0 !important; }
+    .splash-hero-total { font-size: 0.75rem; color: var(--text4); margin-top: 5px; }
+    .spec-splash-hint {
+      padding: 16px 20px 10px !important; margin: 0 !important;
+      font-size: 0.6rem !important; font-weight: 700 !important;
+      letter-spacing: .5px !important; text-transform: uppercase !important;
+      color: var(--text4) !important; flex-shrink: 0;
+    }
+    /* Horizontal snap-scroll pour les 3 cartes */
+    .spec-splash-cats {
+      flex-direction: row !important; flex-wrap: nowrap !important;
+      overflow-x: scroll !important; scroll-snap-type: x mandatory !important;
+      -webkit-overflow-scrolling: touch;
+      gap: 12px !important; padding: 0 20px 20px !important;
+      scrollbar-width: none !important; flex-shrink: 0 !important;
+      justify-content: flex-start !important; align-items: stretch !important;
+      width: 100% !important;
+    }
+    .spec-splash-cats::-webkit-scrollbar { display: none; }
+    /* Cartes gradient Tinder */
+    .spec-splash-cat-btn {
+      flex: 0 0 72vw !important; width: 72vw !important; min-width: 0 !important;
+      height: 210px !important; border-radius: 20px !important;
+      padding: 0 !important; overflow: hidden !important; border: none !important;
+      scroll-snap-align: start !important;
+      display: flex !important; flex-direction: column !important;
+      align-items: flex-start !important; justify-content: space-between !important;
+      gap: 0 !important; box-shadow: 0 14px 44px rgba(0,0,0,.2);
+    }
+    .spec-splash-cat-btn.stype-reg  { background: linear-gradient(150deg,#1a237e 0%,#3B52A4 100%) !important; }
+    .spec-splash-cat-btn.stype-reco { background: linear-gradient(150deg,#1B5E20 0%,#2d7d32 100%) !important; }
+    .spec-splash-cat-btn.stype-innov{ background: linear-gradient(150deg,#7B2D00 0%,#C41E3A 100%) !important; }
+    .splash-cat-pill {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: .7px; text-transform: uppercase;
+      color: rgba(255,255,255,.92); background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.28); border-radius: 20px;
+      padding: 4px 12px; margin: 18px 18px 0; display: inline-block;
+    }
+    .splash-count {
+      font-size: 3.8rem !important; font-weight: 700 !important;
+      color: #fff !important; line-height: 1 !important;
+      padding: 0 20px !important; flex: 1 !important;
+      display: flex !important; align-items: center !important;
+    }
+    .splash-cat-sub {
+      font-size: 0.72rem; color: rgba(255,255,255,.65);
+      padding: 0 20px 2px; display: block;
+    }
+    .splash-cat-cta {
+      display: block !important; font-size: 0.78rem; font-weight: 600;
+      color: rgba(255,255,255,.92); padding: 14px 20px;
+      border-top: 1px solid rgba(255,255,255,.15); width: 100%;
+      letter-spacing: .1px;
+    }
+    /* Search en bas */
+    .splash-search-wrap {
+      flex: 1; min-height: 0; padding: 10px 20px 16px !important;
+      margin-top: 0 !important; display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .splash-search-divider { margin-bottom: 10px !important; }
     /* Bottom nav visible */
     .bottom-nav { display: flex; }
     /* New 5-tab mobile nav */
@@ -411,14 +467,21 @@
   .spec-splash-cat-btn .splash-count {
     font-size: 2rem;
     font-weight: 600;
-    color: var(--green);
+    color: var(--dot, var(--green));
     line-height: 1;
   }
   .spec-splash-cat-btn.stype-reg  { --dot: #3B52A4; }
   .spec-splash-cat-btn.stype-reco { --dot: #1A6B5C; }
   .spec-splash-cat-btn.stype-innov{ --dot: #9B5714; }
   .spec-splash-cat-btn:hover { border-color: var(--dot, var(--green)); }
-  .spec-splash-cat-btn .splash-count { color: var(--dot, var(--green)); }
+  /* Desktop: new elements from updated button HTML */
+  .splash-cat-pill { font-size: 0.79rem; font-weight: 500; color: var(--text3); }
+  .splash-cat-sub  { font-size: 0.68rem; color: var(--text4); }
+  .splash-cat-cta  { display: none; }
+  /* Desktop splash hero */
+  .splash-hero { text-align: center; margin-bottom: 8px; }
+  .splash-hero-eyebrow { display: none; }
+  .splash-hero-total { font-size: 0.82rem; color: var(--text4); margin-top: 5px; }
 
   /* ── Rubrique header ───────────────────── */
   .rubrique-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
@@ -1467,7 +1530,15 @@
 
       <!-- Splash spécialité — affiché quand une spé est sélectionnée sans sous-catégorie -->
       <div id="spec-splash">
-        <h1 id="spec-splash-name"></h1>
+        <!-- Hero (mobile: top section with name) -->
+        <div class="splash-hero">
+          <div class="splash-hero-eyebrow" id="splash-hero-eyebrow">Ce mois-ci</div>
+          <h1 id="spec-splash-name"></h1>
+          <div class="splash-hero-total" id="splash-hero-total"></div>
+        </div>
+
+        <p class="spec-splash-hint">Choisissez une catégorie</p>
+        <div class="spec-splash-cats" id="spec-splash-cats"></div>
 
         <!-- Recherche tous mois -->
         <div class="splash-search-wrap">
@@ -1481,8 +1552,6 @@
           </div>
           <div id="splash-search-results"></div>
         </div>
-        <p class="spec-splash-hint">Sélectionnez une catégorie pour commencer</p>
-        <div class="spec-splash-cats" id="spec-splash-cats"></div>
       </div>
 
       <!-- Swipe Deck — mobile only, full-screen dating-app style -->
@@ -2556,11 +2625,16 @@ function showSpecSplash(accordId) {
     { stype: 'innovation',     cls: 'stype-innov',label: 'Innovation',      count: counts.innovation     || 0 },
   ];
   document.getElementById('spec-splash-name').textContent = spec.name || '';
+  const total = (counts.reglementaire || 0) + (counts.recommandation || 0) + (counts.innovation || 0);
+  const totalEl = document.getElementById('splash-hero-total');
+  if (totalEl) totalEl.textContent = total > 0 ? `${total} article${total > 1 ? 's' : ''} ce mois` : '';
   document.getElementById('spec-splash-cats').innerHTML = cats.map(c => {
     const onclick = `onclick="selectSpecType('${spec.slug}','${c.stype}','${accordId}')"`;
     return `<button class="spec-splash-cat-btn ${c.cls}" ${onclick}>
+      <span class="splash-cat-pill">${c.label}</span>
       <span class="splash-count">${c.count}</span>
-      <span>${c.label}</span>
+      <span class="splash-cat-sub">article${c.count !== 1 ? 's' : ''}</span>
+      <span class="splash-cat-cta">Explorer →</span>
     </button>`;
   }).join('');
   document.getElementById('portal-page-title').style.display = '';
