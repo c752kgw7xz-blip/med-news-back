@@ -3548,7 +3548,7 @@ async function initSwipeDeck() {
     if (!res?.ok) return;
     const data = await res.json();
     const seen = _swipedIds();
-    _swipeArticles = (data.items || []).filter(a => !seen.has(a.id));
+    _swipeArticles = (data.articles || []).filter(a => !seen.has(a.id));
     if (_swipeArticles.length === 0) return;
     _swipeIdx = 0;
     _showSwipeDeck();
