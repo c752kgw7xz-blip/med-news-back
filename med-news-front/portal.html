@@ -1264,11 +1264,12 @@
 
   @media (max-width: 768px) {
     /* Story stack layout */
+    .story-stack-mode header { display: none !important; }
     .story-stack-mode .content-area {
       padding: 0 !important;
       display: flex !important;
       flex-direction: column !important;
-      height: calc(100dvh - 52px - 60px) !important;
+      height: calc(100dvh - 60px) !important;
       overflow: hidden !important;
     }
     .story-stack-mode .rubrique-header {
