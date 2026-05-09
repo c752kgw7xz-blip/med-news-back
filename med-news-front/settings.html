@@ -7,30 +7,30 @@
 <script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [data-theme="light"] {
-    --bg: #F5F4EF; --surface: #FDFCF9; --surface2: #ECEAE2;
-    --border: #D6D2C8; --border-strong: #B4B0A6;
-    --text: #1A1714; --text2: #3E3A34; --text3: #4E4840;
-    --text4: #6A6258; --text5: #908880; --white: #1A1714;
-    --green-dark: #F3ECE8; --red-dark: #F2E8E8;
+    --bg: #F8FAFC; --surface: #FFFFFF; --surface2: #F1F5F9;
+    --border: #E2E8F0; --border-strong: #CBD5E1;
+    --text: #0F172A; --text2: #1E293B; --text3: #475569;
+    --text4: #94A3B8; --text5: #CBD5E1; --white: #0F172A;
+    --green-dark: #FFF1F2; --red-dark: #FFF1F2;
   }
   [data-theme="dark"] {
-    --bg: #17140C; --surface: #1E1B12; --surface2: #252219;
-    --border: #342F24; --border-strong: #4A4438;
-    --text: #EDE7DC; --text2: #C6BEB4; --text3: #A8A098;
-    --text4: #8A8378; --text5: #6A6360; --white: #EDE7DC;
-    --green-dark: #2A1A16; --red-dark: #2A1212;
+    --bg: #0F1117; --surface: #161B27; --surface2: #1E2535;
+    --border: #2A3444; --border-strong: #3D4F66;
+    --text: #E2E8F0; --text2: #CBD5E1; --text3: #94A3B8;
+    --text4: #64748B; --text5: #475569; --white: #E2E8F0;
+    --green-dark: #2D1218; --red-dark: #2D1218;
   }
   :root {
-    --green: #9B2335; --red: #cc3232; --amber: #b56808; --radius: 4px;
+    --green: #C41E3A; --red: #DC2626; --amber: #D97706; --radius: 6px;
   }
 
   body {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', sans-serif;
     background: var(--bg); color: var(--text);
     font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
     overflow-x: hidden;
@@ -48,13 +48,13 @@
     background:transparent;color:var(--text3);font-size:0.65rem;font-family:inherit;
     cursor:pointer;transition:all .2s;
   }
-  .btn-header-action:hover { border-color:var(--green);color:var(--green);background:rgba(155,35,53,.05); }
+  .btn-header-action:hover { border-color:var(--green);color:var(--green);background:rgba(196,30,58,.05); }
   .btn-logout {
     padding: 5px 12px; background: transparent; border: 0.5px solid var(--border-strong);
     color: var(--text3); border-radius: 3px; font-size:0.65rem; font-weight: 400;
     cursor: pointer; transition: all .2s; font-family: inherit;
   }
-  .btn-logout:hover { border-color:var(--green);color:var(--green);background:rgba(155,35,53,.05); }
+  .btn-logout:hover { border-color:var(--green);color:var(--green);background:rgba(196,30,58,.05); }
 
   /* ── Layout ─────────────────────────────── */
   .layout { max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
@@ -73,7 +73,7 @@
     align-items: center; justify-content: center;
     gap: 2px; background: none; border: none; cursor: pointer;
     color: var(--text4); padding: 6px 0; transition: color .15s;
-    font-family: 'Outfit', sans-serif; min-height: 44px;
+    font-family: 'Inter', sans-serif; min-height: 44px;
   }
   .mobile-nav-item.active { color: var(--green); }
   .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }

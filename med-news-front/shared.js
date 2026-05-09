@@ -14,7 +14,7 @@
     document.documentElement.setAttribute('data-theme', theme);
     // Prévention du flash : couleur de fond immédiate
     document.documentElement.style.backgroundColor =
-      theme === 'dark' ? '#0f1117' : '#f6f5f2';
+      theme === 'dark' ? '#0f1117' : '#f8fafc';
   }
 
   function setTheme(mode) {
