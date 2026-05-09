@@ -160,7 +160,7 @@ run_global() {
     else
         su - "$user" -c "cd $REPO_DIR && claude -p 'triage global' --dangerously-skip-permissions --output-format text --permission-prompt-tool stdio" \
             < /dev/null >> "$LOG_DIR/global_$(date +%Y%m%d).log" 2>&1 &
-        wait $!
+        wait $! || { log "[global] ERREUR (exit $?) — streams spécialités lancés quand même"; return 0; }
         log "[global] DONE"
         sleep "$PAUSE_BETWEEN_SESSIONS"
     fi
@@ -173,8 +173,9 @@ log "  MedNews triage — Slot $SLOT — $(date '+%Y-%m-%d %H:%M UTC')"
 log "════════════════════════════════════════════════"
 
 # Slot 1 : passe globale en premier (séquentielle)
+# || true : un échec du global (rate limit) ne doit pas bloquer les streams spécialités
 if [[ "$SLOT" == "1" ]]; then
-    run_global
+    run_global || true
 fi
 
 # 4 streams en parallèle
