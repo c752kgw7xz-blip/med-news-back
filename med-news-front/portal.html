@@ -686,6 +686,13 @@
 
   .swipe-fav-indicator { display: none; position: absolute; left: 0; top: 0; bottom: 0; width: 100%; align-items: center; justify-content: flex-start; padding-left: 28px; font-size: 1rem; font-weight: 700; color: #fff; background: linear-gradient(90deg, #1A6B5C 0%, rgba(26,107,92,0) 80%); pointer-events: none; z-index: 5; border-radius: inherit; }
 
+  @keyframes fav-confirm {
+    0%   { outline: 0px solid rgba(34,197,94,0); transform: scale(1); }
+    25%  { outline: 3px solid rgba(34,197,94,.7); transform: scale(1.025); }
+    100% { outline: 0px solid rgba(34,197,94,0); transform: scale(1); }
+  }
+  .fav-confirm { animation: fav-confirm .5s cubic-bezier(.22,1,.36,1) forwards; }
+
   /* ── Expanded detail ────────────────────── */
   .card-detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--border); }
   .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -2609,7 +2616,7 @@ function initStorySwipe() {
   if (!container || container._swipeInitialized) return;
   container._swipeInitialized = true;
 
-  const THRESHOLD = 72; // px
+  const THRESHOLD = 120; // px
   let startX = 0, startY = 0, activeCard = null, currentX = 0;
 
   container.addEventListener('touchstart', e => {
@@ -2630,7 +2637,7 @@ function initStorySwipe() {
     if (dx < 0) { activeCard = null; return; } // left swipe: ignore
     currentX = dx;
     const ratio = Math.min(dx / THRESHOLD, 1);
-    activeCard.style.transform = `translateX(${Math.min(dx, THRESHOLD * 1.3)}px)`;
+    activeCard.style.transform = `translateX(${Math.min(dx, THRESHOLD * 1.15)}px)`;
     const ind = activeCard.querySelector('.swipe-fav-indicator');
     if (ind) ind.style.opacity = ratio;
   }, { passive: true });
@@ -2645,7 +2652,13 @@ function initStorySwipe() {
     if (ind) { ind.style.transition = 'opacity .25s'; ind.style.opacity = '0'; }
     if (currentX >= THRESHOLD) {
       const itemId = card.dataset.itemId;
-      if (itemId) toggleFavorite({ stopPropagation: () => {} }, itemId);
+      if (itemId) {
+        toggleFavorite({ stopPropagation: () => {} }, itemId);
+        card.classList.remove('fav-confirm');
+        void card.offsetWidth; // reflow pour relancer l'animation si double swipe
+        card.classList.add('fav-confirm');
+        card.addEventListener('animationend', () => card.classList.remove('fav-confirm'), { once: true });
+      }
     }
     currentX = 0;
   });
