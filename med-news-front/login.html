@@ -123,7 +123,7 @@ form.addEventListener('submit', async (e) => {
       return;
     }
 
-    sessionStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('access_token', data.access_token);
 
     let dest = '/portal';
     try {
