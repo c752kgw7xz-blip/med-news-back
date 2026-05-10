@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MedNews — Portail</title>
 <script>/* shared.js — Thème + taille de police — exécuté en premier dans <head> */
 (function () {
@@ -182,7 +182,7 @@
     .sidebar-toggle-wrap { display: none !important; }
     /* Contraindre le grid item content-area à la largeur du viewport */
     /* env() gère la barre d'accueil iOS (safe-area-inset-bottom ≈ 34px sur iPhone récent) */
-    .content-area { padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)); min-width: 0; overflow-x: hidden; width: 100%; }
+    .content-area { padding: 16px 16px calc(76px + env(safe-area-inset-bottom, 0px)); min-width: 0; overflow-x: hidden; width: 100%; }
     #articles-container { grid-template-columns: 1fr !important; min-width: 0; }
     /* Grid items : min-width:0 empêche le track 1fr d'être élargi par white-space:nowrap */
     .org-group { min-width: 0; overflow: hidden; }
@@ -209,7 +209,7 @@
     /* ── Splash mobile — fond sombre ── */
     .content-area.splash-open {
       padding: 0 !important;
-      min-height: calc(100dvh - 52px - 60px);
+      min-height: calc(100dvh - 52px - 60px - env(safe-area-inset-bottom, 0px));
       display: flex !important; flex-direction: column !important;
       background: linear-gradient(170deg, #0C1121 0%, #180D24 55%, #1C0A15 100%) !important;
     }
@@ -845,11 +845,11 @@
   .mobile-bottom-nav {
     display: none;
     position: fixed; bottom: 0; left: 0; right: 0;
-    height: 60px;
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
     background: var(--surface);
     border-top: 1px solid var(--border);
     z-index: 600;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   .mobile-nav-item {
     flex: 1; display: flex; flex-direction: column;
@@ -1589,7 +1589,7 @@
       padding: 0 !important;
       display: flex !important;
       flex-direction: column !important;
-      height: calc(100dvh - 52px - 60px - env(safe-area-inset-bottom, 0px)) !important;
+      height: calc(100svh - 52px - 60px - env(safe-area-inset-bottom, 0px)) !important;
       overflow: hidden !important;
     }
     .story-stack-mode .rubrique-header {
@@ -1608,6 +1608,7 @@
       -webkit-overflow-scrolling: touch;
       display: flex !important;
       flex-direction: column !important;
+      padding-bottom: 12px;
     }
     .story-stack-mode .org-group { display: contents !important; }
     .story-stack-mode .article-card {
