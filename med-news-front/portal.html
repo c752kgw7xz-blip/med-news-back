@@ -668,10 +668,11 @@
     letter-spacing: -.2px;
   }
 
-  /* Résumé : 2 lignes en mode réduit */
+  /* Résumé : masqué en mode réduit, visible quand expanded */
+  .article-card:not(.expanded) .card-summary { display: none; }
   .card-summary {
     font-size: 0.86rem; font-weight: 400; color: var(--text3); line-height: 1.52;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    margin-bottom: 6px;
   }
   /* Impact pratique : masqué tant que la carte n'est pas ouverte */
   .article-card:not(.expanded) .card-impact { display: none; }
@@ -2656,8 +2657,13 @@ function disableStoryMode() {
 
 function openStoryDetail(card) {
   if (!card) return;
-  card.classList.add('story-expanded');
   const detail = card.querySelector('.card-detail');
+  if (card.classList.contains('story-expanded')) {
+    card.classList.remove('story-expanded');
+    if (detail) detail.style.display = 'none';
+    return;
+  }
+  card.classList.add('story-expanded');
   if (detail) {
     detail.style.display = 'block';
     setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
