@@ -848,7 +848,7 @@
     height: 60px;
     background: var(--surface);
     border-top: 1px solid var(--border);
-    z-index: 200;
+    z-index: 600;
     padding-bottom: env(safe-area-inset-bottom);
   }
   .mobile-nav-item {
@@ -923,7 +923,8 @@
     pointer-events: none; visibility: hidden;
     will-change: transform;
   }
-  .fp-overlay.compte-mode, #fp-explorer { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  /* Pages plein écran — s'arrêtent au-dessus de la nav bar */
+  .fp-overlay { bottom: calc(60px + env(safe-area-inset-bottom)); }
   .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
 
   /* Explorer / Activité header — large iOS title */
@@ -1020,14 +1021,6 @@
   .fp-overlay-title {
     flex: 1; text-align: center; font-size: 1rem; font-weight: 600;
     color: var(--text); padding-right: 60px;
-  }
-  .fp-drag-area {
-    flex-shrink: 0; display: flex; justify-content: center;
-    padding: 10px 0 2px; cursor: grab; touch-action: none;
-  }
-  .fp-drag-handle {
-    width: 36px; height: 4px; border-radius: 2px;
-    background: rgba(60,60,67,.2);
   }
   .fp-overlay-content {
     flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 0 16px;
@@ -4639,9 +4632,6 @@ function _doSwipe(dir, dx) {
     document.getElementById('loading').style.display = 'none';
     // content reste masqué — showSpecSplash gère l'affichage
     if (window.lucide) lucide.createIcons();
-    setupSwipeToDismiss('activite');
-    setupSwipeToDismiss('explorer');
-    setupSwipeToDismiss('parametres');
     if (location.hash === '#activite') {
       history.replaceState(null, '', location.pathname);
       mobileNavClick('activite');
