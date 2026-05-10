@@ -417,7 +417,8 @@ def article_months(
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(f"""
-                SELECT to_char(c.official_date, 'YYYY-MM') AS month, COUNT(*)
+                SELECT to_char(c.official_date, 'YYYY-MM') AS month,
+                       COUNT(DISTINCT i.candidate_id)
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
