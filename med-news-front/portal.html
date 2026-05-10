@@ -2025,6 +2025,15 @@ function portalHeaderLabel() {
 // ── Auth helpers ──────────────────────────────────────────────
 function getToken() { return localStorage.getItem('access_token'); }
 
+function isTokenExpired() {
+  const t = getToken();
+  if (!t) return true;
+  try {
+    const exp = JSON.parse(atob(t.split('.')[1])).exp;
+    return Date.now() / 1000 >= exp - 30; // 30s de marge
+  } catch { return true; }
+}
+
 function getCsrfToken() {
   const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
   return m ? decodeURIComponent(m[1]) : '';
@@ -4353,7 +4362,7 @@ function _doSwipe(dir, dx) {
 
 (async () => {
   if (DEMO_MODE) { loadDemoData(); return; }
-  if (!getToken()) {
+  if (!getToken() || isTokenExpired()) {
     const restored = await tryRefresh();
     if (!restored) { window.location.href = '/login'; return; }
   }
