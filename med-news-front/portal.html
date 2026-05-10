@@ -814,6 +814,10 @@
     font-size: 0.68rem; font-weight: 500; color: var(--text5);
     background: var(--surface2); border-radius: 20px; padding: 2px 7px; flex-shrink: 0;
   }
+  .org-source-chevron { display: none; }
+  .org-group-label { cursor: default; }
+  /* Collapsed state : masque les articles du groupe (fonctionne avec display:contents) */
+  .org-group[data-collapsed="true"] .article-card { display: none !important; }
 
   /* ── Cat articles wrapper (accordion) ──────── */
   .cat-articles {
@@ -1512,6 +1516,16 @@
       font-size: 0.78rem; font-weight: 600;
       padding: 5px 13px; border-radius: 20px; flex-shrink: 0;
     }
+    /* Chevron collapse visible en story mode */
+    .story-stack-mode .org-group-label { cursor: pointer; }
+    .story-stack-mode .org-source-chevron {
+      display: flex; align-items: center; flex-shrink: 0;
+      color: var(--text4); transition: transform .2s ease;
+    }
+    .story-stack-mode .org-group[data-collapsed="true"] .org-source-chevron {
+      transform: rotate(-90deg);
+    }
+
     .story-stack-mode .org-group[data-stype="reglementaire"] .org-group-label {
       border-top: 4px solid #3B52A4 !important;
     }
@@ -2288,6 +2302,11 @@ function renderGroupedArticles() {
     orgMap.get(org).push(a);
   });
 
+  // Tri intra-groupe : date décroissante (les plus récents en premier)
+  orgMap.forEach(items => {
+    items.sort((a, b) => (b.official_date || '').localeCompare(a.official_date || ''));
+  });
+
   let html = '';
   let idx = 0;
   orgMap.forEach((items, org) => {
@@ -2295,12 +2314,13 @@ function renderGroupedArticles() {
     const stypeLabels = { reglementaire: 'Réglementation', recommandation: 'Recommandation', innovation: 'Innovation' };
     const stypeLbl = stypeLabels[stype] || '';
     html += `<div class="org-group" data-stype="${stype}">
-      <div class="org-group-label">
+      <div class="org-group-label" onclick="toggleSourceGroup(this)">
         <div class="org-label-main">
           ${stypeLbl ? `<span class="org-label-stype">${esc(stypeLbl)}</span>` : ''}
           <span class="org-label-name">${esc(org)}</span>
         </div>
         <span class="org-label-count">${items.length}</span>
+        <span class="org-source-chevron"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
       </div>`;
     items.forEach(a => { html += renderArticle(a, idx++); });
     html += `</div>`;
@@ -2354,6 +2374,14 @@ function collapseCard(btn) {
   card.classList.remove('expanded');
   card.classList.remove('story-expanded');
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Collapse/expand groupe source ────────────────────────────
+function toggleSourceGroup(labelEl) {
+  const group = labelEl.closest('.org-group');
+  if (!group) return;
+  const collapsed = group.dataset.collapsed === 'true';
+  group.dataset.collapsed = collapsed ? 'false' : 'true';
 }
 
 // ── Story stack mode ──────────────────────────────────────────
