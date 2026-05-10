@@ -1261,7 +1261,9 @@
     -webkit-backdrop-filter: blur(24px) !important;
     border: 0.5px solid var(--border) !important;
     box-shadow: 0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.08) !important;
-    overflow: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    max-height: 52vh !important;
     padding: 6px 0 !important;
     min-width: 200px !important;
     transform-origin: top center;
@@ -4244,7 +4246,14 @@ function toggleMonthPicker() {
     buildMonthList();
     dd.style.display = 'block';
     if (chevron) chevron.style.transform = 'rotate(180deg)';
-    setTimeout(() => document.addEventListener('click', closePicker, { once: true }), 50);
+    // Fermer sur clic extérieur, mais ignorer si c'est un scroll tactile
+    let _pickerScrolling = false;
+    dd.addEventListener('touchmove', () => { _pickerScrolling = true; }, { passive: true });
+    dd.addEventListener('touchend', () => { setTimeout(() => { _pickerScrolling = false; }, 80); }, { passive: true });
+    setTimeout(() => document.addEventListener('click', e => {
+      if (_pickerScrolling) return;
+      closePicker(e);
+    }, { once: true }), 50);
   } else {
     dd.style.display = 'none';
     if (chevron) chevron.style.transform = 'rotate(0deg)';
