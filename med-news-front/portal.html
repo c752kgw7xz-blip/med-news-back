@@ -1543,6 +1543,14 @@
     border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
     font-family: inherit; -webkit-tap-highlight-color: transparent;
   }
+  /* En story mode, footer sur fond gradient → couleurs adaptées */
+  .story-stack-mode .story-date { color: rgba(255,255,255,.45); }
+  .story-stack-mode .story-fav-btn { color: rgba(255,255,255,.5); }
+  .story-stack-mode .story-fav-btn.active { color: #f59e0b; }
+  .story-stack-mode .story-read-btn {
+    background: rgba(255,255,255,.18); color: #fff;
+    border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(4px);
+  }
 
   @media (max-width: 768px) {
     /* Swipe deck — masquer le header pour plein écran */
@@ -1620,15 +1628,22 @@
     .story-stack-mode .story-footer {
       display: flex; align-items: center; justify-content: space-between;
       padding: 10px 20px 16px;
-      border-top: 1px solid var(--border); flex-shrink: 0;
-      background: var(--surface);
+      border-top: 1px solid rgba(255,255,255,.08); flex-shrink: 0;
+      background: transparent;
     }
-    /* Source chip visible en story mode */
+    /* Source : texte simple, sans pill ni bordure */
     .story-stack-mode .story-source-chip {
-      display: inline-block;
-      font-size: 0.62rem; font-weight: 600; letter-spacing: .4px; text-transform: uppercase;
-      color: rgba(255,255,255,.6); background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.2); border-radius: 20px; padding: 2px 9px;
+      display: inline;
+      font-size: 0.68rem; font-weight: 400; letter-spacing: 0;
+      text-transform: none; color: rgba(255,255,255,.55);
+      background: none; border: none; padding: 0;
+    }
+    /* Séparateur entre pill type et source */
+    .story-stack-mode .story-meta-row::after {
+      display: none;
+    }
+    .story-stack-mode .story-source-chip::before {
+      content: '·'; margin: 0 5px; color: rgba(255,255,255,.35);
     }
 
 
