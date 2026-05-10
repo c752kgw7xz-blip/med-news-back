@@ -800,9 +800,19 @@
   /* ── Groupes organisme (portal) ─────────── */
   .org-group { margin-bottom: 14px; min-width: 0; overflow: hidden; }
   .org-group-label {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 0 8px; margin-bottom: 6px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .org-label-main { flex: 1; min-width: 0; }
+  .org-label-stype { display: none; }
+  .org-label-name {
     font-family: 'Instrument Serif', Georgia, serif; font-size: 0.9rem; font-weight: 400;
-    font-style: italic; color: var(--text2); padding: 4px 0 6px;
-    border-bottom: 0.5px solid var(--border); margin-bottom: 6px;
+    font-style: italic; color: var(--text2);
+  }
+  .org-label-count {
+    font-size: 0.68rem; font-weight: 500; color: var(--text5);
+    background: var(--surface2); border-radius: 20px; padding: 2px 7px; flex-shrink: 0;
   }
 
   /* ── Cat articles wrapper (accordion) ──────── */
@@ -1460,6 +1470,55 @@
     .story-stack-mode .article-card[data-source-type="recommandation"] .story-points li::before { background: #1A6B5C; }
     .story-stack-mode .article-card[data-source-type="reglementaire"] .story-resume { border-left-color: #3B52A4; }
     .story-stack-mode .article-card[data-source-type="recommandation"] .story-resume { border-left-color: #1A6B5C; }
+
+    /* ── Séparateurs de source (chapitres) en story mode ── */
+    .story-stack-mode .org-group-label {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      display: flex !important;
+      align-items: center;
+      gap: 14px;
+      padding: 22px 20px;
+      margin: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      border-top: 2px solid var(--border);
+    }
+    .story-stack-mode .org-label-main {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .story-stack-mode .org-label-stype {
+      display: block;
+      font-size: 0.55rem; font-weight: 700; letter-spacing: .8px;
+      text-transform: uppercase; color: var(--text5);
+    }
+    .story-stack-mode .org-label-name {
+      font-size: 1.45rem; line-height: 1.1;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .story-stack-mode .org-label-count {
+      font-size: 0.78rem; font-weight: 600;
+      padding: 5px 13px; border-radius: 20px; flex-shrink: 0;
+    }
+    .story-stack-mode .org-group[data-stype="reglementaire"] .org-group-label {
+      border-left: 4px solid #3B52A4; background: rgba(59,82,164,.03);
+    }
+    .story-stack-mode .org-group[data-stype="reglementaire"] .org-label-stype { color: #3B52A4; opacity: .75; }
+    .story-stack-mode .org-group[data-stype="reglementaire"] .org-label-name { color: #3B52A4; }
+    .story-stack-mode .org-group[data-stype="reglementaire"] .org-label-count { background: rgba(59,82,164,.1); color: #3B52A4; }
+    .story-stack-mode .org-group[data-stype="recommandation"] .org-group-label {
+      border-left: 4px solid #1A6B5C; background: rgba(26,107,92,.03);
+    }
+    .story-stack-mode .org-group[data-stype="recommandation"] .org-label-stype { color: #1A6B5C; opacity: .75; }
+    .story-stack-mode .org-group[data-stype="recommandation"] .org-label-name { color: #1A6B5C; }
+    .story-stack-mode .org-group[data-stype="recommandation"] .org-label-count { background: rgba(26,107,92,.1); color: #1A6B5C; }
+    .story-stack-mode .org-group[data-stype="innovation"] .org-group-label {
+      border-left: 4px solid #9B5714; background: rgba(155,87,20,.03);
+    }
+    .story-stack-mode .org-group[data-stype="innovation"] .org-label-stype { color: #9B5714; opacity: .75; }
+    .story-stack-mode .org-group[data-stype="innovation"] .org-label-name { color: #9B5714; }
+    .story-stack-mode .org-group[data-stype="innovation"] .org-label-count { background: rgba(155,87,20,.1); color: #9B5714; }
   }
 </style>
 </head>
@@ -2217,8 +2276,17 @@ function renderGroupedArticles() {
   let html = '';
   let idx = 0;
   orgMap.forEach((items, org) => {
-    html += `<div class="org-group">
-      <div class="org-group-label">${esc(org)}</div>`;
+    const stype = items[0]?.source_type || '';
+    const stypeLabels = { reglementaire: 'Réglementation', recommandation: 'Recommandation', innovation: 'Innovation' };
+    const stypeLbl = stypeLabels[stype] || '';
+    html += `<div class="org-group" data-stype="${stype}">
+      <div class="org-group-label">
+        <div class="org-label-main">
+          ${stypeLbl ? `<span class="org-label-stype">${esc(stypeLbl)}</span>` : ''}
+          <span class="org-label-name">${esc(org)}</span>
+        </div>
+        <span class="org-label-count">${items.length}</span>
+      </div>`;
     items.forEach(a => { html += renderArticle(a, idx++); });
     html += `</div>`;
   });
@@ -2337,6 +2405,9 @@ function applyFilters() {
   document.querySelectorAll('.org-group').forEach(g => {
     const vis = g.querySelectorAll('.article-card:not([style*="display: none"]):not([style*="display:none"])').length;
     g.style.display = vis > 0 ? '' : 'none';
+    // En story mode display:contents !important annule g.style.display — masquer le label directement
+    const lbl = g.querySelector('.org-group-label');
+    if (lbl) lbl.style.display = vis > 0 ? '' : 'none';
   });
   updateCounters();
   updateCatEmpty();
