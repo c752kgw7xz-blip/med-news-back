@@ -195,13 +195,15 @@
     .portal-page-title h2 { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .portal-page-title p { font-size: 0.62rem; letter-spacing: .2px; white-space: normal; overflow-wrap: break-word; }
     /* ── Splash mobile — Tinder-style ── */
+    .content-area.splash-open {
+      background: linear-gradient(170deg, #0C1121 0%, #180D24 55%, #1C0A15 100%) !important;
+      padding: 0 !important;
+    }
     #spec-splash {
       padding: 0 !important; min-height: calc(100dvh - 52px - 60px);
       align-items: stretch !important; justify-content: flex-start !important;
       text-align: left !important; overflow: hidden;
-      background: linear-gradient(170deg, #0C1121 0%, #180D24 55%, #1C0A15 100%) !important;
-      margin: -16px -16px 0 !important;
-      width: calc(100% + 32px) !important;
+      margin: 0 !important; width: 100% !important;
     }
     .splash-hero { padding: 22px 20px 18px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,.07) !important; }
     .splash-hero-eyebrow {
@@ -319,7 +321,7 @@
     .detail-box li { padding-left: 10px; font-size: 0.82rem; }
     .filter-pill { padding: 4px 9px; font-size: 0.65rem; }
     .rubrique-month { font-size: 0.95rem; }
-    #spec-splash { min-height: 50vh; margin: -12px -12px 0 !important; width: calc(100% + 24px) !important; }
+    #spec-splash { min-height: 50vh; }
     #spec-splash-name { font-size: 1.5rem; }
     .spec-splash-cat-btn { padding: 12px 14px; }
     .spec-splash-cat-btn .splash-count { font-size: 1.2rem; }
@@ -2651,6 +2653,7 @@ function showSpecSplash(accordId) {
     </button>`;
   }).join('');
   document.getElementById('portal-page-title').style.display = window.innerWidth <= 768 ? 'none' : '';
+  if (window.innerWidth <= 768) document.querySelector('.content-area')?.classList.add('splash-open');
   document.getElementById('spec-splash').style.display = 'flex';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'none';
@@ -2667,6 +2670,7 @@ function showSpecSplash(accordId) {
 
 function hideSpecSplash() {
   document.getElementById('spec-splash').style.display = 'none';
+  document.querySelector('.content-area')?.classList.remove('splash-open');
   const rh = document.getElementById('rubrique-header');
   if (rh) rh.style.display = '';
 }
