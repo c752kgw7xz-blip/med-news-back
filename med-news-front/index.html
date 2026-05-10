@@ -5,6 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MedNews — Votre bouclier contre l'infobésité médicale</title>
 <meta name="description" content="Le savoir médical double tous les 73 jours. MedNews filtre l'essentiel : réglementation, recommandations cliniques, innovations — pour chacune des 36 spécialités.">
+<script>
+// Redirection automatique vers /portal si l'utilisateur est déjà connecté
+(async () => {
+  // Vérifier d'abord le token local
+  const token = localStorage.getItem('access_token');
+  if (token) {
+    try {
+      const exp = JSON.parse(atob(token.split('.')[1])).exp;
+      if (Date.now() / 1000 < exp - 30) {
+        // Token valide → redirection immédiate
+        window.location.replace('/portal');
+        return;
+      }
+    } catch {}
+  }
+  // Token absent ou expiré : tenter un refresh silencieux via cookie
+  const csrf = (document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/) || [])[1];
+  if (!csrf) return; // Pas de cookie → utilisateur non connecté, rester sur index
+  try {
+    const res = await fetch('/auth/refresh', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': decodeURIComponent(csrf) },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('access_token', data.access_token);
+      window.location.replace('/portal');
+    }
+  } catch {}
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
