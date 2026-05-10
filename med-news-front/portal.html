@@ -247,51 +247,48 @@
     .splash-search-divider::before, .splash-search-divider::after { background: rgba(255,255,255,.1) !important; }
     .splash-search-icon { color: rgba(255,255,255,.28) !important; }
     /* Horizontal snap-scroll pour les 3 cartes */
+    /* ── Splash cats — grille 3 colonnes Apple Health ── */
     .spec-splash-cats {
-      flex-direction: row !important; flex-wrap: nowrap !important;
-      overflow-x: scroll !important; scroll-snap-type: x mandatory !important;
-      -webkit-overflow-scrolling: touch;
-      gap: 12px !important; padding: 0 20px 20px !important;
-      scrollbar-width: none !important; flex-shrink: 0 !important;
-      justify-content: flex-start !important; align-items: stretch !important;
+      display: grid !important; grid-template-columns: repeat(3, 1fr) !important;
+      gap: 10px !important; padding: 0 16px 20px !important;
+      overflow-x: unset !important; scroll-snap-type: unset !important;
+      flex-wrap: unset !important; flex-shrink: 0 !important;
+      justify-content: unset !important; align-items: unset !important;
       width: 100% !important;
     }
-    .spec-splash-cats::-webkit-scrollbar { display: none; }
-    /* Cartes dégradé */
     .spec-splash-cat-btn {
-      flex: 0 0 72vw !important; width: 72vw !important; min-width: 0 !important;
-      height: 210px !important; border-radius: 20px !important;
-      padding: 0 !important; overflow: hidden !important; border: none !important;
-      scroll-snap-align: start !important;
+      flex: unset !important; width: 100% !important; height: auto !important;
+      min-height: 100px !important; border-radius: 16px !important;
+      padding: 13px 12px 11px !important; overflow: hidden !important;
+      border: none !important; border-top: 3px solid var(--dot, var(--green)) !important;
+      scroll-snap-align: unset !important;
       display: flex !important; flex-direction: column !important;
       align-items: flex-start !important; justify-content: space-between !important;
-      gap: 0 !important; box-shadow: 0 14px 44px rgba(0,0,0,.2);
+      background: var(--surface) !important;
+      box-shadow: 0 1px 6px rgba(0,0,0,.07), 0 0 0 0.5px rgba(0,0,0,.06) !important;
+      gap: 0 !important;
     }
-    .spec-splash-cat-btn.stype-reg  { background: linear-gradient(150deg,#1a237e 0%,#3B52A4 100%) !important; }
-    .spec-splash-cat-btn.stype-reco { background: linear-gradient(150deg,#1B5E20 0%,#2d7d32 100%) !important; }
-    .spec-splash-cat-btn.stype-innov{ background: linear-gradient(150deg,#7B2D00 0%,#C41E3A 100%) !important; }
+    .spec-splash-cat-btn.stype-reg  { --dot: #3B52A4; }
+    .spec-splash-cat-btn.stype-reco { --dot: #1A6B5C; }
+    .spec-splash-cat-btn.stype-innov{ --dot: #C41E3A; }
+    .spec-splash-cat-btn:active { opacity: .75; }
     .splash-cat-pill {
-      font-size: 0.58rem; font-weight: 700; letter-spacing: .7px; text-transform: uppercase;
-      color: rgba(255,255,255,.92); background: rgba(255,255,255,.18);
-      border: 1px solid rgba(255,255,255,.28); border-radius: 20px;
-      padding: 4px 12px; margin: 18px 18px 0; display: inline-block;
+      font-size: 0.58rem !important; font-weight: 600 !important; letter-spacing: .5px !important;
+      text-transform: uppercase !important; color: var(--dot, var(--green)) !important;
+      background: none !important; border: none !important; border-radius: 0 !important;
+      padding: 0 !important; margin: 0 0 6px !important; display: block !important;
     }
     .splash-count {
-      font-size: 3.8rem !important; font-weight: 700 !important;
-      color: #fff !important; line-height: 1 !important;
-      padding: 0 20px !important; flex: 1 !important;
-      display: flex !important; align-items: center !important;
+      font-size: 2rem !important; font-weight: 700 !important;
+      color: var(--text) !important; line-height: 1 !important;
+      padding: 0 !important; flex: 0 !important;
+      display: block !important; align-items: unset !important;
     }
     .splash-cat-sub {
-      font-size: 0.72rem; color: rgba(255,255,255,.65);
-      padding: 0 20px 2px; display: block;
+      font-size: 0.68rem !important; color: var(--text4) !important;
+      padding: 2px 0 0 !important; display: block !important;
     }
-    .splash-cat-cta {
-      display: block !important; font-size: 0.78rem; font-weight: 600;
-      color: rgba(255,255,255,.92); padding: 14px 20px;
-      border-top: 1px solid rgba(255,255,255,.15); width: 100%;
-      letter-spacing: .1px;
-    }
+    .splash-cat-cta { display: none !important; }
     /* Bottom nav visible */
     .bottom-nav { display: flex; }
     /* New 5-tab mobile nav */
