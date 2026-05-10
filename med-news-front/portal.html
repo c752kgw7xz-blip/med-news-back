@@ -377,7 +377,7 @@
   .bn-item {
     display: flex; flex-direction: column; align-items: center; gap: 3px;
     padding: 6px 8px; cursor: pointer; color: var(--text4);
-    font-size: 0.59rem; font-family: 'Inter', sans-serif; font-weight: 400;
+    font-size: 0.59rem; font-family: inherit; font-weight: 400;
     border: none; background: transparent; flex: 1; max-width: 80px;
     transition: color .15s; min-height: 44px; justify-content: center;
     line-height: 1;
@@ -395,7 +395,7 @@
   }
   .sidebar-section { padding: 0 16px; margin-bottom: 6px; }
   .sidebar-label {
-    font-family: 'Inter', sans-serif; font-size: 0.65rem; font-weight: 600;
+    font-family: inherit; font-size: 0.65rem; font-weight: 600;
     letter-spacing: .4px; color: var(--text2); text-transform: uppercase;
     padding: 22px 20px 7px; display: flex; align-items: center; gap: 10px;
     border-top: none;
@@ -404,7 +404,7 @@
   .sidebar-item {
     display: flex; align-items: center; justify-content: space-between;
     padding: 8px 20px 8px 22px; cursor: pointer; transition: all .12s;
-    color: var(--text3); font-size:0.82rem; font-weight: 400; font-family: 'Inter', sans-serif;
+    color: var(--text3); font-size:0.82rem; font-weight: 400; font-family: inherit;
     border-left: 2px solid transparent; gap: 8px;
   }
   .sidebar-item:hover { color: var(--text2); background: rgba(0,0,0,.04); }
@@ -418,7 +418,7 @@
   .sidebar-accord {
     display: flex; align-items: center; gap: 5px; width: 100%; box-sizing: border-box;
     padding: 8px 20px 8px 22px; border: none; background: transparent; cursor: pointer;
-    font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 400;
+    font-family: inherit; font-size: 0.82rem; font-weight: 400;
     color: var(--text2); transition: all .15s; border-left: 2px solid transparent; text-align: left;
   }
   .sidebar-accord:hover { color: var(--text); background: rgba(0,0,0,.04); }
@@ -495,7 +495,7 @@
     background: var(--surface);
     color: var(--text3);
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-size: 0.82rem;
     font-weight: 500;
     transition: border-color .15s, background .15s, color .15s;
@@ -557,7 +557,7 @@
     background: transparent;
     color: var(--text4);
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-size: 0.82rem;
     font-weight: 500;
     transition: color .15s, border-bottom-color .15s;
@@ -570,7 +570,7 @@
   /* ── Source type pills ── */
   .source-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; padding-bottom: 4px; }
   .source-pill {
-    padding: 3px 9px; font-size: 0.72rem; font-family: 'Inter', sans-serif;
+    padding: 3px 9px; font-size: 0.72rem; font-family: inherit;
     letter-spacing: 0; font-weight: 400;
     border: 1px solid var(--border); border-radius: 4px;
     background: transparent; color: var(--text4); cursor: pointer;
@@ -645,7 +645,7 @@
   .btn-ext-icon:hover { color: var(--text2); }
   .nature-badge {
     padding: 2px 7px; border-radius: 2px; font-size:0.65rem; font-weight: 500;
-    font-family: 'Inter', sans-serif; letter-spacing: 0;
+    font-family: inherit; letter-spacing: 0;
   }
   .card-date { font-size:0.72rem; color: var(--text4); font-weight: 400; }
   .card-freshness { font-size: 0.71rem; font-weight: 600; }
@@ -822,7 +822,7 @@
     display: inline-block; padding: 7px 18px; margin: 4px;
     border: 1px solid var(--border); border-radius: 4px;
     background: var(--surface); color: var(--text3); cursor: pointer;
-    font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 500;
+    font-family: inherit; font-size: 0.82rem; font-weight: 500;
     transition: border-color .15s, color .15s;
   }
   .cat-sugg-btn:hover { border-color: var(--green); color: var(--text); }
@@ -842,7 +842,7 @@
     align-items: center; justify-content: center;
     gap: 2px; background: none; border: none; cursor: pointer;
     color: var(--text4); padding: 6px 0; transition: color .2s;
-    font-family: 'Inter', sans-serif; min-height: 44px; position: relative;
+    font-family: inherit; min-height: 44px; position: relative;
   }
   .mobile-nav-item.active { color: var(--green); }
   #mnav-specialite.active { color: var(--green); }
@@ -912,17 +912,18 @@
   .fp-overlay.compte-mode, #fp-explorer { bottom: calc(60px + env(safe-area-inset-bottom)); }
   .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
 
-  /* Explorer header — large iOS title */
-  #fp-explorer .fp-overlay-header {
+  /* Explorer / Activité header — large iOS title */
+  #fp-explorer .fp-overlay-header,
+  #fp-activite .fp-overlay-header {
     flex-direction: column; align-items: flex-start; justify-content: flex-end;
     height: auto; padding: 16px 20px 0;
     background: var(--bg); border-bottom: none;
   }
-  .fp-explorer-large-title {
+  .fp-explorer-large-title,
+  .fp-activite-large-title {
     font-size: 2rem; font-weight: 700; color: var(--text);
     letter-spacing: -0.5px; line-height: 1.1;
-    padding-bottom: 12px;
-    font-family: 'Inter', sans-serif;
+    padding-bottom: 16px;
   }
   /* iOS pill search bar */
   .fp-search-bar {
@@ -934,8 +935,7 @@
   .fp-search-bar svg { flex-shrink: 0; color: rgba(60,60,67,.5); }
   .fp-search-bar input {
     flex: 1; background: none; border: none; outline: none;
-    font-family: 'Inter', sans-serif; font-size: 0.95rem;
-    color: var(--text);
+    font-size: 0.95rem; color: var(--text);
   }
   .fp-search-bar input::placeholder { color: rgba(60,60,67,.5); }
 
@@ -953,7 +953,7 @@
   .fp-spec-row:last-child::after { display: none; }
   .fp-spec-name {
     flex: 1; font-size: 1rem; font-weight: 500; color: var(--text);
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
   }
   .fp-spec-chevron {
     color: rgba(60,60,67,.35); flex-shrink: 0;
@@ -962,7 +962,7 @@
   .fp-overlay-header {
     height: 52px; display: flex; align-items: center; gap: 8px;
     padding: 0 16px; border-bottom: 0.5px solid rgba(60,60,67,.18);
-    background: rgba(253,252,249,.88);
+    background: var(--surface);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
     backdrop-filter: saturate(180%) blur(20px);
     flex-shrink: 0;
@@ -970,7 +970,7 @@
   .fp-opt-btn {
     padding: 5px 12px; border-radius: var(--radius); font-size: 0.79rem; font-weight: 500;
     cursor: pointer; border: 1px solid var(--border-strong); background: transparent;
-    color: var(--text3); transition: all .15s; font-family: 'Inter', sans-serif;
+    color: var(--text3); transition: all .15s; font-family: inherit;
   }
   .fp-opt-btn.active { background: var(--green); border-color: var(--green); color: #fff; }
 
@@ -1001,7 +1001,7 @@
   .fp-overlay-back {
     background: none; border: none; color: var(--green); cursor: pointer;
     display: flex; align-items: center; gap: 3px; padding: 0;
-    font-family: 'Inter', sans-serif; font-size: 0.95rem; min-width: 60px;
+    font-family: inherit; font-size: 0.95rem; min-width: 60px;
   }
   .fp-overlay-title {
     flex: 1; text-align: center; font-size: 1rem; font-weight: 600;
@@ -1120,7 +1120,7 @@
     width: 100%; padding: 10px 38px 10px 36px;
     border: 1px solid var(--border); border-radius: 6px;
     background: var(--surface); color: var(--text);
-    font-family: 'Inter', sans-serif; font-size: 0.86rem;
+    font-family: inherit; font-size: 0.86rem;
     outline: none; transition: border-color .15s;
   }
   #splash-search-input:focus { border-color: var(--border-strong); }
@@ -1147,11 +1147,11 @@
   }
   #mode-title-text {
     font-size: 1.5rem; font-weight: 700; letter-spacing: -.4px;
-    font-family: 'Inter', sans-serif; color: var(--text);
+    font-family: inherit; color: var(--text);
   }
   .mode-title-back {
     background: none; border: none; color: var(--green); cursor: pointer;
-    font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500;
+    font-family: inherit; font-size: 0.9rem; font-weight: 500;
     display: flex; align-items: center; gap: 3px; padding: 0; flex-shrink: 0;
   }
   @media (max-width: 768px) {
@@ -1466,7 +1466,7 @@
   .story-read-btn {
     padding: 8px 16px; background: var(--green); color: #fff; border: none;
     border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
-    font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent;
+    font-family: inherit; -webkit-tap-highlight-color: transparent;
   }
 
   @media (max-width: 768px) {
@@ -1838,8 +1838,8 @@
 
   <!-- Full-page overlay — Mon activité (nav visible en bas) -->
   <div class="fp-overlay compte-mode" id="fp-activite">
-    <div class="fp-overlay-header" style="justify-content:center;border-bottom:0.5px solid rgba(60,60,67,.18);">
-      <span class="fp-overlay-title" style="padding-right:0;">Mon activité</span>
+    <div class="fp-overlay-header">
+      <span class="fp-activite-large-title">Mon activité</span>
     </div>
     <div class="fp-overlay-content" style="padding:20px 16px;display:flex;flex-direction:column;gap:14px;">
       <button class="fp-activity-tile" onclick="closeFullPage('activite');showFavorites();">
