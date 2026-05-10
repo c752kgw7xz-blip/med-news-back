@@ -318,14 +318,31 @@
     .filter-pill { overflow: hidden; text-overflow: ellipsis; }
     /* Police fixe sur mobile — le réglage taille s'applique uniquement desktop */
     html, body { font-size: 16px !important; --font-scale: 1 !important; }
-    /* Badge type actif (mobile) */
-    #mobile-type-ctx.visible {
-      display: flex; align-items: center; gap: 7px;
-      margin-top: -8px; margin-bottom: 10px;
+    /* Badge type actif (mobile) — remplacé par cat-switcher */
+    #mobile-type-ctx { display: none !important; }
+    /* ── Gradient pages articles selon catégorie ── */
+    .content-area[data-stype="reglementaire"] { background: linear-gradient(180deg, rgba(26,35,126,.22) 0%, var(--bg) 240px); }
+    .content-area[data-stype="recommandation"] { background: linear-gradient(180deg, rgba(27,94,32,.22) 0%, var(--bg) 240px); }
+    .content-area[data-stype="innovation"]     { background: linear-gradient(180deg, rgba(123,45,0,.22) 0%, var(--bg) 240px); }
+    /* ── Cat switcher — 3 mini-cartes Tinder ── */
+    #cat-switcher {
+      display: flex; gap: 8px; margin: 12px 0 16px; flex-shrink: 0;
     }
-    .ctx-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--ctx-color, var(--green)); }
-    .ctx-type-label { font-size: 0.7rem; letter-spacing: .2px; color: var(--ctx-color, var(--text2)); font-weight: 500; }
-    .ctx-back-btn { margin-left: auto; background: none; border: none; padding: 0; font-size: 0.68rem; letter-spacing: 0; color: var(--text4); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+    .cat-sw-btn {
+      flex: 1; border: none; border-radius: 14px; padding: 12px 10px 10px;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+      cursor: pointer; font-family: inherit; transition: transform .15s, box-shadow .15s;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cat-sw-btn:active { transform: scale(.96); }
+    .cat-sw-btn.active.stype-reg  { background: linear-gradient(150deg,#1a237e 0%,#3B52A4 100%); border-color: transparent; box-shadow: 0 6px 20px rgba(26,35,126,.45); }
+    .cat-sw-btn.active.stype-reco { background: linear-gradient(150deg,#1B5E20 0%,#2d7d32 100%); border-color: transparent; box-shadow: 0 6px 20px rgba(27,94,32,.45); }
+    .cat-sw-btn.active.stype-innov{ background: linear-gradient(150deg,#7B2D00 0%,#C41E3A 100%); border-color: transparent; box-shadow: 0 6px 20px rgba(196,30,58,.35); }
+    .cat-sw-label { font-size: 0.52rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: rgba(255,255,255,.45); line-height: 1; }
+    .cat-sw-btn.active .cat-sw-label { color: rgba(255,255,255,.85); }
+    .cat-sw-count { font-size: 1.7rem; font-weight: 700; color: rgba(255,255,255,.25); line-height: 1.1; margin-top: 4px; }
+    .cat-sw-btn.active .cat-sw-count { color: #fff; }
   }
   @media (max-width: 480px) {
     .splash-result-card { padding: 14px 16px; gap: 12px; }
@@ -1538,6 +1555,8 @@
         <div class="rubrique-meta" id="rubrique-meta"></div>
         <!-- Badge mobile : indique le type actif (réglementation / recommandation / innovation) -->
         <div id="mobile-type-ctx"></div>
+        <!-- Cat switcher mobile — 3 mini-cartes Tinder -->
+        <div id="cat-switcher" style="display:none;"></div>
 
         <div class="pills-wrap">
         <!-- Source type pills — filtre orthogonal aux catégories -->
@@ -2391,23 +2410,30 @@ function updateRubrique() {
   updateMobileTypeCtx();
 }
 
-// Badge mobile : affiche le type actif avec sa couleur + lien "Changer"
+// Cat switcher mobile — 3 mini-cartes Tinder + gradient page
 function updateMobileTypeCtx() {
-  const ctxEl = document.getElementById('mobile-type-ctx');
-  if (!ctxEl) return;
-  const TYPE_META = {
-    reglementaire: { label: 'Réglementation', color: '#3B52A4' },
-    recommandation: { label: 'Recommandation', color: '#1A6B5C' },
-    innovation:     { label: 'Innovation',     color: '#9B5714' }
-  };
-  const t = TYPE_META[activeSourceType];
-  if (t) {
-    ctxEl.style.setProperty('--ctx-color', t.color);
-    ctxEl.innerHTML = `<span class="ctx-dot"></span><span class="ctx-type-label">${t.label}</span><button class="ctx-back-btn" onclick="backToSplash()">← Changer</button>`;
-    ctxEl.classList.add('visible');
-  } else {
-    ctxEl.classList.remove('visible');
+  if (window.innerWidth > 768) return;
+  const sw = document.getElementById('cat-switcher');
+  const ca = document.querySelector('.content-area');
+  const CATS = [
+    { stype: 'reglementaire', cls: 'stype-reg',  label: 'Réglem.' },
+    { stype: 'recommandation', cls: 'stype-reco', label: 'Recomm.' },
+    { stype: 'innovation',     cls: 'stype-innov',label: 'Innov.'  },
+  ];
+  const counts = _accordSpecMap[_activeAccordId]?.counts || {};
+  if (sw) {
+    sw.style.display = 'flex';
+    sw.innerHTML = CATS.map(c => {
+      const active = activeSourceType === c.stype ? 'active' : '';
+      const n = counts[c.stype] || 0;
+      return `<button class="cat-sw-btn ${c.cls} ${active}"
+        onclick="selectSpecType('${activeSpecSlug}','${c.stype}','${_activeAccordId||'mine'}')">
+        <span class="cat-sw-label">${c.label}</span>
+        <span class="cat-sw-count">${n}</span>
+      </button>`;
+    }).join('');
   }
+  if (ca) ca.dataset.stype = activeSourceType || '';
 }
 
 function backToSplash() {
@@ -2695,6 +2721,10 @@ function showSpecSplash(accordId) {
 function hideSpecSplash() {
   document.getElementById('spec-splash').style.display = 'none';
   document.querySelector('.content-area')?.classList.remove('splash-open');
+  const ca = document.querySelector('.content-area');
+  if (ca) ca.dataset.stype = '';
+  const sw = document.getElementById('cat-switcher');
+  if (sw) sw.style.display = 'none';
   const rh = document.getElementById('rubrique-header');
   if (rh) rh.style.display = '';
 }
