@@ -119,7 +119,7 @@
     --green: #C41E3A; --red: #DC2626; --amber: #D97706; --radius: 6px;
   }
   body {
-    font-family: 'Inter', sans-serif; font-weight: 400;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif; font-weight: 400;
     background: var(--bg); color: var(--text); font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
     overflow-x: hidden;
   }
@@ -338,10 +338,10 @@
     header { padding: 0 12px; height: 48px; }
     .content-area { padding: 12px 12px calc(80px + env(safe-area-inset-bottom, 0px)); overflow-x: hidden; max-width: 100vw; }
     .article-card { padding: 12px 14px; max-width: 100%; box-sizing: border-box; word-break: break-word; }
-    .article-title { font-size: 0.9rem; line-height: 1.35; }
-    .card-title { font-size: 0.88rem !important; }
+    .article-title { font-size: 1rem; line-height: 1.3; }
+    .card-title { font-size: 1rem !important; }
     .rubrique-title { font-size: 0.95rem; }
-    .article-resume { font-size: 0.78rem; }
+    .article-resume { font-size: 0.84rem; }
     .rubrique-month { font-size: 0.88rem !important; }
     .detail-box li { font-size: 0.8rem; }
     .detail-box { padding: 10px 12px; }
@@ -661,20 +661,20 @@
   .urgency-pill.low { color: #1A6B5C; }
 
   .card-title {
-    font-family: 'Inter', sans-serif; font-size:1rem; font-weight: 500;
-    color: var(--text); line-height: 1.35; margin-bottom: 7px;
+    font-size: 1.02rem; font-weight: 600;
+    color: var(--text); line-height: 1.3; margin-bottom: 7px;
+    letter-spacing: -.2px;
   }
 
-
-  /* Résumé : 1 ligne en mode réduit, taille plus lisible */
+  /* Résumé : 2 lignes en mode réduit */
   .card-summary {
-    font-family: 'Inter', sans-serif; font-size:0.79rem; font-weight: 400; color: var(--text3); line-height: 1.55;
-    display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+    font-size: 0.86rem; font-weight: 400; color: var(--text3); line-height: 1.52;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   /* Impact pratique : masqué tant que la carte n'est pas ouverte */
   .article-card:not(.expanded) .card-impact { display: none; }
   .card-impact {
-    font-size: 0.93rem; color: var(--text2); font-style: italic; line-height: 1.5;
+    font-size: 0.93rem; color: var(--text2); font-style: normal; line-height: 1.58;
     padding-left: 10px; margin-top: 10px;
   }
   .card-impact.impact-high,
@@ -696,13 +696,13 @@
   }
   .detail-box ul { margin: 0; padding: 0; list-style: none; }
   .detail-box li {
-    margin: 7px 0; font-size: 0.93rem; color: var(--text2); line-height: 1.55;
+    margin: 7px 0; font-size: 0.95rem; color: var(--text2); line-height: 1.65;
     padding-left: 14px; position: relative; overflow-wrap: break-word; word-break: break-word;
   }
   .detail-box li.bullet-high::before { content: "\2022"; position: absolute; left: 0; color: var(--red); font-size: 1rem; line-height: 1.3; }
   .detail-box li.bullet-mid::before { content: "\2022"; position: absolute; left: 0; color: var(--amber); font-size: 1rem; line-height: 1.3; }
   .detail-box li.bullet-low::before { content: "\2022"; position: absolute; left: 0; color: #1A6B5C; font-size: 1rem; line-height: 1.3; }
-  .detail-box .texte-long { font-size: 0.93rem; color: var(--text3); line-height: 1.7; font-style: italic; }
+  .detail-box .texte-long { font-size: 0.95rem; color: var(--text3); line-height: 1.75; font-style: normal; }
   .detail-refs { font-size: 0.93rem; color: var(--text3); margin-top: 10px; overflow-wrap: break-word; word-break: break-word; font-weight: 500; }
 
   .detail-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
