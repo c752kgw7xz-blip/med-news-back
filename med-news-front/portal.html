@@ -3231,6 +3231,12 @@ async function loadArticles(page) {
   const btn = document.getElementById('load-more');
   if (loadedArticles < totalArticles) {
     const remaining = totalArticles - loadedArticles;
+    // En story mode : auto-charger les pages suivantes silencieusement
+    if (document.querySelector('.content-area')?.classList.contains('story-stack-mode')) {
+      currentPage++;
+      await loadArticles(currentPage);
+      return;
+    }
     btn.textContent = `Charger plus (${remaining} restant${remaining > 1 ? 's' : ''})`;
     btn.style.display = 'block';
   } else {
