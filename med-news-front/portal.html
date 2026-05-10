@@ -199,20 +199,33 @@
       padding: 0 !important; min-height: calc(100dvh - 52px - 60px);
       align-items: stretch !important; justify-content: flex-start !important;
       text-align: left !important; overflow: hidden;
+      background: linear-gradient(170deg, #0C1121 0%, #180D24 55%, #1C0A15 100%) !important;
+      margin: -16px -16px 0 !important;
+      width: calc(100% + 32px) !important;
     }
-    .splash-hero { padding: 22px 20px 18px; flex-shrink: 0; border-bottom: 1px solid var(--border); }
+    .splash-hero { padding: 22px 20px 18px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,.07) !important; }
     .splash-hero-eyebrow {
       font-size: 0.6rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
-      color: var(--green); margin-bottom: 6px;
+      color: rgba(196,30,58,.9) !important; margin-bottom: 6px;
     }
-    #spec-splash-name { font-size: 2rem !important; white-space: normal; word-break: break-word; max-width: 100%; margin: 0 !important; }
-    .splash-hero-total { font-size: 0.75rem; color: var(--text4); margin-top: 5px; }
+    #spec-splash-name { font-size: 2rem !important; white-space: normal; word-break: break-word; max-width: 100%; margin: 0 !important; color: #fff !important; }
+    .splash-hero-total { font-size: 0.75rem; color: rgba(255,255,255,.38) !important; margin-top: 5px; }
     .spec-splash-hint {
       padding: 16px 20px 10px !important; margin: 0 !important;
       font-size: 0.6rem !important; font-weight: 700 !important;
       letter-spacing: .5px !important; text-transform: uppercase !important;
-      color: var(--text4) !important; flex-shrink: 0;
+      color: rgba(255,255,255,.25) !important; flex-shrink: 0;
     }
+    /* Dark search bar */
+    #splash-search-input {
+      background: rgba(255,255,255,.07) !important;
+      border-color: rgba(255,255,255,.12) !important;
+      color: #fff !important;
+    }
+    #splash-search-input::placeholder { color: rgba(255,255,255,.28) !important; }
+    .splash-search-divider { color: rgba(255,255,255,.22) !important; }
+    .splash-search-divider::before, .splash-search-divider::after { background: rgba(255,255,255,.1) !important; }
+    .splash-search-icon { color: rgba(255,255,255,.28) !important; }
     /* Horizontal snap-scroll pour les 3 cartes */
     .spec-splash-cats {
       flex-direction: row !important; flex-wrap: nowrap !important;
@@ -306,7 +319,7 @@
     .detail-box li { padding-left: 10px; font-size: 0.82rem; }
     .filter-pill { padding: 4px 9px; font-size: 0.65rem; }
     .rubrique-month { font-size: 0.95rem; }
-    #spec-splash { padding: 18px 14px 22px; min-height: 50vh; }
+    #spec-splash { min-height: 50vh; margin: -12px -12px 0 !important; width: calc(100% + 24px) !important; }
     #spec-splash-name { font-size: 1.5rem; }
     .spec-splash-cat-btn { padding: 12px 14px; }
     .spec-splash-cat-btn .splash-count { font-size: 1.2rem; }
@@ -2637,7 +2650,7 @@ function showSpecSplash(accordId) {
       <span class="splash-cat-cta">Explorer →</span>
     </button>`;
   }).join('');
-  document.getElementById('portal-page-title').style.display = '';
+  document.getElementById('portal-page-title').style.display = window.innerWidth <= 768 ? 'none' : '';
   document.getElementById('spec-splash').style.display = 'flex';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'none';
