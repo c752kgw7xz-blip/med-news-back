@@ -107,6 +107,7 @@
     --text: #0F172A; --text2: #1E293B; --text3: #475569;
     --text4: #94A3B8; --text5: #CBD5E1; --white: #0F172A;
     --green-dark: #FFF1F2; --red-dark: #FFF1F2;
+    --fp-header-bg: rgba(248,250,252,.88);
   }
   [data-theme="dark"] {
     --bg: #0F1117; --surface: #161B27; --surface2: #1E2535;
@@ -114,6 +115,7 @@
     --text: #E2E8F0; --text2: #CBD5E1; --text3: #94A3B8;
     --text4: #64748B; --text5: #475569; --white: #E2E8F0;
     --green-dark: #2D1218; --red-dark: #2D1218;
+    --fp-header-bg: rgba(15,17,23,.88);
   }
   :root {
     --green: #C41E3A; --red: #DC2626; --amber: #D97706; --radius: 6px;
@@ -962,7 +964,7 @@
   .fp-overlay-header {
     height: 52px; display: flex; align-items: center; gap: 8px;
     padding: 0 16px; border-bottom: 0.5px solid rgba(60,60,67,.18);
-    background: var(--surface);
+    background: var(--fp-header-bg, rgba(253,252,249,.88));
     -webkit-backdrop-filter: saturate(180%) blur(20px);
     backdrop-filter: saturate(180%) blur(20px);
     flex-shrink: 0;
