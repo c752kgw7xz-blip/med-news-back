@@ -683,12 +683,23 @@
 
   .swipe-fav-indicator { display: none; position: absolute; left: 0; top: 0; bottom: 0; width: 100%; align-items: center; justify-content: flex-start; padding-left: 28px; font-size: 1rem; font-weight: 700; color: #fff; background: linear-gradient(90deg, #1A6B5C 0%, rgba(26,107,92,0) 80%); pointer-events: none; z-index: 5; border-radius: inherit; }
 
-  @keyframes fav-confirm {
-    0%   { outline: 0px solid rgba(34,197,94,0); transform: scale(1); }
-    25%  { outline: 3px solid rgba(34,197,94,.7); transform: scale(1.025); }
-    100% { outline: 0px solid rgba(34,197,94,0); transform: scale(1); }
+  @keyframes fav-bg {
+    0%   { background-color: var(--surface); }
+    25%  { background-color: rgba(245,158,11,.18); }
+    100% { background-color: var(--surface); }
   }
-  .fav-confirm { animation: fav-confirm .5s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes fav-star-rise {
+    0%   { transform: translate(-50%,-50%) scale(0);   opacity: 1; }
+    45%  { transform: translate(-50%,-90%) scale(1.5); opacity: 1; }
+    100% { transform: translate(-50%,-140%) scale(1.1); opacity: 0; }
+  }
+  .fav-confirm { animation: fav-bg .7s ease-out forwards; }
+  .fav-star-pop {
+    position: absolute; left: 50%; top: 50%;
+    font-size: 2rem; line-height: 1; pointer-events: none; z-index: 20;
+    color: #f59e0b; text-shadow: 0 2px 8px rgba(245,158,11,.5);
+    animation: fav-star-rise .65s cubic-bezier(.22,1,.36,1) forwards;
+  }
 
   /* ── Expanded detail ────────────────────── */
   .card-detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--border); }
@@ -2650,10 +2661,18 @@ function initStorySwipe() {
       const itemId = card.dataset.itemId;
       if (itemId) {
         toggleFavorite({ stopPropagation: () => {} }, itemId);
+        // Flash de fond
         card.classList.remove('fav-confirm');
-        void card.offsetWidth; // reflow pour relancer l'animation si double swipe
+        void card.offsetWidth;
         card.classList.add('fav-confirm');
         card.addEventListener('animationend', () => card.classList.remove('fav-confirm'), { once: true });
+        // Étoile flottante
+        const star = document.createElement('span');
+        star.className = 'fav-star-pop';
+        star.textContent = '★';
+        card.style.position = 'relative';
+        card.appendChild(star);
+        star.addEventListener('animationend', () => star.remove(), { once: true });
       }
     }
     currentX = 0;
