@@ -1748,11 +1748,7 @@
 
   <!-- Full-page overlay — Explorer -->
   <div class="fp-overlay" id="fp-explorer">
-    <div class="fp-overlay-header">
-      <button class="fp-overlay-back" onclick="closeFullPage('explorer')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        Retour
-      </button>
+    <div class="fp-overlay-header" style="justify-content:center;">
       <span class="fp-overlay-title">Explorer</span>
     </div>
     <div class="fp-overlay-content">
@@ -1946,16 +1942,12 @@ function openFullPage(section) {
     if (inp) inp.value = '';
 
     fpList.onclick = (e) => {
-      // Accordion toggle — opère uniquement dans l'overlay via nextElementSibling
+      // Clic sur une spécialité → splash direct (toggleAccord gère mobile)
       const accordBtn = e.target.closest('.sidebar-accord');
       if (accordBtn) {
         e.stopPropagation();
-        const subitems = accordBtn.nextElementSibling;
-        if (!subitems) return;
-        const isOpen = subitems.style.display !== 'none';
-        fpList.querySelectorAll('.sidebar-subitems').forEach(el => el.style.display = 'none');
-        fpList.querySelectorAll('.sidebar-accord').forEach(el => el.classList.remove('open'));
-        if (!isOpen) { subitems.style.display = ''; accordBtn.classList.add('open'); }
+        const id = accordBtn.id.replace('accord-', '');
+        if (id) toggleAccord(id);
         return;
       }
       // Sélection d'un sous-type (Réglementation / Recommandation)
