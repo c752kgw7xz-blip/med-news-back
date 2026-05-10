@@ -1696,17 +1696,15 @@
     }
     .story-stack-mode .org-label-main {
       flex: 1; min-width: 0;
-      display: flex; flex-direction: column; gap: 4px;
+      display: flex; align-items: center;
     }
     .story-stack-mode .org-label-stype {
-      display: block;
-      font-size: 0.52rem; font-weight: 600; letter-spacing: .7px;
-      text-transform: uppercase; color: var(--text5);
+      display: none;
     }
     .story-stack-mode .org-label-name {
       font-family: inherit; font-size: 1.1rem; font-weight: 600; font-style: normal;
       line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      color: var(--text); letter-spacing: -.2px;
+      color: var(--text); letter-spacing: -.2px; flex: 1;
     }
     .story-stack-mode .org-label-count {
       font-size: 0.75rem; font-weight: 500; color: var(--text4);
