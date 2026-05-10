@@ -966,7 +966,7 @@ function portalWindowMonths() {
 }
 
 // ── Auth helpers ──────────────────────────────────────────────
-function getToken() { return sessionStorage.getItem('access_token'); }
+function getToken() { return localStorage.getItem('access_token'); }
 
 function getCsrfToken() {
   const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
@@ -986,7 +986,7 @@ async function authFetch(url, opts = {}) {
       opts.headers['Authorization'] = `Bearer ${getToken()}`;
       res = await fetch(url, opts);
     } else {
-      sessionStorage.removeItem('access_token');
+      localStorage.removeItem('access_token');
       window.location.href = '/login';
       return;
     }
@@ -1003,7 +1003,7 @@ async function tryRefresh() {
     });
     if (!res.ok) return false;
     const data = await res.json();
-    sessionStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('access_token', data.access_token);
     return true;
   } catch { return false; }
 }
@@ -1016,7 +1016,7 @@ async function logout() {
       headers: { 'x-csrf-token': csrf },
     });
   } catch {}
-  sessionStorage.removeItem('access_token');
+  localStorage.removeItem('access_token');
   window.location.href = '/login';
 }
 
