@@ -95,9 +95,7 @@
 
 
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Polices système uniquement — pas de chargement externe -->
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" async></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -134,7 +132,7 @@
   }
   .header-left { display: flex; align-items: baseline; gap: 12px; min-width: 0; overflow: hidden; }
   .header-left h1 {
-    font-family: 'Instrument Serif', Georgia, serif; font-size:1.18rem; font-weight: 400;
+    font-family: Georgia, 'Times New Roman', serif; font-size:1.18rem; font-weight: 400;
     color: var(--text); letter-spacing: -.2px;
   }
   .header-left h1 em { font-style: italic; }
@@ -459,7 +457,7 @@
     padding: 48px 32px;
   }
   #spec-splash-name {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: Georgia, 'Times New Roman', serif;
     font-size: 3rem;
     font-weight: 400;
     color: var(--text);
@@ -523,7 +521,7 @@
   /* ── Rubrique header ───────────────────── */
   .rubrique-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
   .rubrique-month {
-    font-family: 'Instrument Serif', Georgia, serif; font-size:1.65rem;
+    font-family: Georgia, 'Times New Roman', serif; font-size:1.65rem;
     font-weight: 400; color: var(--text); margin-bottom: 2px; font-style: italic; letter-spacing: -.3px;
   }
   .rubrique-meta { font-size:0.72rem; color: var(--text3); letter-spacing: .1px; margin-bottom: 14px; }
@@ -1103,7 +1101,7 @@
     margin-bottom: 4px;
   }
   .sidebar-brand {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: Georgia, 'Times New Roman', serif;
     font-size: 1.15rem; font-style: italic;
     color: var(--text); letter-spacing: .2px;
   }
@@ -1155,7 +1153,7 @@
   .sb-label-line { flex: 1; height: 1px; background: var(--border-strong); }
   /* Sidebar item count badge */
   .sidebar-item .count {
-    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.6rem;
     background: var(--surface2); border: 1px solid var(--border);
     padding: 1px 5px; border-radius: 2px; color: var(--text5);
   }
@@ -1385,7 +1383,7 @@
   }
 
   .swipe-grad-title {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: Georgia, 'Times New Roman', serif;
     font-size: 1.52rem;
     font-weight: 400;
     font-style: italic;
@@ -1469,7 +1467,7 @@
   .swipe-card-date {
     font-size: 0.70rem;
     color: var(--text4);
-    font-family: 'DM Mono', monospace;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
   .swipe-card-drag-hint {
     font-size: 0.68rem;
@@ -1537,7 +1535,7 @@
     align-self: flex-start; backdrop-filter: blur(4px);
   }
   .story-title {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: Georgia, 'Times New Roman', serif;
     font-size: 1.4rem; font-weight: 400; font-style: italic;
     color: #fff; line-height: 1.28; margin: 0;
     text-shadow: 0 1px 8px rgba(0,0,0,.25);
@@ -1559,7 +1557,7 @@
     padding: 10px 14px; background: var(--surface2); border-radius: 10px;
     border-left: 3px solid #C41E3A;
   }
-  .story-date { font-size: 0.68rem; color: var(--text4); font-family: 'DM Mono', monospace; }
+  .story-date { font-size: 0.68rem; color: var(--text4); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   .story-actions { display: flex; align-items: center; gap: 10px; }
   .story-fav-btn {
     background: transparent; border: none; cursor: pointer; padding: 6px 8px;
@@ -1728,9 +1726,9 @@
   <header style="display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:relative;">
     <div class="header-left" style="display:flex;align-items:center;gap:0;">
       <span id="spec-label" style="display:none;"></span>
-      <span id="doctor-name" style="font-size:1rem;color:var(--text);font-weight:400;font-family:'Instrument Serif',Georgia,serif;font-style:italic;letter-spacing:-.1px;"></span>
+      <span id="doctor-name" style="font-size:1rem;color:var(--text);font-weight:400;font-family:Georgia,'Times New Roman',serif;font-style:italic;letter-spacing:-.1px;"></span>
     </div>
-    <h1 onclick="window.location.href='/portal'" style="cursor:pointer;font-family:'Instrument Serif',Georgia,serif;font-size:1.18rem;font-weight:400;color:var(--text);letter-spacing:-.2px;position:absolute;left:50%;transform:translateX(-50%);pointer-events:auto;"><em>Med</em><b>News</b></h1>
+    <h1 onclick="window.location.href='/portal'" style="cursor:pointer;font-family:Georgia,'Times New Roman',serif;font-size:1.18rem;font-weight:400;color:var(--text);letter-spacing:-.2px;position:absolute;left:50%;transform:translateX(-50%);pointer-events:auto;"><em>Med</em><b>News</b></h1>
     <div class="header-right" style="display:flex;align-items:center;gap:12px;justify-content:flex-end;">
       <span class="email" style="display:none;font-size:0.86rem;color:var(--text2);"><span class="header-dot"></span><span id="user-email"></span></span>
       <button class="btn-header-action" onclick="window.location.href='/settings'">
@@ -2120,7 +2118,7 @@ function buildDrawerContent(section) {
         <input type="search" id="drawer-search-spec" placeholder="Rechercher une spécialité…"
           oninput="filterDrawerSpecs(this.value)"
           style="width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:6px;
-                 background:var(--surface2);color:var(--text);font-family:'Inter',sans-serif;
+                 background:var(--surface2);color:var(--text);font-family:inherit;
                  font-size:0.86rem;outline:none;"/>
       </div>
       <div id="drawer-spec-list">${listHtml}</div>`;
@@ -3245,7 +3243,7 @@ function buildSidebar() {
     <input id="sidebar-spec-search" type="search" placeholder="Rechercher une sp\u00e9cialit\u00e9\u2026"
       oninput="filterSidebarSpecs(this.value)"
       style="width:100%;padding:6px 8px 6px 28px;border:1px solid var(--border);border-radius:6px;
-             background:var(--surface);color:var(--text);font-family:'Inter',sans-serif;
+             background:var(--surface);color:var(--text);font-family:inherit;
              font-size:0.78rem;outline:none;"/>
   </div>`;
 
@@ -4819,7 +4817,7 @@ async function stLoadSettings() {
     position:fixed;inset:0;z-index:9999;
     background:rgba(23,20,12,.82);backdrop-filter:blur(6px);
     display:flex;align-items:center;justify-content:center;
-    font-family:'Inter',sans-serif;
+    font-family:inherit;
   `;
 
   function render() {
@@ -4833,7 +4831,7 @@ async function stLoadSettings() {
         box-shadow:0 24px 64px rgba(0,0,0,.4);
       ">
         <div style="color:var(--green,#C41E3A);margin-bottom:20px;opacity:.9;">${s.icon}</div>
-        <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:1.6rem;font-weight:400;
+        <h2 style="font-family:Georgia,'Times New Roman',serif;font-size:1.6rem;font-weight:400;
           color:var(--text,#EDE7DC);margin:0 0 14px;font-style:italic;letter-spacing:-.3px;">${s.title}</h2>
         <p style="font-size:0.93rem;color:var(--text3,#8A8378);line-height:1.65;margin:0 0 32px;">${s.text}</p>
 
@@ -4848,12 +4846,12 @@ async function stLoadSettings() {
           <button onclick="window.__onboardSkip()" style="
             padding:9px 20px;background:transparent;border:1px solid var(--border-strong,#4A4438);
             color:var(--text4,#6A6360);border-radius:4px;font-size:0.82rem;cursor:pointer;
-            font-family:'Inter',sans-serif;transition:all .2s;
+            font-family:inherit;transition:all .2s;
           ">Passer</button>
           <button onclick="window.__onboardNext()" style="
             padding:9px 24px;background:var(--green,#C41E3A);border:1px solid transparent;
             color:#fff;border-radius:4px;font-size:0.82rem;font-weight:500;cursor:pointer;
-            font-family:'Inter',sans-serif;transition:all .2s;
+            font-family:inherit;transition:all .2s;
           ">${isLast ? 'Commencer →' : 'Suivant →'}</button>
         </div>
       </div>
