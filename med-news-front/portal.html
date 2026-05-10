@@ -2553,7 +2553,7 @@ function renderGroupedArticles() {
     const stype = items[0]?.source_type || '';
     const stypeLabels = { reglementaire: 'Réglementation', recommandation: 'Recommandation', innovation: 'Innovation' };
     const stypeLbl = stypeLabels[stype] || '';
-    html += `<div class="org-group" data-stype="${stype}">
+    html += `<div class="org-group" data-stype="${stype}" data-collapsed="true">
       <div class="org-group-label" onclick="toggleSourceGroup(this)">
         <div class="org-label-main">
           ${stypeLbl ? `<span class="org-label-stype">${esc(stypeLbl)}</span>` : ''}
