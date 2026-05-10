@@ -194,16 +194,26 @@
     .portal-page-title { padding: 0 4px; }
     .portal-page-title h2 { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .portal-page-title p { font-size: 0.62rem; letter-spacing: .2px; white-space: normal; overflow-wrap: break-word; }
+    /* ── Sélecteur de mois intégré au splash sombre ── */
+    .content-area.splash-open #portal-page-title {
+      padding: 14px 20px 0 !important; margin: 0 !important; background: transparent !important;
+    }
+    .content-area.splash-open #portal-page-title h2 { color: #fff !important; }
+    .content-area.splash-open #month-picker-label { color: rgba(255,255,255,.9) !important; }
+    .content-area.splash-open #month-picker-chevron { stroke: rgba(255,255,255,.55) !important; }
     /* ── Splash mobile — Tinder-style ── */
     .content-area.splash-open {
-      background: linear-gradient(170deg, #0C1121 0%, #180D24 55%, #1C0A15 100%) !important;
       padding: 0 !important;
+      min-height: calc(100dvh - 52px - 60px);
+      display: flex !important; flex-direction: column !important;
     }
     #spec-splash {
-      padding: 0 !important; min-height: calc(100dvh - 52px - 60px);
+      padding: 0 !important;
+      flex: 1 !important; min-height: 0 !important;
       align-items: stretch !important; justify-content: flex-start !important;
-      text-align: left !important; overflow: hidden;
+      text-align: left !important; overflow-x: hidden; overflow-y: auto;
       margin: 0 !important; width: 100% !important;
+      background: linear-gradient(170deg, #0C1121 0%, #180D24 55%, #1C0A15 100%) !important;
     }
     .splash-hero { padding: 22px 20px 18px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,.07) !important; }
     .splash-hero-eyebrow {
@@ -276,8 +286,8 @@
     }
     /* Search en bas */
     .splash-search-wrap {
-      flex: 1; min-height: 0; padding: 10px 20px 16px !important;
-      margin-top: 0 !important; display: flex; flex-direction: column; justify-content: flex-end;
+      flex-shrink: 0; padding: 10px 20px 24px !important;
+      margin-top: 0 !important;
     }
     .splash-search-divider { margin-bottom: 10px !important; }
     /* Bottom nav visible */
@@ -2652,7 +2662,7 @@ function showSpecSplash(accordId) {
       <span class="splash-cat-cta">Explorer →</span>
     </button>`;
   }).join('');
-  document.getElementById('portal-page-title').style.display = window.innerWidth <= 768 ? 'none' : '';
+  document.getElementById('portal-page-title').style.display = '';
   if (window.innerWidth <= 768) document.querySelector('.content-area')?.classList.add('splash-open');
   document.getElementById('spec-splash').style.display = 'flex';
   document.getElementById('loading').style.display = 'none';
