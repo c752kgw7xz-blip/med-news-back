@@ -197,18 +197,19 @@
     .portal-page-title { padding: 0 4px; }
     .portal-page-title h2 { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .portal-page-title p { font-size: 0.62rem; letter-spacing: .2px; white-space: normal; overflow-wrap: break-word; }
-    /* ── Splash mobile — style Apple ── */
+    /* ── Sélecteur de mois intégré au splash sombre ── */
     .content-area.splash-open #portal-page-title {
       padding: 14px 20px 0 !important; margin: 0 !important; background: transparent !important;
     }
-    .content-area.splash-open #portal-page-title h2 { color: var(--text) !important; font-weight: 300 !important; font-size: 1.6rem !important; justify-content: flex-start !important; }
-    .content-area.splash-open #month-picker-label { color: var(--text3) !important; font-weight: 300 !important; letter-spacing: -.2px; }
-    .content-area.splash-open #month-picker-chevron { stroke: var(--green) !important; }
+    .content-area.splash-open #portal-page-title h2 { color: #fff !important; font-weight: 300 !important; font-size: 1.6rem !important; justify-content: flex-start !important; }
+    .content-area.splash-open #month-picker-label { color: #fff !important; font-weight: 300 !important; letter-spacing: -.2px; }
+    .content-area.splash-open #month-picker-chevron { stroke: #C41E3A !important; }
+    /* ── Splash mobile — fond sombre ── */
     .content-area.splash-open {
       padding: 0 !important;
       min-height: calc(100dvh - 52px - 60px);
       display: flex !important; flex-direction: column !important;
-      background: var(--bg) !important;
+      background: linear-gradient(170deg, #0C1121 0%, #180D24 55%, #1C0A15 100%) !important;
     }
     #spec-splash {
       padding: 0 !important;
@@ -218,21 +219,31 @@
       margin: 0 !important; width: 100% !important;
       background: transparent !important;
     }
-    .splash-hero { padding: 18px 20px 16px; flex-shrink: 0; border-bottom: 0.5px solid var(--border) !important; }
+    .splash-hero { padding: 18px 20px 16px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,.07) !important; }
     .splash-hero-eyebrow {
       font-size: 0.58rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
-      color: var(--green) !important; margin-bottom: 10px;
+      color: rgba(196,30,58,1) !important; margin-bottom: 10px;
     }
-    #spec-splash-name { font-size: 2.4rem !important; font-weight: 400 !important; font-style: italic; white-space: normal; word-break: break-word; max-width: 100%; margin: 0 !important; color: var(--text) !important; letter-spacing: -.8px; line-height: 1.1; }
-    .splash-hero-total { font-size: 0.7rem; font-weight: 400; color: var(--text4) !important; margin-top: 8px; letter-spacing: .1px; }
+    #spec-splash-name { font-size: 2.4rem !important; font-weight: 400 !important; font-style: italic; white-space: normal; word-break: break-word; max-width: 100%; margin: 0 !important; color: #fff !important; letter-spacing: -.8px; line-height: 1.1; }
+    .splash-hero-total { font-size: 0.7rem; font-weight: 300; color: rgba(255,255,255,.6) !important; margin-top: 8px; letter-spacing: .3px; }
     .splash-search-wrap { flex-shrink: 0; padding: 10px 20px 24px !important; margin-top: 0 !important; }
     .splash-search-divider { margin-bottom: 10px !important; }
     .spec-splash-hint {
       padding: 16px 20px 10px !important; margin: 0 !important;
       font-size: 0.58rem !important; font-weight: 700 !important;
       letter-spacing: .6px !important; text-transform: uppercase !important;
-      color: var(--text4) !important; flex-shrink: 0;
+      color: rgba(255,255,255,.25) !important; flex-shrink: 0;
     }
+    /* Dark search bar */
+    #splash-search-input {
+      background: rgba(255,255,255,.07) !important;
+      border-color: rgba(255,255,255,.12) !important;
+      color: #fff !important;
+    }
+    #splash-search-input::placeholder { color: rgba(255,255,255,.28) !important; }
+    .splash-search-divider { color: rgba(255,255,255,.22) !important; }
+    .splash-search-divider::before, .splash-search-divider::after { background: rgba(255,255,255,.1) !important; }
+    .splash-search-icon { color: rgba(255,255,255,.28) !important; }
     /* Horizontal snap-scroll pour les 3 cartes */
     .spec-splash-cats {
       flex-direction: row !important; flex-wrap: nowrap !important;
@@ -244,45 +255,39 @@
       width: 100% !important;
     }
     .spec-splash-cats::-webkit-scrollbar { display: none; }
-    /* Cartes Apple — fond thème, accent couleur */
+    /* Cartes dégradé */
     .spec-splash-cat-btn {
       flex: 0 0 72vw !important; width: 72vw !important; min-width: 0 !important;
-      height: 200px !important; border-radius: 20px !important;
-      padding: 0 !important; overflow: hidden !important;
+      height: 210px !important; border-radius: 20px !important;
+      padding: 0 !important; overflow: hidden !important; border: none !important;
       scroll-snap-align: start !important;
       display: flex !important; flex-direction: column !important;
       align-items: flex-start !important; justify-content: space-between !important;
-      gap: 0 !important;
-      background: var(--surface) !important;
-      border: none !important;
-      box-shadow: 0 2px 12px rgba(0,0,0,.07), 0 0 0 0.5px rgba(0,0,0,.06) !important;
+      gap: 0 !important; box-shadow: 0 14px 44px rgba(0,0,0,.2);
     }
-    .spec-splash-cat-btn.stype-reg  { border-top: 3px solid #3B52A4 !important; }
-    .spec-splash-cat-btn.stype-reco { border-top: 3px solid #1A6B5C !important; }
-    .spec-splash-cat-btn.stype-innov{ border-top: 3px solid #9B5714 !important; }
+    .spec-splash-cat-btn.stype-reg  { background: linear-gradient(150deg,#1a237e 0%,#3B52A4 100%) !important; }
+    .spec-splash-cat-btn.stype-reco { background: linear-gradient(150deg,#1B5E20 0%,#2d7d32 100%) !important; }
+    .spec-splash-cat-btn.stype-innov{ background: linear-gradient(150deg,#7B2D00 0%,#C41E3A 100%) !important; }
     .splash-cat-pill {
-      font-size: 0.56rem; font-weight: 700; letter-spacing: .7px; text-transform: uppercase;
-      border-radius: 20px; padding: 4px 10px; margin: 16px 16px 0; display: inline-block;
+      font-size: 0.58rem; font-weight: 700; letter-spacing: .7px; text-transform: uppercase;
+      color: rgba(255,255,255,.92); background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.28); border-radius: 20px;
+      padding: 4px 12px; margin: 18px 18px 0; display: inline-block;
     }
-    .spec-splash-cat-btn.stype-reg  .splash-cat-pill { color: #3B52A4; background: rgba(59,82,164,.1); border: 1px solid rgba(59,82,164,.2); }
-    .spec-splash-cat-btn.stype-reco .splash-cat-pill { color: #1A6B5C; background: rgba(26,107,92,.1); border: 1px solid rgba(26,107,92,.2); }
-    .spec-splash-cat-btn.stype-innov .splash-cat-pill { color: #9B5714; background: rgba(155,87,20,.1); border: 1px solid rgba(155,87,20,.2); }
     .splash-count {
       font-size: 3.8rem !important; font-weight: 700 !important;
-      line-height: 1 !important; padding: 0 20px !important;
-      flex: 1 !important; display: flex !important; align-items: center !important;
+      color: #fff !important; line-height: 1 !important;
+      padding: 0 20px !important; flex: 1 !important;
+      display: flex !important; align-items: center !important;
     }
-    .spec-splash-cat-btn.stype-reg  .splash-count { color: #3B52A4 !important; }
-    .spec-splash-cat-btn.stype-reco .splash-count { color: #1A6B5C !important; }
-    .spec-splash-cat-btn.stype-innov .splash-count { color: #9B5714 !important; }
     .splash-cat-sub {
-      font-size: 0.72rem; color: var(--text4) !important;
+      font-size: 0.72rem; color: rgba(255,255,255,.65);
       padding: 0 20px 2px; display: block;
     }
     .splash-cat-cta {
       display: block !important; font-size: 0.78rem; font-weight: 600;
-      color: var(--text3) !important; padding: 13px 20px;
-      border-top: 0.5px solid var(--border) !important; width: 100%;
+      color: rgba(255,255,255,.92); padding: 14px 20px;
+      border-top: 1px solid rgba(255,255,255,.15); width: 100%;
       letter-spacing: .1px;
     }
     /* Bottom nav visible */
@@ -300,34 +305,29 @@
     html, body { font-size: 16px !important; --font-scale: 1 !important; }
     /* Badge type actif (mobile) — remplacé par cat-switcher */
     #mobile-type-ctx { display: none !important; }
-    /* ── Teinte douce pages articles selon catégorie ── */
-    .content-area[data-stype="reglementaire"] { background: linear-gradient(180deg, rgba(59,82,164,.08) 0%, var(--bg) 180px); }
-    .content-area[data-stype="recommandation"] { background: linear-gradient(180deg, rgba(26,107,92,.08) 0%, var(--bg) 180px); }
-    .content-area[data-stype="innovation"]     { background: linear-gradient(180deg, rgba(155,87,20,.08) 0%, var(--bg) 180px); }
-    /* ── Cat switcher — style Apple ── */
+    /* ── Gradient pages articles selon catégorie ── */
+    .content-area[data-stype="reglementaire"] { background: linear-gradient(180deg, rgba(26,35,126,.22) 0%, var(--bg) 240px); }
+    .content-area[data-stype="recommandation"] { background: linear-gradient(180deg, rgba(27,94,32,.22) 0%, var(--bg) 240px); }
+    .content-area[data-stype="innovation"]     { background: linear-gradient(180deg, rgba(123,45,0,.22) 0%, var(--bg) 240px); }
+    /* ── Cat switcher — dégradé par type ── */
     #cat-switcher {
       display: flex; gap: 8px; margin: 12px 0 16px; flex-shrink: 0;
     }
     .cat-sw-btn {
-      flex: 1; border-radius: 12px; padding: 12px 10px 10px;
+      flex: 1; border: none; border-radius: 14px; padding: 12px 10px 10px;
       display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
-      cursor: pointer; font-family: inherit; transition: transform .12s;
-      background: var(--surface); border: 0.5px solid var(--border);
-      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+      cursor: pointer; font-family: inherit; transition: transform .15s, box-shadow .15s;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
       -webkit-tap-highlight-color: transparent;
     }
     .cat-sw-btn:active { transform: scale(.96); }
-    .cat-sw-btn.active.stype-reg  { background: rgba(59,82,164,.09); border-color: rgba(59,82,164,.25); box-shadow: none; }
-    .cat-sw-btn.active.stype-reco { background: rgba(26,107,92,.09); border-color: rgba(26,107,92,.25); box-shadow: none; }
-    .cat-sw-btn.active.stype-innov{ background: rgba(155,87,20,.09); border-color: rgba(155,87,20,.25); box-shadow: none; }
-    .cat-sw-label { font-size: 0.52rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--text4); line-height: 1; }
-    .cat-sw-btn.active.stype-reg  .cat-sw-label { color: #3B52A4; }
-    .cat-sw-btn.active.stype-reco .cat-sw-label { color: #1A6B5C; }
-    .cat-sw-btn.active.stype-innov .cat-sw-label { color: #9B5714; }
-    .cat-sw-count { font-size: 1.7rem; font-weight: 700; color: var(--text4); line-height: 1.1; margin-top: 4px; }
-    .cat-sw-btn.active.stype-reg  .cat-sw-count { color: #3B52A4; }
-    .cat-sw-btn.active.stype-reco .cat-sw-count { color: #1A6B5C; }
-    .cat-sw-btn.active.stype-innov .cat-sw-count { color: #9B5714; }
+    .cat-sw-btn.active.stype-reg  { background: linear-gradient(150deg,#1a237e 0%,#3B52A4 100%); border-color: transparent; box-shadow: 0 6px 20px rgba(26,35,126,.45); }
+    .cat-sw-btn.active.stype-reco { background: linear-gradient(150deg,#1B5E20 0%,#2d7d32 100%); border-color: transparent; box-shadow: 0 6px 20px rgba(27,94,32,.45); }
+    .cat-sw-btn.active.stype-innov{ background: linear-gradient(150deg,#7B2D00 0%,#C41E3A 100%); border-color: transparent; box-shadow: 0 6px 20px rgba(196,30,58,.35); }
+    .cat-sw-label { font-size: 0.52rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: rgba(255,255,255,.45); line-height: 1; }
+    .cat-sw-btn.active .cat-sw-label { color: rgba(255,255,255,.85); }
+    .cat-sw-count { font-size: 1.7rem; font-weight: 700; color: rgba(255,255,255,.25); line-height: 1.1; margin-top: 4px; }
+    .cat-sw-btn.active .cat-sw-count { color: #fff; }
   }
   @media (max-width: 480px) {
     .splash-result-card { padding: 14px 16px; gap: 12px; }
