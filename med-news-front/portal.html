@@ -808,11 +808,11 @@
   .org-label-main { flex: 1; min-width: 0; }
   .org-label-stype { display: none; }
   .org-label-name {
-    font-family: 'Instrument Serif', Georgia, serif; font-size: 0.9rem; font-weight: 400;
-    font-style: italic; color: var(--text2);
+    font-family: inherit; font-size: 0.82rem; font-weight: 500;
+    font-style: normal; color: var(--text2); letter-spacing: 0;
   }
   .org-label-count {
-    font-size: 0.68rem; font-weight: 500; color: var(--text5);
+    font-size: 0.68rem; font-weight: 500; color: var(--text4);
     background: var(--surface2); border-radius: 20px; padding: 2px 7px; flex-shrink: 0;
   }
   .org-source-chevron { display: none; }
@@ -1660,11 +1660,11 @@
       display: flex !important;
       align-items: center;
       gap: 14px;
-      padding: 14px 20px 16px;
+      padding: 12px 20px 12px;
       margin: 0;
-      background: var(--surface);
+      background: var(--bg);
       border: none;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 0.5px solid var(--border);
     }
     .story-stack-mode .org-label-main {
       flex: 1; min-width: 0;
@@ -1672,16 +1672,17 @@
     }
     .story-stack-mode .org-label-stype {
       display: block;
-      font-size: 0.55rem; font-weight: 700; letter-spacing: .8px;
+      font-size: 0.52rem; font-weight: 600; letter-spacing: .7px;
       text-transform: uppercase; color: var(--text5);
     }
     .story-stack-mode .org-label-name {
-      font-size: 1.45rem; line-height: 1.1;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-family: inherit; font-size: 1.1rem; font-weight: 600; font-style: normal;
+      line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: var(--text); letter-spacing: -.2px;
     }
     .story-stack-mode .org-label-count {
-      font-size: 0.78rem; font-weight: 600;
-      padding: 5px 13px; border-radius: 20px; flex-shrink: 0;
+      font-size: 0.75rem; font-weight: 500; color: var(--text4);
+      background: var(--surface2); padding: 4px 12px; border-radius: 20px; flex-shrink: 0;
     }
     /* Chevron collapse visible en story mode */
     .story-stack-mode .org-group-label { cursor: pointer; }
@@ -1692,25 +1693,6 @@
     .story-stack-mode .org-group[data-collapsed="true"] .org-source-chevron {
       transform: rotate(-90deg);
     }
-
-    .story-stack-mode .org-group[data-stype="reglementaire"] .org-group-label {
-      border-top: 4px solid #3B52A4 !important;
-    }
-    .story-stack-mode .org-group[data-stype="reglementaire"] .org-label-stype { color: #3B52A4; opacity: .75; }
-    .story-stack-mode .org-group[data-stype="reglementaire"] .org-label-name { color: #3B52A4; }
-    .story-stack-mode .org-group[data-stype="reglementaire"] .org-label-count { background: rgba(59,82,164,.1); color: #3B52A4; }
-    .story-stack-mode .org-group[data-stype="recommandation"] .org-group-label {
-      border-top: 4px solid #1A6B5C !important;
-    }
-    .story-stack-mode .org-group[data-stype="recommandation"] .org-label-stype { color: #1A6B5C; opacity: .75; }
-    .story-stack-mode .org-group[data-stype="recommandation"] .org-label-name { color: #1A6B5C; }
-    .story-stack-mode .org-group[data-stype="recommandation"] .org-label-count { background: rgba(26,107,92,.1); color: #1A6B5C; }
-    .story-stack-mode .org-group[data-stype="innovation"] .org-group-label {
-      border-top: 4px solid #9B5714 !important;
-    }
-    .story-stack-mode .org-group[data-stype="innovation"] .org-label-stype { color: #9B5714; opacity: .75; }
-    .story-stack-mode .org-group[data-stype="innovation"] .org-label-name { color: #9B5714; }
-    .story-stack-mode .org-group[data-stype="innovation"] .org-label-count { background: rgba(155,87,20,.1); color: #9B5714; }
   }
 </style>
 </head>
