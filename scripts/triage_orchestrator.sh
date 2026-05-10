@@ -143,19 +143,35 @@ run_stream() {
     log "[$user] Terminé — done=$done skipped=$skipped errors=$errors"
 }
 
-# ─── Backlog : spécialités du slot précédent encore en NEW ───────────────────
-# Retourne dans stdout la liste des slugs (séparés par espace) qui ont encore
-# des candidats NEW parmi ceux assignés au slot $1.
-get_slot_slugs() {
-    local s="$1"
-    echo "${SLOT_SPECIALTIES["mednews1_${s}"]} ${SLOT_SPECIALTIES["mednews2_${s}"]} ${SLOT_SPECIALTIES["mednews3_${s}"]} ${SLOT_SPECIALTIES["mednews4_${s}"]}"
-}
+# ─── Backlog : toutes les spécialités encore en NEW (hors slot courant) ───────
+# Scanne les 36 spécialités. Retourne celles qui ont des candidats NEW
+# et qui NE SONT PAS dans le slot courant (celles-ci seront traitées normalement).
+# Garanti : quelle que soit l'origine du retard (slot N-1, N-2…), elles remontent.
+
+ALL_SLUGS=(
+    anesthesiologie biologiste cardiologie
+    chirurgie-cardiaque chirurgie-orthopedique chirurgie-pediatrique
+    chirurgie-plastique chirurgie-thoracique chirurgie-vasculaire
+    dermatologie endocrinologie gastro-enterologie
+    geriatrie gynecologie hematologie
+    infectiologie infirmiers kinesitherapie
+    medecine-generale medecine-interne medecine-physique medecine-urgences
+    nephrologie neurochirurgie neurologie
+    oncologie ophtalmologie orl
+    pediatrie pharmacien pneumologie psychiatrie
+    radiologie rhumatologie sage-femme urologie
+)
 
 compute_backlog() {
-    local prev_slot="$1"
+    # Slugs du slot courant — seront traités par les streams normaux
+    local current_slugs
+    current_slugs=" ${SLOT_SPECIALTIES["mednews1_${SLOT}"]} ${SLOT_SPECIALTIES["mednews2_${SLOT}"]} ${SLOT_SPECIALTIES["mednews3_${SLOT}"]} ${SLOT_SPECIALTIES["mednews4_${SLOT}"]} "
+
     local backlog=()
-    read -ra all_slugs <<< "$(get_slot_slugs "$prev_slot")"
-    for slug in "${all_slugs[@]}"; do
+    for slug in "${ALL_SLUGS[@]}"; do
+        # Sauter les spés du slot courant
+        [[ "$current_slugs" == *" $slug "* ]] && continue
+
         local cnt
         cnt=$(su - "mednews1" -c \
             "cd $REPO_DIR && DATABASE_URL='$DATABASE_URL' python3 scripts/check_new_for_specialty.py $slug" \
@@ -243,16 +259,14 @@ if [[ "$SLOT" == "1" ]]; then
     run_global || true
 fi
 
-# Backlog : compléter les spécialités non finies du slot précédent
-# Slot 2 → vérifie slot 1 | Slot 3 → vérifie slot 2 | Slot 1 → vérifie slot 3 (run précédent)
-PREV_SLOT=$(( SLOT == 1 ? 3 : SLOT - 1 ))
+# Backlog : toutes les spécialités hors slot courant encore en NEW
 log "════════════════════════════════════════════════"
-log "  Vérification backlog slot $PREV_SLOT…"
-BACKLOG=$(compute_backlog "$PREV_SLOT")
+log "  Vérification backlog global (36 spés hors slot $SLOT)…"
+BACKLOG=$(compute_backlog)
 if [[ -z "${BACKLOG// /}" ]]; then
-    log "  Backlog slot $PREV_SLOT : vide — aucune spécialité en retard."
+    log "  Backlog : vide — aucune spécialité en retard."
 else
-    log "  Backlog slot $PREV_SLOT : ${BACKLOG}"
+    log "  Backlog : ${BACKLOG}"
     log "  Traitement du backlog avant slot $SLOT…"
     run_backlog "$BACKLOG"
 fi
