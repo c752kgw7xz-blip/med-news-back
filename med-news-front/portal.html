@@ -1410,7 +1410,7 @@
       padding: 0 !important;
       display: flex !important;
       flex-direction: column !important;
-      height: calc(100dvh - 52px - 60px) !important;
+      height: calc(100dvh - 52px - 60px - env(safe-area-inset-bottom, 0px)) !important;
       overflow: hidden !important;
     }
     .story-stack-mode .rubrique-header {
