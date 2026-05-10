@@ -1664,6 +1664,11 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "ansm_ruptures_vaccins":          "tous",        # ANSM — Disponibilité vaccins
     "has_acces_precoces":             "tous",        # HAS — Accès précoce (ex-ATU) — cross-specialty
     "has_bo":                         "tous",        # HAS — Bulletin officiel (décisions formelles)
+    "nature_medicine":                "tous",        # Nature Medicine — recherche translationnelle cross-spé (immunothérapies, génomique, IA)
+    "quotidien_medecin":              "tous",        # Le Quotidien du Médecin — presse médicale généraliste FR, toutes spécialités
+    "academie_medecine":              "tous",        # Académie Nationale de Médecine — avis et rapports scientifiques
+    "spf_beh":                        "tous",        # Santé Publique France BEH — épidémiologie, alertes sanitaires, vaccination
+    "medpage_surgery":                "tous",        # MedPage Surgery — multi-spé chirurgicale (pas de slug unique)
     "inca_recommandations":           "oncologie",   # INCa — Référentiels oncologie
     # ── Sources européennes (agences réglementaires EU) ───────────────────────
     "ema_news":           "tous",          # EMA — Alertes sécurité EU (retraits AMM, DHPCs) — cross-specialty
@@ -1849,6 +1854,8 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_eur_j_haematol":        "hematologie",
     "pubmed_hematol_oncol":         "hematologie",
     "pubmed_clin_lymphoma_myeloma_leuk": "hematologie",
+    "eha_guidelines":               "hematologie",   # EHA — European Haematology Association guidelines
+    "healio_hemato_onco":           "hematologie",   # Healio Hematology/Oncology — multi-spé → hématologie en priorité
     # ── Infectiologie ─────────────────────────────────────────────────────────
     "lancet_infect_dis":            "infectiologie",  # RSS Lancet Infectious Diseases (IF ~40)
     "eid_cdc":                      "infectiologie",  # RSS Emerging Infect Diseases (CDC, IF ~12)
@@ -1924,6 +1931,8 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_seizure":                 "neurologie",
     "pubmed_j_neurol_sci":            "neurologie",
     "pubmed_muscle_nerve":            "neurologie",
+    "ean_guidelines":               "neurologie",    # EAN — European Academy of Neurology guidelines
+    "eso_stroke":                   "neurologie",    # ESO — European Stroke Organisation guidelines
     # ── Neurochirurgie ────────────────────────────────────────────────────────
     "pubmed_j_neurosurg":             "neurochirurgie",
     "pubmed_neurosurgery":            "neurochirurgie",
@@ -1960,6 +1969,7 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_j_nephrol":               "nephrologie",
     "pubmed_clin_nephrol":            "nephrologie",
     "pubmed_nephrol_ther":            "nephrologie",
+    "era_guidelines":               "nephrologie",   # ERA — European Renal Association guidelines
     # ── Médecine d'urgences ───────────────────────────────────────────────────
     "ann_emerg_med_rss":              "medecine-urgences",  # RSS Ann Emerg Med (ACEP, IF ~9)
     "emj_rss":                        "medecine-urgences",  # RSS EMJ (RCEM/BMJ, IF ~4)
@@ -2103,6 +2113,9 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_cancer_med":            "oncologie",
     "pubmed_oncotarget":            "oncologie",
     "esmo":                         "oncologie",   # RSS ESMO guidelines
+    # ── Dentiste ──────────────────────────────────────────────────────────────
+    # ⚠️  dentiste absent de triage_orchestrator.sh — ces sources restent NEW jusqu'à l'ajout du slot
+    "efp_guidelines":               "dentiste",    # EFP — European Federation of Periodontology guidelines
     # ── Pharmacien ────────────────────────────────────────────────────────────
     "br_j_clin_pharm_rss":           "pharmacien",  # RSS BJCP (BPS/Wiley, IF ~4)
     "ann_pharmacother_rss":          "pharmacien",  # RSS Ann Pharmacotherapy (SAGE, IF ~4)

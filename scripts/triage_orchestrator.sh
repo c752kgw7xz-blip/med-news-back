@@ -9,6 +9,10 @@
 #
 # ~6h de gap entre créneaux → rate limits Pro régénérés entre chaque slot.
 #
+# Backlog : si le slot N-1 n'a pas pu terminer (rate limit 5h atteint),
+# les spécialités restantes sont détectées au démarrage du slot N et traitées
+# en priorité (round-robin sur les 4 comptes) avant les spés normales du slot N.
+#
 # Usage:
 #   ./triage_orchestrator.sh --slot 1        # créneau du matin
 #   ./triage_orchestrator.sh --slot 2        # créneau de midi
@@ -139,6 +143,67 @@ run_stream() {
     log "[$user] Terminé — done=$done skipped=$skipped errors=$errors"
 }
 
+# ─── Backlog : spécialités du slot précédent encore en NEW ───────────────────
+# Retourne dans stdout la liste des slugs (séparés par espace) qui ont encore
+# des candidats NEW parmi ceux assignés au slot $1.
+get_slot_slugs() {
+    local s="$1"
+    echo "${SLOT_SPECIALTIES["mednews1_${s}"]} ${SLOT_SPECIALTIES["mednews2_${s}"]} ${SLOT_SPECIALTIES["mednews3_${s}"]} ${SLOT_SPECIALTIES["mednews4_${s}"]}"
+}
+
+compute_backlog() {
+    local prev_slot="$1"
+    local backlog=()
+    read -ra all_slugs <<< "$(get_slot_slugs "$prev_slot")"
+    for slug in "${all_slugs[@]}"; do
+        local cnt
+        cnt=$(su - "mednews1" -c \
+            "cd $REPO_DIR && DATABASE_URL='$DATABASE_URL' python3 scripts/check_new_for_specialty.py $slug" \
+            2>>"$LOGFILE" || echo "0")
+        cnt=$(echo "$cnt" | tr -d '[:space:]')
+        if [[ "${cnt:-0}" -gt 0 ]]; then
+            backlog+=("$slug")
+        fi
+    done
+    echo "${backlog[*]}"
+}
+
+# Distribue une liste de slugs en round-robin sur les 4 comptes et les traite
+# en parallèle avant de continuer. Bloque jusqu'à ce que tout soit terminé.
+run_backlog() {
+    local backlog_str="$1"
+    read -ra backlog <<< "$backlog_str"
+    [[ ${#backlog[@]} -eq 0 ]] && return 0
+
+    local accounts=("mednews1" "mednews2" "mednews3" "mednews4")
+    declare -A per_account
+    per_account["mednews1"]=""
+    per_account["mednews2"]=""
+    per_account["mednews3"]=""
+    per_account["mednews4"]=""
+
+    local i=0
+    for slug in "${backlog[@]}"; do
+        local acc="${accounts[$((i % 4))]}"
+        per_account[$acc]+=" $slug"
+        ((i++)) || true
+    done
+
+    log "[backlog] Distribution : mednews1='${per_account[mednews1]}' mednews2='${per_account[mednews2]}' mednews3='${per_account[mednews3]}' mednews4='${per_account[mednews4]}'"
+
+    local pids=()
+    for acc in mednews1 mednews2 mednews3 mednews4; do
+        local slugs="${per_account[$acc]}"
+        [[ -z "${slugs// /}" ]] && continue
+        run_stream "$acc" "$slugs" &
+        pids+=($!)
+    done
+    for pid in "${pids[@]}"; do
+        wait "$pid" || true
+    done
+    log "[backlog] Terminé."
+}
+
 # ─── Passe globale (slot 1 uniquement) ───────────────────────────────────────
 run_global() {
     local user="mednews1"
@@ -177,6 +242,21 @@ log "═════════════════════════
 if [[ "$SLOT" == "1" ]]; then
     run_global || true
 fi
+
+# Backlog : compléter les spécialités non finies du slot précédent
+# Slot 2 → vérifie slot 1 | Slot 3 → vérifie slot 2 | Slot 1 → vérifie slot 3 (run précédent)
+PREV_SLOT=$(( SLOT == 1 ? 3 : SLOT - 1 ))
+log "════════════════════════════════════════════════"
+log "  Vérification backlog slot $PREV_SLOT…"
+BACKLOG=$(compute_backlog "$PREV_SLOT")
+if [[ -z "${BACKLOG// /}" ]]; then
+    log "  Backlog slot $PREV_SLOT : vide — aucune spécialité en retard."
+else
+    log "  Backlog slot $PREV_SLOT : ${BACKLOG}"
+    log "  Traitement du backlog avant slot $SLOT…"
+    run_backlog "$BACKLOG"
+fi
+log "════════════════════════════════════════════════"
 
 # 4 streams en parallèle
 run_stream mednews1 "${SLOT_SPECIALTIES["mednews1_${SLOT}"]}" &
