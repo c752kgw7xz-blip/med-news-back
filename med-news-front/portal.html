@@ -1022,6 +1022,74 @@
   }
   @media (min-width: 769px) { .fp-overlay { display: none !important; } }
 
+  /* ── Settings overlay content ── */
+  .st-section {
+    background: var(--surface); margin: 16px 16px 0;
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 0 0 0.5px rgba(0,0,0,.06);
+  }
+  .st-section-title {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
+    color: var(--text3); padding: 12px 16px 10px;
+    border-bottom: 0.5px solid rgba(60,60,67,.18);
+  }
+  .st-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 16px; gap: 12px;
+    border-bottom: 0.5px solid rgba(60,60,67,.18);
+  }
+  .st-row:last-child { border-bottom: none; }
+  .st-info { flex: 1; min-width: 0; }
+  .st-label { font-size: 1rem; font-weight: 400; color: var(--text); }
+  .st-desc { font-size: 0.8rem; color: var(--text3); margin-top: 1px; }
+  .st-opt-group { display: flex; gap: 5px; flex-shrink: 0; }
+  .st-opt-btn {
+    padding: 5px 12px; border-radius: 8px; font-size: 0.84rem; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border-strong); background: transparent;
+    color: var(--text3); transition: all .15s; white-space: nowrap;
+  }
+  .st-opt-btn.active { background: var(--green); border-color: var(--green); color: #fff; }
+  .st-input {
+    padding: 7px 12px; border: 1px solid var(--border-strong);
+    border-radius: 10px; background: var(--surface2); color: var(--text);
+    font-size: 0.93rem; outline: none; width: 150px; max-width: 100%;
+  }
+  .st-select {
+    padding: 7px 28px 7px 10px; border: 1px solid var(--border-strong);
+    border-radius: 10px; background: var(--surface2); color: var(--text);
+    font-size: 0.86rem; outline: none; appearance: none; flex: 1; min-width: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6f88' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 9px center; background-size: 12px;
+  }
+  .st-toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
+  .st-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .st-toggle-track {
+    width: 44px; height: 26px; background: var(--border-strong); border-radius: 13px;
+    transition: background .2s; position: relative;
+  }
+  .st-toggle-track::after {
+    content: ''; position: absolute; left: 3px; top: 3px;
+    width: 20px; height: 20px; background: #fff; border-radius: 50%;
+    transition: transform .22s; box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  }
+  .st-toggle input:checked + .st-toggle-track { background: var(--green); }
+  .st-toggle input:checked + .st-toggle-track::after { transform: translateX(18px); }
+  .st-save-btn {
+    display: block; width: calc(100% - 32px); margin: 12px 16px 0;
+    padding: 13px; background: var(--green); color: #fff; border: none;
+    border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer;
+    transition: opacity .2s;
+  }
+  .st-save-btn:hover { opacity: .88; }
+  .st-save-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .st-danger-btn {
+    display: block; width: calc(100% - 32px); margin: 10px 16px 0;
+    padding: 13px; background: transparent; color: var(--red);
+    border: 1px solid rgba(220,38,38,.3); border-radius: 12px;
+    font-size: 1rem; font-weight: 500; cursor: pointer; transition: all .2s;
+  }
+  .st-danger-btn:hover { background: rgba(220,38,38,.07); }
+
   /* ── Sidebar collapse ── */
   .sidebar-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -1834,6 +1902,84 @@
     </div>
   </div>
 
+  <!-- Full-page overlay — Paramètres (nav visible en bas) -->
+  <div class="fp-overlay compte-mode" id="fp-parametres">
+    <div class="fp-overlay-header">
+      <span class="fp-activite-large-title">Paramètres</span>
+    </div>
+    <div class="fp-overlay-content" style="padding-bottom:24px;">
+
+      <!-- Apparence -->
+      <div class="st-section">
+        <div class="st-section-title">Apparence</div>
+        <div class="st-row">
+          <div class="st-info"><div class="st-label">Thème</div></div>
+          <div class="st-opt-group" id="st-theme-group">
+            <button class="st-opt-btn" data-val="light" onclick="stApplyTheme('light')">Clair</button>
+            <button class="st-opt-btn" data-val="auto"  onclick="stApplyTheme('auto')">Auto</button>
+            <button class="st-opt-btn" data-val="dark"  onclick="stApplyTheme('dark')">Sombre</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Identité -->
+      <div class="st-section" style="margin-top:12px;">
+        <div class="st-section-title">Identité</div>
+        <div class="st-row">
+          <div class="st-info"><div class="st-label">Prénom</div></div>
+          <input class="st-input" id="st-first-name" placeholder="Jean" autocomplete="given-name">
+        </div>
+        <div class="st-row">
+          <div class="st-info"><div class="st-label">Nom</div></div>
+          <input class="st-input" id="st-last-name" placeholder="Dupont" autocomplete="family-name">
+        </div>
+      </div>
+      <button class="st-save-btn" onclick="stSaveName()">Enregistrer le nom</button>
+
+      <!-- Spécialité -->
+      <div class="st-section" style="margin-top:12px;">
+        <div class="st-section-title">Ma spécialité</div>
+        <div class="st-row" style="gap:8px;">
+          <div class="st-info">
+            <div class="st-label">Spécialité principale</div>
+            <div class="st-desc">Les articles seront filtrés selon cette spécialité</div>
+          </div>
+          <select class="st-select" id="st-specialty-select"></select>
+        </div>
+      </div>
+      <button class="st-save-btn" onclick="stSaveSpecialty()">Enregistrer la spécialité</button>
+
+      <!-- Newsletter -->
+      <div class="st-section" style="margin-top:12px;">
+        <div class="st-section-title">Newsletter</div>
+        <div class="st-row">
+          <div class="st-info">
+            <div class="st-label">Newsletter mensuelle</div>
+            <div class="st-desc">Recevoir la sélection mensuelle par email</div>
+          </div>
+          <label class="st-toggle">
+            <input type="checkbox" id="st-notif-newsletter" onchange="stMarkPrefsChanged()">
+            <span class="st-toggle-track"></span>
+          </label>
+        </div>
+      </div>
+      <button class="st-save-btn" id="st-save-prefs-btn" onclick="stSavePreferences()" disabled>Enregistrer les préférences</button>
+
+      <!-- Compte -->
+      <div class="st-section" style="margin-top:12px;">
+        <div class="st-section-title">Compte</div>
+        <div class="st-row">
+          <div class="st-info">
+            <div class="st-label" id="st-account-email" style="font-weight:400;color:var(--text3);"></div>
+            <div class="st-desc">Compte médecin actif</div>
+          </div>
+        </div>
+      </div>
+      <button class="st-danger-btn" onclick="logout()">Déconnexion</button>
+
+    </div>
+  </div>
+
   <!-- Full-page overlay — Mon activité (nav visible en bas) -->
   <div class="fp-overlay compte-mode" id="fp-activite">
     <div class="fp-overlay-header">
@@ -1902,10 +2048,12 @@ const MONTHS = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin',
 let _prevNavSection = 'specialite'; // mémorise le dernier onglet actif avant Compte
 
 function mobileNavClick(section) {
-  // Ferme tout overlay ouvert avant de naviguer
-  if (section !== 'activite') {
-    ['explorer', 'activite'].forEach(s => closeFullPage(s));
+  const overlays = ['explorer', 'activite', 'parametres'];
+  if (!overlays.includes(section)) {
+    overlays.forEach(s => closeFullPage(s));
     _prevNavSection = section;
+  } else {
+    overlays.filter(s => s !== section).forEach(s => closeFullPage(s));
   }
   document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('mnav-' + section)?.classList.add('active');
@@ -1927,7 +2075,7 @@ function mobileNavClick(section) {
   } else if (section === 'activite') {
     openFullPage('activite');
   } else if (section === 'parametres') {
-    window.location.href = '/settings';
+    openFullPage('parametres');
   }
 }
 
@@ -2020,6 +2168,8 @@ function openFullPage(section) {
       if (id) toggleAccord(id);
     };
   }
+
+  if (section === 'parametres') stLoadSettings();
 }
 
 function closeFullPage(section) {
@@ -4461,12 +4611,116 @@ function _doSwipe(dir, dx) {
     if (window.lucide) lucide.createIcons();
     setupSwipeToDismiss('activite');
     setupSwipeToDismiss('explorer');
+    setupSwipeToDismiss('parametres');
     if (location.hash === '#activite') {
       history.replaceState(null, '', location.pathname);
       mobileNavClick('activite');
     }
   }
 })();
+
+// ── Settings overlay ─────────────────────────────────────────
+function showToast(msg) {
+  let el = document.getElementById('st-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'st-toast';
+    el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:10px;font-size:0.93rem;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1'; el.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(-50%) translateY(8px)'; }, 2600);
+}
+
+function stApplyTheme(mode) {
+  MedNews.setTheme(mode);
+  document.querySelectorAll('#st-theme-group .st-opt-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.val === mode));
+}
+
+function stMarkPrefsChanged() {
+  document.getElementById('st-save-prefs-btn').disabled = false;
+}
+
+async function stSaveName() {
+  const first = document.getElementById('st-first-name').value.trim();
+  const last  = document.getElementById('st-last-name').value.trim();
+  const res = await authFetch(`${API}/me/name`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ first_name: first, last_name: last }),
+  });
+  showToast(res && res.ok ? 'Nom mis à jour' : 'Erreur lors de la sauvegarde');
+}
+
+async function stSaveSpecialty() {
+  const slug = document.getElementById('st-specialty-select').value;
+  if (!slug) return;
+  const res = await authFetch(`${API}/me/specialty`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ specialty_slug: slug }),
+  });
+  if (res && res.ok) {
+    showToast('Spécialité mise à jour');
+    setTimeout(() => window.location.reload(), 1200);
+  } else {
+    showToast('Erreur lors de la sauvegarde');
+  }
+}
+
+async function stSavePreferences() {
+  const btn = document.getElementById('st-save-prefs-btn');
+  btn.disabled = true; btn.textContent = 'Enregistrement…';
+  const res = await authFetch(`${API}/me/preferences`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notif_newsletter: document.getElementById('st-notif-newsletter').checked }),
+  });
+  btn.textContent = 'Enregistrer les préférences';
+  if (res && res.ok) showToast('Préférences enregistrées');
+  else { btn.disabled = false; showToast('Erreur lors de la sauvegarde'); }
+}
+
+async function stLoadSettings() {
+  // Thème
+  const theme = localStorage.getItem('mednews-theme') || 'auto';
+  document.querySelectorAll('#st-theme-group .st-opt-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.val === theme));
+
+  try {
+    const res = await authFetch(`${API}/me`);
+    if (!res || !res.ok) return;
+    const p = await res.json();
+
+    document.getElementById('st-account-email').textContent = p.email || '';
+    document.getElementById('st-first-name').value = p.first_name || '';
+    document.getElementById('st-last-name').value  = p.last_name  || '';
+
+    // Spécialités
+    const sel = document.getElementById('st-specialty-select');
+    if (allSpecialties.length) {
+      sel.innerHTML = allSpecialties.map(s =>
+        `<option value="${s.slug}"${s.slug === p.specialty_slug ? ' selected' : ''}>${s.name}</option>`
+      ).join('');
+    } else {
+      const sr = await fetch(`${API}/specialties`);
+      const specs = await sr.json();
+      sel.innerHTML = specs.map(s =>
+        `<option value="${s.slug}"${s.slug === p.specialty_slug ? ' selected' : ''}>${s.name}</option>`
+      ).join('');
+    }
+
+    // Préférences
+    const pr = await authFetch(`${API}/me/preferences`);
+    if (pr && pr.ok) {
+      const prefs = await pr.json();
+      document.getElementById('st-notif-newsletter').checked = !!prefs.notif_newsletter;
+    }
+  } catch {}
+}
 
 // ── Onboarding overlay ────────────────────────────────────────
 (function() {
