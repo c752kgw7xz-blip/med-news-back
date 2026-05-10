@@ -1337,6 +1337,8 @@
   .story-header { display: none; }
   .story-body   { display: none; }
   .story-footer { display: none; }
+  .story-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .story-source-chip { display: none; }
 
   /* Gradients per source_type */
   .story-stack-mode .article-card[data-source-type="reglementaire"] .story-header {
@@ -1465,6 +1467,28 @@
       border-top: 1px solid var(--border); flex-shrink: 0;
       background: var(--surface);
     }
+    /* Source chip visible en story mode */
+    .story-stack-mode .story-source-chip {
+      display: inline-block;
+      font-size: 0.62rem; font-weight: 600; letter-spacing: .4px; text-transform: uppercase;
+      color: rgba(255,255,255,.6); background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2); border-radius: 20px; padding: 2px 9px;
+    }
+
+    /* Bulle autour des cartes : box-shadow inset coloré selon la source */
+    .story-stack-mode .article-card[data-source-type="reglementaire"] {
+      box-shadow: inset 0 0 0 3px rgba(59,82,164,.55) !important;
+      background: rgba(59,82,164,.04) !important;
+    }
+    .story-stack-mode .article-card[data-source-type="recommandation"] {
+      box-shadow: inset 0 0 0 3px rgba(26,107,92,.55) !important;
+      background: rgba(26,107,92,.04) !important;
+    }
+    .story-stack-mode .article-card[data-source-type="innovation"] {
+      box-shadow: inset 0 0 0 3px rgba(155,87,20,.55) !important;
+      background: rgba(155,87,20,.04) !important;
+    }
+
     /* Dot colors per type */
     .story-stack-mode .article-card[data-source-type="reglementaire"] .story-points li::before { background: #3B52A4; }
     .story-stack-mode .article-card[data-source-type="recommandation"] .story-points li::before { background: #1A6B5C; }
@@ -2189,8 +2213,12 @@ function renderArticle(a, idx) {
 
   const isFav = favoritesSet.has(a.id);
   const stypeLabels = { reglementaire: 'Réglementation', recommandation: 'Recommandation', innovation: 'Innovation' };
+  const srcLabel = sourceLabel(a.source || '');
   const storyHeader = `<div class="story-header">
-    <span class="story-type-pill">${stypeLabels[stype] || stype}</span>
+    <div class="story-meta-row">
+      <span class="story-type-pill">${stypeLabels[stype] || stype}</span>
+      <span class="story-source-chip">${esc(srcLabel)}</span>
+    </div>
     <h2 class="story-title">${esc(titre)}</h2>
   </div>`;
   const storyBody = `<div class="story-body">
