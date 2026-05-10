@@ -2557,8 +2557,12 @@ function esc(s) {
 }
 
 function toggleDetail(e, card) {
-  // In story mode card taps are handled by the Analyser button
-  if (document.querySelector('.content-area')?.classList.contains('story-stack-mode')) return;
+  // In story mode : clic sur la carte = ouvrir/fermer l'analyse
+  if (document.querySelector('.content-area')?.classList.contains('story-stack-mode')) {
+    if (e.target.closest('button, a')) return; // laisser les boutons gérer leur propre clic
+    openStoryDetail(card);
+    return;
+  }
   // Track in history
   const itemId = card.dataset.itemId;
   const titre = card.querySelector('.card-title')?.textContent?.trim() || '';
