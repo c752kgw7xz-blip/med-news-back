@@ -2932,6 +2932,8 @@ function toggleAccord(id) {
     const specEntry = _accordSpecMap[id];
     if (specEntry) { activeSpecSlug = specEntry.slug; refreshMonthPicker(); }
     showSpecSplash(id);
+    // Sur mobile : fermer l'explorer et atterrir directement sur le splash
+    if (window.innerWidth <= 768) closeFullPage('explorer');
   } else {
     _activeAccordId = null;
     // Ne pas masquer le splash — le nom et les compteurs restent visibles
