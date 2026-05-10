@@ -97,7 +97,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" async></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -198,14 +198,15 @@
     .content-area.splash-open #portal-page-title {
       padding: 14px 20px 0 !important; margin: 0 !important; background: transparent !important;
     }
-    .content-area.splash-open #portal-page-title h2 { color: #fff !important; }
-    .content-area.splash-open #month-picker-label { color: rgba(255,255,255,.9) !important; }
-    .content-area.splash-open #month-picker-chevron { stroke: rgba(255,255,255,.55) !important; }
+    .content-area.splash-open #portal-page-title h2 { color: #fff !important; font-weight: 300 !important; font-size: 1.1rem !important; }
+    .content-area.splash-open #month-picker-label { color: #fff !important; font-weight: 300 !important; letter-spacing: .1px; }
+    .content-area.splash-open #month-picker-chevron { stroke: rgba(255,255,255,.7) !important; }
     /* ── Splash mobile — Tinder-style ── */
     .content-area.splash-open {
       padding: 0 !important;
       min-height: calc(100dvh - 52px - 60px);
       display: flex !important; flex-direction: column !important;
+      background: linear-gradient(170deg, #0C1121 0%, #180D24 55%, #1C0A15 100%) !important;
     }
     #spec-splash {
       padding: 0 !important;
@@ -213,15 +214,29 @@
       align-items: stretch !important; justify-content: flex-start !important;
       text-align: left !important; overflow-x: hidden; overflow-y: auto;
       margin: 0 !important; width: 100% !important;
-      background: linear-gradient(170deg, #0C1121 0%, #180D24 55%, #1C0A15 100%) !important;
+      background: transparent !important;
     }
-    .splash-hero { padding: 22px 20px 18px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,.07) !important; }
+    .splash-hero { padding: 18px 20px 16px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,.07) !important; }
     .splash-hero-eyebrow {
-      font-size: 0.6rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
-      color: rgba(196,30,58,.9) !important; margin-bottom: 6px;
+      font-size: 0.58rem; font-weight: 300; letter-spacing: 1px; text-transform: uppercase;
+      color: rgba(196,30,58,1) !important; margin-bottom: 10px;
     }
-    #spec-splash-name { font-size: 2rem !important; white-space: normal; word-break: break-word; max-width: 100%; margin: 0 !important; color: #fff !important; }
-    .splash-hero-total { font-size: 0.75rem; color: rgba(255,255,255,.38) !important; margin-top: 5px; }
+    #spec-splash-name { font-size: 2.4rem !important; font-weight: 400 !important; font-style: italic; white-space: normal; word-break: break-word; max-width: 100%; margin: 0 !important; color: #fff !important; letter-spacing: -.8px; line-height: 1.1; }
+    .splash-hero-total { font-size: 0.7rem; font-weight: 300; color: rgba(255,255,255,.6) !important; margin-top: 8px; letter-spacing: .3px; }
+    /* Search en haut des cartes */
+    .splash-search-wrap {
+      flex-shrink: 0; padding: 12px 20px 8px !important; margin-top: 0 !important;
+    }
+    .splash-search-divider { margin-bottom: 8px !important; }
+    /* Cartes étirées jusqu'en bas */
+    .spec-splash-cats {
+      flex: 1 !important; min-height: 0 !important;
+      padding: 0 20px 16px !important;
+      align-items: stretch !important;
+    }
+    .spec-splash-cat-btn {
+      height: 100% !important; min-height: 160px !important;
+    }
     .spec-splash-hint {
       padding: 16px 20px 10px !important; margin: 0 !important;
       font-size: 0.6rem !important; font-weight: 700 !important;
@@ -1562,9 +1577,6 @@
           <div class="splash-hero-total" id="splash-hero-total"></div>
         </div>
 
-        <p class="spec-splash-hint">Choisissez une catégorie</p>
-        <div class="spec-splash-cats" id="spec-splash-cats"></div>
-
         <!-- Recherche tous mois -->
         <div class="splash-search-wrap">
           <div class="splash-search-divider"><span>Rechercher un article</span></div>
@@ -1577,6 +1589,8 @@
           </div>
           <div id="splash-search-results"></div>
         </div>
+
+        <div class="spec-splash-cats" id="spec-splash-cats"></div>
       </div>
 
       <!-- Swipe Deck — mobile only, full-screen dating-app style -->
