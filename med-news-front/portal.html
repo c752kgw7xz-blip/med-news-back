@@ -737,9 +737,9 @@
   /* ── Portal page title ──────────────────── */
   .portal-page-title { margin-bottom: 20px; text-align: left; }
   .portal-page-title h2 {
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-size: 2rem; font-weight: 400; color: var(--text);
-    letter-spacing: -.3px; line-height: 1.2;
+    font-family: inherit;
+    font-size: 1.6rem; font-weight: 700; color: var(--text);
+    letter-spacing: -.4px; line-height: 1.2;
   }
   .portal-page-title p {
     font-size: 0.82rem;
@@ -1253,15 +1253,42 @@
   .splash-result-stype.stype-innovation { background: rgba(155,87,20,.08); color: #9B5714; }
   .splash-result-empty { font-size: 0.82rem; color: var(--text5); text-align: center; padding: 20px 0; }
 
-  .month-picker-item {
-    display:flex;align-items:center;justify-content:space-between;
-    padding:8px 16px;cursor:pointer;transition:background .12s;
-    font-size:0.82rem;color:var(--text2);font-family:'Inter',sans-serif;
+  /* ── Month picker — style iOS ── */
+  #month-picker-dropdown {
+    border-radius: 14px !important;
+    background: var(--surface) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 0.5px solid var(--border) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.08) !important;
+    overflow: hidden !important;
+    padding: 6px 0 !important;
+    min-width: 200px !important;
+    transform-origin: top center;
+    animation: mp-drop .18s cubic-bezier(0.32,0.72,0,1);
   }
-  .month-picker-item:hover { background:var(--surface2); }
-  .month-picker-item.active { color:var(--green);font-weight:500; background:rgba(196,30,58,.05); }
-  .month-picker-item .mp-month { font-family:'Instrument Serif',Georgia,serif;font-style:italic; }
-  .month-picker-item .mp-count { font-size:0.65rem;color:var(--text4);font-family:'DM Mono',monospace; }
+  @keyframes mp-drop {
+    from { opacity: 0; transform: translateX(-50%) scaleY(.88); }
+    to   { opacity: 1; transform: translateX(-50%) scaleY(1); }
+  }
+  .month-picker-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px; cursor: pointer; transition: background .1s;
+    font-size: 0.9rem; color: var(--text); font-family: inherit; font-weight: 400;
+  }
+  .month-picker-item + .month-picker-item {
+    border-top: 0.5px solid var(--border);
+  }
+  .month-picker-item:active { background: var(--surface2); }
+  .month-picker-item.active { font-weight: 600; color: var(--text); }
+  .month-picker-item.active::after {
+    content: '✓'; font-size: 0.9rem; color: #0A84FF; margin-left: 8px; flex-shrink: 0;
+  }
+  .month-picker-item .mp-month { font-family: inherit; font-style: normal; }
+  .month-picker-item .mp-count {
+    font-size: 0.72rem; color: var(--text4); font-family: inherit;
+    background: var(--surface2); border-radius: 20px; padding: 1px 8px;
+  }
 
   /* ── Swipe Deck (mobile only) ───────────────────────────────── */
   /* ── Swipe Deck — full-screen dating-app style ─────────────── */
@@ -1779,7 +1806,7 @@
       <div id="portal-page-title" class="portal-page-title" style="position:relative;display:none;">
         <h2 id="month-picker-btn" onclick="toggleMonthPicker()" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;" title="Changer de mois"><span id="month-picker-label">Ce mois-ci</span><svg id="month-picker-chevron" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8B1A2B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg></h2>
 
-        <div id="month-picker-dropdown" style="display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);background:var(--surface);border:1px solid var(--border);border-radius:4px;box-shadow:0 8px 24px rgba(26,23,20,.12);z-index:300;min-width:220px;padding:8px 0;">
+        <div id="month-picker-dropdown" style="display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);z-index:300;">
           <div id="month-picker-list"></div>
         </div>
       </div>
