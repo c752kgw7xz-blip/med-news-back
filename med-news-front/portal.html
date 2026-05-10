@@ -696,6 +696,8 @@
   .card-impact.impact-mid,
   .card-impact.impact-low { border-left: 2px solid var(--border); }
 
+  .swipe-fav-indicator { display: none; position: absolute; left: 0; top: 0; bottom: 0; width: 100%; align-items: center; justify-content: flex-start; padding-left: 28px; font-size: 1rem; font-weight: 700; color: #fff; background: linear-gradient(90deg, #1A6B5C 0%, rgba(26,107,92,0) 80%); pointer-events: none; z-index: 5; border-radius: inherit; }
+
   /* ── Expanded detail ────────────────────── */
   .card-detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--border); }
   .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -1458,17 +1460,7 @@
     .story-stack-mode #load-more { display: none !important; }
 
     /* Swipe-to-fav */
-    .story-stack-mode .article-card { touch-action: pan-y; }
-    .swipe-fav-indicator {
-      display: none;
-      position: absolute; left: 0; top: 0; bottom: 0;
-      width: 100%; align-items: center; justify-content: flex-start;
-      padding-left: 28px;
-      font-size: 1rem; font-weight: 700; color: #fff;
-      background: linear-gradient(90deg, #1A6B5C 0%, rgba(26,107,92,0) 80%);
-      pointer-events: none; z-index: 5; border-radius: inherit;
-    }
-    .story-stack-mode .article-card { position: relative; overflow: hidden; }
+    .story-stack-mode .article-card { touch-action: pan-y; position: relative; overflow: hidden; }
     .story-stack-mode .swipe-fav-indicator { display: flex; opacity: 0; transition: opacity .12s; }
 
     /* Story card inner layout */
