@@ -847,10 +847,8 @@
     display: none;
     position: fixed; bottom: 0; left: 0; right: 0;
     height: 60px;
-    background: rgba(253,252,249,.88);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    backdrop-filter: saturate(180%) blur(20px);
-    box-shadow: 0 -0.5px 0 rgba(26,23,20,.12);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
     z-index: 200;
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -968,12 +966,6 @@
     height: 0.5px; background: rgba(60,60,67,.18);
   }
   .fp-spec-row:last-child::after { display: none; }
-  .fp-spec-icon {
-    width: 38px; height: 38px; border-radius: 10px;
-    background: rgba(26,107,92,.1); color: var(--green);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    font-size: 1.1rem;
-  }
   .fp-spec-name {
     flex: 1; font-size: 1rem; font-weight: 500; color: var(--text);
     font-family: 'Inter', sans-serif;
@@ -2001,25 +1993,11 @@ function openFullPage(section) {
     if (inp) inp.value = '';
 
     // Build iOS-style rows from _accordSpecMap
-    const SPEC_EMOJI = {
-      'medecine-generale': '🩺', 'cardiologie': '❤️', 'dermatologie': '🔬',
-      'endocrinologie': '⚗️', 'gastro-enterologie': '🫁', 'gynecologie': '🌸',
-      'neurologie': '🧠', 'ophtalmologie': '👁️', 'orl': '👂', 'pediatrie': '👶',
-      'pneumologie': '🫧', 'psychiatrie': '🧘', 'rhumatologie': '🦴',
-      'urologie': '💊', 'medecine-interne': '🩻', 'medecine-urgences': '🚑',
-      'geriatrie': '🏥', 'chirurgie-vasculaire': '🫀', 'anesthesiologie': '💉',
-      'oncologie': '🔭', 'infectiologie': '🦠', 'nephrologie': '🔄',
-      'radiologie': '📡', 'hematologie': '🩸', 'medecine-physique': '💪',
-      'pharmacien': '💊',
-    };
-
     let html = '';
     const entries = Object.entries(_accordSpecMap);
     entries.forEach(([id, spec]) => {
-      const emoji = SPEC_EMOJI[spec.slug] || '📋';
       const tot = spec.counts ? (spec.counts.total || 0) : 0;
       html += `<div class="fp-spec-row" data-accord-id="${esc(id)}" data-name="${esc(spec.name.toLowerCase())}">
-        <div class="fp-spec-icon">${emoji}</div>
         <span class="fp-spec-name">${esc(spec.name)}</span>
         ${tot > 0 ? `<span style="font-size:0.78rem;color:var(--text4);margin-right:4px;">${tot}</span>` : ''}
         <svg class="fp-spec-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
