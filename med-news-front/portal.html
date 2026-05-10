@@ -216,8 +216,9 @@
     #spec-splash {
       padding: 0 !important;
       flex: 1 !important; min-height: 0 !important;
+      display: flex !important; flex-direction: column !important;
       align-items: stretch !important; justify-content: flex-start !important;
-      text-align: left !important; overflow-x: hidden; overflow-y: auto;
+      text-align: left !important; overflow: hidden !important;
       margin: 0 !important; width: 100% !important;
       background: transparent !important;
     }
@@ -246,46 +247,41 @@
     .splash-search-divider { color: rgba(255,255,255,.22) !important; }
     .splash-search-divider::before, .splash-search-divider::after { background: rgba(255,255,255,.1) !important; }
     .splash-search-icon { color: rgba(255,255,255,.28) !important; }
-    /* Horizontal snap-scroll pour les 3 cartes */
-    /* ── Splash cats — grille 3 colonnes Apple Health ── */
+    /* ── Splash cats — colonne verticale, style gradient ── */
     .spec-splash-cats {
-      display: grid !important; grid-template-columns: repeat(3, 1fr) !important;
-      gap: 10px !important; padding: 0 16px 20px !important;
-      overflow-x: unset !important; scroll-snap-type: unset !important;
-      flex-wrap: unset !important; flex-shrink: 0 !important;
-      justify-content: unset !important; align-items: unset !important;
-      width: 100% !important;
+      display: flex !important; flex-direction: column !important;
+      flex: 1 !important; min-height: 0 !important;
+      gap: 10px !important; padding: 0 16px 16px !important;
+      overflow: hidden !important;
+      width: 100% !important; box-sizing: border-box !important;
     }
     .spec-splash-cat-btn {
-      flex: unset !important; width: 100% !important; height: auto !important;
-      min-height: 100px !important; border-radius: 16px !important;
-      padding: 13px 12px 11px !important; overflow: hidden !important;
-      border: none !important; border-top: 3px solid var(--dot, var(--green)) !important;
-      scroll-snap-align: unset !important;
+      flex: 1 !important; width: 100% !important; min-height: 0 !important;
+      border-radius: 16px !important;
+      padding: 14px 18px !important; overflow: hidden !important;
+      border: none !important; scroll-snap-align: unset !important;
       display: flex !important; flex-direction: column !important;
       align-items: flex-start !important; justify-content: space-between !important;
-      background: var(--surface) !important;
-      box-shadow: 0 1px 6px rgba(0,0,0,.07), 0 0 0 0.5px rgba(0,0,0,.06) !important;
-      gap: 0 !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18) !important;
+      cursor: pointer !important; -webkit-tap-highlight-color: transparent !important;
     }
-    .spec-splash-cat-btn.stype-reg  { --dot: #3B52A4; }
-    .spec-splash-cat-btn.stype-reco { --dot: #1A6B5C; }
-    .spec-splash-cat-btn.stype-innov{ --dot: #C41E3A; }
-    .spec-splash-cat-btn:active { opacity: .75; }
+    .spec-splash-cat-btn.stype-reg  { background: linear-gradient(150deg,#1a237e 0%,#3B52A4 100%) !important; }
+    .spec-splash-cat-btn.stype-reco { background: linear-gradient(150deg,#1B5E20 0%,#2d7d32 100%) !important; }
+    .spec-splash-cat-btn.stype-innov{ background: linear-gradient(150deg,#7B2D00 0%,#C41E3A 100%) !important; }
+    .spec-splash-cat-btn:active { opacity: .8; transform: scale(.98); }
     .splash-cat-pill {
-      font-size: 0.58rem !important; font-weight: 600 !important; letter-spacing: .5px !important;
-      text-transform: uppercase !important; color: var(--dot, var(--green)) !important;
-      background: none !important; border: none !important; border-radius: 0 !important;
-      padding: 0 !important; margin: 0 0 6px !important; display: block !important;
+      font-size: 0.62rem !important; font-weight: 700 !important; letter-spacing: .6px !important;
+      text-transform: uppercase !important; color: rgba(255,255,255,.75) !important;
+      background: rgba(255,255,255,.15) !important; border-radius: 20px !important;
+      padding: 3px 10px !important; margin: 0 !important; display: inline-block !important;
     }
     .splash-count {
-      font-size: 2rem !important; font-weight: 700 !important;
-      color: var(--text) !important; line-height: 1 !important;
-      padding: 0 !important; flex: 0 !important;
-      display: block !important; align-items: unset !important;
+      font-size: 2.6rem !important; font-weight: 700 !important;
+      color: #fff !important; line-height: 1 !important;
+      padding: 0 !important; flex: 0 !important; display: block !important;
     }
     .splash-cat-sub {
-      font-size: 0.68rem !important; color: var(--text4) !important;
+      font-size: 0.75rem !important; color: rgba(255,255,255,.65) !important;
       padding: 2px 0 0 !important; display: block !important;
     }
     .splash-cat-cta { display: none !important; }
@@ -2452,7 +2448,6 @@ function renderArticle(a, idx) {
   </div>`;
   const storyBody = `<div class="story-body">
     ${points.length ? `<ul class="story-points">${points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
-    ${resume ? `<div class="story-resume">${esc(resume)}</div>` : ''}
   </div>`;
   const storyFooter = `<div class="story-footer">
     <span class="story-date">${esc(MedNews.formatDate(datePub))}</span>
@@ -2490,6 +2485,7 @@ function renderArticle(a, idx) {
     <div class="card-detail">
       <div class="detail-grid">
         ${pointsHtml}
+        ${analyseHtml}
       </div>
       ${refsHtml}
       <div class="detail-footer">
