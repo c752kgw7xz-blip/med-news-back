@@ -126,11 +126,12 @@ _VALID_SOURCE_TYPES = {"reglementaire", "recommandation", "innovation"}
 def _build_audience_clause(audience: str | None, slug: str | None):
     """Return (where_clause, params_tuple) for audience filtering."""
     if slug == "pharmacien":
-        # Pharmaciens voient : PHARMACIENS + prescripteur-type (médicaments) + leur slug
+        # Pharmaciens voient : PHARMACIENS + prescripteur-type (médicaments) + leur slug + TL
         return (
             "(i.audience = 'PHARMACIENS'"
             " OR i.specialty_slug = 'pharmacien'"
-            " OR i.type_praticien = 'prescripteur')",
+            " OR i.type_praticien = 'prescripteur'"
+            " OR i.audience = 'TRANSVERSAL_LIBERAL')",
             (),
         )
     elif slug:
