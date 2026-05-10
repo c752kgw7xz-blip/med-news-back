@@ -842,19 +842,24 @@
   }
   .cat-sugg-btn:hover { border-color: var(--green); color: var(--text); }
 
-  /* ── Mobile bottom nav (5 tabs) ────────── */
+  /* ── Mobile bottom nav — iOS style ────────── */
   .mobile-bottom-nav {
     display: none;
     position: fixed; bottom: 0; left: 0; right: 0;
-    height: 60px; background: var(--surface); border-top: 1px solid var(--border);
-    z-index: 200; padding-bottom: env(safe-area-inset-bottom);
+    height: 60px;
+    background: rgba(253,252,249,.88);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: 0 -0.5px 0 rgba(26,23,20,.12);
+    z-index: 200;
+    padding-bottom: env(safe-area-inset-bottom);
   }
   .mobile-nav-item {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 2px; background: none; border: none; cursor: pointer;
-    color: var(--text4); padding: 6px 0; transition: color .15s;
-    font-family: 'Inter', sans-serif; min-height: 44px;
+    color: var(--text4); padding: 6px 0; transition: color .2s;
+    font-family: 'Inter', sans-serif; min-height: 44px; position: relative;
   }
   .mobile-nav-item.active { color: var(--green); }
   #mnav-specialite.active { color: var(--green); }
@@ -863,9 +868,20 @@
   #mnav-archives { display: none; }
   #mnav-activite.active { color: var(--green); }
   #mnav-parametres.active { color: var(--green); }
-  .mobile-nav-icon { display: flex; align-items: center; justify-content: center; }
-  .mobile-nav-icon svg { width: 22px; height: 22px; }
-  .mobile-nav-label { font-size: 10px; font-weight: 400; white-space: nowrap; }
+  .mobile-nav-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 44px; height: 30px; border-radius: 10px;
+    transition: background .2s;
+  }
+  .mobile-nav-item.active .mobile-nav-icon {
+    background: rgba(26,107,92,.11);
+  }
+  .mobile-nav-icon svg { width: 21px; height: 21px; }
+  .mobile-nav-label {
+    font-size: 10px; font-weight: 400; white-space: nowrap;
+    transition: font-weight .15s;
+  }
+  .mobile-nav-item.active .mobile-nav-label { font-weight: 600; }
 
   /* ── Drawer ─────────────────────────────── */
   .mobile-drawer-overlay {
@@ -901,21 +917,78 @@
   .mobile-drawer-content .sidebar-item { display: flex; }
   .mobile-drawer-content .sidebar-label { display: block; }
 
-  /* ── Full-page overlay (Instagram-style) ─────────────────── */
+  /* ── Full-page overlay — iOS style ─────────────────── */
   .fp-overlay {
     position: fixed; inset: 0; background: var(--bg);
     z-index: 500; display: flex; flex-direction: column;
     transform: translateY(100%);
-    transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
     pointer-events: none; visibility: hidden;
     will-change: transform;
   }
   .fp-overlay.compte-mode, #fp-explorer { bottom: calc(60px + env(safe-area-inset-bottom)); }
   .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
+
+  /* Explorer header — large iOS title */
+  #fp-explorer .fp-overlay-header {
+    flex-direction: column; align-items: flex-start; justify-content: flex-end;
+    height: auto; padding: 16px 20px 0;
+    background: var(--bg); border-bottom: none;
+  }
+  .fp-explorer-large-title {
+    font-size: 2rem; font-weight: 700; color: var(--text);
+    letter-spacing: -0.5px; line-height: 1.1;
+    padding-bottom: 12px;
+    font-family: 'Inter', sans-serif;
+  }
+  /* iOS pill search bar */
+  .fp-search-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(120,120,128,.14); border-radius: 12px;
+    padding: 9px 12px; width: 100%; box-sizing: border-box;
+    margin-bottom: 14px;
+  }
+  .fp-search-bar svg { flex-shrink: 0; color: rgba(60,60,67,.5); }
+  .fp-search-bar input {
+    flex: 1; background: none; border: none; outline: none;
+    font-family: 'Inter', sans-serif; font-size: 0.95rem;
+    color: var(--text);
+  }
+  .fp-search-bar input::placeholder { color: rgba(60,60,67,.5); }
+
+  /* Spec list rows — iOS style */
+  .fp-spec-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 20px; cursor: pointer;
+    transition: background .12s; position: relative;
+  }
+  .fp-spec-row:active { background: var(--surface2); }
+  .fp-spec-row::after {
+    content: ''; position: absolute; bottom: 0; left: 20px; right: 0;
+    height: 0.5px; background: rgba(60,60,67,.18);
+  }
+  .fp-spec-row:last-child::after { display: none; }
+  .fp-spec-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(26,107,92,.1); color: var(--green);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 1.1rem;
+  }
+  .fp-spec-name {
+    flex: 1; font-size: 1rem; font-weight: 500; color: var(--text);
+    font-family: 'Inter', sans-serif;
+  }
+  .fp-spec-chevron {
+    color: rgba(60,60,67,.35); flex-shrink: 0;
+  }
+
   .fp-overlay-header {
     height: 52px; display: flex; align-items: center; gap: 8px;
-    padding: 0 16px; border-bottom: 1px solid var(--border);
-    background: var(--surface); flex-shrink: 0;
+    padding: 0 16px; border-bottom: 0.5px solid rgba(60,60,67,.18);
+    background: rgba(253,252,249,.88);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    flex-shrink: 0;
   }
   .fp-opt-btn {
     padding: 5px 12px; border-radius: var(--radius); font-size: 0.79rem; font-weight: 500;
@@ -927,33 +1000,34 @@
   /* ── Activity tiles ── */
   .fp-activity-tile {
     display: flex; align-items: center; gap: 16px;
-    width: 100%; padding: 20px 18px;
-    background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: 10px; cursor: pointer; text-align: left;
-    transition: border-color .15s, background .15s;
+    width: 100%; padding: 18px 20px;
+    background: var(--surface); border: none;
+    border-radius: 14px; cursor: pointer; text-align: left;
+    transition: background .15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 0 0 0.5px rgba(0,0,0,.06);
   }
-  .fp-activity-tile:hover { border-color: var(--green); background: var(--surface2); }
+  .fp-activity-tile:active { background: var(--surface2); }
   .fp-tile-icon {
-    width: 48px; height: 48px; border-radius: 12px;
-    background: rgba(196,30,58,.07); color: var(--green);
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(26,107,92,.1); color: var(--green);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .fp-tile-body { flex: 1; min-width: 0; }
-  .fp-tile-label { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .fp-tile-label { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 2px; }
   .fp-tile-sub { font-size: 0.78rem; color: var(--text4); }
   .fp-tile-badge {
     font-size: 0.75rem; background: var(--green); color: #fff;
     border-radius: 10px; padding: 2px 8px; flex-shrink: 0;
   }
-  .fp-tile-arrow { color: var(--text4); flex-shrink: 0; }
+  .fp-tile-arrow { color: rgba(60,60,67,.3); flex-shrink: 0; }
 
   .fp-overlay-back {
-    background: none; border: none; color: var(--text); cursor: pointer;
+    background: none; border: none; color: var(--green); cursor: pointer;
     display: flex; align-items: center; gap: 3px; padding: 0;
     font-family: 'Inter', sans-serif; font-size: 0.95rem; min-width: 60px;
   }
   .fp-overlay-title {
-    flex: 1; text-align: center; font-size: 1rem; font-weight: 500;
+    flex: 1; text-align: center; font-size: 1rem; font-weight: 600;
     color: var(--text); padding-right: 60px;
   }
   .fp-drag-area {
@@ -962,10 +1036,10 @@
   }
   .fp-drag-handle {
     width: 36px; height: 4px; border-radius: 2px;
-    background: var(--border-strong, #d0d0d0);
+    background: rgba(60,60,67,.2);
   }
   .fp-overlay-content {
-    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 0 16px;
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 0 16px;
   }
   @media (min-width: 769px) { .fp-overlay { display: none !important; } }
 
@@ -1748,24 +1822,21 @@
 
   <!-- Full-page overlay — Explorer -->
   <div class="fp-overlay" id="fp-explorer">
-    <div class="fp-overlay-header" style="justify-content:center;">
-      <span class="fp-overlay-title">Explorer</span>
+    <div class="fp-overlay-header">
+      <div class="fp-explorer-large-title">Explorer</div>
+      <div class="fp-search-bar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" id="fp-search-spec" placeholder="Rechercher…" oninput="filterFpSpecs(this.value)" autocomplete="off"/>
+      </div>
     </div>
     <div class="fp-overlay-content">
-      <div style="padding:12px 16px 8px;">
-        <input type="search" id="fp-search-spec" placeholder="Rechercher une spécialité…"
-          oninput="filterFpSpecs(this.value)"
-          style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;
-                 background:var(--surface2);color:var(--text);font-family:'Inter',sans-serif;
-                 font-size:0.93rem;outline:none;box-sizing:border-box;"/>
-      </div>
       <div id="fp-spec-list"></div>
     </div>
   </div>
 
   <!-- Full-page overlay — Mon activité (nav visible en bas) -->
   <div class="fp-overlay compte-mode" id="fp-activite">
-    <div class="fp-overlay-header" style="justify-content:center;">
+    <div class="fp-overlay-header" style="justify-content:center;border-bottom:0.5px solid rgba(60,60,67,.18);">
       <span class="fp-overlay-title" style="padding-right:0;">Mon activité</span>
     </div>
     <div class="fp-overlay-content" style="padding:20px 16px;display:flex;flex-direction:column;gap:14px;">
@@ -1926,43 +1997,41 @@ function openFullPage(section) {
 
   if (section === 'explorer') {
     const fpList = document.getElementById('fp-spec-list');
-    fpList.innerHTML = document.getElementById('sidebar-explore')?.innerHTML || '';
-
-    // Supprime les onclick inline : ils appellent document.getElementById qui retourne
-    // l'élément de la sidebar cachée (IDs dupliqués) → double action + état incohérent.
-    // Les données de navigation sont conservées dans des data-attributes.
-    fpList.querySelectorAll('.sidebar-accord').forEach(btn => btn.removeAttribute('onclick'));
-    fpList.querySelectorAll('.sidebar-subitem').forEach(div => {
-      const m = (div.getAttribute('onclick') || '').match(/selectSpecType\('([^']+)','([^']+)','([^']+)'\)/);
-      if (m) { div.dataset.slug = m[1]; div.dataset.stype = m[2]; div.dataset.accordId = m[3]; }
-      div.removeAttribute('onclick');
-    });
-
     const inp = document.getElementById('fp-search-spec');
     if (inp) inp.value = '';
 
+    // Build iOS-style rows from _accordSpecMap
+    const SPEC_EMOJI = {
+      'medecine-generale': '🩺', 'cardiologie': '❤️', 'dermatologie': '🔬',
+      'endocrinologie': '⚗️', 'gastro-enterologie': '🫁', 'gynecologie': '🌸',
+      'neurologie': '🧠', 'ophtalmologie': '👁️', 'orl': '👂', 'pediatrie': '👶',
+      'pneumologie': '🫧', 'psychiatrie': '🧘', 'rhumatologie': '🦴',
+      'urologie': '💊', 'medecine-interne': '🩻', 'medecine-urgences': '🚑',
+      'geriatrie': '🏥', 'chirurgie-vasculaire': '🫀', 'anesthesiologie': '💉',
+      'oncologie': '🔭', 'infectiologie': '🦠', 'nephrologie': '🔄',
+      'radiologie': '📡', 'hematologie': '🩸', 'medecine-physique': '💪',
+      'pharmacien': '💊',
+    };
+
+    let html = '';
+    const entries = Object.entries(_accordSpecMap);
+    entries.forEach(([id, spec]) => {
+      const emoji = SPEC_EMOJI[spec.slug] || '📋';
+      const tot = spec.counts ? (spec.counts.total || 0) : 0;
+      html += `<div class="fp-spec-row" data-accord-id="${esc(id)}" data-name="${esc(spec.name.toLowerCase())}">
+        <div class="fp-spec-icon">${emoji}</div>
+        <span class="fp-spec-name">${esc(spec.name)}</span>
+        ${tot > 0 ? `<span style="font-size:0.78rem;color:var(--text4);margin-right:4px;">${tot}</span>` : ''}
+        <svg class="fp-spec-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </div>`;
+    });
+    fpList.innerHTML = html;
+
     fpList.onclick = (e) => {
-      // Clic sur une spécialité → splash direct (toggleAccord gère mobile)
-      const accordBtn = e.target.closest('.sidebar-accord');
-      if (accordBtn) {
-        e.stopPropagation();
-        const id = accordBtn.id.replace('accord-', '');
-        if (id) toggleAccord(id);
-        return;
-      }
-      // Sélection d'un sous-type (Réglementation / Recommandation)
-      const sub = e.target.closest('.sidebar-subitem');
-      if (sub && sub.dataset.slug) {
-        e.stopPropagation();
-        selectSpecType(sub.dataset.slug, sub.dataset.stype, sub.dataset.accordId);
-        // Si la spé sélectionnée est la spé propre de l'utilisateur → onglet "Ma spécialité"
-        // Sinon → garder "Explorer" actif (l'utilisateur navigue dans une autre spé)
-        document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
-        const targetTab = sub.dataset.slug === userSpecSlug ? 'specialite' : 'explorer';
-        document.getElementById('mnav-' + targetTab)?.classList.add('active');
-        _prevNavSection = targetTab;
-        setTimeout(() => closeFullPage('explorer'), 100);
-      }
+      const row = e.target.closest('.fp-spec-row');
+      if (!row) return;
+      const id = row.dataset.accordId;
+      if (id) toggleAccord(id);
     };
   }
 }
@@ -1981,11 +2050,9 @@ function closeFullPage(section) {
 
 function filterFpSpecs(query) {
   const q = query.toLowerCase().trim();
-  document.querySelectorAll('#fp-spec-list .sidebar-accord').forEach(btn => {
-    const matches = !q || btn.textContent.toLowerCase().includes(q);
-    btn.style.display = matches ? '' : 'none';
-    const sub = btn.nextElementSibling;
-    if (sub && sub.classList.contains('sidebar-subitems') && !matches) sub.style.display = 'none';
+  document.querySelectorAll('#fp-spec-list .fp-spec-row').forEach(row => {
+    const matches = !q || (row.dataset.name || '').includes(q);
+    row.style.display = matches ? '' : 'none';
   });
 }
 
