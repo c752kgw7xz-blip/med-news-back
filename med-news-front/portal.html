@@ -343,13 +343,17 @@
     [data-theme="light"] .splash-search-divider::before,
     [data-theme="light"] .splash-search-divider::after { background: var(--border) !important; }
     [data-theme="light"] .splash-search-icon { color: var(--text4) !important; }
-    /* Cat switcher inactive buttons */
+    /* Cat switcher — mode clair */
     [data-theme="light"] .cat-sw-btn {
       background: var(--surface) !important;
-      border-color: var(--border) !important;
+      border: 1px solid var(--border) !important;
     }
     [data-theme="light"] .cat-sw-label { color: var(--text3) !important; }
-    [data-theme="light"] .cat-sw-count { color: var(--text3) !important; }
+    [data-theme="light"] .cat-sw-count { color: var(--text2) !important; }
+    /* Boutons actifs : restaurer les gradients (sinon !important ci-dessus les écrase) */
+    [data-theme="light"] .cat-sw-btn.active.stype-reg  { background: linear-gradient(150deg,#1a237e 0%,#3B52A4 100%) !important; border-color: transparent !important; }
+    [data-theme="light"] .cat-sw-btn.active.stype-reco { background: linear-gradient(150deg,#1B5E20 0%,#2d7d32 100%) !important; border-color: transparent !important; }
+    [data-theme="light"] .cat-sw-btn.active.stype-innov{ background: linear-gradient(150deg,#7B2D00 0%,#9B2335 100%) !important; border-color: transparent !important; }
     [data-theme="light"] .cat-sw-btn.active .cat-sw-label { color: rgba(255,255,255,.85) !important; }
     [data-theme="light"] .cat-sw-btn.active .cat-sw-count { color: #fff !important; }
     /* Content area gradients in light mode */
