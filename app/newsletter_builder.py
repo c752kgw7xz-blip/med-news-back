@@ -461,8 +461,6 @@ _SOURCE_MAP = {
     "vascular_specialist": "Vascular Specialist",
     "vascular_news":       "Vascular News",
     "tctmd":               "TCTMD",
-    "quotidien_medecin":   "Quotidien du Médecin",
-    "egora":               "Egora",
     "has_":                "HAS",
     "ansm_":               "ANSM",
     "legifrance":          "JORF",

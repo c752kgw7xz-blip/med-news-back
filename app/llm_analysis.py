@@ -105,8 +105,7 @@ SOURCE_TO_TYPE: dict[str, str] = {
     # HAS — décisions formelles (accès précoce, bulletin officiel)
     "has_acces_precoces":           "reglementaire",
     "has_bo":                       "reglementaire",
-    # SPF / CNOM / caisses de retraite libérales — institutionnel
-    "spf_beh":                      "reglementaire",
+    # CNOM / caisses de retraite libérales — institutionnel
     "cnom":                         "reglementaire",
     "ameli_medecin":                "reglementaire",  # Assurance Maladie — actualités médecins libéraux
     "carmf":                        "reglementaire",  # Caisse retraite médecins
@@ -1119,7 +1118,7 @@ _INNOVATION_SOURCES: frozenset[str] = frozenset({
     "jama_neurology", "jama_oncology", "jama_ophthalmology",
     "jama_otolaryngology", "jama_pediatrics", "jama_psychiatry",
     "jama_surgery", "jama_network_open",
-    "nejm", "lancet", "bmj", "nature_medicine",
+    "nejm", "lancet", "bmj",
     "clinical_chemistry", "ptj_kine", "bjog", "cpt_pharmacol",
     "jdr_dental", "jan_nursing",
     # PubMed — chirurgie vasculaire
@@ -1153,7 +1152,6 @@ _INNOVATION_SOURCES: frozenset[str] = frozenset({
 _PRESS_SOURCES: frozenset[str] = frozenset({
     "vascular_specialist", "vascular_news", "tctmd",
     "endovascular_today",
-    "quotidien_medecin", "egora",
     # Congrès vasculaires — highlights (couverts via TCTMD + Vascular News)
     # linc_highlights et evc_highlights désactivés (domaines NXDOMAIN)
 })
@@ -1291,7 +1289,6 @@ SOURCE_HINTS: dict[str, str] = {
     "has_fiches_memo":       "HAS — Fiche mémo (synthèse pratique, directement actionnable en consultation)",
     "has_parcours":          "HAS — Parcours de soins (organisation prise en charge par pathologie)",
     "has_outils":            "HAS — Outil ou méthode HAS (évaluation, amélioration des pratiques)",
-    "academie_medecine":     "Académie Nationale de Médecine — publication ou avis scientifique",
     "sfc_recommandations":   "Société Française de Cardiologie — recommandation ou guideline cardiologie",
     "sfmu_recommandations":  "SFMU — Recommandation médecine d'urgence",
     "sfp_recommandations":   "Société Française de Pédiatrie — recommandation pédiatrique",
@@ -1357,7 +1354,6 @@ SOURCE_HINTS: dict[str, str] = {
     # Nouvelles sources institutionnelles — audit mars 2026
     "has_ct":  "HAS Commission de la Transparence — Avis remboursement médicament (ASMR/SMR)",
     "has_dm":  "HAS — Avis sur les dispositifs médicaux (admission remboursement, conditions utilisation)",
-    "spf_beh": "Santé publique France — Article épidémiologique (BEH, alerte sanitaire, vaccination)",
     "cnom":          "CNOM (Ordre des Médecins) — Déontologie médicale, réglementation exercice libéral",
     "ameli_medecin": "Assurance Maladie (ameli.fr) — Actualités médecins libéraux : convention médicale, honoraires, FMT/Donum, remboursements CCAM, téléconsultation, nouveaux actes, outils praticiens",
     "carmf":         "CARMF (Caisse Autonome de Retraite des Médecins de France) — Retraite, cotisations, PSS, ASV, prévoyance médecins libéraux",
@@ -1391,7 +1387,6 @@ SOURCE_HINTS: dict[str, str] = {
     "nejm":          "New England Journal of Medicine (NEJM) — Essai clinique de référence ou méta-analyse (impact mondial sur les standards de soins)",
     "lancet":        "The Lancet — Essai clinique ou méta-analyse internationale (toutes spécialités, focus santé mondiale)",
     "bmj":           "BMJ (British Medical Journal) — Essai clinique, méta-analyse ou étude observationnelle (pratique clinique britannique et internationale)",
-    "nature_medicine":"Nature Medicine — Recherche translationnelle de pointe (immunothérapies, génomique, IA médicale, nouvelles thérapies)",
     # Sources paramédicales
     "clinical_chemistry": "Clinical Chemistry (AACC) — Article de recherche en biologie médicale (nouveaux biomarqueurs, méthodes analytiques, DM-DIV)",
     "ptj_kine":           "Physical Therapy Journal (PTJ/APTA) — Essai clinique ou méta-analyse en kinésithérapie et rééducation fonctionnelle",
@@ -1409,8 +1404,6 @@ SOURCE_HINTS: dict[str, str] = {
     "vascular_specialist": "Vascular Specialist (SVS official newspaper) — Presse médicale chirurgie vasculaire : nouveaux dispositifs, résultats d'essais pivots, congrès SVS/ESVS/VEITH. Journaliste médical spécialisé, pas chercheur.",
     "vascular_news":       "Vascular News — Presse médicale vasculaire internationale : résultats d'études, approbations CE/FDA dispositifs endovasculaires, congrès ESVS/CIRSE/LINC. Peut couvrir alertes réglementaires ou changements de guideline.",
     "tctmd":               "TCTMD (Cardiovascular Research Foundation) — Presse médicale interventionnelle : vasculaire périphérique (stenting iliaque, CLTI, carotide, AOMI), plus cardiologie interventionnelle. Filtrer sévèrement ce qui ne concerne pas le chirurgien vasculaire.",
-    "quotidien_medecin":   "Le Quotidien du Médecin — Presse médicale française généraliste : peut couvrir alertes ANSM, nouvelles recommandations HAS, changements de remboursement. Bruit élevé (politique santé, RH médicales) → ne retenir que les news cliniquement actionnables.",
-    "egora":               "Egora — Presse médicale libérale française : orientation médecine générale, parfois alertes réglementaires ou nouveaux remboursements. Bruit très élevé → seuil maximal.",
     # ── PubMed — chirurgie plastique & reconstructrice ────────────────────────
     "pubmed_prs":          "Plastic and Reconstructive Surgery (PRS/ASPS) — Essai clinique, méta-analyse ou guideline ASPS en chirurgie plastique reconstructrice et esthétique",
     "pubmed_jpras":        "Journal of Plastic, Reconstructive & Aesthetic Surgery (JPRAS/BAPRAS/ESPRAS) — Études multicentriques européennes : reconstruction mammaire, microchirurgie, brûlures, chirurgie de la main",
@@ -1487,7 +1480,6 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "medpage_emergency":           "medecine-urgences",
     "medpage_anesthesiology":      "anesthesiologie",
     "medpage_radiology":           "radiologie",
-    # medpage_surgery absent → comportement générique (multi-spé chirurgicale)
     "pubmed_ejves":            "chirurgie-vasculaire",
     "pubmed_ejves_guidelines": "chirurgie-vasculaire",
     "pubmed_jet":              "chirurgie-vasculaire",
@@ -1664,11 +1656,6 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "ansm_ruptures_vaccins":          "tous",        # ANSM — Disponibilité vaccins
     "has_acces_precoces":             "tous",        # HAS — Accès précoce (ex-ATU) — cross-specialty
     "has_bo":                         "tous",        # HAS — Bulletin officiel (décisions formelles)
-    "nature_medicine":                "tous",        # Nature Medicine — recherche translationnelle cross-spé (immunothérapies, génomique, IA)
-    "quotidien_medecin":              "tous",        # Le Quotidien du Médecin — presse médicale généraliste FR, toutes spécialités
-    "academie_medecine":              "tous",        # Académie Nationale de Médecine — avis et rapports scientifiques
-    "spf_beh":                        "tous",        # Santé Publique France BEH — épidémiologie, alertes sanitaires, vaccination
-    "medpage_surgery":                "tous",        # MedPage Surgery — multi-spé chirurgicale (pas de slug unique)
     "inca_recommandations":           "oncologie",   # INCa — Référentiels oncologie
     # ── Sources européennes (agences réglementaires EU) ───────────────────────
     "ema_news":           "tous",          # EMA — Alertes sécurité EU (retraits AMM, DHPCs) — cross-specialty
@@ -2113,8 +2100,6 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_cancer_med":            "oncologie",
     "pubmed_oncotarget":            "oncologie",
     "esmo":                         "oncologie",   # RSS ESMO guidelines
-    # ── Parodontologie (EFP) — remappé "tous" : triage global traite et rejette si hors-cible médecin
-    "efp_guidelines":               "tous",        # EFP — European Federation of Periodontology guidelines
     # ── Pharmacien ────────────────────────────────────────────────────────────
     "br_j_clin_pharm_rss":           "pharmacien",  # RSS BJCP (BPS/Wiley, IF ~4)
     "ann_pharmacother_rss":          "pharmacien",  # RSS Ann Pharmacotherapy (SAGE, IF ~4)
@@ -7957,10 +7942,6 @@ SOURCE_CONFIG: dict[str, dict] = {
         "require_whitelist": False,
         "min_llm_score": 4,
     },
-    "academie_medecine": {
-        "require_whitelist": False,
-        "min_llm_score": 4,
-    },
     "sfc_recommandations": {
         "require_whitelist": False,
         "min_llm_score": 4,
@@ -8032,13 +8013,6 @@ SOURCE_CONFIG: dict[str, dict] = {
         "require_whitelist": False,
         "min_llm_score": 4,
     },
-    # ── Santé publique France (articles + BEH) ───────────────────────────
-    # RSS général SPF — données épidémio pas toujours actionnables directement
-    # Seuil 5 : seules les alertes sanitaires et changements de recommandation passent
-    "spf_beh": {
-        "require_whitelist": False,
-        "min_llm_score": 5,
-    },
     # ── CNOM — déontologie et exercice libéral ────────────────────────────
     # Source exclusivement médicale : toutes les publications sont soit
     # pertinentes (exercice libéral, déontologie, honoraires) soit
@@ -8083,7 +8057,7 @@ SOURCE_CONFIG: dict[str, dict] = {
         "jama", "jama_cardiology", "jama_dermatology", "jama_internal_med",
         "jama_neurology", "jama_oncology", "jama_ophthalmology",
         "jama_otolaryngology", "jama_pediatrics", "jama_psychiatry",
-        "jama_surgery", "nature_medicine",
+        "jama_surgery",
     ]},
     # Journaux généralistes + JAMA Network Open : volume élevé → seuil 7 (filtrage strict)
     # NEJM/Lancet/BMJ publient ~100-150 articles/semaine — seules les études
@@ -8114,8 +8088,6 @@ SOURCE_CONFIG: dict[str, dict] = {
     "vascular_specialist": {"require_whitelist": False, "min_llm_score": 7},
     "vascular_news":       {"require_whitelist": False, "min_llm_score": 7},
     "tctmd":               {"require_whitelist": False, "min_llm_score": 8},
-    "quotidien_medecin":   {"require_whitelist": False, "min_llm_score": 8},
-    "egora":               {"require_whitelist": False, "min_llm_score": 9},
     # JAMA Surgery via PubMed (RSS 403 depuis avril 2026) :
     # requête déjà filtrée sur termes vasculaires → seuil 6 (LLM affine).
     "pubmed_jama_surgery": {
@@ -8845,8 +8817,7 @@ _DROP_TITLE_RES = [re.compile(p) for p in _DROP_TITLE_PATTERNS]
 NOISY_SOURCES: frozenset[str] = frozenset({
     "cnom",      # Ordre des Médecins — déontologie + contenu institutionnel varié
     "bo_social", # BO ministères sociaux — nombreuses circulaires hors santé
-    "spf_beh",   # SPF — articles sans résumé, dont beaucoup non actionnables
-                 # (ruralité, sociologie, statistiques) → whitelist médicale obligatoire
+
 })
 
 # ---------------------------------------------------------------------------

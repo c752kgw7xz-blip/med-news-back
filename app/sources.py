@@ -135,16 +135,6 @@ FR_REGULATORY_FEEDS: list[dict] = [
         "specialty_hint": "tous",
     },
 
-    # ── Santé publique France — Articles (BEH, alertes, épidémiologie) ───
-    {
-        "url": "https://www.santepubliquefrance.fr/rss/types-de-documents/article.xml",
-        "label": "Santé publique France — Articles (BEH, alertes, épidémiologie)",
-        "source": "spf_beh",
-        "source_type": "reglementaire",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",
-    },
-
     # ── CNOM — Ordre National des Médecins ────────────────────────────────
     # Déontologie, exercice libéral, responsabilité professionnelle.
     {
@@ -197,16 +187,6 @@ FR_REGULATORY_FEEDS: list[dict] = [
         "specialty_hint": "tous",
         "min_score_hint": 6,
         "disabled": True,  # Exclu de collect_feed() — utiliser collect_carmf() directement
-    },
-
-    # ── Académie Nationale de Médecine ────────────────────────────────────
-    {
-        "url": "https://www.academie-medecine.fr/feed/",
-        "label": "Académie Nationale de Médecine — Publications",
-        "source": "academie_medecine",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",
     },
 
     # ── HAS — Décisions d'accès précoce (ex-ATU cohorte) ─────────────────
@@ -889,15 +869,6 @@ JOURNALS_FEEDS: list[dict] = [
     #     "audience": ["medecins"],
     #     "specialty_hint": "tous",
     # },
-    {
-        "url": "https://www.nature.com/nm.rss",
-        "label": "Nature Medicine — Recherche translationnelle",
-        "source": "nature_medicine",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",
-    },
-
     # ── Lancet specialty — 10 journaux spécialisés ────────────────────────
     {
         "url": "https://www.thelancet.com/rssfeed/laneur_current.xml",
@@ -1569,27 +1540,6 @@ CLINICAL_PRESS_FEEDS: list[dict] = [
         "min_score_hint": 7,
     },
 
-    # ── Presse médicale française généraliste ─────────────────────────────
-    # Bruit très élevé → min_score élevé : seules les vraies nouvelles cliniques.
-    {
-        "url": "https://www.lequotidiendumedecin.fr/rss.xml",
-        "label": "Le Quotidien du Médecin",
-        "source": "quotidien_medecin",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",
-        "min_score_hint": 8,
-    },
-    {
-        "url": "http://www.egora.fr/rss.xml",
-        "label": "Egora — Presse médicale libérale",
-        "source": "egora",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",
-        "min_score_hint": 9,
-    },
-
     # ── Healio — 15 spécialités (vérifié avril 2026) ──────────────────────
     {
         "url": "https://www.healio.com/rss/cardiology",
@@ -1823,17 +1773,6 @@ CLINICAL_PRESS_FEEDS: list[dict] = [
         "source_type": "innovation",
         "audience": ["medecins"],
         "specialty_hint": "radiologie",
-        "min_score_hint": 8,
-    },
-    # Multi-spécialité chirurgicale (cardiaque, thoracique, plastique, etc.)
-    # specialty_hint absent → LLM route par contenu
-    {
-        "url": "https://www.medpagetoday.com/rss/surgery.xml",
-        "label": "MedPage Today Surgery — chirurgie (cardiaque, thoracique, etc.)",
-        "source": "medpage_surgery",
-        "source_type": "innovation",
-        "audience": ["medecins"],
-        "specialty_hint": "tous",
         "min_score_hint": 8,
     },
 ]
@@ -2176,17 +2115,6 @@ EU_WEB_SOURCES: list[dict] = [
         "specialty_hint": "ophtalmologie",
         "link_pattern": r"euretina\.org/",
         "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|education|news|media|grants|jobs)(/|$)",
-    },
-    # Dentisterie — Parodontologie
-    {
-        "url": "https://www.efp.org/education/continuing-education/clinical-guidelines/",
-        "source": "efp_guidelines",
-        "label": "EFP — European Federation of Periodontology (guidelines parodontologie)",
-        "source_type": "recommandation",
-        "audience": ["medecins"],
-        "specialty_hint": "dentiste",
-        "link_pattern": r"efp\.org/",
-        "exclude_pattern": r"(?i)/(about|events|congress|membership|contact|news|jobs|grants|donate|foundation)(/|$)",
     },
     # Pharmacie hospitalière
     {

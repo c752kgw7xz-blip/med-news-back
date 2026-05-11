@@ -205,10 +205,7 @@ WHERE source IN (
   'legifrance_jorf','legifrance_jorf_remboursement',
   'piste_kali','piste_legi','piste_circ','bo_social',
   -- Médecin libéral
-  'cnom','ameli_medecin','carmf','csmf','mgfrance','carpimko',
-  -- Presse médicale généraliste & science translationnelle cross-spé
-  'quotidien_medecin','nature_medicine','academie_medecine',
-  'spf_beh','medpage_surgery','efp_guidelines'
+  'cnom','ameli_medecin','carmf','csmf','mgfrance','carpimko'
 ) AND status = 'NEW'
 GROUP BY source ORDER BY source;
 ```
@@ -224,7 +221,6 @@ Afficher le décompte. Si total = 0 → session terminée immédiatement.
 5. **FDA 510k / PMA** — innovation dispositifs (filtre mots-clés obligatoire, voir RÈGLE 2)
 6. **JORF / piste** (legifrance_jorf, legifrance_jorf_remboursement, piste_*) — réglementaire FR
 7. **TRANSVERSAL_LIBERAL** (cnom, ameli_medecin, carmf, csmf, mgfrance, carpimko) — en dernier
-8. **Presse généraliste & science translationnelle** (quotidien_medecin, nature_medicine, academie_medecine, spf_beh, medpage_surgery, efp_guidelines) — routing par contenu ; `efp_guidelines` = parodontologie → rejeter si non pertinent médecin
 
 ### Étape 3 — Pour chaque article retenu
 
