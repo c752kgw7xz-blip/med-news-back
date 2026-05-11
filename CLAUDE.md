@@ -228,11 +228,25 @@ Afficher le décompte. Si total = 0 → session terminée immédiatement.
 
 ### Étape 3 — Pour chaque article retenu
 
-**Routing specialty_slug :**
-- Lire le contenu → déterminer la ou les spécialités concernées
-- Article mono-spé → insérer avec le `specialty_slug` cible
-- Article multi-spé → insérer une fois par spécialité concernée (UUIDs distincts, même `candidate_id`)
-- Article médecin libéral (sources TRANSVERSAL_LIBERAL) → `audience='TRANSVERSAL_LIBERAL'`, `specialty_slug=NULL`
+**Routing specialty_slug — 4 cas, dans cet ordre :**
+
+1. **Article médecin libéral** (sources : cnom, ameli_medecin, carmf, csmf, mgfrance, carpimko)
+   → `audience='TRANSVERSAL_LIBERAL'`, `specialty_slug=NULL`
+
+2. **Article réglementaire transversal** — s'applique sans distinction à tous les prescripteurs :
+   modification liste remboursables, retrait AMM global, alerte ANSM médicament/dispositif générique,
+   décret JORF tous médecins, alerte logiciel métier (ex. DxCare), recommandation HAS tous prescripteurs
+   → `audience='TRANSVERSAL_LIBERAL'`, `specialty_slug=NULL`, `source_type='reglementaire'`
+   ⚠️ Ne PAS insérer dans medecine-generale par défaut — c'est le mauvais routing historique.
+
+3. **Article réglementaire spé-ciblé** — s'applique à une ou quelques spécialités identifiées
+   (ex. alerte ziprasidone → psychiatrie, alerte acide tranexamique → anesthesiologie + chirurgie)
+   → insérer avec le `specialty_slug` de la spécialité concernée (plusieurs slugs si nécessaire : UUIDs distincts, même `candidate_id`)
+   ⚠️ Ne JAMAIS router dans `medecine-generale` par défaut : c'est la fausse bonne idée.
+   Si la spécialité cible est incertaine, préférer TRANSVERSAL_LIBERAL plutôt que medecine-generale.
+
+4. **Article innovation/recommandation** spé-ciblé
+   → insérer avec le `specialty_slug` de la spécialité concernée (plusieurs slugs si nécessaire)
 
 Mêmes règles qu'en "lance X" : filtre praticien ~15-20%, structure JSON RÈGLE 1, `score_density=7`, ton RÈGLE 3.
 
