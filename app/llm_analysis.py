@@ -1631,7 +1631,7 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     # Oncologie soins de support
     "afsos":                          "oncologie",           # AFSOS — soins oncologiques de support
     # Médecine nucléaire
-    "sfmn":                           "medecine-nucleaire",  # SFMN — médecine nucléaire
+    "sfmn":                           "radiologie",          # SFMN — médecine nucléaire (remappé radiologie — spé la plus proche dans le pipeline)
     # Médecine d'urgence
     "sfmu":                           "medecine-urgences",   # SFMU — médecine d'urgence
     # Biologie médicale (déjà: sfbc → biologiste)
@@ -2113,9 +2113,8 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_cancer_med":            "oncologie",
     "pubmed_oncotarget":            "oncologie",
     "esmo":                         "oncologie",   # RSS ESMO guidelines
-    # ── Dentiste ──────────────────────────────────────────────────────────────
-    # ⚠️  dentiste absent de triage_orchestrator.sh — ces sources restent NEW jusqu'à l'ajout du slot
-    "efp_guidelines":               "dentiste",    # EFP — European Federation of Periodontology guidelines
+    # ── Parodontologie (EFP) — remappé "tous" : triage global traite et rejette si hors-cible médecin
+    "efp_guidelines":               "tous",        # EFP — European Federation of Periodontology guidelines
     # ── Pharmacien ────────────────────────────────────────────────────────────
     "br_j_clin_pharm_rss":           "pharmacien",  # RSS BJCP (BPS/Wiley, IF ~4)
     "ann_pharmacother_rss":          "pharmacien",  # RSS Ann Pharmacotherapy (SAGE, IF ~4)
