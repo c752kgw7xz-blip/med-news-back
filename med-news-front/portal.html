@@ -356,6 +356,20 @@
     [data-theme="light"] .content-area[data-stype="reglementaire"] { background: linear-gradient(180deg, rgba(59,82,164,.10) 0%, var(--bg) 240px); }
     [data-theme="light"] .content-area[data-stype="recommandation"] { background: linear-gradient(180deg, rgba(26,107,92,.10) 0%, var(--bg) 240px); }
     [data-theme="light"] .content-area[data-stype="innovation"]     { background: linear-gradient(180deg, rgba(155,87,20,.10) 0%, var(--bg) 240px); }
+    /* Story mode — footer et éléments blancs invisibles en mode clair */
+    [data-theme="light"] .story-stack-mode .story-footer {
+      border-top-color: var(--border) !important;
+    }
+    [data-theme="light"] .story-stack-mode .story-date { color: var(--text4) !important; }
+    [data-theme="light"] .story-stack-mode .story-fav-btn { color: var(--text3) !important; }
+    [data-theme="light"] .story-stack-mode .story-read-btn {
+      background: var(--green) !important;
+      color: #fff !important;
+      border-color: transparent !important;
+    }
+    [data-theme="light"] .story-stack-mode .story-source-chip { color: var(--text4) !important; }
+    [data-theme="light"] .story-stack-mode .story-source-chip::before { color: var(--text4) !important; }
+    [data-theme="light"] .story-stack-mode .article-card { border-bottom-color: var(--border) !important; }
   }
 
   @media (max-width: 480px) {
