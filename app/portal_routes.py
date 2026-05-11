@@ -383,7 +383,16 @@ def article_counts(
                 tous_counts[key] = count
                 tous_counts["total"] += count
 
-            # Injecter les TRANSVERSAL_LIBERAL dans chaque spécialité
+            # Injecter les TRANSVERSAL_LIBERAL dans chaque spécialité connue.
+            # Les spés sans article spé-ciblé sur la période sont absentes de per_spec
+            # → les initialiser à 0 pour qu'elles reçoivent quand même les comptes TL.
+            all_known_slugs = _INTERVENTIONAL_SLUGS | _PRESCRIPTEUR_SLUGS | frozenset({
+                "biologiste", "infirmiers", "kinesitherapie", "pharmacien",
+                "sage-femme", "medecine-du-sport", "addictologie",
+            })
+            for slug in all_known_slugs:
+                if slug not in per_spec:
+                    per_spec[slug] = {"total": 0, "reglementaire": 0, "recommandation": 0, "innovation": 0}
             for spec_data in per_spec.values():
                 for k in ("total", "reglementaire", "recommandation", "innovation"):
                     spec_data[k] = spec_data.get(k, 0) + tous_counts.get(k, 0)
