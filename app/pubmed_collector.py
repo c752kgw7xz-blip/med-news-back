@@ -796,10 +796,10 @@ PUBMED_SOURCES: list[dict] = [
     # Journal de référence mondial : reconstruction mammaire, microchirurgie,
     # lambeaux libres, chirurgie esthétique. Publie les RCTs multicentriques ASPS,
     # méta-analyses DIEP vs TRAM, essais randomisés liposuccion/abdominoplastie.
-    # Filtre PT : élimine les séries rétrospectives monocentriques qui dominent.
+    # _PT_OR_TITLE : NLM tague les PT avec 2-6 semaines de retard → fenêtre 4j quasi-vide sans title fallback.
     {
         "source": "pubmed_prs",
-        "journal_term": f'"Plast Reconstr Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Plast Reconstr Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "Plastic and Reconstructive Surgery (PRS) — ASPS flagship",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -812,7 +812,7 @@ PUBMED_SOURCES: list[dict] = [
     # oncologique, chirurgie de la main, microchirurgie reconstructrice.
     {
         "source": "pubmed_jpras",
-        "journal_term": f'"J Plast Reconstr Aesthet Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Plast Reconstr Aesthet Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Plastic, Reconstructive & Aesthetic Surgery (JPRAS) — BAPRAS/ESPRAS",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -825,7 +825,7 @@ PUBMED_SOURCES: list[dict] = [
     # techniques esthétiques. Contexte fortement US mais largement lu en France.
     {
         "source": "pubmed_asj",
-        "journal_term": f'"Aesthet Surg J"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Aesthet Surg J"[Journal] AND {_PT_OR_TITLE}',
         "label": "Aesthetic Surgery Journal (ASJ) — ASAPS",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -838,7 +838,7 @@ PUBMED_SOURCES: list[dict] = [
     # les méta-analyses à fort impact ou études multicentriques pivots.
     {
         "source": "pubmed_ann_plast_surg",
-        "journal_term": f'"Ann Plast Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Ann Plast Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "Annals of Plastic Surgery",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -851,7 +851,7 @@ PUBMED_SOURCES: list[dict] = [
     # Publie RCTs tendons, nerfs, arthrose digitale, réimplantations, syndactylie.
     {
         "source": "pubmed_jhs_am",
-        "journal_term": f'"J Hand Surg Am"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Hand Surg Am"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Hand Surgery American (ASSH) — chirurgie de la main",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -864,7 +864,7 @@ PUBMED_SOURCES: list[dict] = [
     # digitale, traumatologie sévère de la main.
     {
         "source": "pubmed_jhs_eur",
-        "journal_term": f'"J Hand Surg Eur Vol"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Hand Surg Eur Vol"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Hand Surgery European (FESSH)",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -877,7 +877,7 @@ PUBMED_SOURCES: list[dict] = [
     # Journal ciblé → pas de filtre thématique additionnel.
     {
         "source": "pubmed_jrms",
-        "journal_term": f'"J Reconstr Microsurg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Reconstr Microsurg"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Reconstructive Microsurgery (JRM)",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -890,7 +890,7 @@ PUBMED_SOURCES: list[dict] = [
     # LVA), transfert vascularisé ganglionnaire lymphatique.
     {
         "source": "pubmed_microsurgery",
-        "journal_term": f'"Microsurgery"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Microsurgery"[Journal] AND {_PT_OR_TITLE}',
         "label": "Microsurgery — Wiley",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -903,7 +903,7 @@ PUBMED_SOURCES: list[dict] = [
     # Integra), protocoles de réhabilitation, épidémiologie centres brûlés.
     {
         "source": "pubmed_burns",
-        "journal_term": f'"Burns"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Burns"[Journal] AND {_PT_OR_TITLE}',
         "label": "Burns — International Journal of Burn Care (Elsevier)",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -917,7 +917,7 @@ PUBMED_SOURCES: list[dict] = [
     # Seuil 6 : contexte français fort, même études de niveau moyen sont pertinentes.
     {
         "source": "pubmed_acpe",
-        "journal_term": f'"Ann Chir Plast Esthet"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Ann Chir Plast Esthet"[Journal] AND {_PT_OR_TITLE}',
         "label": "Annales de Chirurgie Plastique Esthétique (ACPE) — SOFCPRE",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -973,7 +973,7 @@ PUBMED_SOURCES: list[dict] = [
     # que les études ayant un impact clinique réel malgré le rang plus bas.
     {
         "source": "pubmed_prs_global_open",
-        "journal_term": f'"Plast Reconstr Surg Glob Open"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Plast Reconstr Surg Glob Open"[Journal] AND {_PT_OR_TITLE}',
         "label": "Plastic and Reconstructive Surgery Global Open (ASPS open access)",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
