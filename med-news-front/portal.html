@@ -427,6 +427,18 @@
     .btn-official { padding: 6px 12px; font-size: 0.76rem; }
   }
 
+  /* ── Demo mode — header + mobile nav plus épais ─ */
+  @media (max-width: 768px) {
+    body.demo-mode header { height: 64px; }
+    body.demo-mode .mobile-bottom-nav { height: calc(76px + env(safe-area-inset-bottom, 0px)); }
+    body.demo-mode .content-area { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  }
+  @media (max-width: 480px) {
+    body.demo-mode header { height: 60px; }
+    body.demo-mode .mobile-bottom-nav { height: calc(72px + env(safe-area-inset-bottom, 0px)); }
+    body.demo-mode .content-area { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  }
+
   /* ── Bottom navigation (mobile) ─────────── */
   .bottom-nav {
     display: none;
@@ -1883,7 +1895,7 @@
   </header>
 
   <div class="demo-banner" id="demo-banner" style="display:none;background:#1d1916;border-bottom:1px solid #3d3228;padding:7px 24px;font-size:0.78rem;color:#a89070;text-align:center;letter-spacing:.3px;">
-    MODE DÉMO · <a href="/signup" target="_top" style="color:#9B2335;text-decoration:none;font-weight:500;">Créer mon compte gratuitement →</a>
+    MODE DÉMO · <a href="/signup" target="_top" style="color:#9B2335;text-decoration:none;font-weight:500;">Créer mon compte →</a>
   </div>
 
   <div class="verify-banner" id="verify-banner">
@@ -2185,6 +2197,7 @@
 
 <script>
 const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
+if (DEMO_MODE) document.body.classList.add('demo-mode');
 let _demoCache = null; // articles chirurgie-vasculaire (spé principale démo)
 let _demoCacheBySlug = {}; // cache articles par slug, chargé à la demande
 let _demoDatesBySlug = {}; // { slug: { from_date, to_date } } — dernier mois actif par spé
