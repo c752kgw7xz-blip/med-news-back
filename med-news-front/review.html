@@ -192,6 +192,35 @@
 
   /* ── Signalements panel ── */
   #reports-panel { display: none; padding: 20px; max-width: 900px; }
+
+  /* ── Étudiants panel ── */
+  #students-panel { display: none; padding: 20px; max-width: 900px; }
+  .student-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+  .student-tab { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: 0.82rem; font-weight: 500; color: var(--text3); font-family: inherit; }
+  .student-tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .student-row { padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; background: var(--surface); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .student-info { flex: 1; min-width: 180px; }
+  .student-name { font-weight: 600; font-size: 0.9rem; }
+  .student-email { font-size: 0.78rem; color: var(--text3); margin-top: 2px; }
+  .student-date  { font-size: 0.76rem; color: var(--text4); margin-top: 2px; }
+  .student-badge { display: inline-block; padding: 2px 9px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .student-badge.pending  { background: #fff3cd; color: #856404; }
+  .student-badge.approved { background: #d1fae5; color: #065f46; }
+  .student-badge.rejected { background: #fee2e2; color: #991b1b; }
+  .student-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  /* Modal doc étudiant */
+  #student-doc-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:9999; align-items:center; justify-content:center; }
+  #student-doc-modal.open { display:flex; }
+  #student-doc-inner { background:var(--surface); border-radius:12px; padding:20px; max-width:680px; width:calc(100% - 32px); max-height:90vh; overflow:auto; }
+  #student-doc-inner h3 { margin-bottom:12px; font-size:1rem; }
+  #student-doc-inner img, #student-doc-inner iframe { max-width:100%; border-radius:6px; }
+  /* Modal refus étudiant */
+  #student-reject-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center; }
+  #student-reject-modal.open { display:flex; }
+  #student-reject-inner { background:var(--surface); border-radius:12px; padding:28px; max-width:420px; width:calc(100% - 32px); }
+  #student-reject-inner h3 { margin-bottom:14px; }
+  #student-reject-inner textarea { width:100%; height:80px; border:1px solid var(--border); border-radius:6px; padding:10px; font-size:0.88rem; resize:vertical; margin-bottom:14px; background:var(--surface); color:var(--text); font-family:inherit; }
+  .student-reject-actions { display:flex; gap:10px; justify-content:flex-end; }
   .report-row {
     padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px;
     margin-bottom: 10px; background: var(--surface);
@@ -670,6 +699,9 @@
         <button class="filter-pill" id="tab-reports" onclick="showReportsPanel(this)">
           Signalements <span class="count" id="count-reports">–</span>
         </button>
+        <button class="filter-pill" id="tab-students" onclick="showStudentsPanel(this)">
+          Étudiants <span class="count" id="count-students">–</span>
+        </button>
         <div style="width:12px;flex-shrink:0;"></div>
         <select class="spec-select" id="spec-filter" onchange="setSidebarFilter(this.value)">
           <option value="">Toutes spécialités</option>
@@ -704,8 +736,39 @@
           <div id="reports-container"></div>
         </div>
 
+        <!-- Étudiants -->
+        <div id="students-panel">
+          <div class="student-tabs">
+            <button class="student-tab active" onclick="loadStudentRequests('pending', this)">En attente</button>
+            <button class="student-tab" onclick="loadStudentRequests('approved', this)">Approuvées</button>
+            <button class="student-tab" onclick="loadStudentRequests('rejected', this)">Refusées</button>
+          </div>
+          <div id="students-container"></div>
+        </div>
+
       </div>
     </div><!-- main-content -->
+
+  <!-- Modal doc étudiant -->
+  <div id="student-doc-modal">
+    <div id="student-doc-inner">
+      <button style="float:right;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text3);" onclick="document.getElementById('student-doc-modal').classList.remove('open')">×</button>
+      <h3 id="student-doc-title">Document</h3>
+      <div id="student-doc-content"></div>
+    </div>
+  </div>
+
+  <!-- Modal refus étudiant -->
+  <div id="student-reject-modal">
+    <div id="student-reject-inner">
+      <h3>Motif de refus (optionnel)</h3>
+      <textarea id="student-reject-reason" placeholder="Ex : carte illisible, document expiré…"></textarea>
+      <div class="student-reject-actions">
+        <button class="btn-approve-item" style="background:var(--surface2);color:var(--text);" onclick="document.getElementById('student-reject-modal').classList.remove('open')">Annuler</button>
+        <button class="btn-reject-item" onclick="confirmStudentReject()">Confirmer le refus</button>
+      </div>
+    </div>
+  </div>
   </div><!-- app-wrapper -->
 
 <script>
@@ -1221,10 +1284,98 @@ function hideReportsPanel() {
   document.getElementById('spec-filter').style.display = '';
 }
 
+// ── Étudiants ────────────────────────────────────────────────
+let _studentRejectId = null;
+
+async function showStudentsPanel(btn) {
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('content').style.display = 'none';
+  document.getElementById('reports-panel').style.display = 'none';
+  document.getElementById('students-panel').style.display = 'block';
+  document.getElementById('spec-filter').style.display = 'none';
+  await loadStudentRequests('pending', document.querySelector('.student-tab'));
+}
+
+function hideStudentsPanel() {
+  document.getElementById('students-panel').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  document.getElementById('spec-filter').style.display = '';
+}
+
+async function loadStudentRequests(status, tabEl) {
+  document.querySelectorAll('.student-tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  const container = document.getElementById('students-container');
+  container.innerHTML = '<p style="color:var(--text3);font-size:.85rem;">Chargement…</p>';
+  const res = await authFetch(`${API}/admin/student-requests?status=${status}`);
+  if (!res || !res.ok) { container.innerHTML = '<p style="color:red;font-size:.85rem;">Erreur</p>'; return; }
+  const { requests, total } = await res.json();
+  if (status === 'pending') document.getElementById('count-students').textContent = total;
+  if (!requests.length) { container.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:24px 0;">Aucune demande</p>'; return; }
+  container.innerHTML = requests.map(r => {
+    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR') : '—';
+    const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || '—';
+    return `<div class="student-row">
+      <div class="student-info">
+        <div class="student-name">${name}</div>
+        <div class="student-email">${r.email}</div>
+        <div class="student-date">${date}</div>
+      </div>
+      <span class="student-badge ${r.status}">${r.status}</span>
+      <div class="student-actions">
+        <button class="btn-approve-item" style="padding:5px 12px;" onclick="viewStudentDoc('${r.id}','${name.replace(/'/g,"\\'")}')">Voir le doc</button>
+        ${status === 'pending' ? `
+          <button class="btn-approve-item" onclick="approveStudent('${r.id}')">Approuver</button>
+          <button class="btn-reject-item" onclick="openStudentReject('${r.id}')">Refuser</button>
+        ` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function viewStudentDoc(reqId, name) {
+  document.getElementById('student-doc-title').textContent = `Document — ${name}`;
+  document.getElementById('student-doc-content').innerHTML = '<p>Chargement…</p>';
+  document.getElementById('student-doc-modal').classList.add('open');
+  const res = await authFetch(`${API}/admin/student-requests/${reqId}/document`);
+  if (!res || !res.ok) { document.getElementById('student-doc-content').innerHTML = '<p style="color:red">Erreur</p>'; return; }
+  const mime = res.headers.get('content-type') || '';
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  document.getElementById('student-doc-content').innerHTML = mime.startsWith('image/')
+    ? `<img src="${url}" alt="carte étudiante">`
+    : `<iframe src="${url}" width="100%" height="500px"></iframe>`;
+}
+
+async function approveStudent(reqId) {
+  if (!confirm('Approuver ? L\'accès étudiant gratuit sera activé immédiatement.')) return;
+  const res = await authFetch(`${API}/admin/student-requests/${reqId}/approve`, { method: 'POST' });
+  if (res && res.ok) { loadStudentRequests('pending', document.querySelector('.student-tab.active')); }
+}
+
+function openStudentReject(reqId) {
+  _studentRejectId = reqId;
+  document.getElementById('student-reject-reason').value = '';
+  document.getElementById('student-reject-modal').classList.add('open');
+}
+
+async function confirmStudentReject() {
+  const reason = document.getElementById('student-reject-reason').value.trim();
+  const res = await authFetch(`${API}/admin/student-requests/${_studentRejectId}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason: reason || null }),
+  });
+  document.getElementById('student-reject-modal').classList.remove('open');
+  if (res && res.ok) { loadStudentRequests('pending', document.querySelector('.student-tab.active')); }
+}
+
 // Patch setStatusFilter pour revenir au panel review
 const _origSetStatus = setStatusFilter;
 setStatusFilter = function(status, btn) {
   hideReportsPanel();
+  hideStudentsPanel();
   _origSetStatus(status, btn);
 };
 
