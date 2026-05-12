@@ -3598,6 +3598,16 @@ async function resetAndLoad() {
     }
     allLoadedArticles = filtered;
     totalArticles = filtered.length;
+    // Recalculer les compteurs par type à partir des articles filtrés
+    const _nc = { total: filtered.length, reglementaire: 0, recommandation: 0, innovation: 0 };
+    filtered.forEach(a => {
+      const st = a.source_type || 'innovation';
+      if (st === 'reglementaire') _nc.reglementaire++;
+      else if (st === 'recommandation') _nc.recommandation++;
+      else _nc.innovation++;
+    });
+    specTypeCounts[slug] = _nc;
+    specCounts[slug] = _nc.total;
     document.getElementById('articles-container').innerHTML = '';
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
