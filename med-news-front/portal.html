@@ -856,7 +856,8 @@
     .ia-disclaimer {
       position: static;
       border-top: 1px solid var(--border);
-      padding: 10px 16px 72px; /* 72px = hauteur bottom-nav */
+      padding: 10px 16px;
+      padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 10px);
       font-size: 0.70rem;
     }
   }
