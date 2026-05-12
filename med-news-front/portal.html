@@ -2642,8 +2642,7 @@ function renderArticle(a, idx) {
           <button class="btn-report${isReported(a.id) ? ' reported' : ''}" data-item-id="${a.id}"
             onclick="event.stopPropagation(); openReportModal('${a.id}');"
             title="Signaler cet article">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-            ${isReported(a.id) ? 'Signal\u00e9' : 'Signaler'}
+            ${isReported(a.id) ? '&#9873; Signal\u00e9' : '&#9873; Signaler'}
           </button>
           <button class="btn-collapse" onclick="event.stopPropagation(); collapseCard(this);"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;"><path d="m18 15-6-6-6 6"/></svg> R\u00e9duire</button>
         </div>
@@ -3114,7 +3113,7 @@ async function submitReport(itemId, reason, comment) {
       // Mettre à jour tous les boutons de cet article
       document.querySelectorAll(`.btn-report[data-item-id="${itemId}"]`).forEach(b => {
         b.classList.add('reported');
-        b.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> Signalé`;
+        b.innerHTML = '&#9873; Signalé';
         b.onclick = null;
       });
       MedNews.showToast?.('Signalement envoyé — merci pour votre retour.', 'success');
