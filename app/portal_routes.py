@@ -582,6 +582,49 @@ def remove_favorite(item_id: str, user_id: str = Depends(_get_current_user_id)):
 
 
 # ---------------------------------------------------------------------------
+# POST /articles/{item_id}/report — Signalement praticien
+# ---------------------------------------------------------------------------
+
+_VALID_REASONS = frozenset({"not_relevant", "factual_error", "wrong_specialty", "other"})
+
+class ReportPayload(BaseModel):
+    reason: str
+    comment: str | None = None
+
+
+@router.post("/articles/{item_id}/report")
+def report_article(
+    item_id: str,
+    payload: ReportPayload,
+    user_id: str = Depends(_get_current_user_id),
+):
+    if payload.reason not in _VALID_REASONS:
+        raise HTTPException(status_code=422, detail=f"Raison invalide : {payload.reason}")
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            # Vérifie que l'article existe
+            cur.execute("SELECT id FROM items WHERE id = %s", (item_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Article introuvable")
+
+            # Évite les doublons (un signalement par user par article)
+            cur.execute(
+                "SELECT id FROM item_reports WHERE item_id = %s AND user_id = %s",
+                (item_id, user_id),
+            )
+            if cur.fetchone():
+                return {"status": "already_reported"}
+
+            cur.execute(
+                """INSERT INTO item_reports (item_id, user_id, reason, comment)
+                   VALUES (%s, %s, %s, %s)""",
+                (item_id, user_id, payload.reason, payload.comment),
+            )
+    return {"status": "reported"}
+
+
+# ---------------------------------------------------------------------------
 # Email verification
 # ---------------------------------------------------------------------------
 

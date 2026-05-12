@@ -789,6 +789,68 @@
   }
   .btn-collapse:hover { color: var(--text3); }
 
+  /* ── Bouton signalement ─────────────────── */
+  .btn-report {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; background: transparent; border: none;
+    color: var(--text5); border-radius: 4px; font-size: 0.78rem; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: color .2s;
+  }
+  .btn-report:hover { color: #c0392b; }
+  .btn-report.reported { color: #c0392b; opacity: .7; cursor: default; }
+
+  /* ── Modal signalement ───────────────────── */
+  .report-overlay {
+    position: fixed; inset: 0; z-index: 9000;
+    background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center;
+    animation: fadeIn .15s ease;
+  }
+  .report-modal {
+    background: var(--surface); border: 1px solid var(--border-strong);
+    border-radius: 12px; padding: 24px; width: min(420px, calc(100vw - 32px));
+    box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  }
+  .report-modal h3 { font-size: 1rem; font-weight: 600; margin: 0 0 6px; color: var(--text); }
+  .report-modal p  { font-size: 0.82rem; color: var(--text3); margin: 0 0 16px; }
+  .report-reasons  { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .report-reason-btn {
+    text-align: left; padding: 10px 14px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text2); font-size: 0.85rem; font-family: inherit;
+    cursor: pointer; transition: all .15s;
+  }
+  .report-reason-btn:hover { border-color: #c0392b; color: #c0392b; background: rgba(192,57,43,.06); }
+  .report-reason-btn.selected { border-color: #c0392b; color: #c0392b; background: rgba(192,57,43,.1); font-weight: 600; }
+  .report-comment {
+    width: 100%; box-sizing: border-box; padding: 9px 12px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface2); color: var(--text);
+    font-size: 0.84rem; font-family: inherit; resize: vertical; min-height: 60px;
+    margin-bottom: 16px;
+  }
+  .report-comment:focus { outline: none; border-color: var(--text3); }
+  .report-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-report-cancel {
+    padding: 8px 18px; border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; color: var(--text3); font-size: 0.85rem;
+    font-family: inherit; cursor: pointer;
+  }
+  .btn-report-submit {
+    padding: 8px 18px; border: none; border-radius: 6px;
+    background: #c0392b; color: #fff; font-size: 0.85rem;
+    font-family: inherit; cursor: pointer; font-weight: 600;
+    opacity: .45; transition: opacity .15s;
+  }
+  .btn-report-submit.enabled { opacity: 1; }
+
+  /* ── Disclaimer IA ───────────────────────── */
+  .ia-disclaimer {
+    margin: 40px auto 0; max-width: 680px; padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem; color: var(--text5); line-height: 1.55; text-align: center;
+  }
+  .ia-disclaimer a { color: var(--text4); text-decoration: underline; }
+
   /* ── Portal page title ──────────────────── */
   .portal-page-title { margin-bottom: 20px; text-align: left; }
   .portal-page-title h2 {
@@ -1906,6 +1968,10 @@
         <button class="load-more" id="load-more" style="display:none;" onclick="loadMore()">
           Charger plus d'articles
         </button>
+        <div class="ia-disclaimer">
+          Les résumés sont générés par intelligence artificielle et peuvent contenir des erreurs. Ils ne remplacent pas votre jugement clinique ni la consultation des sources originales.
+          En cas d'erreur ou d'article non pertinent, utilisez le bouton <strong>Signaler</strong> directement sur la fiche de l'article.
+        </div>
       </div>
 
       <!-- Splash spécialité — affiché quand une spé est sélectionnée sans sous-catégorie -->
@@ -2565,7 +2631,15 @@ function renderArticle(a, idx) {
       ${refsHtml}
       <div class="detail-footer">
         ${a.official_url ? `<a class="btn-official" href="${esc(a.official_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Texte officiel</a>` : '<span></span>'}
-        <button class="btn-collapse" onclick="event.stopPropagation(); collapseCard(this);"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;"><path d="m18 15-6-6-6 6"/></svg> R\u00e9duire</button>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button class="btn-report${isReported(a.id) ? ' reported' : ''}" data-item-id="${a.id}"
+            onclick="event.stopPropagation(); openReportModal('${a.id}');"
+            title="Signaler cet article">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            ${isReported(a.id) ? 'Signal\u00e9' : 'Signaler'}
+          </button>
+          <button class="btn-collapse" onclick="event.stopPropagation(); collapseCard(this);"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;vertical-align:middle;"><path d="m18 15-6-6-6 6"/></svg> R\u00e9duire</button>
+        </div>
       </div>
     </div>
   </div>`;
@@ -2956,6 +3030,91 @@ function loadDemoFavorites() {
 }
 function saveDemoFavorites() {
   try { localStorage.setItem(DEMO_FAV_KEY, JSON.stringify([...favoritesSet])); } catch {}
+}
+
+// ── Signalement articles ─────────────────────────────────────────────────────
+const reportedSet = new Set(JSON.parse(localStorage.getItem('mednews_reported') || '[]'));
+
+function isReported(itemId) { return reportedSet.has(itemId); }
+
+function saveReported() {
+  try { localStorage.setItem('mednews_reported', JSON.stringify([...reportedSet])); } catch {}
+}
+
+function openReportModal(itemId) {
+  if (reportedSet.has(itemId)) return;
+
+  const REASONS = [
+    { key: 'not_relevant',    label: 'Article non pertinent pour ma spécialité' },
+    { key: 'factual_error',   label: 'Erreur factuelle ou résumé inexact' },
+    { key: 'wrong_specialty', label: 'Mauvaise spécialité assignée' },
+    { key: 'other',           label: 'Autre' },
+  ];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'report-overlay';
+  overlay.innerHTML = `
+    <div class="report-modal" onclick="event.stopPropagation()">
+      <h3>Signaler cet article</h3>
+      <p>Ce retour est transmis à l'équipe MedNews pour améliorer la pertinence du contenu.</p>
+      <div class="report-reasons">
+        ${REASONS.map(r => `<button class="report-reason-btn" data-key="${r.key}">${r.label}</button>`).join('')}
+      </div>
+      <textarea class="report-comment" placeholder="Commentaire optionnel…" maxlength="500"></textarea>
+      <div class="report-modal-actions">
+        <button class="btn-report-cancel">Annuler</button>
+        <button class="btn-report-submit" id="report-submit-btn" disabled>Envoyer</button>
+      </div>
+    </div>`;
+
+  let selectedReason = null;
+
+  overlay.querySelectorAll('.report-reason-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      overlay.querySelectorAll('.report-reason-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedReason = btn.dataset.key;
+      const submitBtn = overlay.querySelector('#report-submit-btn');
+      submitBtn.disabled = false;
+      submitBtn.classList.add('enabled');
+    });
+  });
+
+  overlay.querySelector('.btn-report-cancel').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  overlay.querySelector('#report-submit-btn').addEventListener('click', async () => {
+    if (!selectedReason) return;
+    const comment = overlay.querySelector('.report-comment').value.trim() || null;
+    overlay.remove();
+    await submitReport(itemId, selectedReason, comment);
+  });
+
+  document.body.appendChild(overlay);
+}
+
+async function submitReport(itemId, reason, comment) {
+  try {
+    const token = localStorage.getItem('access_token');
+    const res = await fetch(`${API_BASE}/portal/articles/${itemId}/report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ reason, comment }),
+    });
+    if (res.ok || res.status === 409) {
+      reportedSet.add(itemId);
+      saveReported();
+      // Mettre à jour tous les boutons de cet article
+      document.querySelectorAll(`.btn-report[data-item-id="${itemId}"]`).forEach(b => {
+        b.classList.add('reported');
+        b.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> Signalé`;
+        b.onclick = null;
+      });
+      MedNews.showToast?.('Signalement envoyé — merci pour votre retour.', 'success');
+    }
+  } catch (e) {
+    console.error('report error', e);
+  }
 }
 
 async function toggleFavorite(event, itemId) {
