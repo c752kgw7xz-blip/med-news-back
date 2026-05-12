@@ -31,7 +31,7 @@
   });
 
   var txt = document.createElement('span');
-  txt.innerHTML = "Version bêta — accès gratuit jusqu'au lancement officiel (<strong>dans ~ 2 mois</strong>).";
+  txt.innerHTML = "Version bêta — accès gratuit jusqu'au lancement officiel (<strong>le 1er août 2026</strong>).";
 
   banner.appendChild(txt);
   banner.appendChild(btn);
