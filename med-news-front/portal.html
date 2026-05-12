@@ -2257,6 +2257,7 @@ const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
 if (DEMO_MODE) document.body.classList.add('demo-mode');
 const _SUBSCRIBED_SUCCESS = new URLSearchParams(location.search).get('subscribed') === '1';
 if (_SUBSCRIBED_SUCCESS) history.replaceState(null, '', '/portal');
+const _PREVIEW_PAYWALL = new URLSearchParams(location.search).get('paywall') === '1';
 let _demoCache = null; // articles chirurgie-vasculaire (spé principale démo)
 let _demoCacheBySlug = {}; // cache articles par slug, chargé à la demande
 let _demoDatesBySlug = {}; // { slug: { from_date, to_date } } — dernier mois actif par spé
@@ -2488,6 +2489,7 @@ async function startCheckout() {
 }
 
 async function checkBillingStatus() {
+  if (_PREVIEW_PAYWALL) { showPaywallModal(); return; }
   const res = await authFetch(`${API}/billing/status`);
   if (!res) return; // 402 déjà géré par authFetch → showPaywallModal
   if (!res.ok) return;
