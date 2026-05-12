@@ -35,7 +35,7 @@ def _get_user_row(user_id: str) -> dict:
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT id, email_ciphertext, trial_ends_at, subscribed_until,
-                       stripe_customer_id, stripe_subscription_id
+                       stripe_customer_id, stripe_subscription_id, plan
                 FROM users WHERE id = %s
             """, (user_id,))
             row = cur.fetchone()
@@ -48,14 +48,16 @@ def _get_user_row(user_id: str) -> dict:
         "subscribed_until": row[3],
         "stripe_customer_id": row[4],
         "stripe_subscription_id": row[5],
+        "plan": row[6] or "standard",
     }
 
 
 def _has_active_access(user: dict) -> bool:
     now = datetime.now(timezone.utc)
-    trial_ok = user["trial_ends_at"] and user["trial_ends_at"] > now
-    sub_ok   = user["subscribed_until"] and user["subscribed_until"] > now
-    return bool(trial_ok or sub_ok)
+    trial_ok   = user["trial_ends_at"] and user["trial_ends_at"] > now
+    sub_ok     = user["subscribed_until"] and user["subscribed_until"] > now
+    student_ok = user.get("plan") == "student"
+    return bool(trial_ok or sub_ok or student_ok)
 
 
 def _days_left(user: dict) -> int:
@@ -101,6 +103,7 @@ def billing_status(user_id: str = Depends(_get_current_user_id)):
     return {
         "access": _has_active_access(user),
         "is_trial": is_trial,
+        "is_student": user.get("plan") == "student",
         "days_left": _days_left(user),
         "trial_ends_at":    user["trial_ends_at"].isoformat() if user["trial_ends_at"] else None,
         "subscribed_until": user["subscribed_until"].isoformat() if user["subscribed_until"] else None,

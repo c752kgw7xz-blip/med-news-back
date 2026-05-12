@@ -1951,7 +1951,8 @@
       <div class="pw-price">18,99 € <span>/ mois · sans engagement</span></div>
       <p style="font-size:0.78rem;color:var(--text4);margin-bottom:20px;">Résiliable à tout moment · Paiement sécurisé Stripe</p>
       <button class="pw-cta" id="pw-subscribe-btn" onclick="startCheckout()">S'abonner maintenant</button>
-      <button class="pw-secondary" onclick="logout()">Se déconnecter</button>
+      <button class="pw-secondary" onclick="goToStudentAccess()">Étudiant en médecine ? Accès gratuit →</button>
+      <button class="pw-secondary" onclick="logout()" style="margin-top:4px;">Se déconnecter</button>
     </div>
   </div>
 
@@ -2488,6 +2489,11 @@ function showPaywallModal() {
   document.getElementById('paywall-overlay').classList.add('open');
 }
 
+function goToStudentAccess() {
+  document.getElementById('paywall-overlay').classList.remove('open');
+  openFullPage('parametres');
+}
+
 async function startCheckout() {
   const btn = document.getElementById('pw-subscribe-btn');
   btn.disabled = true;
@@ -2517,8 +2523,8 @@ async function checkBillingStatus() {
   if (!res.ok) return;
   const data = await res.json();
   if (!data.access) { showPaywallModal(); return; }
-  // Bandeau d'avertissement si essai se termine dans ≤ 7 jours
-  if (data.is_trial && data.days_left <= 7) {
+  // Bandeau d'avertissement si essai se termine dans ≤ 7 jours (pas pour les étudiants)
+  if (data.is_trial && !data.is_student && data.days_left <= 7) {
     const banner = document.getElementById('verify-banner');
     if (banner && !document.getElementById('trial-warning')) {
       const w = document.createElement('div');
