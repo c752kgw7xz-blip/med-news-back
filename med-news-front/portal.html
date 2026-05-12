@@ -181,6 +181,11 @@
     .btn-header-action { display: none !important; }
     /* Masquer le toggle sidebar pour que content-area prenne la col 1fr */
     .sidebar-toggle-wrap { display: none !important; }
+    /* Tronquer le nom du médecin si trop long — évite le chevauchement avec le logo centré */
+    #doctor-name {
+      max-width: calc(50vw - 60px);
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
     /* Contraindre le grid item content-area à la largeur du viewport */
     /* env() gère la barre d'accueil iOS (safe-area-inset-bottom ≈ 34px sur iPhone récent) */
     .content-area { padding: 16px 16px calc(76px + env(safe-area-inset-bottom, 0px)); min-width: 0; overflow-x: hidden; width: 100%; }
