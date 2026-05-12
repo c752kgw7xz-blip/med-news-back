@@ -2,12 +2,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # MedNews — Orchestrateur de triage automatique
 #
-# 3 créneaux par jour de collecte, toutes les 48h :
-#   Slot 1 — 06h Paris : triage global + spécialités 1-12  (4 comptes × 3 spés)
-#   Slot 2 — 12h Paris : spécialités 13-24                 (4 comptes × 3 spés)
-#   Slot 3 — 18h Paris : spécialités 25-36                 (4 comptes × 3 spés)
+# 3 créneaux par jour :
+#   Slot 1 — 05h00 UTC : triage global + spécialités 1-12  (4 comptes × 3 spés)
+#   Slot 2 — 10h00 UTC : spécialités 13-24                 (4 comptes × 3 spés)
+#   Slot 3 — 16h00 UTC : spécialités 25-36                 (4 comptes × 3 spés)
 #
-# ~6h de gap entre créneaux → rate limits Pro régénérés entre chaque slot.
+# ~5-6h de gap entre créneaux → rate limits Pro régénérés entre chaque slot.
 #
 # Backlog : si le slot N-1 n'a pas pu terminer (rate limit 5h atteint),
 # les spécialités restantes sont détectées au démarrage du slot N et traitées
