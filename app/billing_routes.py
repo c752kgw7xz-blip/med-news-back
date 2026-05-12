@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 from app.db import get_conn
 from app.portal_routes import _get_current_user_id
-from app.security import decrypt_email
+from app.security import decrypt_email, verify_signup_token
 
 logger = logging.getLogger(__name__)
 
@@ -142,6 +142,64 @@ def create_checkout(
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={"user_id": user_id},
+    )
+    return {"checkout_url": session.url}
+
+
+# ---------------------------------------------------------------------------
+# POST /billing/checkout-signup  — Stripe Checkout lors de l'inscription (sans JWT)
+# ---------------------------------------------------------------------------
+
+class CheckoutSignupRequest(BaseModel):
+    user_id: str
+    signup_token: str
+    success_url: str | None = None
+    cancel_url:  str | None = None
+
+
+@router.post("/checkout-signup")
+def create_checkout_signup(payload: CheckoutSignupRequest):
+    """Crée une session Stripe Checkout pour un nouvel inscrit (sans JWT).
+    Utilise trial_period_days=30 — l'utilisateur entre sa carte mais n'est pas débité pendant 30 jours.
+    """
+    if not verify_signup_token(payload.signup_token, payload.user_id):
+        raise HTTPException(status_code=403, detail="invalid or expired signup token")
+    if not STRIPE_SECRET_KEY or not STRIPE_PRICE_ID:
+        raise HTTPException(status_code=503, detail="billing not configured")
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, email_ciphertext, stripe_customer_id FROM users WHERE id = %s",
+                (payload.user_id,),
+            )
+            row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="user not found")
+
+    user = {
+        "id": str(row[0]),
+        "email": decrypt_email(row[1]),
+        "stripe_customer_id": row[2],
+        "trial_ends_at": None,
+        "subscribed_until": None,
+        "stripe_subscription_id": None,
+        "plan": "standard",
+    }
+    customer_id = _ensure_stripe_customer(user)
+
+    success_url = payload.success_url or f"{BASE_URL}/signup?done=1&subscribed=1"
+    cancel_url  = payload.cancel_url  or f"{BASE_URL}/signup?done=1"
+
+    session = stripe.checkout.Session.create(
+        customer=customer_id,
+        payment_method_types=["card"],
+        line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
+        mode="subscription",
+        subscription_data={"trial_period_days": 30},
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={"user_id": payload.user_id},
     )
     return {"checkout_url": session.url}
 

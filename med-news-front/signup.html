@@ -41,9 +41,9 @@
   }
   .logo em { font-style: italic; }
   .logo b { font-weight: 700; font-style: normal; }
-  .subtitle { text-align: center; color: var(--text3); font-size: 0.82rem; margin-bottom: 32px; }
+  .subtitle { text-align: center; color: var(--text3); font-size: 0.82rem; margin-bottom: 28px; }
   label { display: block; font-weight: 500; font-size: 0.79rem; margin-bottom: 6px; color: var(--text2); }
-  input, select {
+  input[type=text], input[type=email], input[type=password], select {
     width: 100%; padding: 10px 12px; border: 1px solid var(--border);
     border-radius: var(--radius); font-size: 0.86rem; margin-bottom: 16px;
     outline: none; transition: border-color .2s;
@@ -59,6 +59,34 @@
   input::placeholder { color: var(--text3); }
   input:focus, select:focus { border-color: var(--green); }
   .field-hint { color: var(--text4); font-size: 0.72rem; margin-top: -10px; margin-bottom: 14px; display: block; }
+
+  /* Toggle étudiant */
+  .student-toggle {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius);
+    cursor: pointer; margin-bottom: 20px; background: var(--surface2);
+    transition: border-color .2s, background .2s;
+  }
+  .student-toggle:hover { border-color: var(--border-strong); }
+  .student-toggle.selected { border-color: var(--green); background: var(--green-dark); }
+  .student-toggle input[type=checkbox] { display: none; }
+  .student-toggle-icon {
+    width: 20px; height: 20px; border: 2px solid var(--border-strong); border-radius: 4px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: background .15s, border-color .15s;
+  }
+  .student-toggle.selected .student-toggle-icon {
+    background: var(--green); border-color: var(--green);
+  }
+  .student-toggle.selected .student-toggle-icon::after {
+    content: ''; width: 5px; height: 9px;
+    border: 2px solid #fff; border-top: none; border-left: none;
+    transform: rotate(45deg) translate(-1px, -1px); display: block;
+  }
+  .student-toggle-text { font-size: 0.85rem; color: var(--text2); line-height: 1.4; }
+  .student-toggle-text strong { display: block; font-size: 0.86rem; font-weight: 600; }
+  .student-toggle-text span { font-size: 0.76rem; color: var(--text3); }
+
   .btn {
     width: 100%; padding: 11px; background: var(--green); color: #fff; border: none;
     border-radius: var(--radius); font-size: 0.88rem; font-weight: 600;
@@ -66,33 +94,78 @@
   }
   .btn:hover { opacity: .88; }
   .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-secondary {
+    width: 100%; padding: 10px; background: transparent; color: var(--text3);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 0.85rem; font-weight: 500; cursor: pointer; font-family: inherit;
+    margin-top: 8px; transition: background .15s;
+  }
+  .btn-secondary:hover { background: var(--surface2); }
+
   .error {
     background: var(--red-dark); color: var(--red); padding: 10px 12px;
     border-radius: var(--radius); font-size: 0.79rem; margin-bottom: 16px;
     display: none; border: 1px solid #e8c0c0;
   }
-  .success {
-    background: var(--green-dark); color: var(--text2); padding: 18px;
-    border-radius: var(--radius); font-size: 0.82rem; text-align: center;
-    display: none; border: 1px solid rgba(155,35,53,.15);
+  .info-box {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px; font-size: 0.82rem; color: var(--text2); margin-bottom: 16px; line-height: 1.6;
   }
-  .success strong { display: block; margin-bottom: 4px; color: var(--green); }
+  .info-box strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 0.88rem; }
+
+  .success-screen { text-align: center; padding: 8px 0; }
+  .success-icon {
+    width: 52px; height: 52px; background: #d1fae5; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .success-icon svg { color: #059669; }
+  .success-screen h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+  .success-screen p { font-size: 0.84rem; color: var(--text3); line-height: 1.6; }
+  .success-screen .login-link {
+    display: inline-block; margin-top: 20px; padding: 10px 24px;
+    background: var(--green); color: #fff; border-radius: var(--radius);
+    font-size: 0.86rem; font-weight: 600; text-decoration: none; transition: opacity .2s;
+  }
+  .success-screen .login-link:hover { opacity: .88; }
+
+  .step-indicator { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; justify-content: center; }
+  .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background .2s; }
+  .step-dot.active { background: var(--green); }
+
   .link { text-align: center; margin-top: 20px; font-size: 0.79rem; color: var(--text3); }
   .link a { color: var(--green); text-decoration: none; font-weight: 500; }
   .link a:hover { text-decoration: underline; }
+
+  /* Upload */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 24px; text-align: center; cursor: pointer; margin-bottom: 16px;
+    transition: border-color .2s, background .2s;
+  }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--green); background: var(--green-dark); }
+  .upload-zone-icon { font-size: 2rem; margin-bottom: 8px; }
+  .upload-zone-label { font-size: 0.84rem; color: var(--text3); line-height: 1.5; }
+  .upload-zone-label strong { color: var(--text2); display: block; margin-bottom: 2px; }
+  input[type=file] { display: none; }
+  .file-selected { font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; padding: 8px 12px; background: var(--surface2); border-radius: 4px; display: none; }
+
   @media (max-width: 480px) { .card { padding: 32px 20px; margin: 16px; } }
 </style>
 <script src="/banner.js"></script>
 </head>
 <body>
-  <div class="card">
-    <div class="logo"><em>Med</em><b>News</b></div>
-    <div class="subtitle">La revue m&#233;dicale par sp&#233;cialit&#233;</div>
-    <div class="error" id="error"></div>
-    <div class="success" id="success">
-      <strong>Compte cr&#233;&#233; !</strong>
-      Redirection vers la connexion...
+<div class="card">
+  <div class="logo"><em>Med</em><b>News</b></div>
+  <div class="subtitle">La revue médicale par spécialité</div>
+
+  <!-- ── Étape 1 : Formulaire ── -->
+  <div id="screen-form">
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
     </div>
+    <div class="error" id="error"></div>
     <form id="form">
       <label for="first_name">Prénom</label>
       <input type="text" id="first_name" required autocomplete="given-name" placeholder="Jean">
@@ -103,125 +176,305 @@
       <span class="field-hint">Pensez à vérifier vos spams si vous ne recevez pas l'email de validation.</span>
       <label for="password">Mot de passe</label>
       <input type="password" id="password" required minlength="8" autocomplete="new-password">
-      <span class="field-hint">8 caract&#232;res minimum, avec au moins 1 majuscule et 1 chiffre</span>
+      <span class="field-hint">8 caractères minimum, avec au moins 1 majuscule et 1 chiffre</span>
       <label for="password2">Confirmer le mot de passe</label>
       <input type="password" id="password2" required minlength="8" autocomplete="new-password">
-      <label for="specialty">Sp&#233;cialit&#233;</label>
-      <select id="specialty"><option value="">Chargement&#8230;</option></select>
-      <button class="btn" type="submit" id="submit-btn">Cr&#233;er mon compte</button>
+      <label for="specialty">Spécialité</label>
+      <select id="specialty"><option value="">Chargement…</option></select>
+
+      <!-- Toggle étudiant -->
+      <div class="student-toggle" id="student-toggle" onclick="toggleStudent()">
+        <input type="checkbox" id="is-student">
+        <div class="student-toggle-icon" id="student-check-icon"></div>
+        <div class="student-toggle-text">
+          <strong>Je suis étudiant(e) en médecine</strong>
+          <span>Accès gratuit — envoi de la carte étudiante à l'étape suivante</span>
+        </div>
+      </div>
+
+      <button class="btn" type="submit" id="submit-btn">Continuer →</button>
     </form>
-    <div class="link">D&#233;j&#224; inscrit ? <a href="/login">Connexion</a></div>
+    <div class="link">Déjà inscrit ? <a href="/login">Connexion</a></div>
   </div>
+
+  <!-- ── Étape 2A : Upload carte étudiante ── -->
+  <div id="screen-student" style="display:none">
+    <div class="step-indicator">
+      <div class="step-dot" id="dot-s1"></div>
+      <div class="step-dot active" id="dot-s2"></div>
+    </div>
+    <div class="info-box">
+      <strong>Envoyez votre carte étudiante</strong>
+      Votre demande sera examinée sous 48h. En attendant la validation, votre accès est en cours de traitement.
+    </div>
+    <div class="error" id="error-student"></div>
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('student-file').click()"
+         ondragover="event.preventDefault();this.classList.add('dragover')"
+         ondragleave="this.classList.remove('dragover')"
+         ondrop="handleDrop(event)">
+      <div class="upload-zone-icon">📎</div>
+      <div class="upload-zone-label">
+        <strong>Cliquez ou glissez votre fichier ici</strong>
+        JPEG, PNG, PDF — 5 Mo maximum
+      </div>
+    </div>
+    <input type="file" id="student-file" accept="image/jpeg,image/png,image/webp,application/pdf" onchange="onFileSelected(this)">
+    <div class="file-selected" id="file-selected-label"></div>
+    <button class="btn" id="upload-btn" onclick="submitStudentCard()" disabled>Envoyer ma carte</button>
+    <button class="btn-secondary" onclick="skipStudentCard()">Passer pour l'instant →</button>
+  </div>
+
+  <!-- ── Étape 2B : Redirection Stripe ── -->
+  <div id="screen-payment" style="display:none">
+    <div class="step-indicator">
+      <div class="step-dot" id="dot-p1"></div>
+      <div class="step-dot active" id="dot-p2"></div>
+    </div>
+    <div class="info-box">
+      <strong>Accès complet à MedNews — 18,99 €/mois</strong>
+      Votre premier mois est <strong>gratuit</strong>. Entrez votre carte bancaire pour l'activer — vous ne serez pas débité pendant 30 jours. Résiliable à tout moment.
+    </div>
+    <div class="error" id="error-payment"></div>
+    <button class="btn" id="payment-btn" onclick="goToStripe()">
+      Continuer vers le paiement →
+    </button>
+    <button class="btn-secondary" onclick="skipPayment()">Passer — accès essai limité</button>
+  </div>
+
+  <!-- ── Écran final ── -->
+  <div id="screen-done" style="display:none">
+    <div class="success-screen">
+      <div class="success-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2 id="done-title">Compte créé !</h2>
+      <p id="done-msg">Un email de validation vient de vous être envoyé.<br><strong>Cliquez sur le lien dans cet email pour activer votre compte.</strong><br><span style="color:#b56808;font-weight:500;">Pensez à vérifier vos spams.</span></p>
+      <button id="resend-btn" class="btn-secondary" style="margin-top:16px;" onclick="resendEmail()">Renvoyer l'email</button>
+      <a href="/login" class="login-link" style="display:block;margin-top:12px;">Aller à la connexion →</a>
+    </div>
+  </div>
+</div>
 
 <script>
 const API = window.location.origin;
-const form = document.getElementById('form');
-const errorEl = document.getElementById('error');
-const successEl = document.getElementById('success');
-const btn = document.getElementById('submit-btn');
-const specialtySelect = document.getElementById('specialty');
+let _userId = null;
+let _signupToken = null;
+let _isStudent = false;
+let _signupEmail = '';
 
-function showError(msg) {
-  errorEl.textContent = msg;
-  errorEl.style.display = 'block';
-  successEl.style.display = 'none';
+// Détecter retour Stripe (success ou cancel)
+const _params = new URLSearchParams(location.search);
+if (_params.get('done') === '1') {
+  showScreen('done');
+  if (_params.get('subscribed') === '1') {
+    document.getElementById('done-title').textContent = 'Abonnement activé !';
+    document.getElementById('done-msg').innerHTML = 'Votre mois gratuit démarre maintenant.<br>Vérifiez votre email pour activer votre compte, puis connectez-vous.';
+    document.getElementById('resend-btn').style.display = 'none';
+  }
 }
 
+function showScreen(name) {
+  ['form','student','payment','done'].forEach(s =>
+    document.getElementById('screen-' + s).style.display = 'none'
+  );
+  document.getElementById('screen-' + name).style.display = 'block';
+}
+
+function toggleStudent() {
+  _isStudent = !_isStudent;
+  const toggle = document.getElementById('student-toggle');
+  toggle.classList.toggle('selected', _isStudent);
+}
+
+// ── Spécialités ──────────────────────────────────────────────
 async function loadSpecialties(attempt = 1) {
   try {
     const res = await fetch(`${API}/specialties`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const specs = await res.json();
     const sorted = [...specs].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-    specialtySelect.innerHTML = '<option value="">\u2014 Choisir une sp\u00e9cialit\u00e9 \u2014</option>'
-      + sorted.map(s => `<option value="${s.slug}">${s.name}</option>`).join('');
+    document.getElementById('specialty').innerHTML =
+      '<option value="">— Choisir une spécialité —</option>' +
+      sorted.map(s => `<option value="${s.slug}">${s.name}</option>`).join('');
   } catch {
-    if (attempt < 3) {
-      setTimeout(() => loadSpecialties(attempt + 1), 1500 * attempt);
-    } else {
-      specialtySelect.innerHTML = '<option value="">Erreur de chargement \u2014 rechargez la page</option>';
-    }
+    if (attempt < 3) setTimeout(() => loadSpecialties(attempt + 1), 1500 * attempt);
+    else document.getElementById('specialty').innerHTML = '<option value="">Erreur — rechargez la page</option>';
   }
 }
 loadSpecialties();
 
-form.addEventListener('submit', async (e) => {
+// ── Étape 1 : soumission formulaire ─────────────────────────
+document.getElementById('form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  errorEl.style.display = 'none';
+  const errEl = document.getElementById('error');
+  errEl.style.display = 'none';
 
-  const pw = document.getElementById('password').value;
+  const pw  = document.getElementById('password').value;
   const pw2 = document.getElementById('password2').value;
-  if (pw !== pw2) { showError('Les mots de passe ne correspondent pas'); return; }
-  if (pw.length < 8) { showError('Le mot de passe doit faire au moins 8 caract\u00e8res'); return; }
-  if (!/[A-Z]/.test(pw)) { showError('Le mot de passe doit contenir au moins une majuscule'); return; }
-  if (!/[0-9]/.test(pw)) { showError('Le mot de passe doit contenir au moins un chiffre'); return; }
+  if (pw !== pw2)       { showError(errEl, 'Les mots de passe ne correspondent pas'); return; }
+  if (pw.length < 8)    { showError(errEl, 'Le mot de passe doit faire au moins 8 caractères'); return; }
+  if (!/[A-Z]/.test(pw)){ showError(errEl, 'Le mot de passe doit contenir au moins une majuscule'); return; }
+  if (!/[0-9]/.test(pw)){ showError(errEl, 'Le mot de passe doit contenir au moins un chiffre'); return; }
 
-  const slug = specialtySelect.value;
-  if (!slug) { showError('Veuillez choisir une sp\u00e9cialit\u00e9'); return; }
+  const slug = document.getElementById('specialty').value;
+  if (!slug) { showError(errEl, 'Veuillez choisir une spécialité'); return; }
 
-  btn.disabled = true;
-  btn.textContent = 'Cr\u00e9ation\u2026';
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Création…';
 
   try {
+    _signupEmail = document.getElementById('email').value.trim();
     const res = await fetch(`${API}/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: document.getElementById('email').value.trim(),
+        email: _signupEmail,
         password: pw,
         specialty_slug: slug,
         first_name: document.getElementById('first_name').value.trim(),
-        last_name: document.getElementById('last_name').value.trim(),
+        last_name:  document.getElementById('last_name').value.trim(),
       }),
     });
     const data = await res.json();
-
     if (!res.ok) {
-      if (res.status === 409) showError('Cette adresse email est d\u00e9j\u00e0 utilis\u00e9e');
-      else if (res.status === 403) showError('Les inscriptions sont d\u00e9sactiv\u00e9es');
-      else showError(data.detail || 'Erreur lors de la cr\u00e9ation du compte');
+      if (res.status === 409) showError(errEl, 'Cette adresse email est déjà utilisée');
+      else if (res.status === 403) showError(errEl, 'Les inscriptions sont désactivées');
+      else showError(errEl, data.detail || 'Erreur lors de la création du compte');
       return;
     }
+    _userId = data.id;
+    _signupToken = data.signup_token;
 
-    const submittedEmail = document.getElementById('email').value.trim();
-    form.style.display = 'none';
-    successEl.innerHTML = `
-      <strong>\u2713 Compte cr\u00e9\u00e9 avec succ\u00e8s&nbsp;!</strong>
-      <span style="display:block;margin-top:8px;line-height:1.6;">
-        Un email de validation vient de vous \u00eatre envoy\u00e9.<br>
-        <strong>Cliquez sur le lien dans cet email pour activer votre compte.</strong><br>
-        <span style="color:var(--amber,#b56808);font-weight:500;">Pensez \u00e0 v\u00e9rifier vos spams si n\u00e9cessaire.</span>
-      </span>
-      <button id="resendBtn" style="margin-top:16px;padding:8px 20px;background:transparent;color:var(--green);border:1px solid var(--green);border-radius:4px;cursor:pointer;font-size:0.82rem;font-weight:600;font-family:inherit;">Renvoyer l'email</button>
-      <div id="resendMsg" style="margin-top:8px;font-size:0.82rem;color:var(--text2);"></div>
-    `;
-    successEl.style.display = 'block';
-
-    document.getElementById('resendBtn').addEventListener('click', async function() {
-      this.disabled = true;
-      this.textContent = 'Envoi\u2026';
-      try {
-        const r = await fetch(`${API}/auth/resend-verification-public`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: submittedEmail }),
-        });
-        const d = await r.json();
-        document.getElementById('resendMsg').textContent = d.message || 'Email envoy\u00e9.';
-        this.textContent = 'Email renvoy\u00e9';
-      } catch {
-        document.getElementById('resendMsg').textContent = 'Erreur de connexion.';
-        this.disabled = false;
-        this.textContent = 'Renvoyer l\'email';
-      }
-    });
-  } catch (err) {
-    showError('Erreur de connexion au serveur');
+    if (_isStudent) {
+      showScreen('student');
+    } else {
+      showScreen('payment');
+    }
+  } catch {
+    showError(errEl, 'Erreur de connexion au serveur');
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Cr\u00e9er mon compte';
+    btn.disabled = false; btn.textContent = 'Continuer →';
   }
 });
+
+function showError(el, msg) {
+  el.textContent = msg; el.style.display = 'block';
+}
+
+// ── Étape 2A : upload carte étudiante ───────────────────────
+function onFileSelected(input) {
+  const label = document.getElementById('file-selected-label');
+  if (input.files.length) {
+    label.textContent = '📎 ' + input.files[0].name;
+    label.style.display = 'block';
+    document.getElementById('upload-btn').disabled = false;
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const input = document.getElementById('student-file');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    onFileSelected(input);
+  }
+}
+
+async function submitStudentCard() {
+  const input = document.getElementById('student-file');
+  const btn   = document.getElementById('upload-btn');
+  const errEl = document.getElementById('error-student');
+  errEl.style.display = 'none';
+
+  if (!input.files.length) return;
+  btn.disabled = true; btn.textContent = 'Envoi…';
+
+  const form = new FormData();
+  form.append('user_id', _userId);
+  form.append('signup_token', _signupToken);
+  form.append('file', input.files[0]);
+
+  try {
+    const res = await fetch(`${API}/student-request/signup`, { method: 'POST', body: form });
+    if (res.ok) {
+      document.getElementById('done-title').textContent = 'Demande envoyée !';
+      document.getElementById('done-msg').innerHTML =
+        'Votre carte étudiante a été reçue — réponse sous 48h.<br>' +
+        'Vérifiez également votre email pour activer votre compte.';
+      showScreen('done');
+    } else {
+      const d = await res.json();
+      showError(errEl, d.detail || 'Erreur lors de l\'envoi');
+    }
+  } catch {
+    showError(errEl, 'Erreur de connexion');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Envoyer ma carte';
+  }
+}
+
+function skipStudentCard() {
+  showScreen('done');
+}
+
+// ── Étape 2B : Stripe Checkout ──────────────────────────────
+async function goToStripe() {
+  const btn   = document.getElementById('payment-btn');
+  const errEl = document.getElementById('error-payment');
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Redirection…';
+
+  try {
+    const res = await fetch(`${API}/billing/checkout-signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: _userId,
+        signup_token: _signupToken,
+        success_url: window.location.origin + '/signup?done=1&subscribed=1',
+        cancel_url:  window.location.origin + '/signup?done=1',
+      }),
+    });
+    if (!res.ok) {
+      const d = await res.json();
+      showError(errEl, d.detail || 'Erreur Stripe');
+      btn.disabled = false; btn.textContent = 'Continuer vers le paiement →';
+      return;
+    }
+    const { checkout_url } = await res.json();
+    window.location.href = checkout_url;
+  } catch {
+    showError(errEl, 'Erreur de connexion');
+    btn.disabled = false; btn.textContent = 'Continuer vers le paiement →';
+  }
+}
+
+function skipPayment() {
+  showScreen('done');
+}
+
+// ── Renvoi email ────────────────────────────────────────────
+async function resendEmail() {
+  if (!_signupEmail) return;
+  const btn = document.getElementById('resend-btn');
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  try {
+    const r = await fetch(`${API}/auth/resend-verification-public`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: _signupEmail }),
+    });
+    const d = await r.json();
+    btn.textContent = d.message || 'Email renvoyé';
+  } catch {
+    btn.textContent = 'Erreur';
+    btn.disabled = false;
+  }
+}
 </script>
 </body>
 </html>

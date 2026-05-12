@@ -20,11 +20,11 @@ from app.scheduler import (
 from app.sources_routes import router as sources_router
 
 import psycopg
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Depends
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Depends, UploadFile, Form, File
 from pydantic import BaseModel, EmailStr
 
 from app.db import get_conn
-from app.security import hash_password, encrypt_email, require_admin as _require_admin
+from app.security import hash_password, encrypt_email, require_admin as _require_admin, make_signup_token, verify_signup_token
 
 try:
     from app.migrations import run_migrations  # type: ignore
@@ -684,8 +684,52 @@ def create_user(payload: UserCreate, background_tasks: BackgroundTasks):
         except Exception as e:
             _startup_logger.error("Échec mise en queue email vérification pour user %s : %s", user_id, e)
 
-    return {"id": str(user_id), "created_at": created_at.isoformat()}
+    return {
+        "id": str(user_id),
+        "created_at": created_at.isoformat(),
+        "signup_token": make_signup_token(str(user_id)),
+    }
 
+
+
+@app.post("/student-request/signup", status_code=201)
+async def student_request_signup(
+    user_id: str = Form(...),
+    signup_token: str = Form(...),
+    file: UploadFile = File(...),
+):
+    """Upload carte étudiante lors de l'inscription (avant vérification email, sans JWT)."""
+    if not verify_signup_token(signup_token, user_id):
+        raise HTTPException(status_code=403, detail="invalid or expired signup token")
+
+    _ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp", "application/pdf"}
+    _MAX_SIZE = 5 * 1024 * 1024
+    if file.content_type not in _ALLOWED_MIME:
+        raise HTTPException(status_code=415, detail="Format non supporté (JPEG, PNG, WebP, PDF)")
+    data = await file.read()
+    if len(data) > _MAX_SIZE:
+        raise HTTPException(status_code=413, detail="Fichier trop volumineux (max 5 Mo)")
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id FROM users WHERE id = %s", (user_id,)
+            )
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="user not found")
+            cur.execute(
+                "SELECT status FROM student_requests WHERE user_id = %s ORDER BY created_at DESC LIMIT 1",
+                (user_id,),
+            )
+            existing = cur.fetchone()
+            if existing and existing[0] in ("pending", "approved"):
+                raise HTTPException(status_code=409, detail=f"Demande déjà en cours ({existing[0]})")
+            cur.execute(
+                "INSERT INTO student_requests (user_id, document_data, document_mime) VALUES (%s, %s, %s) RETURNING id",
+                (user_id, data, file.content_type),
+            )
+            req_id = cur.fetchone()[0]
+    return {"id": str(req_id), "status": "pending"}
 
 
 @app.post("/admin/users/{user_id}/verify-email")

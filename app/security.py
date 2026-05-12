@@ -212,6 +212,37 @@ def check_resend_verification_rate_limit(user_id: str) -> None:
 
 
 # -----------------------
+# Signup token (HMAC-SHA256, 1h expiry)
+# Permet l'upload carte étudiante et le checkout Stripe sans JWT
+# (l'utilisateur vient d'être créé mais n'a pas encore vérifié son email)
+# -----------------------
+
+import hmac as _hmac_mod
+
+
+def make_signup_token(user_id: str) -> str:
+    secret = os.environ.get("ADMIN_SECRET", "dev-secret")
+    ts = int(time.time())
+    msg = f"{user_id}:{ts}"
+    sig = _hmac_mod.new(secret.encode(), msg.encode(), hashlib.sha256).hexdigest()
+    return f"{ts}:{sig}"
+
+
+def verify_signup_token(token: str, user_id: str, max_age: int = 3600) -> bool:
+    try:
+        ts_str, sig = token.split(":", 1)
+        ts = int(ts_str)
+        if time.time() - ts > max_age:
+            return False
+        secret = os.environ.get("ADMIN_SECRET", "dev-secret")
+        msg = f"{user_id}:{ts}"
+        expected = _hmac_mod.new(secret.encode(), msg.encode(), hashlib.sha256).hexdigest()
+        return secrets.compare_digest(sig, expected)
+    except Exception:
+        return False
+
+
+# -----------------------
 # Email encryption (Fernet / AES-128-CBC)
 # Set EMAIL_ENCRYPTION_KEY to a valid Fernet key (generate with:
 #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
