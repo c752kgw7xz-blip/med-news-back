@@ -6,6 +6,11 @@ Deux modes :
   python3 check_new_for_specialty.py global          → sources "tous" (triage global)
   python3 check_new_for_specialty.py <specialty_slug> → sources spécifiques à la spé
 
+Option :
+  --min-age-hours N  → ne compte que les candidats NEW depuis plus de N heures.
+                       Utilisé par compute_backlog pour distinguer un vrai retard
+                       d'une collecte fraîche qui attend simplement son slot prévu.
+
 Architecture deux passes :
   1. "triage global"  : traite sources hint="tous" une seule fois → LLM_DONE
   2. "lance X"        : ne voit que les sources spécifiques à X (les "tous" sont déjà LLM_DONE)
@@ -43,39 +48,55 @@ def get_global_sources() -> list[str]:
     return [src for src, hint in SOURCE_SPECIALTY_HINTS.items() if hint == "tous"]
 
 
-def _count_from_sources(sources: list[str]) -> int:
+def _count_from_sources(sources: list[str], min_age_hours: int = 0) -> int:
     if not sources:
         return 0
     conn = psycopg2.connect(_load_db_url())
     try:
         cur = conn.cursor()
         placeholders = ",".join(["%s"] * len(sources))
+        age_clause = ""
+        params = sources
+        if min_age_hours > 0:
+            age_clause = f" AND created_at < NOW() - INTERVAL '{min_age_hours} hours'"
         cur.execute(
-            f"SELECT COUNT(*) FROM candidates WHERE source IN ({placeholders}) AND status = 'NEW'",
-            sources,
+            f"SELECT COUNT(*) FROM candidates WHERE source IN ({placeholders}) AND status = 'NEW'{age_clause}",
+            params,
         )
         return cur.fetchone()[0]
     finally:
         conn.close()
 
 
-def count_new(arg: str) -> int:
+def count_new(arg: str, min_age_hours: int = 0) -> int:
     """
     arg='global'      → compte les NEW des sources "tous" (pour le triage global)
     arg=<slug>        → compte les NEW des sources spécifiques à la spécialité
                         (sources "tous" exclues — déjà traitées par le triage global)
+    min_age_hours     → si > 0, ne compte que les candidats plus anciens que N heures
     """
     if arg == "global":
-        return _count_from_sources(get_global_sources())
-    return _count_from_sources(get_specialty_sources(arg))
+        return _count_from_sources(get_global_sources(), min_age_hours)
+    return _count_from_sources(get_specialty_sources(arg), min_age_hours)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    args = sys.argv[1:]
+    if not args:
         print(0)
         sys.exit(1)
+
+    slug = args[0]
+    min_age_hours = 0
+    if "--min-age-hours" in args:
+        idx = args.index("--min-age-hours")
+        try:
+            min_age_hours = int(args[idx + 1])
+        except (IndexError, ValueError):
+            pass
+
     try:
-        print(count_new(sys.argv[1]))
+        print(count_new(slug, min_age_hours))
     except Exception as e:
         print(f"ERROR: {e}", file=sys.stderr)
         print(0)

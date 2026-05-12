@@ -73,10 +73,11 @@ rm -f "$FAILED_FILE" "$QUEUE_FILE"
 # Évite le point de défaillance unique sur mednews1 en cas de rate limit.
 check_count() {
     local slug="$1"
+    local extra_args="${2:-}"   # ex: "--min-age-hours 8"
     for user in mednews1 mednews2 mednews3 mednews4; do
         local cnt
         cnt=$(su - "$user" -c \
-            "cd $REPO_DIR && DATABASE_URL='$DATABASE_URL' python3 scripts/check_new_for_specialty.py $slug" \
+            "cd $REPO_DIR && DATABASE_URL='$DATABASE_URL' python3 scripts/check_new_for_specialty.py $slug $extra_args" \
             2>/dev/null || true)
         cnt=$(echo "$cnt" | tr -d '[:space:]')
         if [[ "$cnt" =~ ^[0-9]+$ ]]; then
@@ -300,8 +301,12 @@ compute_backlog() {
         # Sauter les spés du slot courant
         [[ "$current_slugs" == *" $slug "* ]] && continue
 
+        # --min-age-hours 8 : ne considérer comme backlog que les candidats NEW
+        # depuis plus de 8h (= un slot complet de 6h + marge).
+        # Évite de traiter comme backlog les spés freshly collectées qui attendent
+        # simplement leur slot prévu (slots 2 et 3 après une collecte à 1h UTC).
         local cnt
-        cnt=$(check_count "$slug")
+        cnt=$(check_count "$slug" "--min-age-hours 8")
         if [[ "${cnt:-0}" -gt 0 ]]; then
             backlog+=("$slug")
         fi
