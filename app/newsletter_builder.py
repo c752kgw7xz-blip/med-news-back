@@ -495,8 +495,8 @@ def _generate_edito(n_total: int, specialty_name: str, emission_date: date) -> s
         f"Réglementation, recommandations cliniques, innovation : "
         f"MedNews sélectionne en continu pour votre spécialité "
         f"les publications à fort impact pratique. "
-        f"Cette édition regroupe {n_total} article{{'s' if n_total > 1 else ''}} "
-        f"approuvé{{'s' if n_total > 1 else ''}} ces derniers jours, "
+        f"Cette édition regroupe {n_total} article{'s' if n_total > 1 else ''} "
+        f"approuvé{'s' if n_total > 1 else ''} ces derniers jours, "
         f"classés par catégorie et par pertinence clinique."
     )
 
@@ -586,6 +586,10 @@ def build_newsletter(
     items_spec = items_spec[:max_articles]
 
     n_total = len(items_spec)
+
+    # Ne pas générer une newsletter vide
+    if n_total == 0:
+        return None, None, None
 
     # Classer en 3 sections
     items_reg   = sorted([i for i in items_spec if _classify_section(i) == "reglementation"],
