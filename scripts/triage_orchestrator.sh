@@ -60,6 +60,30 @@ LOGFILE="$LOG_DIR/slot${SLOT}_$(date +%Y%m%d_%H%M%S).log"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOGFILE"; }
 
+# Fichier partagé pour collecter les spécialités en erreur pendant les streams
+FAILED_FILE="/tmp/mednews_failed_slot${SLOT}.txt"
+rm -f "$FAILED_FILE"
+
+# ─── check_count : compte les NEW pour un slug, essaie les 4 comptes en fallback
+# Utilisé à la fois dans compute_backlog et run_stream — évite le point de
+# défaillance unique sur mednews1 en cas de rate limit ou de problème env.
+check_count() {
+    local slug="$1"
+    for user in mednews1 mednews2 mednews3 mednews4; do
+        local cnt
+        cnt=$(su - "$user" -c \
+            "cd $REPO_DIR && DATABASE_URL='$DATABASE_URL' python3 scripts/check_new_for_specialty.py $slug" \
+            2>/dev/null || true)
+        cnt=$(echo "$cnt" | tr -d '[:space:]')
+        if [[ "$cnt" =~ ^[0-9]+$ ]]; then
+            echo "$cnt"
+            return 0
+        fi
+    done
+    log "[check] WARN — tous les comptes ont échoué pour $slug (DB inaccessible ?), supposé 0"
+    echo "0"
+}
+
 # ─── Répartition : 4 comptes × 3 slots × 3 spécialités = 36 ─────────────────
 #
 # Compte        Slot 1              Slot 2                  Slot 3
@@ -108,10 +132,7 @@ run_stream() {
 
     for slug in "${specialties[@]}"; do
         local new_count
-        new_count=$(su - "$user" -c \
-            "cd $REPO_DIR && DATABASE_URL='$DATABASE_URL' python3 scripts/check_new_for_specialty.py $slug" \
-            2>>"$LOGFILE" || echo "0")
-        new_count=$(echo "$new_count" | tr -d '[:space:]')
+        new_count=$(check_count "$slug")
 
         if [[ "${new_count:-0}" -eq 0 ]]; then
             log "[$user] SKIP     $slug — 0 candidats NEW"
@@ -133,8 +154,9 @@ run_stream() {
                 log "[$user] DONE     $slug"
                 ((done++)) || true
             else
-                log "[$user] ERROR    $slug — voir $slug_log"
+                log "[$user] ERROR    $slug — voir $slug_log — ajouté à la file de redistribution"
                 ((errors++)) || true
+                echo "$slug" >> "$FAILED_FILE"
             fi
             sleep "$PAUSE_BETWEEN_SESSIONS"
         fi
@@ -173,10 +195,7 @@ compute_backlog() {
         [[ "$current_slugs" == *" $slug "* ]] && continue
 
         local cnt
-        cnt=$(su - "mednews1" -c \
-            "cd $REPO_DIR && DATABASE_URL='$DATABASE_URL' python3 scripts/check_new_for_specialty.py $slug" \
-            2>>"$LOGFILE" || echo "0")
-        cnt=$(echo "$cnt" | tr -d '[:space:]')
+        cnt=$(check_count "$slug")
         if [[ "${cnt:-0}" -gt 0 ]]; then
             backlog+=("$slug")
         fi
@@ -292,6 +311,24 @@ log "═════════════════════════
 [[ $S2 -eq 0 ]] && log "  mednews2 : OK" || log "  mednews2 : ERREUR"
 [[ $S3 -eq 0 ]] && log "  mednews3 : OK" || log "  mednews3 : ERREUR"
 [[ $S4 -eq 0 ]] && log "  mednews4 : OK" || log "  mednews4 : ERREUR"
+
+# ─── Redistribution des spécialités en erreur ────────────────────────────────
+# Les spécialités qui ont échoué (rate limit, crash) pendant les streams sont
+# relancées immédiatement en round-robin sur les 4 comptes, sans attendre le
+# slot suivant.
+if [[ -f "$FAILED_FILE" ]]; then
+    FAILED_SLUGS=$(sort -u "$FAILED_FILE" | tr '\n' ' ')
+    FAILED_COUNT=$(sort -u "$FAILED_FILE" | wc -l | tr -d ' ')
+    if [[ -n "${FAILED_SLUGS// /}" ]]; then
+        log "════════════════════════════════════════════════"
+        log "  Redistribution — $FAILED_COUNT spécialité(s) en erreur : $FAILED_SLUGS"
+        log "  Relance en round-robin sur les 4 comptes…"
+        run_backlog "$FAILED_SLUGS"
+        log "  Redistribution terminée."
+    fi
+    rm -f "$FAILED_FILE"
+fi
+
 log "  Log : $LOGFILE"
 log "════════════════════════════════════════════════"
 
