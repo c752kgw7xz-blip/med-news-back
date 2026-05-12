@@ -1094,7 +1094,7 @@ def newsletter_preview(
     request: Request,
     specialty: Optional[str] = Query(default=None, description="Specialty slug"),
 ):
-    """Génère un aperçu HTML de la newsletter pour une spécialité."""
+    """Génère un aperçu HTML de la newsletter unifiée pour une spécialité (fenêtre 3j)."""
     _require_admin(request)
 
     from app.newsletter_builder import build_newsletter
@@ -1103,7 +1103,7 @@ def newsletter_preview(
         with conn.cursor() as cur:
             conditions = [
                 "i.review_status = 'APPROVED'",
-                "(c.official_date >= CURRENT_DATE - INTERVAL '15 days' OR c.official_date IS NULL)",
+                "(c.official_date >= CURRENT_DATE - INTERVAL '3 days' OR c.official_date IS NULL)",
             ]
             params: list[Any] = []
 
@@ -1149,6 +1149,8 @@ def newsletter_preview(
     ]
 
     subject, html, plain = build_newsletter(specialty, items)
+    if subject is None:
+        return {"ok": False, "detail": "Aucun article approuvé sur les 3 derniers jours pour cette spécialité."}
     return {"ok": True, "subject": subject, "html": html, "article_count": len(items)}
 
 
@@ -1172,7 +1174,7 @@ def newsletter_send_test(
         with conn.cursor() as cur:
             conditions = [
                 "i.review_status = 'APPROVED'",
-                "(c.official_date >= CURRENT_DATE - INTERVAL '15 days' OR c.official_date IS NULL)",
+                "(c.official_date >= CURRENT_DATE - INTERVAL '3 days' OR c.official_date IS NULL)",
             ]
             params: list[Any] = []
             if specialty:
@@ -1208,6 +1210,8 @@ def newsletter_send_test(
     ]
 
     subject, html, plain = build_newsletter(specialty, items)
+    if subject is None:
+        return {"ok": False, "recipient": email, "article_count": 0, "error": "Aucun article approuvé sur les 3 derniers jours."}
     try:
         result = send_email(email, f"[TEST] {subject}", html, plain)
     except RuntimeError as e:
