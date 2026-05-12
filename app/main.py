@@ -790,7 +790,7 @@ def admin_list_reports(request: Request, limit: int = 100):
                     i.tri_json->>'titre_court'   AS titre,
                     i.specialty_slug,
                     i.review_status,
-                    u.email_encrypted            AS email_enc
+                    u.email_ciphertext           AS email_enc
                 FROM item_reports ir
                 JOIN items i ON i.id = ir.item_id
                 LEFT JOIN users u ON u.id = ir.user_id
