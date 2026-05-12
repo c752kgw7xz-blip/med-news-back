@@ -4097,6 +4097,9 @@ async function loadDemoData() {
           const [_y, _m] = _activeMonth.split('-').map(Number);
           const labelEl = document.getElementById('month-picker-label');
           if (labelEl) labelEl.textContent = MONTHS[_m - 1] + ' ' + _y;
+          // Restreindre le picker au seul mois disponible en démo
+          _monthCountsMap = { [_activeMonth]: artData.articles.length };
+          buildMonthList();
         }
       } else {
         _demoCache = [...DEMO_ARTICLES];
