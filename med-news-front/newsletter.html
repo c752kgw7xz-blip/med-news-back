@@ -507,22 +507,25 @@ async function loadData() {
 
   // Build specialty select + grid
   const specs = specsRes.ok ? await specsRes.json() : [];
-  const specMap = {};
-  specs.forEach(s => { specMap[s.slug] = s.name; });
 
   const sel = document.getElementById('nl-specialty');
   const grid = document.getElementById('spec-grid');
 
-  const sorted = Object.entries(bySpec)
-    .sort(([,a],[,b]) => b - a);
+  // Trier : spés avec articles en premier (desc), puis les autres alpha
+  const sorted = [...specs].sort((a, b) => {
+    const ca = bySpec[a.slug] || 0;
+    const cb = bySpec[b.slug] || 0;
+    if (cb !== ca) return cb - ca;
+    return a.name.localeCompare(b.name, 'fr');
+  });
 
-  sorted.forEach(([slug, count]) => {
-    const name = specMap[slug] || slug;
+  sorted.forEach(({ slug, name }) => {
+    const count = bySpec[slug] || 0;
 
     // select option (preview)
     const opt = document.createElement('option');
     opt.value = slug;
-    opt.textContent = `${name} (${count})`;
+    opt.textContent = count > 0 ? `${name} (${count})` : name;
     sel.appendChild(opt);
 
     // select option (deploy)
@@ -535,7 +538,8 @@ async function loadData() {
     const chip = document.createElement('div');
     chip.className = 'spec-chip';
     chip.dataset.slug = slug;
-    chip.innerHTML = `<span class="spec-chip-name">${esc(name)}</span><span class="spec-chip-count">${count}</span>`;
+    chip.innerHTML = `<span class="spec-chip-name">${esc(name)}</span>`
+      + (count > 0 ? `<span class="spec-chip-count">${count}</span>` : '');
     chip.onclick = () => selectChip(chip, slug);
     grid.appendChild(chip);
   });
