@@ -835,6 +835,17 @@ def admin_list_reports(request: Request, limit: int = 100):
     return {"reports": result, "total": len(result)}
 
 
+@app.delete("/admin/reports/{report_id}")
+def admin_dismiss_report(report_id: str, request: Request):
+    """Supprime définitivement un signalement (action 'Ignorer')."""
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM item_reports WHERE id = %s", (report_id,))
+        conn.commit()
+    return {"ok": True}
+
+
 @app.post("/admin/send-newsletter-unified")
 def admin_send_newsletter_unified(request: Request):
     """Déclenche l'envoi de la newsletter unifiée tous types (régle + reco + innov), fenêtre 3j."""

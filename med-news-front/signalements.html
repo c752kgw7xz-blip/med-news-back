@@ -286,7 +286,9 @@ async function rejectFromReport(itemId, reportId) {
   }
 }
 
-function dismissReport(reportId) {
+async function dismissReport(reportId) {
+  const res = await authFetch(`${API}/admin/reports/${reportId}`, { method: 'DELETE' });
+  if (!res?.ok) { toast('Erreur', 'error'); return; }
   reportsData = reportsData.filter(r => r.id !== reportId);
   renderReports();
 }
