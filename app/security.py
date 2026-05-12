@@ -228,7 +228,7 @@ def make_signup_token(user_id: str) -> str:
     return f"{ts}:{sig}"
 
 
-def verify_signup_token(token: str, user_id: str, max_age: int = 3600) -> bool:
+def verify_signup_token(token: str, user_id: str, max_age: int = 48 * 3600) -> bool:
     try:
         ts_str, sig = token.split(":", 1)
         ts = int(ts_str)
