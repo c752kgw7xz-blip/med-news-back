@@ -779,12 +779,16 @@ def llm_stats(request: Request):
             )
             item_stats = {row[0]: row[1] for row in cur.fetchall()}
 
-            # Items par spécialité
+            # Items par spécialité — APPROVED, fenêtre 3 jours (cohérent avec newsletter unifiée)
             cur.execute(
                 """
-                SELECT COALESCE(specialty_slug, 'TRANSVERSAL'), COUNT(*)
-                FROM items
-                GROUP BY specialty_slug
+                SELECT COALESCE(i.specialty_slug, 'TRANSVERSAL'), COUNT(*)
+                FROM items i
+                JOIN candidates c ON c.id = i.candidate_id
+                WHERE i.review_status = 'APPROVED'
+                  AND (c.official_date >= CURRENT_DATE - INTERVAL '3 days' OR c.official_date IS NULL)
+                  AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins')
+                GROUP BY i.specialty_slug
                 ORDER BY COUNT(*) DESC;
                 """
             )
