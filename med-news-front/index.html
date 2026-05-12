@@ -367,6 +367,32 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
 
 <div class="divider-line"></div>
 
+<!-- ── PORTAL PREVIEW ── -->
+<section class="section section-center" id="portal-section" style="padding:80px 32px">
+  <span class="section-tag reveal">Le portail</span>
+  <div class="section-title reveal reveal-delay-1">Votre revue en un coup d'œil</div>
+  <p class="section-sub reveal reveal-delay-2" style="margin-left:auto;margin-right:auto">Trois rubriques, un filtrage par spécialité, des résumés sourcés. Mis à jour tous les jours pour une couverture exhaustive.</p>
+  <div class="portal-preview-wrap reveal reveal-delay-3">
+    <div class="browser-frame">
+      <div class="browser-bar">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+        <div class="browser-url">mednews.fr/portal</div>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--text4);background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 8px;flex-shrink:0;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M10 14L21 3M21 13v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8"/></svg>
+          Portail interactif — cliquez pour explorer
+        </span>
+      </div>
+      <div class="portal-iframe-wrap">
+        <iframe src="/portal-demo?demo=1" class="portal-iframe" title="Portail MedNews démo" scrolling="yes" allow="popups"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
 <!-- ── LE PARADOXE ── -->
 <section class="paradox-section" id="paradoxe">
   <div class="paradox-inner">
@@ -450,28 +476,6 @@ footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-i
       <div class="pillar-badge" style="background:rgba(155,87,20,.08);color:var(--innov)">Avant la norme</div>
       <div class="pillar-desc">Essais cliniques à haut impact, nouveaux dispositifs médicaux et ruptures technologiques mondiales. Accédez aux innovations américaines et européennes avant qu'elles deviennent la norme.</div>
       <div class="pillar-sources">PubMed · NEJM · Lancet · Nature Medicine · JAMA · Annals · EMA · FDA · essais de phase III</div>
-    </div>
-  </div>
-</section>
-
-<div class="divider-line"></div>
-
-<!-- ── PORTAL PREVIEW ── -->
-<section class="section section-center" id="portal-section" style="padding:80px 32px">
-  <span class="section-tag reveal">Le portail</span>
-  <div class="section-title reveal reveal-delay-1">Votre revue en un coup d'œil</div>
-  <p class="section-sub reveal reveal-delay-2" style="margin-left:auto;margin-right:auto">Trois rubriques, un filtrage par spécialité, des résumés sourcés. Mis à jour tous les jours pour une couverture exhaustive.</p>
-  <div class="portal-preview-wrap reveal reveal-delay-3">
-    <div class="browser-frame">
-      <div class="browser-bar">
-        <div class="browser-dot dot-red"></div>
-        <div class="browser-dot dot-yellow"></div>
-        <div class="browser-dot dot-green"></div>
-        <div class="browser-url">mednews.fr/portal</div>
-      </div>
-      <div class="portal-iframe-wrap">
-        <iframe src="/portal-demo?demo=1" class="portal-iframe" title="Portail MedNews démo" scrolling="yes" allow="popups"></iframe>
-      </div>
     </div>
   </div>
 </section>
