@@ -190,6 +190,34 @@
 
   .filter-bar-spacer { flex: 1; }
 
+  /* ── Signalements panel ── */
+  #reports-panel { display: none; padding: 20px; max-width: 900px; }
+  .report-row {
+    padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 10px; background: var(--surface);
+  }
+  .report-row:hover { background: var(--surface2); }
+  .report-title { font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 4px; }
+  .report-meta  { font-size: 0.78rem; color: var(--text3); display: flex; flex-wrap: wrap; gap: 10px; }
+  .report-reason-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 100px;
+    font-size: 0.72rem; font-weight: 600;
+    background: rgba(192,57,43,.12); color: #c0392b;
+  }
+  .report-comment { font-size: 0.82rem; color: var(--text2); margin-top: 6px; font-style: italic; }
+  .report-actions { margin-top: 10px; display: flex; gap: 8px; }
+  .btn-reject-item {
+    padding: 5px 12px; border: none; border-radius: 5px;
+    background: #c0392b; color: #fff; font-size: 0.78rem;
+    font-family: inherit; cursor: pointer; font-weight: 600;
+  }
+  .btn-reject-item:hover { opacity: .85; }
+  .btn-ignore-report {
+    padding: 5px 12px; border: 1px solid var(--border); border-radius: 5px;
+    background: transparent; color: var(--text3); font-size: 0.78rem;
+    font-family: inherit; cursor: pointer;
+  }
+
   .filter-bar-info {
     font-size: 0.75rem;
     color: var(--text3);
@@ -639,6 +667,9 @@
         <button class="filter-pill active" data-status="PENDING" onclick="setStatusFilter('PENDING', this)">
           En attente <span class="count" id="count-pending">0</span>
         </button>
+        <button class="filter-pill" id="tab-reports" onclick="showReportsPanel(this)">
+          Signalements <span class="count" id="count-reports">–</span>
+        </button>
         <div style="width:12px;flex-shrink:0;"></div>
         <select class="spec-select" id="spec-filter" onchange="setSidebarFilter(this.value)">
           <option value="">Toutes spécialités</option>
@@ -666,6 +697,11 @@
         <!-- Content -->
         <div id="content" style="display:none;">
           <div id="articles-container"></div>
+        </div>
+
+        <!-- Signalements -->
+        <div id="reports-panel">
+          <div id="reports-container"></div>
         </div>
 
       </div>
@@ -1155,6 +1191,110 @@ async function loadItems() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
   if (window.lucide) lucide.createIcons(); // static icons (sidebar)
+})();
+
+// ── Signalements ──────────────────────────────────────────────────────────────
+const REASON_LABELS = {
+  not_relevant:    'Non pertinent',
+  factual_error:   'Erreur factuelle',
+  wrong_specialty: 'Mauvaise spécialité',
+  other:           'Autre',
+};
+
+let reportsData = [];
+
+async function showReportsPanel(btn) {
+  // Désactiver les autres onglets
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Cacher review, montrer reports
+  document.getElementById('content').style.display = 'none';
+  document.getElementById('reports-panel').style.display = 'block';
+  // Cacher les filtres spécialité
+  document.getElementById('spec-filter').style.display = 'none';
+  await loadReports();
+}
+
+function hideReportsPanel() {
+  document.getElementById('reports-panel').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  document.getElementById('spec-filter').style.display = '';
+}
+
+// Patch setStatusFilter pour revenir au panel review
+const _origSetStatus = setStatusFilter;
+setStatusFilter = function(status, btn) {
+  hideReportsPanel();
+  _origSetStatus(status, btn);
+};
+
+async function loadReports() {
+  const container = document.getElementById('reports-container');
+  container.innerHTML = '<p style="color:var(--text3);font-size:.85rem;">Chargement…</p>';
+  try {
+    const res = await authFetch(`${API}/admin/reports`);
+    reportsData = res.reports || [];
+    document.getElementById('count-reports').textContent = reportsData.length;
+    renderReports();
+  } catch(e) {
+    container.innerHTML = `<p style="color:#c0392b;">Erreur : ${e.message}</p>`;
+  }
+}
+
+function renderReports() {
+  const container = document.getElementById('reports-container');
+  if (!reportsData.length) {
+    container.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:20px 0;">Aucun signalement pour le moment.</p>';
+    return;
+  }
+  container.innerHTML = reportsData.map(r => `
+    <div class="report-row" id="report-row-${r.id}">
+      <div class="report-title">${r.titre || '(sans titre)'}</div>
+      <div class="report-meta">
+        <span class="report-reason-badge">${REASON_LABELS[r.reason] || r.reason}</span>
+        ${r.specialty_slug ? `<span>📁 ${r.specialty_slug}</span>` : ''}
+        <span>Article : <strong>${r.review_status}</strong></span>
+        ${r.user_email ? `<span>👤 ${r.user_email}</span>` : ''}
+        <span>🕒 ${r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}</span>
+      </div>
+      ${r.comment ? `<div class="report-comment">"${r.comment}"</div>` : ''}
+      <div class="report-actions">
+        ${r.review_status !== 'REJECTED' ? `<button class="btn-reject-item" onclick="rejectFromReport('${r.item_id}','${r.id}')">Rejeter l'article</button>` : '<span style="font-size:.78rem;color:#c0392b;font-weight:600;">✓ Déjà rejeté</span>'}
+        <button class="btn-ignore-report" onclick="dismissReport('${r.id}')">Ignorer</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function rejectFromReport(itemId, reportId) {
+  try {
+    await authFetch(`${API}/admin/llm/review/${itemId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reject' }),
+    });
+    // Mettre à jour localement
+    const r = reportsData.find(x => x.item_id === itemId);
+    if (r) r.review_status = 'REJECTED';
+    renderReports();
+  } catch(e) {
+    alert('Erreur lors du rejet : ' + e.message);
+  }
+}
+
+function dismissReport(reportId) {
+  reportsData = reportsData.filter(r => r.id !== reportId);
+  document.getElementById('count-reports').textContent = reportsData.length;
+  renderReports();
+}
+
+// Charger le compteur au démarrage
+(async () => {
+  try {
+    await new Promise(r => setTimeout(r, 800)); // attendre que authFetch soit dispo
+    const res = await authFetch(`${API}/admin/reports`);
+    document.getElementById('count-reports').textContent = (res.reports || []).length;
+  } catch {}
 })();
 </script>
 </body>

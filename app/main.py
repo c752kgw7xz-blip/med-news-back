@@ -774,6 +774,55 @@ def admin_delete_user(user_id: str, request: Request):
     return {"ok": True, "user_id": user_id, "deleted": True}
 
 
+@app.get("/admin/reports")
+def admin_list_reports(request: Request, limit: int = 100):
+    """Liste les signalements praticiens (item_reports) avec titre article et email user."""
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT
+                    ir.id,
+                    ir.created_at,
+                    ir.reason,
+                    ir.comment,
+                    ir.item_id,
+                    i.tri_json->>'titre_court'   AS titre,
+                    i.specialty_slug,
+                    i.review_status,
+                    u.email_encrypted            AS email_enc
+                FROM item_reports ir
+                JOIN items i ON i.id = ir.item_id
+                LEFT JOIN users u ON u.id = ir.user_id
+                ORDER BY ir.created_at DESC
+                LIMIT %s
+            """, (limit,))
+            rows = cur.fetchall()
+
+    result = []
+    for row in rows:
+        rid, created_at, reason, comment, item_id, titre, slug, review_status, email_enc = row
+        email = None
+        if email_enc:
+            try:
+                from app.security import decrypt_email
+                email = decrypt_email(email_enc)
+            except Exception:
+                email = "(chiffré)"
+        result.append({
+            "id": str(rid),
+            "created_at": created_at.isoformat() if created_at else None,
+            "reason": reason,
+            "comment": comment,
+            "item_id": str(item_id),
+            "titre": titre,
+            "specialty_slug": slug,
+            "review_status": review_status,
+            "user_email": email,
+        })
+    return {"reports": result, "total": len(result)}
+
+
 @app.get("/_version")
 def version():
     return {"commit": os.environ.get("RENDER_GIT_COMMIT", "unknown")}
