@@ -1875,6 +1875,48 @@
       transform: rotate(-90deg);
     }
   }
+
+  /* ── Paywall modal ──────────────────────── */
+  #paywall-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9000;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  #paywall-overlay.open { display: flex; }
+  #paywall-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 40px 36px; max-width: 440px; width: calc(100% - 40px);
+    box-shadow: 0 24px 64px rgba(0,0,0,.18); text-align: center;
+    animation: paywallIn .22s cubic-bezier(.25,.8,.25,1);
+  }
+  @keyframes paywallIn {
+    from { transform: translateY(18px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  #paywall-modal .pw-icon {
+    width: 52px; height: 52px; background: rgba(155,35,53,.08);
+    border: 1px solid rgba(155,35,53,.18); border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+  }
+  #paywall-modal h2 { font-size: 1.22rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  #paywall-modal p  { font-size: 0.88rem; color: var(--text3); line-height: 1.6; margin-bottom: 28px; }
+  #paywall-modal .pw-price {
+    font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 6px;
+  }
+  #paywall-modal .pw-price span { font-size: 0.85rem; font-weight: 400; color: var(--text3); }
+  #paywall-modal .pw-cta {
+    display: block; width: 100%; padding: 13px;
+    background: var(--green); color: #fff; border: none; border-radius: 8px;
+    font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-bottom: 12px;
+    transition: opacity .15s;
+  }
+  #paywall-modal .pw-cta:hover { opacity: .88; }
+  #paywall-modal .pw-cta:disabled { opacity: .5; cursor: not-allowed; }
+  #paywall-modal .pw-secondary {
+    font-size: 0.8rem; color: var(--text4); cursor: pointer;
+    background: none; border: none; text-decoration: underline;
+  }
+  #paywall-modal .pw-secondary:hover { color: var(--text2); }
 </style>
 </head>
 <body>
@@ -1896,6 +1938,21 @@
 
   <div class="demo-banner" id="demo-banner" style="display:none;background:#1d1916;border-bottom:1px solid #3d3228;padding:7px 24px;font-size:0.78rem;color:#a89070;text-align:center;letter-spacing:.3px;">
     MODE DÉMO · <a href="/signup" target="_top" style="color:#9B2335;text-decoration:none;font-weight:500;">Créer mon compte →</a>
+  </div>
+
+  <!-- ── Paywall modal ── -->
+  <div id="paywall-overlay">
+    <div id="paywall-modal">
+      <div class="pw-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9B2335" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h2>Votre accès a expiré</h2>
+      <p>Votre période d'essai gratuit est terminée.<br>Abonnez-vous pour continuer à accéder au portail MedNews.</p>
+      <div class="pw-price">9,90 € <span>/ mois · sans engagement</span></div>
+      <p style="font-size:0.78rem;color:var(--text4);margin-bottom:20px;">Résiliable à tout moment · Paiement sécurisé Stripe</p>
+      <button class="pw-cta" id="pw-subscribe-btn" onclick="startCheckout()">S'abonner maintenant</button>
+      <button class="pw-secondary" onclick="logout()">Se déconnecter</button>
+    </div>
   </div>
 
   <div class="verify-banner" id="verify-banner">
@@ -2198,6 +2255,8 @@
 <script>
 const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
 if (DEMO_MODE) document.body.classList.add('demo-mode');
+const _SUBSCRIBED_SUCCESS = new URLSearchParams(location.search).get('subscribed') === '1';
+if (_SUBSCRIBED_SUCCESS) history.replaceState(null, '', '/portal');
 let _demoCache = null; // articles chirurgie-vasculaire (spé principale démo)
 let _demoCacheBySlug = {}; // cache articles par slug, chargé à la demande
 let _demoDatesBySlug = {}; // { slug: { from_date, to_date } } — dernier mois actif par spé
@@ -2401,6 +2460,52 @@ function portalHeaderLabel() {
   return `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 }
 
+// ── Paywall ───────────────────────────────────────────────────
+function showPaywallModal() {
+  document.getElementById('paywall-overlay').classList.add('open');
+}
+
+async function startCheckout() {
+  const btn = document.getElementById('pw-subscribe-btn');
+  btn.disabled = true;
+  btn.textContent = 'Redirection…';
+  try {
+    const res = await authFetch(`${API}/billing/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        success_url: window.location.origin + '/portal?subscribed=1',
+        cancel_url:  window.location.origin + '/portal',
+      }),
+    });
+    if (!res || !res.ok) { btn.disabled = false; btn.textContent = "S'abonner maintenant"; return; }
+    const { checkout_url } = await res.json();
+    window.location.href = checkout_url;
+  } catch {
+    btn.disabled = false;
+    btn.textContent = "S'abonner maintenant";
+  }
+}
+
+async function checkBillingStatus() {
+  const res = await authFetch(`${API}/billing/status`);
+  if (!res) return; // 402 déjà géré par authFetch → showPaywallModal
+  if (!res.ok) return;
+  const data = await res.json();
+  if (!data.access) { showPaywallModal(); return; }
+  // Bandeau d'avertissement si essai se termine dans ≤ 7 jours
+  if (data.is_trial && data.days_left <= 7) {
+    const banner = document.getElementById('verify-banner');
+    if (banner && !document.getElementById('trial-warning')) {
+      const w = document.createElement('div');
+      w.id = 'trial-warning';
+      w.style.cssText = 'background:#fffbeb;border-bottom:1px solid #f5d87a;color:#78450a;font-size:0.8rem;padding:7px 20px;text-align:center;';
+      w.innerHTML = `Votre essai gratuit se termine dans <strong>${data.days_left} jour${data.days_left > 1 ? 's' : ''}</strong>. <a href="#" onclick="startCheckout();return false;" style="color:#78450a;font-weight:600;">S'abonner →</a>`;
+      banner.parentNode.insertBefore(w, banner);
+    }
+  }
+}
+
 // ── Auth helpers ──────────────────────────────────────────────
 function getToken() { return localStorage.getItem('access_token'); }
 
@@ -2441,6 +2546,10 @@ async function authFetch(url, opts = {}) {
       window.location.href = '/login';
       return;
     }
+  }
+  if (res.status === 402) {
+    showPaywallModal();
+    return null;
   }
   return res;
 }
@@ -4889,6 +4998,9 @@ function _doSwipe(dir, dx) {
     console.log('[MedNews] init start');
     await loadProfile();
     console.log('[MedNews] loadProfile done');
+    await checkBillingStatus();
+    if (document.getElementById('paywall-overlay').classList.contains('open')) return;
+    if (_SUBSCRIBED_SUCCESS) setTimeout(() => showToast('Abonnement actif — bienvenue sur MedNews !'), 800);
     await loadFavorites();
     console.log('[MedNews] loadFavorites done');
     // Nettoyage async des favoris orphelins (IDs en DB sans article accessible)

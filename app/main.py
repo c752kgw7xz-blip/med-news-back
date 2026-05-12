@@ -108,6 +108,7 @@ app.add_middleware(
 
 from app.portal_routes import router as portal_router
 from app.demo_routes import router as demo_router
+from app.billing_routes import router as billing_router
 
 app.include_router(auth_router)
 app.include_router(piste_router)
@@ -115,6 +116,7 @@ app.include_router(llm_router)
 app.include_router(sources_router)
 app.include_router(portal_router)
 app.include_router(demo_router)
+app.include_router(billing_router)
 
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -643,8 +645,9 @@ def create_user(payload: UserCreate, background_tasks: BackgroundTasks):
             try:
                 cur.execute(
                     """
-                    INSERT INTO users (email_lookup, email_ciphertext, password_hash, specialty_id, first_name, last_name)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    INSERT INTO users (email_lookup, email_ciphertext, password_hash, specialty_id,
+                                       first_name, last_name, trial_ends_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, NOW() + INTERVAL '1 month')
                     RETURNING id, created_at;
                     """,
                     (email_lookup, email_ciphertext, password_hash, specialty_id,

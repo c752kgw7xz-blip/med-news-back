@@ -61,6 +61,26 @@ def _get_current_user_id(creds=Depends(bearer_scheme)) -> str:
     return uid
 
 
+def _require_active_access(user_id: str = Depends(_get_current_user_id)) -> str:
+    """Vérifie que l'utilisateur a un accès actif (essai ou abonnement)."""
+    from datetime import datetime, timezone
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT trial_ends_at, subscribed_until FROM users WHERE id = %s",
+                (user_id,),
+            )
+            row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=401, detail="user not found")
+    now = datetime.now(timezone.utc)
+    trial_ok = row[0] and row[0] > now
+    sub_ok   = row[1] and row[1] > now
+    if not trial_ok and not sub_ok:
+        raise HTTPException(status_code=402, detail="subscription required")
+    return user_id
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -152,7 +172,7 @@ def list_articles(
     from_date: Optional[str] = Query(default=None),
     to_date: Optional[str] = Query(default=None),
     source_type: Optional[str] = Query(default=None, description="reglementaire | recommandation | innovation"),
-    user_id: str = Depends(_get_current_user_id),
+    user_id: str = Depends(_require_active_access),
 ):
     # Utiliser la spécialité demandée si fournie, sinon celle de l'utilisateur
     slug = specialty if specialty else _get_user_specialty_slug(user_id)
@@ -310,7 +330,7 @@ def list_articles(
 def article_counts(
     from_date: Optional[str] = Query(default=None),
     to_date: Optional[str] = Query(default=None),
-    user_id: str = Depends(_get_current_user_id),
+    user_id: str = Depends(_require_active_access),
 ):
     date_clause = ""
     date_params: list[Any] = []
@@ -412,7 +432,7 @@ def article_months(
     specialty: Optional[str] = Query(default=None),
     audience: Optional[str] = Query(default=None),
     source_type: Optional[str] = Query(default=None),
-    user_id: str = Depends(_get_current_user_id),
+    user_id: str = Depends(_require_active_access),
 ):
     slug = specialty if specialty else _get_user_specialty_slug(user_id)
     aud_clause, aud_params = _build_audience_clause(audience, slug)
@@ -459,7 +479,7 @@ def article_months(
 @router.get("/articles/{item_id}")
 def get_article(
     item_id: str,
-    user_id: str = Depends(_get_current_user_id),
+    user_id: str = Depends(_require_active_access),
 ):
     slug = _get_user_specialty_slug(user_id)
 
@@ -503,7 +523,7 @@ def get_article(
 # ---------------------------------------------------------------------------
 
 @router.get("/favorites")
-def list_favorites(user_id: str = Depends(_get_current_user_id)):
+def list_favorites(user_id: str = Depends(_require_active_access)):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -519,7 +539,7 @@ def list_favorites(user_id: str = Depends(_get_current_user_id)):
 # ---------------------------------------------------------------------------
 
 @router.get("/favorites/articles")
-def list_favorites_articles(user_id: str = Depends(_get_current_user_id)):
+def list_favorites_articles(user_id: str = Depends(_require_active_access)):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
@@ -552,7 +572,7 @@ def list_favorites_articles(user_id: str = Depends(_get_current_user_id)):
 # ---------------------------------------------------------------------------
 
 @router.post("/favorites/{item_id}")
-def add_favorite(item_id: str, user_id: str = Depends(_get_current_user_id)):
+def add_favorite(item_id: str, user_id: str = Depends(_require_active_access)):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -571,7 +591,7 @@ def add_favorite(item_id: str, user_id: str = Depends(_get_current_user_id)):
 # ---------------------------------------------------------------------------
 
 @router.delete("/favorites/{item_id}")
-def remove_favorite(item_id: str, user_id: str = Depends(_get_current_user_id)):
+def remove_favorite(item_id: str, user_id: str = Depends(_require_active_access)):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -596,7 +616,7 @@ class ReportPayload(BaseModel):
 def report_article(
     item_id: str,
     payload: ReportPayload,
-    user_id: str = Depends(_get_current_user_id),
+    user_id: str = Depends(_require_active_access),
 ):
     if payload.reason not in _VALID_REASONS:
         raise HTTPException(status_code=422, detail=f"Raison invalide : {payload.reason}")
