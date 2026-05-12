@@ -843,18 +843,23 @@
   }
   .btn-report-submit.enabled { opacity: 1; }
 
-  /* ── Disclaimer IA (footer fixe bas de page) ── */
+  /* ── Disclaimer IA ── */
   .ia-disclaimer {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 800;
     background: var(--surface); border-top: 1px solid var(--border);
-    padding: 8px 20px;
-    font-size: 0.73rem; color: var(--text5); line-height: 1.5; text-align: center;
-  }
-  /* Sur mobile, passer au-dessus de la bottom-nav */
-  @media (max-width: 767px) {
-    .ia-disclaimer { bottom: 56px; }
+    padding: 7px 20px;
+    font-size: 0.72rem; color: var(--text5); line-height: 1.4; text-align: center;
   }
   .ia-disclaimer a { color: var(--text4); text-decoration: underline; }
+  /* Mobile : pas de fixed, juste en bas du scroll, hors de la bottom-nav */
+  @media (max-width: 767px) {
+    .ia-disclaimer {
+      position: static;
+      border-top: 1px solid var(--border);
+      padding: 10px 16px 72px; /* 72px = hauteur bottom-nav */
+      font-size: 0.70rem;
+    }
+  }
 
   /* ── Portal page title ──────────────────── */
   .portal-page-title { margin-bottom: 20px; text-align: left; }
