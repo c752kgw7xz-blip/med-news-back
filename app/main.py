@@ -823,6 +823,19 @@ def admin_list_reports(request: Request, limit: int = 100):
     return {"reports": result, "total": len(result)}
 
 
+@app.post("/admin/send-newsletter-unified")
+def admin_send_newsletter_unified(request: Request):
+    """Déclenche l'envoi de la newsletter unifiée tous types (régle + reco + innov), fenêtre 3j."""
+    _require_secret(request, "x-admin-secret", ADMIN_SECRET)
+    try:
+        from app.scheduler import job_send_unified
+        job_send_unified()
+        return {"ok": True, "job": "send_unified"}
+    except Exception as e:
+        _startup_logger.exception("Erreur send-newsletter-unified")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)[:200]}")
+
+
 @app.get("/_version")
 def version():
     return {"commit": os.environ.get("RENDER_GIT_COMMIT", "unknown")}

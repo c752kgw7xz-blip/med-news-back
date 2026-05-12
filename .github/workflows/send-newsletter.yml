@@ -1,0 +1,44 @@
+name: MedNews — Envoi newsletter (tous les 2 jours)
+
+on:
+  schedule:
+    # 18h00 UTC tous les 2 jours (jours impairs du mois)
+    - cron: '0 18 */2 * *'
+  workflow_dispatch:
+
+jobs:
+  send:
+    name: Envoi newsletter unifiée
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: env
+
+    env:
+      API_URL: ${{ secrets.API_URL }}
+      ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+
+    steps:
+      - name: Vérifier secrets
+        run: |
+          if [ -z "$API_URL" ]; then
+            echo "ERREUR: API_URL manquant"
+            exit 1
+          fi
+          if [ -z "$ADMIN_SECRET" ]; then
+            echo "ERREUR: ADMIN_SECRET manquant"
+            exit 1
+          fi
+          echo "API_URL: $API_URL"
+
+      - name: Déclencher envoi newsletter unifiée
+        run: |
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST "$API_URL/admin/send-newsletter-unified" \
+            -H "x-admin-secret: $ADMIN_SECRET" \
+            -H "Content-Type: application/json")
+          echo "Statut HTTP : $HTTP_STATUS"
+          cat /tmp/response.json
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "ERREUR: envoi newsletter échoué (HTTP $HTTP_STATUS)"
+            exit 1
+          fi

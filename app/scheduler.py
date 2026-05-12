@@ -752,8 +752,11 @@ def _get_approved_items(
     specialty_slug: str,
     source_types: tuple[str, ...] | None = None,
     days: int = 120,
+    include_transversal: bool = False,
 ) -> list[dict[str, Any]]:
     since = date.today() - timedelta(days=days)
+    # Clause optionnelle pour inclure les articles TRANSVERSAL_LIBERAL
+    transversal_clause = "OR i.audience = 'TRANSVERSAL_LIBERAL'" if include_transversal else ""
     with get_conn() as conn:
         with conn.cursor() as cur:
             if source_types:
@@ -767,12 +770,8 @@ def _get_approved_items(
                     JOIN candidates c ON c.id = i.candidate_id
                     WHERE i.review_status = 'APPROVED'
                       AND c.official_date >= %s
-                      AND i.specialty_slug = %s
+                      AND (i.specialty_slug = %s {transversal_clause})
                       AND i.source_type IN ({placeholders})
-                      -- has_rbp inclus volontairement : les RBP HAS font partie
-                      -- de la newsletter recommandations (score >= 5 requis dans SOURCE_CONFIG).
-                      -- ansm_ruptures_* exclus : volume élevé, pas de changement de pratique
-                      -- immédiat pour le prescripteur — gestion assurée côté officine.
                       AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins')
                     ORDER BY i.score_density DESC, c.official_date DESC;
                     """,
@@ -780,7 +779,7 @@ def _get_approved_items(
                 )
             else:
                 cur.execute(
-                    """
+                    f"""
                     SELECT i.id, i.audience, i.specialty_slug, i.score_density,
                            i.tri_json, i.lecture_json, i.categorie,
                            c.title_raw, c.official_url, c.official_date::text
@@ -788,11 +787,7 @@ def _get_approved_items(
                     JOIN candidates c ON c.id = i.candidate_id
                     WHERE i.review_status = 'APPROVED'
                       AND c.official_date >= %s
-                      AND i.specialty_slug = %s
-                      -- has_rbp inclus volontairement : les RBP HAS font partie
-                      -- de la newsletter recommandations (score >= 5 requis dans SOURCE_CONFIG).
-                      -- ansm_ruptures_* exclus : volume élevé, pas de changement de pratique
-                      -- immédiat pour le prescripteur — gestion assurée côté officine.
+                      AND (i.specialty_slug = %s {transversal_clause})
                       AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins')
                     ORDER BY i.score_density DESC, c.official_date DESC;
                     """,
@@ -873,6 +868,67 @@ def _send_specialty_newsletter(
         specialty_slug, result["sent"], result["failed"],
     )
     return len(items)
+
+
+# ---------------------------------------------------------------------------
+# JOB 2c — Newsletter unifiée tous les 2 jours (régle + reco + innov)
+# ---------------------------------------------------------------------------
+
+def job_send_unified() -> None:
+    """
+    Envoie une newsletter unifiée (tous types) par spécialité.
+
+    - Fenêtre : 3 derniers jours (léger buffer vs cadence 2j)
+    - Pas de blocage sur PENDING — envoie les APPROVED directement
+    - Inclut les articles TRANSVERSAL_LIBERAL pour toutes les spécialités
+    - Déclenchement : GitHub Actions cron '0 18 */2 * *'
+    - Déduplication : period_label = date du jour (1 envoi max par jour)
+    """
+    period = date.today().isoformat()
+    newsletter_type = "unified"
+
+    if _newsletter_already_sent(newsletter_type, period):
+        logger.info("Newsletter unifiée %s déjà envoyée — skip", period)
+        return
+
+    if not _claim_newsletter_slot(newsletter_type, period):
+        logger.info("Newsletter unifiée %s déjà claim — skip", period)
+        return
+
+    logger.info("Newsletter unifiée %s — déclenchement", period)
+
+    total_sent = 0
+    for slug in SPECIALTY_LABELS.keys():
+        try:
+            items = _get_approved_items(
+                slug,
+                source_types=None,   # tous types : régle + reco + innov
+                days=3,
+                include_transversal=True,
+            )
+            if not items:
+                logger.info("[unified] %s : aucun article approuvé sur 3j", slug)
+                continue
+            subscribers = _get_subscribers(slug)
+            if not subscribers:
+                logger.info("[unified] %s : aucun abonné", slug)
+                continue
+            logger.info("[unified] %s : %d articles → %d abonnés", slug, len(items), len(subscribers))
+            subject, html, plain = build_newsletter(
+                specialty_slug=slug, items=items, emission_date=date.today()
+            )
+            result = send_bulk(subscribers, subject, html, plain)
+            logger.info("[unified] %s : envoyé=%d erreurs=%d", slug, result["sent"], result["failed"])
+            total_sent += len(items)
+        except Exception as e:
+            logger.error("[unified] %s : %s", slug, e)
+
+    if total_sent > 0:
+        _finalize_newsletter_sent(newsletter_type, period, total_sent)
+        logger.info("Newsletter unifiée %s terminée — %d articles au total", period, total_sent)
+    else:
+        _release_newsletter_slot(newsletter_type, period)
+        logger.warning("Newsletter unifiée %s — 0 articles envoyés, slot libéré", period)
 
 
 # ---------------------------------------------------------------------------
