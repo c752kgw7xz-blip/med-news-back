@@ -5013,7 +5013,8 @@ async function stLoadSettings() {
 // ── Onboarding overlay ────────────────────────────────────────
 (function() {
   const ONBOARD_KEY = 'mednews-onboarded';
-  if (!DEMO_MODE && localStorage.getItem(ONBOARD_KEY)) return;
+  if (DEMO_MODE) return;
+  if (localStorage.getItem(ONBOARD_KEY)) return;
 
   const steps = [
     {

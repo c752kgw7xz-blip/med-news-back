@@ -21,8 +21,13 @@ def _month_range(m: date) -> tuple[str, str]:
     last_day = calendar.monthrange(m.year, m.month)[1]
     return m.isoformat(), date(m.year, m.month, last_day).isoformat()
 
+DEMO_PINNED_MONTH = date(2026, 4, 1)  # avril 2026 — mois de référence démo
+
 def _latest_active_month(slug: str) -> tuple[str, str]:
-    """Dernier mois avec articles APPROVED pour cette spécialité (ou TRANSVERSAL_LIBERAL)."""
+    """Dernier mois avec articles APPROVED pour cette spécialité (ou TRANSVERSAL_LIBERAL).
+    Pour la spécialité démo, épinglé à DEMO_PINNED_MONTH."""
+    if slug == DEMO_SPECIALTY:
+        return _month_range(DEMO_PINNED_MONTH)
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
