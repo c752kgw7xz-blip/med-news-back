@@ -3103,7 +3103,7 @@ function openReportModal(itemId) {
 async function submitReport(itemId, reason, comment) {
   try {
     const token = localStorage.getItem('access_token');
-    const res = await fetch(`${API_BASE}/portal/articles/${itemId}/report`, {
+    const res = await fetch(`${API}/portal/articles/${itemId}/report`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify({ reason, comment }),
