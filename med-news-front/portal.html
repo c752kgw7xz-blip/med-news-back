@@ -182,8 +182,14 @@
     /* Masquer le toggle sidebar pour que content-area prenne la col 1fr */
     .sidebar-toggle-wrap { display: none !important; }
     /* Tronquer le nom du médecin si trop long — évite le chevauchement avec le logo centré */
+    header .header-left {
+      max-width: calc(50% - 50px);
+      min-width: 0;
+      overflow: hidden;
+      flex-shrink: 1;
+    }
     #doctor-name {
-      max-width: calc(50vw - 60px);
+      display: block;
       overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
     }
     /* Contraindre le grid item content-area à la largeur du viewport */
