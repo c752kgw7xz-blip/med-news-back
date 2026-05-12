@@ -491,14 +491,13 @@ def _source_tags(items: list[dict]) -> str:
 # ---------------------------------------------------------------------------
 
 def _generate_edito(n_total: int, specialty_name: str, emission_date: date) -> str:
-    mois = MOIS_FR_LONG[emission_date.month]
     return (
         f"Réglementation, recommandations cliniques, innovation : "
-        f"MedNews sélectionne chaque mois pour votre spécialité "
+        f"MedNews sélectionne en continu pour votre spécialité "
         f"les publications à fort impact pratique. "
-        f"Cette édition regroupe {n_total} article{'s' if n_total > 1 else ''} "
-        f"issus des parutions de {mois} {emission_date.year} et du mois précédent, "
-        f"classés par dimension et par pertinence clinique."
+        f"Cette édition regroupe {n_total} article{{'s' if n_total > 1 else ''}} "
+        f"approuvé{{'s' if n_total > 1 else ''}} ces derniers jours, "
+        f"classés par catégorie et par pertinence clinique."
     )
 
 
@@ -574,11 +573,12 @@ def build_newsletter(
 
     items = [i for i in items if _in_window(i)]
 
-    # Filtrer par spécialité
+    # Filtrer par spécialité — inclure aussi les TRANSVERSAL_LIBERAL
     items_spec = [
         i for i in items
         if specialty_slug in (i.get("specialites") or [])
         or i.get("specialty_slug") == specialty_slug
+        or i.get("audience") == "TRANSVERSAL_LIBERAL"
     ]
 
     # Trier par score, limiter
