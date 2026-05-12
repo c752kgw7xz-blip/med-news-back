@@ -917,6 +917,9 @@ def job_send_unified() -> None:
             subject, html, plain = build_newsletter(
                 specialty_slug=slug, items=items, emission_date=date.today()
             )
+            if subject is None:
+                logger.info("[unified] %s : newsletter vide après filtrage — skip", slug)
+                continue
             result = send_bulk(subscribers, subject, html, plain)
             logger.info("[unified] %s : envoyé=%d erreurs=%d", slug, result["sent"], result["failed"])
             total_sent += len(items)
