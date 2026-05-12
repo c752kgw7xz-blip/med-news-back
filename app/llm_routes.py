@@ -782,10 +782,11 @@ def llm_stats(request: Request):
             # Items par spécialité — APPROVED, fenêtre 3 jours (cohérent avec newsletter unifiée)
             cur.execute(
                 """
-                SELECT COALESCE(i.specialty_slug, 'TRANSVERSAL'), COUNT(*)
+                SELECT i.specialty_slug, COUNT(*)
                 FROM items i
                 JOIN candidates c ON c.id = i.candidate_id
                 WHERE i.review_status = 'APPROVED'
+                  AND i.specialty_slug IS NOT NULL
                   AND (c.official_date >= CURRENT_DATE - INTERVAL '3 days' OR c.official_date IS NULL)
                   AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins')
                 GROUP BY i.specialty_slug
@@ -793,6 +794,26 @@ def llm_stats(request: Request):
                 """
             )
             by_specialty = {row[0]: row[1] for row in cur.fetchall()}
+
+            # Compter les TRANSVERSAL_LIBERAL séparément et les ajouter à chaque spécialité
+            cur.execute(
+                """
+                SELECT COUNT(*)
+                FROM items i
+                JOIN candidates c ON c.id = i.candidate_id
+                WHERE i.review_status = 'APPROVED'
+                  AND i.audience = 'TRANSVERSAL_LIBERAL'
+                  AND (c.official_date >= CURRENT_DATE - INTERVAL '3 days' OR c.official_date IS NULL)
+                  AND c.source NOT IN ('ansm_ruptures_med', 'ansm_ruptures_vaccins');
+                """
+            )
+            transversal_count = cur.fetchone()[0] or 0
+            if transversal_count > 0:
+                # Récupérer tous les slugs connus pour propager le count transversal
+                cur.execute("SELECT slug FROM specialties;")
+                all_slugs = [row[0] for row in cur.fetchall()]
+                for slug in all_slugs:
+                    by_specialty[slug] = by_specialty.get(slug, 0) + transversal_count
 
             # Score moyen des items APPROVED
             cur.execute(
