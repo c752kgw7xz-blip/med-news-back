@@ -1,15 +1,15 @@
-name: MedNews — Collecte tous les 4 jours
+name: MedNews — Collecte tous les 3 jours
 
 on:
   schedule:
-    # 3h00 UTC = 4h00 CET (hiver) / 5h00 CEST (été) — tous les 4 jours
-    - cron: '0 3 */4 * *'
+    # 3h00 UTC = 4h00 CET (hiver) / 5h00 CEST (été) — tous les 3 jours
+    - cron: '0 3 */3 * *'
   workflow_dispatch:
     inputs:
       days:
         description: 'Fenêtre de collecte en jours'
         required: false
-        default: '4'
+        default: '3'
 
 jobs:
   collect:
@@ -65,187 +65,187 @@ jobs:
           EOF
 
       - name: Collecter — sources globales (cross-spécialités)
-        run: python3 scripts/collect_global.py ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_global.py ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — anesthesiologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py anesthesiologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py anesthesiologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — biologiste
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py biologiste ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py biologiste ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — cardiologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py cardiologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py cardiologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — chirurgie-cardiaque
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py chirurgie-cardiaque ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py chirurgie-cardiaque ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — chirurgie-orthopedique
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py chirurgie-orthopedique ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py chirurgie-orthopedique ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — chirurgie-pediatrique
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py chirurgie-pediatrique ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py chirurgie-pediatrique ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — chirurgie-plastique
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py chirurgie-plastique ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py chirurgie-plastique ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — chirurgie-thoracique
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py chirurgie-thoracique ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py chirurgie-thoracique ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — chirurgie-vasculaire
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py chirurgie-vasculaire ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py chirurgie-vasculaire ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — dermatologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py dermatologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py dermatologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — endocrinologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py endocrinologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py endocrinologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — gastro-enterologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py gastro-enterologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py gastro-enterologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — geriatrie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py geriatrie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py geriatrie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — gynecologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py gynecologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py gynecologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — hematologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py hematologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py hematologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — infectiologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py infectiologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py infectiologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — infirmiers
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py infirmiers ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py infirmiers ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — kinesitherapie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py kinesitherapie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py kinesitherapie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — medecine-generale
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py medecine-generale ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py medecine-generale ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — medecine-interne
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py medecine-interne ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py medecine-interne ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — medecine-physique
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py medecine-physique ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py medecine-physique ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — medecine-urgences
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py medecine-urgences ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py medecine-urgences ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — nephrologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py nephrologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py nephrologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — neurochirurgie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py neurochirurgie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py neurochirurgie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — neurologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py neurologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py neurologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — oncologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py oncologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py oncologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — ophtalmologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py ophtalmologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py ophtalmologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — orl
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py orl ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py orl ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — pediatrie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py pediatrie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py pediatrie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — pharmacien
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py pharmacien ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py pharmacien ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — pneumologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py pneumologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py pneumologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — psychiatrie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py psychiatrie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py psychiatrie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — radiologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py radiologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py radiologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — rhumatologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py rhumatologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py rhumatologie ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — sage-femme
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py sage-femme ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py sage-femme ${{ github.event.inputs.days || '3' }}
 
       - name: Collecter — urologie
         env:
           MEDNEWS_SKIP_GLOBAL: 'true'
-        run: python3 scripts/collect_specialty.py urologie ${{ github.event.inputs.days || '4' }}
+        run: python3 scripts/collect_specialty.py urologie ${{ github.event.inputs.days || '3' }}
 
       - name: Résumé final
         if: always()
