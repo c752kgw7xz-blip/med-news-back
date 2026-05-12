@@ -1879,6 +1879,7 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_intensive_crit_care_nurs": "infirmiers",
     "pubmed_j_nurs_scholarsh":      "infirmiers",
     "pubmed_nurs_open":             "infirmiers",
+    "jan_nursing":                  "infirmiers",  # Journal of Advanced Nursing (RSS)
     # ── Kinésithérapie ────────────────────────────────────────────────────────
     "pubmed_phys_ther":             "kinesitherapie",
     "pubmed_jospt":                 "kinesitherapie",
