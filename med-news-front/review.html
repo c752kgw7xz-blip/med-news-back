@@ -1233,7 +1233,12 @@ async function loadReports() {
   container.innerHTML = '<p style="color:var(--text3);font-size:.85rem;">Chargement…</p>';
   try {
     const res = await authFetch(`${API}/admin/reports`);
-    reportsData = res.reports || [];
+    if (!res || !res.ok) {
+      container.innerHTML = `<p style="color:#c0392b;">Erreur ${res?.status} — accès refusé ou non admin.</p>`;
+      return;
+    }
+    const data = await res.json();
+    reportsData = data.reports || [];
     document.getElementById('count-reports').textContent = reportsData.length;
     renderReports();
   } catch(e) {
@@ -1268,11 +1273,12 @@ function renderReports() {
 
 async function rejectFromReport(itemId, reportId) {
   try {
-    await authFetch(`${API}/admin/llm/review/${itemId}`, {
+    const res = await authFetch(`${API}/admin/llm/review/${itemId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'reject' }),
     });
+    if (!res?.ok) { alert('Erreur lors du rejet : ' + res?.status); return; }
     // Mettre à jour localement
     const r = reportsData.find(x => x.item_id === itemId);
     if (r) r.review_status = 'REJECTED';
@@ -1291,9 +1297,12 @@ function dismissReport(reportId) {
 // Charger le compteur au démarrage
 (async () => {
   try {
-    await new Promise(r => setTimeout(r, 800)); // attendre que authFetch soit dispo
+    await new Promise(r => setTimeout(r, 800));
     const res = await authFetch(`${API}/admin/reports`);
-    document.getElementById('count-reports').textContent = (res.reports || []).length;
+    if (res?.ok) {
+      const data = await res.json();
+      document.getElementById('count-reports').textContent = (data.reports || []).length;
+    }
   } catch {}
 })();
 </script>
