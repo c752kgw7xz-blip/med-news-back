@@ -847,7 +847,7 @@ def _send_specialty_newsletter(
     source_types: tuple[str, ...] | None = None,
     days: int = 120,
 ) -> int:
-    items = _get_approved_items(specialty_slug, source_types=source_types, days=days)
+    items = _get_approved_items(specialty_slug, source_types=source_types, days=days, include_transversal=True)
     if not items:
         logger.info("Spécialité %s : aucun item approuvé", specialty_slug)
         return 0
