@@ -142,6 +142,10 @@ def serve_landing():
 def serve_review():
     return FileResponse(os.path.join(_FRONT_DIR, "review.html"), media_type="text/html", headers=_NO_CACHE)
 
+@app.get("/admin/students")
+def serve_student_admin():
+    return FileResponse(os.path.join(_FRONT_DIR, "student-admin.html"), media_type="text/html", headers=_NO_CACHE)
+
 @app.get("/login")
 def serve_login():
     return FileResponse(os.path.join(_FRONT_DIR, "login.html"), media_type="text/html", headers=_NO_CACHE)
@@ -843,3 +847,99 @@ def admin_send_newsletter_unified(request: Request):
 @app.get("/_version")
 def version():
     return {"commit": os.environ.get("RENDER_GIT_COMMIT", "unknown")}
+
+
+# ---------------------------------------------------------------------------
+# Admin — demandes accès étudiant
+# ---------------------------------------------------------------------------
+
+@app.get("/admin/student-requests")
+def admin_list_student_requests(request: Request, status: str = "pending"):
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT sr.id, sr.user_id, sr.status, sr.reject_reason,
+                       sr.created_at, sr.reviewed_at,
+                       u.email_ciphertext, u.first_name, u.last_name
+                FROM student_requests sr
+                JOIN users u ON u.id = sr.user_id
+                WHERE sr.status = %s
+                ORDER BY sr.created_at ASC
+            """, (status,))
+            rows = cur.fetchall()
+    from app.security import decrypt_email
+    result = []
+    for r in rows:
+        result.append({
+            "id": str(r[0]), "user_id": str(r[1]), "status": r[2],
+            "reject_reason": r[3],
+            "created_at": r[4].isoformat() if r[4] else None,
+            "reviewed_at": r[5].isoformat() if r[5] else None,
+            "email": decrypt_email(r[6]),
+            "first_name": r[7], "last_name": r[8],
+        })
+    return {"requests": result, "total": len(result)}
+
+
+@app.get("/admin/student-requests/{req_id}/document")
+def admin_get_student_document(req_id: str, request: Request):
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT document_data, document_mime FROM student_requests WHERE id = %s",
+                (req_id,),
+            )
+            row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="not found")
+    from fastapi.responses import Response
+    return Response(content=bytes(row[0]), media_type=row[1])
+
+
+@app.post("/admin/student-requests/{req_id}/approve")
+def admin_approve_student(req_id: str, request: Request):
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT user_id FROM student_requests WHERE id = %s AND status = 'pending'",
+                (req_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="demande introuvable ou déjà traitée")
+            user_id = row[0]
+            cur.execute(
+                "UPDATE student_requests SET status='approved', reviewed_at=NOW() WHERE id=%s",
+                (req_id,),
+            )
+            cur.execute(
+                "UPDATE users SET plan='student' WHERE id=%s",
+                (user_id,),
+            )
+    return {"ok": True, "user_id": str(user_id), "plan": "student"}
+
+
+class RejectPayload(BaseModel):
+    reason: Optional[str] = None
+
+
+@app.post("/admin/student-requests/{req_id}/reject")
+def admin_reject_student(req_id: str, payload: RejectPayload, request: Request):
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT user_id FROM student_requests WHERE id = %s AND status = 'pending'",
+                (req_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="demande introuvable ou déjà traitée")
+            cur.execute(
+                "UPDATE student_requests SET status='rejected', reject_reason=%s, reviewed_at=NOW() WHERE id=%s",
+                (payload.reason, req_id),
+            )
+    return {"ok": True}

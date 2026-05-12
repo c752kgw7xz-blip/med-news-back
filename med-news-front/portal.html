@@ -2217,6 +2217,28 @@
       </div>
       <button class="st-danger-btn" onclick="logout()">Déconnexion</button>
 
+      <!-- Accès étudiant -->
+      <div class="st-section" style="margin-top:12px;" id="student-section">
+        <div class="st-section-title">Accès étudiant gratuit</div>
+        <div class="st-desc" style="margin-bottom:12px;font-size:0.82rem;color:var(--text3);">Étudiants en médecine ou paramédicaux : envoyez votre carte étudiante pour un accès gratuit.</div>
+        <div id="student-status-wrap">
+          <!-- rempli par JS -->
+        </div>
+        <div id="student-upload-wrap" style="display:none;">
+          <label style="display:block;margin-bottom:8px;font-size:0.83rem;font-weight:500;">Carte étudiante (JPEG, PNG, PDF — max 5 Mo)</label>
+          <input type="file" id="student-file-input" accept="image/jpeg,image/png,image/webp,application/pdf" style="font-size:0.83rem;margin-bottom:10px;">
+          <button class="st-save-btn" id="student-upload-btn" onclick="uploadStudentDoc()" style="margin-top:0;">Envoyer ma demande</button>
+        </div>
+      </div>
+
+      <!-- Abonnement -->
+      <div class="st-section" style="margin-top:12px;" id="billing-section">
+        <div class="st-section-title">Abonnement</div>
+        <div id="billing-status-wrap" style="font-size:0.85rem;color:var(--text3);">Chargement…</div>
+        <button class="st-save-btn" id="billing-manage-btn" style="display:none;margin-top:10px;" onclick="openCustomerPortal()">Gérer mon abonnement →</button>
+        <button class="st-save-btn" id="billing-subscribe-btn" style="display:none;margin-top:10px;" onclick="startCheckout()">S'abonner — 18,99 €/mois</button>
+      </div>
+
     </div>
   </div>
 
@@ -5148,6 +5170,73 @@ async function stLoadSettings() {
       document.getElementById('st-notif-newsletter').checked = !!prefs.notif_newsletter;
     }
   } catch {}
+
+  // Accès étudiant
+  loadStudentStatus();
+  // Abonnement
+  loadBillingInfo();
+}
+
+async function loadStudentStatus() {
+  const res = await authFetch(`${API}/me/student-request`);
+  if (!res || !res.ok) return;
+  const data = await res.json();
+  const wrap = document.getElementById('student-status-wrap');
+  const uploadWrap = document.getElementById('student-upload-wrap');
+  if (data.status === 'none' || data.status === 'rejected') {
+    uploadWrap.style.display = 'block';
+    if (data.status === 'rejected') {
+      wrap.innerHTML = `<div style="background:#fee2e2;color:#991b1b;border-radius:6px;padding:8px 12px;font-size:0.82rem;margin-bottom:10px;">Demande refusée${data.reject_reason ? ' : ' + data.reject_reason : ''}. Vous pouvez renvoyer un document.</div>`;
+    }
+  } else if (data.status === 'pending') {
+    wrap.innerHTML = `<div style="background:#fff3cd;color:#856404;border-radius:6px;padding:8px 12px;font-size:0.82rem;">Demande en cours de validation — nous vous répondrons sous 48h.</div>`;
+  } else if (data.status === 'approved') {
+    wrap.innerHTML = `<div style="background:#d1fae5;color:#065f46;border-radius:6px;padding:8px 12px;font-size:0.82rem;">Accès étudiant actif ✓</div>`;
+  }
+}
+
+async function uploadStudentDoc() {
+  const input = document.getElementById('student-file-input');
+  const btn   = document.getElementById('student-upload-btn');
+  if (!input.files.length) { showToast('Sélectionnez un fichier'); return; }
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  const form = new FormData();
+  form.append('file', input.files[0]);
+  const res = await authFetch(`${API}/me/student-request`, { method: 'POST', body: form });
+  btn.disabled = false; btn.textContent = 'Envoyer ma demande';
+  if (res && res.ok) {
+    showToast('Demande envoyée — réponse sous 48h');
+    document.getElementById('student-upload-wrap').style.display = 'none';
+    document.getElementById('student-status-wrap').innerHTML = `<div style="background:#fff3cd;color:#856404;border-radius:6px;padding:8px 12px;font-size:0.82rem;">Demande en cours de validation.</div>`;
+  } else {
+    showToast('Erreur lors de l\'envoi');
+  }
+}
+
+async function loadBillingInfo() {
+  const res = await authFetch(`${API}/billing/status`);
+  if (!res || !res.ok) return;
+  const data = await res.json();
+  const wrap = document.getElementById('billing-status-wrap');
+  const manageBtn    = document.getElementById('billing-manage-btn');
+  const subscribeBtn = document.getElementById('billing-subscribe-btn');
+  if (data.has_subscription && data.access) {
+    wrap.innerHTML = `Abonnement actif — renouvellement dans <strong>${data.days_left} jours</strong>`;
+    manageBtn.style.display = 'block';
+  } else if (data.is_trial) {
+    wrap.innerHTML = `Période d'essai — <strong>${data.days_left} jours restants</strong>`;
+    subscribeBtn.style.display = 'block';
+  } else if (!data.access) {
+    wrap.innerHTML = `<span style="color:#991b1b">Accès expiré</span>`;
+    subscribeBtn.style.display = 'block';
+  }
+}
+
+async function openCustomerPortal() {
+  const res = await authFetch(`${API}/billing/customer-portal`, { method: 'POST' });
+  if (!res || !res.ok) { showToast('Erreur'); return; }
+  const { portal_url } = await res.json();
+  window.location.href = portal_url;
 }
 
 // ── Onboarding overlay ────────────────────────────────────────

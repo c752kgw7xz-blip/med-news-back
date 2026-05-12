@@ -18,7 +18,7 @@ import secrets
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
 from pydantic import BaseModel
 
 from app.db import get_conn
@@ -62,21 +62,22 @@ def _get_current_user_id(creds=Depends(bearer_scheme)) -> str:
 
 
 def _require_active_access(user_id: str = Depends(_get_current_user_id)) -> str:
-    """Vérifie que l'utilisateur a un accès actif (essai ou abonnement)."""
+    """Vérifie que l'utilisateur a un accès actif (essai, abonnement ou plan étudiant)."""
     from datetime import datetime, timezone
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT trial_ends_at, subscribed_until FROM users WHERE id = %s",
+                "SELECT trial_ends_at, subscribed_until, plan FROM users WHERE id = %s",
                 (user_id,),
             )
             row = cur.fetchone()
     if not row:
         raise HTTPException(status_code=401, detail="user not found")
     now = datetime.now(timezone.utc)
-    trial_ok = row[0] and row[0] > now
-    sub_ok   = row[1] and row[1] > now
-    if not trial_ok and not sub_ok:
+    trial_ok   = row[0] and row[0] > now
+    sub_ok     = row[1] and row[1] > now
+    student_ok = row[2] == 'student'
+    if not trial_ok and not sub_ok and not student_ok:
         raise HTTPException(status_code=402, detail="subscription required")
     return user_id
 
@@ -1040,3 +1041,70 @@ def resend_verification_public(payload: ResendVerificationPublicPayload, request
     queue_verification_email(email_norm, raw_token)
 
     return {"ok": True, "message": "Email de vérification renvoyé. Vérifiez vos spams."}
+
+
+# ---------------------------------------------------------------------------
+# Accès étudiant — upload carte + statut
+# ---------------------------------------------------------------------------
+
+_ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp", "application/pdf"}
+_MAX_SIZE = 5 * 1024 * 1024  # 5 Mo
+
+
+@router.post("/me/student-request", status_code=201)
+async def upload_student_request(
+    file: UploadFile = File(...),
+    user_id: str = Depends(_get_current_user_id),
+):
+    if file.content_type not in _ALLOWED_MIME:
+        raise HTTPException(status_code=415, detail="Format non supporté (JPEG, PNG, WebP, PDF)")
+
+    data = await file.read()
+    if len(data) > _MAX_SIZE:
+        raise HTTPException(status_code=413, detail="Fichier trop volumineux (max 5 Mo)")
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            # Une seule demande en attente ou approuvée à la fois
+            cur.execute(
+                "SELECT status FROM student_requests WHERE user_id = %s ORDER BY created_at DESC LIMIT 1",
+                (user_id,),
+            )
+            existing = cur.fetchone()
+            if existing and existing[0] in ("pending", "approved"):
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Demande déjà en cours ({existing[0]})"
+                )
+            cur.execute(
+                """
+                INSERT INTO student_requests (user_id, document_data, document_mime)
+                VALUES (%s, %s, %s) RETURNING id
+                """,
+                (user_id, data, file.content_type),
+            )
+            req_id = cur.fetchone()[0]
+    return {"id": str(req_id), "status": "pending"}
+
+
+@router.get("/me/student-request")
+def get_student_request_status(user_id: str = Depends(_get_current_user_id)):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, status, reject_reason, created_at
+                FROM student_requests WHERE user_id = %s
+                ORDER BY created_at DESC LIMIT 1
+                """,
+                (user_id,),
+            )
+            row = cur.fetchone()
+    if not row:
+        return {"status": "none"}
+    return {
+        "id": str(row[0]),
+        "status": row[1],
+        "reject_reason": row[2],
+        "created_at": row[3].isoformat() if row[3] else None,
+    }

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MedNews — Demandes étudiants</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #1a1a2e; padding: 32px 24px; }
+  h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+  .sub { color: #666; font-size: 0.88rem; margin-bottom: 28px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+  .tab { padding: 7px 16px; border-radius: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: #555; }
+  .tab.active { background: #1a6b5c; color: #fff; border-color: #1a6b5c; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  th { background: #f1f5f9; font-size: 0.78rem; font-weight: 600; text-align: left; padding: 10px 14px; color: #444; text-transform: uppercase; letter-spacing: .4px; }
+  td { padding: 12px 14px; font-size: 0.87rem; border-top: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:hover td { background: #fafbfc; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .badge.pending  { background: #fff3cd; color: #856404; }
+  .badge.approved { background: #d1fae5; color: #065f46; }
+  .badge.rejected { background: #fee2e2; color: #991b1b; }
+  .btn { padding: 5px 12px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 500; }
+  .btn-approve { background: #1a6b5c; color: #fff; margin-right: 6px; }
+  .btn-reject  { background: #fee2e2; color: #991b1b; }
+  .btn-view    { background: #f1f5f9; color: #444; margin-right: 6px; }
+  .btn:hover { opacity: .85; }
+  .empty { text-align: center; padding: 48px; color: #999; font-size: 0.9rem; }
+  #doc-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:999; align-items:center; justify-content:center; }
+  #doc-modal.open { display:flex; }
+  #doc-inner { background:#fff; border-radius:12px; padding:20px; max-width:700px; width:calc(100%-32px); max-height:90vh; overflow:auto; }
+  #doc-inner img, #doc-inner iframe { max-width:100%; border-radius:6px; }
+  #doc-inner h3 { margin-bottom:12px; font-size:1rem; }
+  .close-btn { float:right; background:none; border:none; font-size:1.4rem; cursor:pointer; color:#666; }
+  #reject-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
+  #reject-modal.open { display:flex; }
+  #reject-inner { background:#fff; border-radius:12px; padding:28px; max-width:420px; width:calc(100%-32px); }
+  #reject-inner h3 { margin-bottom:14px; }
+  #reject-inner textarea { width:100%; height:80px; border:1px solid #ddd; border-radius:6px; padding:10px; font-size:0.88rem; resize:vertical; margin-bottom:14px; }
+  .reject-actions { display:flex; gap:10px; justify-content:flex-end; }
+</style>
+</head>
+<body>
+
+<h1>Demandes accès étudiant</h1>
+<p class="sub">Validez ou refusez les demandes d'accès étudiant gratuit.</p>
+
+<div class="tabs">
+  <button class="tab active" onclick="loadRequests('pending', this)">En attente</button>
+  <button class="tab" onclick="loadRequests('approved', this)">Approuvées</button>
+  <button class="tab" onclick="loadRequests('rejected', this)">Refusées</button>
+</div>
+
+<div id="table-wrap"></div>
+
+<!-- Modal document -->
+<div id="doc-modal">
+  <div id="doc-inner">
+    <button class="close-btn" onclick="document.getElementById('doc-modal').classList.remove('open')">×</button>
+    <h3 id="doc-title">Document</h3>
+    <div id="doc-content"></div>
+  </div>
+</div>
+
+<!-- Modal refus -->
+<div id="reject-modal">
+  <div id="reject-inner">
+    <h3>Motif de refus (optionnel)</h3>
+    <textarea id="reject-reason" placeholder="Ex : carte étudiante illisible, document expiré…"></textarea>
+    <div class="reject-actions">
+      <button class="btn" style="background:#f1f5f9;color:#444" onclick="document.getElementById('reject-modal').classList.remove('open')">Annuler</button>
+      <button class="btn btn-reject" onclick="confirmReject()">Confirmer le refus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let _pendingRejectId = null;
+
+async function adminFetch(url, opts = {}) {
+  const secret = sessionStorage.getItem('admin_secret') || prompt('Admin secret :');
+  if (!secret) return null;
+  sessionStorage.setItem('admin_secret', secret);
+  opts.headers = { ...(opts.headers || {}), 'x-admin-secret': secret };
+  const res = await fetch(url, opts);
+  if (res.status === 401 || res.status === 403) {
+    sessionStorage.removeItem('admin_secret');
+    alert('Secret invalide');
+    return null;
+  }
+  return res;
+}
+
+async function loadRequests(status, tabEl) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  const res = await adminFetch(`${API}/admin/student-requests?status=${status}`);
+  if (!res) return;
+  const { requests } = await res.json();
+  renderTable(requests, status);
+}
+
+function renderTable(rows, status) {
+  const wrap = document.getElementById('table-wrap');
+  if (!rows.length) {
+    wrap.innerHTML = '<div class="empty">Aucune demande</div>';
+    return;
+  }
+  let html = `<table><thead><tr>
+    <th>Date</th><th>Nom</th><th>Email</th><th>Statut</th><th>Actions</th>
+  </tr></thead><tbody>`;
+  for (const r of rows) {
+    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR') : '—';
+    const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || '—';
+    html += `<tr>
+      <td>${date}</td>
+      <td>${name}</td>
+      <td>${r.email}</td>
+      <td><span class="badge ${r.status}">${r.status}</span>${r.reject_reason ? `<br><small style="color:#999">${r.reject_reason}</small>` : ''}</td>
+      <td>
+        <button class="btn btn-view" onclick="viewDoc('${r.id}', '${name}')">Voir le doc</button>
+        ${status === 'pending' ? `
+          <button class="btn btn-approve" onclick="approve('${r.id}')">Approuver</button>
+          <button class="btn btn-reject" onclick="openReject('${r.id}')">Refuser</button>
+        ` : ''}
+      </td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+async function viewDoc(reqId, name) {
+  document.getElementById('doc-title').textContent = `Document — ${name}`;
+  document.getElementById('doc-content').innerHTML = '<p>Chargement…</p>';
+  document.getElementById('doc-modal').classList.add('open');
+  const res = await adminFetch(`${API}/admin/student-requests/${reqId}/document`);
+  if (!res) return;
+  const mime = res.headers.get('content-type') || '';
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  if (mime.startsWith('image/')) {
+    document.getElementById('doc-content').innerHTML = `<img src="${url}" alt="document étudiant">`;
+  } else {
+    document.getElementById('doc-content').innerHTML = `<iframe src="${url}" width="100%" height="500px"></iframe>`;
+  }
+}
+
+async function approve(reqId) {
+  if (!confirm('Approuver cette demande ? L\'utilisateur aura accès étudiant gratuit.')) return;
+  const res = await adminFetch(`${API}/admin/student-requests/${reqId}/approve`, { method: 'POST' });
+  if (res && res.ok) { alert('Accès étudiant accordé.'); loadRequests('pending', null); }
+}
+
+function openReject(reqId) {
+  _pendingRejectId = reqId;
+  document.getElementById('reject-reason').value = '';
+  document.getElementById('reject-modal').classList.add('open');
+}
+
+async function confirmReject() {
+  const reason = document.getElementById('reject-reason').value.trim();
+  const res = await adminFetch(`${API}/admin/student-requests/${_pendingRejectId}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason: reason || null }),
+  });
+  document.getElementById('reject-modal').classList.remove('open');
+  if (res && res.ok) { loadRequests('pending', null); }
+}
+
+loadRequests('pending', null);
+</script>
+</body>
+</html>
