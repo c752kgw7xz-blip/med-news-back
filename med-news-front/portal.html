@@ -843,11 +843,16 @@
   }
   .btn-report-submit.enabled { opacity: 1; }
 
-  /* ── Disclaimer IA ───────────────────────── */
+  /* ── Disclaimer IA (footer fixe bas de page) ── */
   .ia-disclaimer {
-    margin: 40px auto 0; max-width: 680px; padding: 14px 18px;
-    border-top: 1px solid var(--border);
-    font-size: 0.78rem; color: var(--text5); line-height: 1.55; text-align: center;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 800;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 8px 20px;
+    font-size: 0.73rem; color: var(--text5); line-height: 1.5; text-align: center;
+  }
+  /* Sur mobile, passer au-dessus de la bottom-nav */
+  @media (max-width: 767px) {
+    .ia-disclaimer { bottom: 56px; }
   }
   .ia-disclaimer a { color: var(--text4); text-decoration: underline; }
 
@@ -1968,10 +1973,6 @@
         <button class="load-more" id="load-more" style="display:none;" onclick="loadMore()">
           Charger plus d'articles
         </button>
-        <div class="ia-disclaimer">
-          Les résumés sont générés par intelligence artificielle et peuvent contenir des erreurs. Ils ne remplacent pas votre jugement clinique ni la consultation des sources originales.
-          En cas d'erreur ou d'article non pertinent, utilisez le bouton <strong>Signaler</strong> directement sur la fiche de l'article.
-        </div>
       </div>
 
       <!-- Splash spécialité — affiché quand une spé est sélectionnée sans sous-catégorie -->
@@ -5093,5 +5094,10 @@ async function stLoadSettings() {
 })();
 
 </script>
+
+<footer class="ia-disclaimer">
+  Contenus générés par IA — peuvent contenir des erreurs. Ne remplacent pas votre jugement clinique.
+  En cas d'erreur, utilisez le bouton <strong>Signaler</strong> sur la fiche de l'article.
+</footer>
 </body>
 </html>
