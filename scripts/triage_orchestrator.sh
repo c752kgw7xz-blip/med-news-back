@@ -60,13 +60,17 @@ LOGFILE="$LOG_DIR/slot${SLOT}_$(date +%Y%m%d_%H%M%S).log"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOGFILE"; }
 
-# Fichier partagé pour collecter les spécialités en erreur pendant les streams
+# ─── Fichiers partagés inter-streams ─────────────────────────────────────────
+# FAILED_FILE : spécialités en erreur → redistribuées en post-slot (filet de sécurité)
+# QUEUE_FILE  : spécialités restantes d'un stream rate-limité → drainées par les
+#               comptes disponibles en temps réel (work-stealing intra-slot)
 FAILED_FILE="/tmp/mednews_failed_slot${SLOT}.txt"
-rm -f "$FAILED_FILE"
+QUEUE_FILE="/tmp/mednews_queue_slot${SLOT}.txt"
+QUEUE_LOCK="/tmp/mednews_queue_slot${SLOT}.lock"
+rm -f "$FAILED_FILE" "$QUEUE_FILE"
 
 # ─── check_count : compte les NEW pour un slug, essaie les 4 comptes en fallback
-# Utilisé à la fois dans compute_backlog et run_stream — évite le point de
-# défaillance unique sur mednews1 en cas de rate limit ou de problème env.
+# Évite le point de défaillance unique sur mednews1 en cas de rate limit.
 check_count() {
     local slug="$1"
     for user in mednews1 mednews2 mednews3 mednews4; do
@@ -82,6 +86,80 @@ check_count() {
     done
     log "[check] WARN — tous les comptes ont échoué pour $slug (DB inaccessible ?), supposé 0"
     echo "0"
+}
+
+# ─── File partagée : opérations atomiques via flock ──────────────────────────
+#
+# Invariants certifiables :
+#   1. Chaque slug est popped par au plus un stream (exclusion mutuelle flock)
+#   2. Aucun slug n'est perdu : ERROR → FAILED_FILE ; restants → QUEUE_FILE
+#   3. Un compte idle après sa liste propre draine QUEUE_FILE jusqu'à épuisement
+#   4. FAILED_FILE = filet de sécurité post-slot si tous les comptes sont limités
+
+# queue_push_list "$slug1 $slug2 …"
+# Ajoute les slugs en fin de file, sans doublons.
+queue_push_list() {
+    local slugs_str="$1"
+    {
+        flock -x 200
+        for s in $slugs_str; do
+            grep -qx "$s" "$QUEUE_FILE" 2>/dev/null || echo "$s" >> "$QUEUE_FILE"
+        done
+    } 200>"$QUEUE_LOCK"
+    log "[queue] push : $slugs_str"
+}
+
+# queue_pop → écrit le slug sur stdout, ou "" si file vide
+# Atomique : lit + supprime la première ligne en une seule section lockée.
+queue_pop() {
+    {
+        flock -x 200
+        local slug=""
+        if [[ -s "$QUEUE_FILE" ]]; then
+            slug=$(head -1 "$QUEUE_FILE")
+            tail -n +2 "$QUEUE_FILE" > "${QUEUE_FILE}.tmp"
+            mv "${QUEUE_FILE}.tmp" "$QUEUE_FILE"
+        fi
+        echo "$slug"
+    } 200>"$QUEUE_LOCK"
+}
+
+# ─── run_one_specialty : exécute une session claude pour un slug ──────────────
+# Retour : 0=succès  1=erreur (rate limit ou crash)  2=skip (0 NEW)
+run_one_specialty() {
+    local user="$1"
+    local slug="$2"
+    local label="${3:- }"   # " (queue)" ou "       "
+
+    local new_count
+    new_count=$(check_count "$slug")
+
+    if [[ "${new_count:-0}" -eq 0 ]]; then
+        log "[$user] SKIP${label}  $slug — 0 candidats NEW"
+        return 2
+    fi
+
+    log "[$user] START${label} $slug — $new_count candidats NEW"
+
+    if [[ -n "$DRY_RUN" ]]; then
+        log "[$user] DRY-RUN${label} $slug"
+        return 0
+    fi
+
+    local slug_log="$LOG_DIR/${slug}_$(date +%Y%m%d).log"
+    su - "$user" -c \
+        "cd $REPO_DIR && claude -p 'lance $slug' --dangerously-skip-permissions --output-format text --permission-prompt-tool stdio" \
+        < /dev/null >> "$slug_log" 2>&1
+    local rc=$?
+
+    if [[ $rc -eq 0 ]]; then
+        log "[$user] DONE${label}  $slug"
+        return 0
+    else
+        log "[$user] ERROR${label} $slug — voir $slug_log"
+        echo "$slug" >> "$FAILED_FILE"
+        return 1
+    fi
 }
 
 # ─── Répartition : 4 comptes × 3 slots × 3 spécialités = 36 ─────────────────
@@ -121,7 +199,17 @@ SLOT_SPECIALTIES["mednews4_1"]="dermatologie endocrinologie gastro-enterologie"
 SLOT_SPECIALTIES["mednews4_2"]="medecine-urgences nephrologie neurochirurgie"
 SLOT_SPECIALTIES["mednews4_3"]="rhumatologie sage-femme urologie"
 
-# ─── Stream : triage séquentiel d'une liste de spécialités ───────────────────
+# ─── Stream : triage séquentiel d'une liste de spécialités ──────────────────
+#
+# Phase 1 — liste propre : traite les spécialités assignées à ce compte.
+#   Si rate limit détecté (ERROR) : pousse les spécialités RESTANTES dans
+#   QUEUE_FILE et s'arrête immédiatement (les prochaines échoueraient aussi).
+#
+# Phase 2 — drain file partagée : si phase 1 terminée sans erreur, draine
+#   QUEUE_FILE jusqu'à épuisement (work-stealing des comptes rate-limités).
+#   Arrêt dès la première erreur (ce compte est maintenant limité à son tour).
+#
+# Garantie : toute spécialité finit dans DONE, SKIP, ou FAILED_FILE.
 run_stream() {
     local user="$1"
     local specialties_str="$2"
@@ -130,37 +218,55 @@ run_stream() {
 
     log "[$user] Slot $SLOT — ${#specialties[@]} spécialités : ${specialties[*]}"
 
+    # ── Phase 1 : liste propre ────────────────────────────────────────────────
+    local i=0
     for slug in "${specialties[@]}"; do
-        local new_count
-        new_count=$(check_count "$slug")
-
-        if [[ "${new_count:-0}" -eq 0 ]]; then
-            log "[$user] SKIP     $slug — 0 candidats NEW"
-            ((skipped++)) || true
-            continue
-        fi
-
-        log "[$user] START    $slug — $new_count candidats NEW"
-
-        if [[ -n "$DRY_RUN" ]]; then
-            log "[$user] DRY-RUN  $slug"
-            ((done++)) || true
-        else
-            local slug_log="$LOG_DIR/${slug}_$(date +%Y%m%d).log"
-            su - "$user" -c "cd $REPO_DIR && claude -p 'lance $slug' --dangerously-skip-permissions --output-format text --permission-prompt-tool stdio" \
-                < /dev/null >> "$slug_log" 2>&1 &
-            wait $!
-            if [[ $? -eq 0 ]]; then
-                log "[$user] DONE     $slug"
+        run_one_specialty "$user" "$slug"
+        local rc=$?
+        case $rc in
+            0)
                 ((done++)) || true
-            else
-                log "[$user] ERROR    $slug — voir $slug_log — ajouté à la file de redistribution"
+                [[ -z "$DRY_RUN" ]] && sleep "$PAUSE_BETWEEN_SESSIONS"
+                ;;
+            2) ((skipped++)) || true ;;
+            1)
                 ((errors++)) || true
-                echo "$slug" >> "$FAILED_FILE"
-            fi
-            sleep "$PAUSE_BETWEEN_SESSIONS"
-        fi
+                # Pousser les spécialités RESTANTES (après slug courant) dans la file
+                local remaining=("${specialties[@]:$((i+1))}")
+                if [[ ${#remaining[@]} -gt 0 ]]; then
+                    queue_push_list "${remaining[*]}"
+                    log "[$user] Rate limit — ${#remaining[@]} spé(s) transférée(s) vers la file : ${remaining[*]}"
+                fi
+                break  # Arrêt immédiat — compte indisponible
+                ;;
+        esac
+        ((i++)) || true
     done
+
+    # ── Phase 2 : drain de la file partagée (si compte encore disponible) ────
+    if [[ $errors -eq 0 ]]; then
+        local q_slug
+        while true; do
+            q_slug=$(queue_pop)
+            q_slug=$(echo "$q_slug" | tr -d '[:space:]')
+            [[ -z "$q_slug" ]] && break
+
+            run_one_specialty "$user" "$q_slug" " (queue)"
+            local qrc=$?
+            case $qrc in
+                0)
+                    ((done++)) || true
+                    [[ -z "$DRY_RUN" ]] && sleep "$PAUSE_BETWEEN_SESSIONS"
+                    ;;
+                2) ((skipped++)) || true ;;
+                1)
+                    ((errors++)) || true
+                    log "[$user] Rate limit sur file partagée — arrêt drain"
+                    break
+                    ;;
+            esac
+        done
+    fi
 
     log "[$user] Terminé — done=$done skipped=$skipped errors=$errors"
 }
