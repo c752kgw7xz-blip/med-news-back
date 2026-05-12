@@ -142,9 +142,13 @@ def serve_landing():
 def serve_review():
     return FileResponse(os.path.join(_FRONT_DIR, "review.html"), media_type="text/html", headers=_NO_CACHE)
 
-@app.get("/admin/students")
-def serve_student_admin():
-    return FileResponse(os.path.join(_FRONT_DIR, "student-admin.html"), media_type="text/html", headers=_NO_CACHE)
+@app.get("/signalements")
+def serve_signalements():
+    return FileResponse(os.path.join(_FRONT_DIR, "signalements.html"), media_type="text/html", headers=_NO_CACHE)
+
+@app.get("/etudiants")
+def serve_etudiants():
+    return FileResponse(os.path.join(_FRONT_DIR, "etudiants.html"), media_type="text/html", headers=_NO_CACHE)
 
 @app.get("/login")
 def serve_login():

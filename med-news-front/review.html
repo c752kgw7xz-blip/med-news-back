@@ -680,9 +680,11 @@
       <span class="header-admin-chip">Admin</span>
     </div>
     <div class="header-right">
-      <a href="/review"     class="header-nav-link active">Review</a>
-      <a href="/newsletter" class="header-nav-link">Newsletter</a>
-      <a href="/users"      class="header-nav-link">Comptes</a>
+      <a href="/review"        class="header-nav-link active">Review</a>
+      <a href="/signalements"  class="header-nav-link">Signalements</a>
+      <a href="/etudiants"     class="header-nav-link">Étudiants</a>
+      <a href="/newsletter"    class="header-nav-link">Newsletter</a>
+      <a href="/users"         class="header-nav-link">Comptes</a>
       <button class="btn-logout" onclick="logout()">D&#233;connexion</button>
     </div>
   </header>
@@ -695,12 +697,6 @@
       <div class="status-tab-bar" id="filter-bar">
         <button class="filter-pill active" data-status="PENDING" onclick="setStatusFilter('PENDING', this)">
           En attente <span class="count" id="count-pending">0</span>
-        </button>
-        <button class="filter-pill" id="tab-reports" onclick="showReportsPanel(this)">
-          Signalements <span class="count" id="count-reports">–</span>
-        </button>
-        <button class="filter-pill" id="tab-students" onclick="showStudentsPanel(this)">
-          Étudiants <span class="count" id="count-students">–</span>
         </button>
         <div style="width:12px;flex-shrink:0;"></div>
         <select class="spec-select" id="spec-filter" onchange="setSidebarFilter(this.value)">
