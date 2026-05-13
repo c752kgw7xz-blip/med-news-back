@@ -298,17 +298,28 @@ async function loadRequests(status, tabEl) {
 }
 
 async function viewDoc(reqId, name) {
+  const contentEl = document.getElementById('doc-content');
   document.getElementById('doc-title').textContent = `Document — ${name}`;
-  document.getElementById('doc-content').innerHTML = '<p>Chargement…</p>';
+  contentEl.innerHTML = '<p>Chargement…</p>';
   document.getElementById('doc-modal').classList.add('open');
-  const res = await authFetch(`${API}/admin/student-requests/${reqId}/document`);
-  if (!res || !res.ok) { document.getElementById('doc-content').innerHTML = '<p style="color:red">Erreur</p>'; return; }
-  const mime = res.headers.get('content-type') || '';
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  document.getElementById('doc-content').innerHTML = mime.startsWith('image/')
-    ? `<img src="${url}" alt="carte étudiante">`
-    : `<iframe src="${url}" width="100%" height="500px"></iframe>`;
+  try {
+    const res = await authFetch(`${API}/admin/student-requests/${reqId}/document`);
+    if (!res) { contentEl.innerHTML = '<p style="color:red">Non autorisé (token expiré ?)</p>'; return; }
+    if (!res.ok) { contentEl.innerHTML = `<p style="color:red">Erreur ${res.status}</p>`; return; }
+    const mime = res.headers.get('content-type') || '';
+    const blob = await res.blob();
+    // data URL pour éviter les restrictions CSP sur blob:
+    const reader = new FileReader();
+    reader.onload = () => {
+      contentEl.innerHTML = mime.startsWith('image/')
+        ? `<img src="${reader.result}" alt="carte étudiante" style="max-width:100%;border-radius:6px;">`
+        : `<iframe src="${reader.result}" width="100%" height="500px" style="border:none;border-radius:6px;"></iframe>`;
+    };
+    reader.onerror = () => { contentEl.innerHTML = '<p style="color:red">Erreur lecture fichier</p>'; };
+    reader.readAsDataURL(blob);
+  } catch(e) {
+    contentEl.innerHTML = `<p style="color:red">Erreur : ${e.message}</p>`;
+  }
 }
 
 async function approveRequest(reqId) {
