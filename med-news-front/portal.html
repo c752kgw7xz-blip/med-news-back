@@ -4532,8 +4532,7 @@ function setupSwipeToDismiss(section) {
   dragArea.innerHTML = '<span class="fp-drag-handle"></span>';
   overlay.insertBefore(dragArea, overlay.firstChild);
 
-  const header = overlay.querySelector('.fp-overlay-header');
-  const triggers = [dragArea, header].filter(Boolean);
+  const triggers = [dragArea];
 
   let startY = 0, deltaY = 0, dragging = false;
 
