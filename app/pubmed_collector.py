@@ -144,7 +144,7 @@ PUBMED_SOURCES: list[dict] = [
     # Volume attendu : ~5-10 articles/mois au lieu de ~20.
     {
         "source": "pubmed_jvs",
-        "journal_term": f'"J Vasc Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Vasc Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Vascular Surgery (JVS) — RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
@@ -156,7 +156,7 @@ PUBMED_SOURCES: list[dict] = [
     # européennes (EVAR trials, ACST, carotide) — exactement ce qu'on cherche.
     {
         "source": "pubmed_ejves",
-        "journal_term": f'"Eur J Vasc Endovasc Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Eur J Vasc Endovasc Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "EJVES — RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
@@ -186,7 +186,7 @@ PUBMED_SOURCES: list[dict] = [
     # élimine les case series et registres monocentriques qui dominent le journal.
     {
         "source": "pubmed_jet",
-        "journal_term": f'"J Endovasc Ther"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Endovasc Ther"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Endovascular Therapy (JET) — RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
@@ -198,7 +198,7 @@ PUBMED_SOURCES: list[dict] = [
     # seuil relevé à 7 pour ne retenir que les études avec impact clinique réel.
     {
         "source": "pubmed_ann_vasc_surg",
-        "journal_term": f'"Ann Vasc Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Ann Vasc Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "Annals of Vascular Surgery — RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-vasculaire",
@@ -241,7 +241,7 @@ PUBMED_SOURCES: list[dict] = [
     # Filtre PT : élimine les séries rétrospectives monocentriques qui dominent le journal.
     {
         "source": "pubmed_jtcvs",
-        "journal_term": f'"J Thorac Cardiovasc Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Thorac Cardiovasc Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Thoracic and Cardiovascular Surgery (JTCVS) — RCTs & méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-cardiaque",
@@ -254,7 +254,7 @@ PUBMED_SOURCES: list[dict] = [
     # SAVR, pontage à cœur battant). Forum d'expression de l'EACTS.
     {
         "source": "pubmed_ejcts",
-        "journal_term": f'"Eur J Cardiothorac Surg"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Eur J Cardiothorac Surg"[Journal] AND {_PT_OR_TITLE}',
         "label": "EJCTS — RCTs & méta-analyses",
         "source_type": "innovation",
         # specialty_hint absent → prompt générique (cardiaque + thoracique selon contenu)
@@ -683,7 +683,7 @@ PUBMED_SOURCES: list[dict] = [
     # Seuil 7 par défaut : équivalent chirurgie cardiaque, ajustable après retour.
     {
         "source": "pubmed_jbjs",
-        "journal_term": f'"J Bone Joint Surg Am"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Bone Joint Surg Am"[Journal] AND {_PT_OR_TITLE}',
         "label": "Journal of Bone & Joint Surgery (Am) — JBJS",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-orthopedique",
@@ -691,7 +691,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_bone_joint_j",
-        "journal_term": f'"Bone Joint J"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Bone Joint J"[Journal] AND {_PT_OR_TITLE}',
         "label": "Bone & Joint Journal (BJJ/JBJS Br) — EFORT flagship",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-orthopedique",
@@ -990,7 +990,7 @@ PUBMED_SOURCES: list[dict] = [
     # modèles murins) qui dominent le journal mais sans intérêt clinique direct.
     {
         "source": "pubmed_wound_repair",
-        "journal_term": f'"Wound Repair Regen"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Wound Repair Regen"[Journal] AND {_PT_OR_TITLE}',
         "label": "Wound Repair and Regeneration (WRR) — Wiley",
         "source_type": "innovation",
         "specialty_hint": "chirurgie-plastique",
@@ -1658,7 +1658,7 @@ PUBMED_SOURCES: list[dict] = [
     # guidelines AACC sur interprétation et seuils décisionnels.
     {
         "source": "pubmed_clin_chem",
-        "journal_term": f'"Clin Chem"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Clin Chem"[Journal] AND {_PT_OR_TITLE}',
         "label": "Clinical Chemistry (AACC flagship — IF ~14)",
         "source_type": "innovation",
         "specialty_hint": "biologiste",
@@ -3769,7 +3769,7 @@ PUBMED_SOURCES: list[dict] = [
     # de peau, cellules souches en plaies chroniques. Complémentaire de Int Wound J.
     {
         "source": "pubmed_wound_repair",
-        "journal_term": f'"Wound Repair Regen"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Wound Repair Regen"[Journal] AND {_PT_OR_TITLE}',
         "label": "Wound Repair & Regeneration — PRP, facteurs croissance, cicatrisation (IF ~4)",
         "source_type": "innovation",
         "specialty_hint": "infirmiers",
