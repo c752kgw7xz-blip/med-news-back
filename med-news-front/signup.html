@@ -403,7 +403,8 @@ async function submitStudentCard() {
     if (res.ok) {
       document.getElementById('done-title').textContent = 'Demande envoyée !';
       document.getElementById('done-msg').innerHTML =
-        'Votre carte étudiante a été reçue — réponse sous 48h.<br>' +
+        'Votre carte étudiante a été reçue.<br>' +
+        '<strong>Vous avez accès à MedNews dès maintenant</strong>, même en attente de validation.<br>' +
         'Vérifiez également votre email pour activer votre compte.';
       showScreen('done');
     } else {
