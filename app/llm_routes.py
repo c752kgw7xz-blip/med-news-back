@@ -1378,6 +1378,26 @@ def newsletter_send_all(
                 _send_job["running"] = False
                 _send_job["finished_at"] = datetime.utcnow().isoformat()
 
+            # Enregistrer dans newsletter_sends
+            try:
+                total_sent = sum(r.get("sent", 0) for r in _send_job["results"])
+                total_failed = sum(r.get("failed", 0) for r in _send_job["results"])
+                total_articles = sum(r.get("articles", 0) for r in _send_job["results"] if r.get("status") == "sent")
+                period = date.today().isoformat()
+                with get_conn() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            """
+                            INSERT INTO newsletter_sends
+                                (newsletter_type, period_label, articles_sent, triggered_by, specialty_slug, recipients_sent, recipients_failed)
+                            VALUES ('manual', %s, %s, 'manual', %s, %s, %s)
+                            """,
+                            (period, total_articles, specialty or None, total_sent, total_failed),
+                        )
+                    conn.commit()
+            except Exception as log_err:
+                logger.error("Erreur log newsletter_sends : %s", log_err)
+
     import threading as _th
     _th.Thread(target=_run, daemon=True).start()
     return {"ok": True, "message": "Envoi lancé en background."}
@@ -1386,6 +1406,37 @@ def newsletter_send_all(
 # ---------------------------------------------------------------------------
 # GET /admin/llm/newsletter/send-status — Statut du dernier envoi
 # ---------------------------------------------------------------------------
+
+@router.get("/newsletter/history")
+def newsletter_history(request: Request):
+    """Historique des newsletters envoyées (auto + manuelles)."""
+    _require_admin(request)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, newsletter_type, period_label, sent_at, articles_sent,
+                       COALESCE(triggered_by, 'auto') as triggered_by,
+                       specialty_slug, recipients_sent, recipients_failed
+                FROM newsletter_sends
+                ORDER BY sent_at DESC
+                LIMIT 100;
+                """
+            )
+            rows = cur.fetchall()
+    return {"ok": True, "sends": [
+        {
+            "id": r[0], "newsletter_type": r[1], "period_label": r[2],
+            "sent_at": r[3].isoformat() if r[3] else None,
+            "articles_sent": r[4] or 0,
+            "triggered_by": r[5],
+            "specialty_slug": r[6],
+            "recipients_sent": r[7] or 0,
+            "recipients_failed": r[8] or 0,
+        }
+        for r in rows
+    ]}
+
 
 @router.get("/newsletter/send-status")
 def newsletter_send_status(request: Request):
