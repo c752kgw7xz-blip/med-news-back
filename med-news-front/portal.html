@@ -1087,6 +1087,8 @@
   /* Pages plein écran — démarrent sous le header, s'arrêtent au-dessus de la nav bar */
   .fp-overlay { top: 52px; bottom: calc(60px + env(safe-area-inset-bottom)); }
   @media (max-width: 480px) { .fp-overlay { top: 48px; } }
+  /* Bloque le scroll du body quand un overlay est ouvert */
+  body.fp-overlay-open { overflow: hidden; }
   .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
 
   /* Explorer / Activité header — large iOS title */
@@ -2416,6 +2418,7 @@ function openFullPage(section) {
   const el = document.getElementById('fp-' + section);
   if (!el) return;
   el.classList.add('open');
+  document.body.classList.add('fp-overlay-open');
 
   if (section === 'explorer') {
     const fpList = document.getElementById('fp-spec-list');
@@ -2450,6 +2453,7 @@ function closeFullPage(section) {
   const el = document.getElementById('fp-' + section);
   if (!el || !el.classList.contains('open')) return;
   el.classList.remove('open');
+  if (!document.querySelector('.fp-overlay.open')) document.body.classList.remove('fp-overlay-open');
 
   if (section === 'compte') {
     // Restaure l'onglet actif précédent
