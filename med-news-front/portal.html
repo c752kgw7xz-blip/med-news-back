@@ -1089,6 +1089,8 @@
   @media (max-width: 480px) { .fp-overlay { top: 48px; } }
   /* Bloque le scroll du body quand un overlay est ouvert (iOS + Android) */
   body.fp-overlay-open { position: fixed; overflow-y: scroll; width: 100%; }
+  /* Header reste ancré en haut même quand body est fixed+décalé */
+  body.fp-overlay-open header { position: fixed; top: 0; left: 0; right: 0; z-index: 200; }
   .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
 
   /* Explorer / Activité header — large iOS title */
