@@ -888,7 +888,8 @@ const SOURCE_TYPE_STYLE = {
   reglementaire:  { bg: 'rgba(100,116,139,.08)', color: '#64748b', border: '0.5px solid rgba(100,116,139,.25)', label: '\u2696 R\u00e9glementaire' },
 };
 function sourceTypeBadge(stype) {
-  const s = SOURCE_TYPE_STYLE[stype] || SOURCE_TYPE_STYLE.reglementaire;
+  const s = SOURCE_TYPE_STYLE[stype];
+  if (!s) return '';
   return `<span class="nature-badge" style="background:${s.bg};color:${s.color};${s.border ? `border:${s.border};` : ''}">${s.label}</span>`;
 }
 
@@ -945,7 +946,7 @@ function renderArticle(a, idx) {
   const audience = a.audience || '';
   const specSlug = a.specialty_slug || '';
   const categorie = a.categorie || null;
-  const stype = a.source_type || 'reglementaire';
+  const stype = a.source_type || '';
   const status = a.review_status || 'PENDING';
 
   const _pc = lecture.points_cles;
