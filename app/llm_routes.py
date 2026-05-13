@@ -1323,8 +1323,7 @@ def newsletter_send_all(
                             """
                             SELECT u.email_ciphertext
                             FROM users u
-                            JOIN specialties s ON s.id = u.specialty_id
-                            WHERE s.slug = %s
+                            WHERE u.specialty_id = %s
                               AND u.email_verified_at IS NOT NULL
                               AND u.is_active = TRUE
                               AND u.is_unsubscribed = FALSE
