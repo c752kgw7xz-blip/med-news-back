@@ -883,6 +883,15 @@
       padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 10px);
       font-size: 0.70rem;
     }
+    body.splash-open .ia-disclaimer {
+      background: #1C0A15;
+      border-top-color: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.35);
+    }
+    [data-theme="light"] body.splash-open .ia-disclaimer {
+      background: #1a1a2e;
+      color: rgba(255,255,255,.35);
+    }
   }
 
   /* ── Portal page title ──────────────────── */
@@ -3542,7 +3551,7 @@ function showSpecSplash(accordId) {
     </button>`;
   }).join('');
   document.getElementById('portal-page-title').style.display = '';
-  if (window.innerWidth <= 768) document.querySelector('.content-area')?.classList.add('splash-open');
+  if (window.innerWidth <= 768) { document.querySelector('.content-area')?.classList.add('splash-open'); document.body.classList.add('splash-open'); }
   document.getElementById('spec-splash').style.display = 'flex';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'none';
@@ -3560,6 +3569,7 @@ function showSpecSplash(accordId) {
 function hideSpecSplash() {
   document.getElementById('spec-splash').style.display = 'none';
   document.querySelector('.content-area')?.classList.remove('splash-open');
+  document.body.classList.remove('splash-open');
   const ca = document.querySelector('.content-area');
   if (ca) ca.dataset.stype = '';
   const sw = document.getElementById('cat-switcher');
