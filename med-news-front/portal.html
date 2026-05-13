@@ -1084,8 +1084,9 @@
     pointer-events: none; visibility: hidden;
     will-change: transform;
   }
-  /* Pages plein écran — s'arrêtent au-dessus de la nav bar */
-  .fp-overlay { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  /* Pages plein écran — démarrent sous le header, s'arrêtent au-dessus de la nav bar */
+  .fp-overlay { top: 52px; bottom: calc(60px + env(safe-area-inset-bottom)); }
+  @media (max-width: 480px) { .fp-overlay { top: 48px; } }
   .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
 
   /* Explorer / Activité header — large iOS title */
