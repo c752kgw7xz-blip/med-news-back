@@ -2523,6 +2523,17 @@ async function checkBillingStatus() {
   if (!res.ok) return;
   const data = await res.json();
   if (!data.access) { showPaywallModal(); return; }
+  // Bandeau carte étudiante acceptée
+  if (data.is_student && !document.getElementById('student-approved-banner')) {
+    const banner = document.getElementById('verify-banner');
+    if (banner) {
+      const w = document.createElement('div');
+      w.id = 'student-approved-banner';
+      w.style.cssText = 'background:#d1fae5;border-bottom:1px solid #6ee7b7;color:#065f46;font-size:0.8rem;padding:7px 20px;text-align:center;font-weight:500;';
+      w.textContent = '🎓 Votre carte étudiante a été acceptée — vous disposez d\'un accès complet gratuit à MedNews.';
+      banner.parentNode.insertBefore(w, banner);
+    }
+  }
   // Bandeau carte étudiante en cours de validation
   if (data.student_pending && !document.getElementById('student-pending-banner')) {
     const banner = document.getElementById('verify-banner');
