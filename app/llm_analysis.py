@@ -191,10 +191,14 @@ lettres, errata, résultats préliminaires de phase 1-2 sans implication cliniqu
 avant recommandation officielle).
 → RÉDACTION pour articles de recherche (style journal médical spécialisé — JACC, NEJM, \
 European Heart Journal) :
-  resume : "Phrase 1 : énonce le résultat clinique principal en ouverture — le chiffre \
-clé (réduction relative/absolue, HR/RR/OR + IC95% + p) est intégré en incise, \
-jamais en tête de phrase. Exemple : 'La dapagliflozine réduit de 18 % le risque \
+  resume : "2 phrases max. \
+Phrase 1 : énonce le résultat clinique principal en ouverture — UN SEUL chiffre clé \
+(réduction relative/absolue, HR/RR/OR + IC95% + p) est intégré en incise, jamais en tête de phrase. \
+Ne pas lister les résultats secondaires ou sous-groupes dans la phrase 1 — ils appartiennent \
+aux points_cles. Exemple correct : 'La dapagliflozine réduit de 18 % le risque \
 d'aggravation de l'IC dans l'HFpEF/HFmrEF (HR 0,82 ; IC95% 0,73–0,92 ; p<0,001).' \
+Exemple INTERDIT : '...réduit les complications (RR 0,49), dont les infections (RR 0,30), \
+les ré-amputations (RR 0,67) et les désunions (RR 0,53).' \
 Phrase 2 : design en 1 ligne (acronyme si connu, type étude, N, population, durée). \
 Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude."
   impact_pratique : "À retenir : [implication clinique en langage naturel — \
@@ -805,9 +809,11 @@ sage-femme, biologiste).
    médical n'a besoin d'être défini. Phrases directes, donnée quantitative en premier.
 
    PRINCIPES DE RÉDACTION :
-   • Quantitatif en premier : OR, HR, IC95%, p-value, effectif (n=), taux (%) \
-     avant tout commentaire narratif. Ex. : "mortalité à 30 j : 1,4 % vs 3,9 % \
-     (OR 0,35 ; IC95% 0,14–0,88)" — pas "les résultats sont meilleurs".
+   • Quantitatif en premier — mais UN SEUL résultat principal : OR, HR, IC95%, p-value \
+     du critère de jugement principal uniquement. Ex. : "mortalité à 30 j : 1,4 % vs 3,9 % \
+     (OR 0,35 ; IC95% 0,14–0,88)" — pas "les résultats sont meilleurs". \
+     Ne jamais lister les résultats secondaires dans le résumé (infections RR X, \
+     ré-amputations RR Y, désunions RR Z…) : ces chiffres vont dans points_cles.
    • Nommer la source : essai clinique ("Dans BEST-CLI, N=1 830"), congrès \
      ("présenté à ESVS 2025"), journal ("JAMA Surgery, jan. 2026") — \
      jamais "une étude récente" ou "des chercheurs ont montré".
