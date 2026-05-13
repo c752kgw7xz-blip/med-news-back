@@ -598,17 +598,6 @@
   .splash-hero-eyebrow { display: none; }
   .splash-hero-total { font-size: 0.82rem; color: var(--text4); margin-top: 5px; }
 
-  /* ── Desktop splash — fond chaud ── */
-  @media (min-width: 769px) {
-    .content-area.splash-open {
-      background: linear-gradient(160deg, #F7F5EE 0%, #EDE6D8 60%, #E5DDD0 100%) !important;
-      min-height: calc(100vh - 52px);
-    }
-    [data-theme="dark"] .content-area.splash-open {
-      background: linear-gradient(160deg, #1C1610 0%, #231A0E 55%, #1F160B 100%) !important;
-    }
-  }
-
   /* ── Rubrique header ───────────────────── */
   .rubrique-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
   .rubrique-month {
@@ -3562,8 +3551,7 @@ function showSpecSplash(accordId) {
     </button>`;
   }).join('');
   document.getElementById('portal-page-title').style.display = '';
-  document.querySelector('.content-area')?.classList.add('splash-open');
-  if (window.innerWidth <= 768) document.body.classList.add('splash-open');
+  if (window.innerWidth <= 768) { document.querySelector('.content-area')?.classList.add('splash-open'); document.body.classList.add('splash-open'); }
   document.getElementById('spec-splash').style.display = 'flex';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'none';
