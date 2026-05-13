@@ -1085,7 +1085,8 @@
     will-change: transform;
   }
   /* Pages plein écran — s'arrêtent au-dessus de la nav bar */
-  .fp-overlay { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  .fp-overlay { bottom: calc(60px + env(safe-area-inset-bottom)); padding-top: 52px; }
+  @media (max-width: 480px) { .fp-overlay { padding-top: 48px; } }
   /* Header visible sur les overlays, mais ne capture pas les touches */
   body.fp-overlay-open header { pointer-events: none; }
   .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
