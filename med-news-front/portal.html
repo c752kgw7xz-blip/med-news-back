@@ -1209,12 +1209,12 @@
   .st-input {
     padding: 7px 12px; border: 1px solid var(--border-strong);
     border-radius: 10px; background: var(--surface2); color: var(--text);
-    font-size: 0.93rem; outline: none; width: 150px; max-width: 100%;
+    font-size: 16px; outline: none; width: 150px; max-width: 100%;
   }
   .st-select {
     padding: 7px 28px 7px 10px; border: 1px solid var(--border-strong);
     border-radius: 10px; background: var(--surface2); color: var(--text);
-    font-size: 0.86rem; outline: none; appearance: none; flex: 1; min-width: 0;
+    font-size: 16px; outline: none; appearance: none; flex: 1; min-width: 0;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6f88' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 9px center; background-size: 12px;
   }
@@ -2153,11 +2153,11 @@
       <!-- Accès étudiant -->
       <div class="st-section" id="student-section">
         <div class="st-section-title">Accès étudiant gratuit</div>
-        <div id="student-status-wrap"><!-- rempli par JS --></div>
-        <div id="student-upload-wrap" style="display:none;">
-          <label style="display:block;margin-bottom:8px;font-size:0.83rem;font-weight:500;">Carte étudiante (JPEG, PNG, PDF — max 5 Mo)</label>
-          <input type="file" id="student-file-input" accept="image/jpeg,image/png,image/webp,application/pdf" style="font-size:0.83rem;margin-bottom:10px;">
-          <button class="st-save-btn" id="student-upload-btn" onclick="uploadStudentDoc()" style="margin-top:0;">Envoyer ma demande</button>
+        <div id="student-status-wrap" style="padding:0 16px;"></div>
+        <div id="student-upload-wrap" style="display:none;padding:0 16px 4px;">
+          <label style="display:block;margin-bottom:8px;font-size:0.85rem;font-weight:500;">Carte étudiante (JPEG, PNG, PDF — max 5 Mo)</label>
+          <input type="file" id="student-file-input" accept="image/jpeg,image/png,image/webp,application/pdf" style="font-size:16px;margin-bottom:10px;max-width:100%;">
+          <button class="st-save-btn" id="student-upload-btn" onclick="uploadStudentDoc()" style="margin:0 0 12px;">Envoyer ma demande</button>
         </div>
       </div>
 
