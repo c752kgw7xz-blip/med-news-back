@@ -102,16 +102,21 @@ def _claim_newsletter_slot(newsletter_type: str, period_label: str) -> bool:
             return cur.rowcount == 1
 
 
-def _finalize_newsletter_sent(newsletter_type: str, period_label: str, articles_sent: int) -> None:
-    """Update articles_sent after a successful send."""
+def _finalize_newsletter_sent(
+    newsletter_type: str, period_label: str, articles_sent: int,
+    recipients_sent: int = 0, recipients_failed: int = 0,
+) -> None:
+    """Update articles_sent and recipients after a successful send."""
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                UPDATE newsletter_sends SET sent_at = now(), articles_sent = %s
+                UPDATE newsletter_sends
+                SET sent_at = now(), articles_sent = %s,
+                    recipients_sent = %s, recipients_failed = %s
                 WHERE newsletter_type = %s AND period_label = %s;
                 """,
-                (articles_sent, newsletter_type, period_label),
+                (articles_sent, recipients_sent, recipients_failed, newsletter_type, period_label),
             )
 
 
@@ -678,12 +683,13 @@ def job_try_send_regulation() -> None:
     logger.info(
         "Newsletter réglementation %s : 0 PENDING — déclenchement de l'envoi", period
     )
-    total_sent = _send_newsletters_by_source_type(
+    total_sent, r_sent, r_failed = _send_newsletters_by_source_type(
         source_types=REGULATION_SOURCE_TYPES,
         days=120,
     )
     if total_sent > 0:
-        _finalize_newsletter_sent("reglementaire", period, articles_sent=total_sent)
+        _finalize_newsletter_sent("reglementaire", period, articles_sent=total_sent,
+                                   recipients_sent=r_sent, recipients_failed=r_failed)
         logger.info("Newsletter réglementation envoyée : %d articles au total", total_sent)
     else:
         # Release slot so it can be retried tomorrow
@@ -728,12 +734,13 @@ def job_try_send_recommendations() -> None:
     logger.info(
         "Newsletter recommandations %s : 0 PENDING — déclenchement de l'envoi", period
     )
-    total_sent = _send_newsletters_by_source_type(
+    total_sent, r_sent, r_failed = _send_newsletters_by_source_type(
         source_types=RECOMMENDATION_SOURCE_TYPES,
         days=120,
     )
     if total_sent > 0:
-        _finalize_newsletter_sent("recommandation", period, articles_sent=total_sent)
+        _finalize_newsletter_sent("recommandation", period, articles_sent=total_sent,
+                                   recipients_sent=r_sent, recipients_failed=r_failed)
         logger.info("Newsletter recommandations envoyée : %d articles au total", total_sent)
     else:
         _release_newsletter_slot("recommandation", period)
@@ -830,31 +837,37 @@ def _get_subscribers(specialty_slug: str) -> list[str]:
 def _send_newsletters_by_source_type(
     source_types: tuple[str, ...] | None = None,
     days: int = 120,
-) -> int:
-    """Envoie la newsletter à tous les abonnés par spécialité. Retourne le nb total d'articles."""
+) -> tuple[int, int, int]:
+    """Envoie la newsletter à tous les abonnés par spécialité.
+    Retourne (total_articles, total_recipients_sent, total_recipients_failed)."""
     total_articles = 0
+    total_recipients_sent = 0
+    total_recipients_failed = 0
     for slug in SPECIALTY_LABELS.keys():
         try:
-            sent_articles = _send_specialty_newsletter(slug, source_types=source_types, days=days)
+            sent_articles, r_sent, r_failed = _send_specialty_newsletter(slug, source_types=source_types, days=days)
             total_articles += sent_articles
+            total_recipients_sent += r_sent
+            total_recipients_failed += r_failed
         except Exception as e:
             logger.error("Newsletter %s : %s", slug, e)
-    return total_articles
+    return total_articles, total_recipients_sent, total_recipients_failed
 
 
 def _send_specialty_newsletter(
     specialty_slug: str,
     source_types: tuple[str, ...] | None = None,
     days: int = 120,
-) -> int:
+) -> tuple[int, int, int]:
+    """Retourne (articles_sent, recipients_sent, recipients_failed)."""
     items = _get_approved_items(specialty_slug, source_types=source_types, days=days, include_transversal=True)
     if not items:
         logger.info("Spécialité %s : aucun item approuvé", specialty_slug)
-        return 0
+        return 0, 0, 0
     subscribers = _get_subscribers(specialty_slug)
     if not subscribers:
         logger.info("Spécialité %s : aucun abonné", specialty_slug)
-        return 0
+        return 0, 0, 0
     logger.info(
         "Spécialité %s : %d articles → %d abonnés",
         specialty_slug, len(items), len(subscribers),
@@ -867,7 +880,7 @@ def _send_specialty_newsletter(
         "Spécialité %s : envoyé=%d erreurs=%d",
         specialty_slug, result["sent"], result["failed"],
     )
-    return len(items)
+    return len(items), result["sent"], result["failed"]
 
 
 # ---------------------------------------------------------------------------
@@ -898,6 +911,8 @@ def job_send_unified() -> None:
     logger.info("Newsletter unifiée %s — déclenchement", period)
 
     total_sent = 0
+    total_recipients_sent = 0
+    total_recipients_failed = 0
     for slug in SPECIALTY_LABELS.keys():
         try:
             items = _get_approved_items(
@@ -923,11 +938,15 @@ def job_send_unified() -> None:
             result = send_bulk(subscribers, subject, html, plain)
             logger.info("[unified] %s : envoyé=%d erreurs=%d", slug, result["sent"], result["failed"])
             total_sent += len(items)
+            total_recipients_sent += result["sent"]
+            total_recipients_failed += result["failed"]
         except Exception as e:
             logger.error("[unified] %s : %s", slug, e)
 
     if total_sent > 0:
-        _finalize_newsletter_sent(newsletter_type, period, total_sent)
+        _finalize_newsletter_sent(newsletter_type, period, total_sent,
+                                   recipients_sent=total_recipients_sent,
+                                   recipients_failed=total_recipients_failed)
         logger.info("Newsletter unifiée %s terminée — %d articles au total", period, total_sent)
     else:
         _release_newsletter_slot(newsletter_type, period)
