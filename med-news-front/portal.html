@@ -5245,6 +5245,11 @@ async function loadBillingInfo() {
   const res = await authFetch(`${API}/billing/status`);
   if (!res || !res.ok) return;
   const data = await res.json();
+  // Cacher toute la section abonnement pour les étudiants (validés ou en attente)
+  if (data.is_student || data.student_pending) {
+    document.getElementById('billing-section').style.display = 'none';
+    return;
+  }
   const wrap = document.getElementById('billing-status-wrap');
   const manageBtn    = document.getElementById('billing-manage-btn');
   const subscribeBtn = document.getElementById('billing-subscribe-btn');
