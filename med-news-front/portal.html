@@ -131,7 +131,7 @@
   header {
     background: var(--surface); border-bottom: 1px solid var(--border);
     height: 52px; padding: 0 32px; display: flex; align-items: center;
-    justify-content: space-between; position: sticky; top: 0; z-index: 600;
+    justify-content: space-between; position: sticky; top: 0; z-index: 600; transition: pointer-events 0s;
   }
   .header-left { display: flex; align-items: baseline; gap: 12px; min-width: 0; overflow: hidden; }
   .header-left h1 {
@@ -1086,6 +1086,8 @@
   }
   /* Pages plein écran — s'arrêtent au-dessus de la nav bar */
   .fp-overlay { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  /* Header visible sur les overlays, mais ne capture pas les touches */
+  body.fp-overlay-open header { pointer-events: none; }
   .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
 
   /* Explorer / Activité header — large iOS title */
@@ -2415,6 +2417,7 @@ function openFullPage(section) {
   const el = document.getElementById('fp-' + section);
   if (!el) return;
   el.classList.add('open');
+  document.body.classList.add('fp-overlay-open');
 
   if (section === 'explorer') {
     const fpList = document.getElementById('fp-spec-list');
@@ -2449,6 +2452,7 @@ function closeFullPage(section) {
   const el = document.getElementById('fp-' + section);
   if (!el || !el.classList.contains('open')) return;
   el.classList.remove('open');
+  if (!document.querySelector('.fp-overlay.open')) document.body.classList.remove('fp-overlay-open');
 
   if (section === 'compte') {
     // Restaure l'onglet actif précédent
