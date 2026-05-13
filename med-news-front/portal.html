@@ -5266,6 +5266,7 @@ async function uploadStudentDoc() {
     showToast('Demande envoyée — réponse sous 48h');
     document.getElementById('student-upload-wrap').style.display = 'none';
     document.getElementById('student-status-wrap').innerHTML = `<div style="background:#fff3cd;color:#856404;border-radius:6px;padding:8px 12px;font-size:0.82rem;">Demande en cours de validation.</div>`;
+    loadBillingInfo();
   } else {
     showToast('Erreur lors de l\'envoi');
   }
