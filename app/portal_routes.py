@@ -1084,6 +1084,11 @@ async def upload_student_request(
                 (user_id, data, file.content_type),
             )
             req_id = cur.fetchone()[0]
+            # Accès limité à 48h en attente de validation admin
+            cur.execute(
+                "UPDATE users SET trial_ends_at = NOW() + INTERVAL '48 hours' WHERE id = %s",
+                (user_id,),
+            )
     return {"id": str(req_id), "status": "pending"}
 
 
