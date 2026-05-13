@@ -348,8 +348,7 @@
   <div class="page-subtitle" id="page-subtitle">Prévisualiser et envoyer la newsletter unifiée par spécialité. Articles approuvés des 3 derniers jours.</div>
 
   <div class="stats-bar">
-    <div class="stat-chip"><div class="stat-val" id="stat-approved">—</div><div class="stat-lbl">Articles approuvés</div></div>
-    <div class="stat-chip"><div class="stat-val" id="stat-specs">—</div><div class="stat-lbl">Spécialités couvertes</div></div>
+    <div class="stat-chip"><div class="stat-val" id="stat-specs">—</div><div class="stat-lbl">Spécialités à envoyer</div></div>
   </div>
 
   <!-- Controls -->
@@ -416,11 +415,6 @@
     <iframe class="preview-iframe" id="preview-iframe"></iframe>
   </div>
 
-  <!-- Specialty grid -->
-  <div id="spec-section" style="display:none">
-    <div class="spec-section-title">Spécialités disponibles</div>
-    <div class="spec-grid" id="spec-grid"></div>
-  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -500,18 +494,15 @@ async function loadData() {
   if (!statsRes) return;
 
   const stats = await statsRes.json();
-  const approved = stats.items?.APPROVED || 0;
   const bySpec = stats.items_by_specialty || {};
   const specCount = Object.keys(bySpec).length;
 
-  document.getElementById('stat-approved').textContent = approved;
   document.getElementById('stat-specs').textContent = specCount;
 
-  // Build specialty select + grid
+  // Build specialty selects
   const specs = specsRes.ok ? await specsRes.json() : [];
 
   const sel = document.getElementById('nl-specialty');
-  const grid = document.getElementById('spec-grid');
 
   // Trier : spés avec articles en premier (desc), puis les autres alpha
   const sorted = [...specs].sort((a, b) => {
@@ -524,37 +515,16 @@ async function loadData() {
   sorted.forEach(({ slug, name }) => {
     const count = bySpec[slug] || 0;
 
-    // select option (preview)
     const opt = document.createElement('option');
     opt.value = slug;
     opt.textContent = count > 0 ? `${name} (${count})` : name;
     sel.appendChild(opt);
 
-    // select option (deploy)
     const opt2 = document.createElement('option');
     opt2.value = slug;
     opt2.textContent = name;
     document.getElementById('deploy-specialty').appendChild(opt2);
-
-    // grid chip
-    const chip = document.createElement('div');
-    chip.className = 'spec-chip';
-    chip.dataset.slug = slug;
-    chip.innerHTML = `<span class="spec-chip-name">${esc(name)}</span>`
-      + (count > 0 ? `<span class="spec-chip-count">${count}</span>` : '');
-    chip.onclick = () => selectChip(chip, slug);
-    grid.appendChild(chip);
   });
-
-  if (sorted.length > 0) {
-    document.getElementById('spec-section').style.display = '';
-  }
-}
-
-function selectChip(chip, slug) {
-  document.querySelectorAll('.spec-chip').forEach(c => c.classList.remove('selected'));
-  chip.classList.add('selected');
-  document.getElementById('nl-specialty').value = slug;
 }
 
 function esc(s) {
