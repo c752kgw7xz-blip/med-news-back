@@ -103,12 +103,12 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [data-theme="light"] {
-    --bg: #F8FAFC; --surface: #FFFFFF; --surface2: #F1F5F9;
-    --border: #E2E8F0; --border-strong: #CBD5E1;
-    --text: #0F172A; --text2: #1E293B; --text3: #475569;
-    --text4: #94A3B8; --text5: #CBD5E1; --white: #0F172A;
+    --bg: #F5F4EF; --surface: #FDFCF9; --surface2: #ECEAE2;
+    --border: #D6D2C8; --border-strong: #B4B0A6;
+    --text: #1A1714; --text2: #3E3A34; --text3: #706860;
+    --text4: #908880; --text5: #B4B0A6; --white: #1A1714;
     --green-dark: #FFF1F2; --red-dark: #FFF1F2;
-    --fp-header-bg: rgba(248,250,252,.88);
+    --fp-header-bg: rgba(245,244,239,.88);
   }
   [data-theme="dark"] {
     --bg: #0F1117; --surface: #161B27; --surface2: #1E2535;
@@ -525,6 +525,7 @@
 
   /* ── Content area ──────────────────────── */
   .content-area { padding: 28px 40px; }
+  .content-area.splash-open { background: var(--surface); }
 
   /* ── Specialty splash ──────────────────── */
   #spec-splash {
