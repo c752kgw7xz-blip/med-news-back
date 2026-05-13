@@ -763,8 +763,14 @@ def admin_list_users(request: Request):
             cur.execute(
                 """
                 SELECT u.id, u.email_ciphertext, u.specialty_id,
-                       u.email_verified_at, u.created_at, u.is_active, u.is_admin
+                       u.email_verified_at, u.created_at, u.is_active, u.is_admin,
+                       u.plan, u.trial_ends_at, u.stripe_subscription_id,
+                       sr.status AS student_status
                 FROM users u
+                LEFT JOIN LATERAL (
+                    SELECT status FROM student_requests
+                    WHERE user_id = u.id ORDER BY created_at DESC LIMIT 1
+                ) sr ON true
                 ORDER BY u.created_at DESC;
                 """
             )
@@ -783,6 +789,10 @@ def admin_list_users(request: Request):
             "created_at": r[4].isoformat() if r[4] else None,
             "is_active": r[5],
             "is_admin": r[6],
+            "plan": r[7],
+            "trial_ends_at": r[8].isoformat() if r[8] else None,
+            "has_stripe_sub": r[9] is not None,
+            "student_status": r[10],
         })
     return {"ok": True, "count": len(users), "users": users}
 

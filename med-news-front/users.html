@@ -172,6 +172,11 @@
     .badge-verified { background: var(--green-dark); color: var(--green); }
     .badge-unverified { background: var(--surface2); color: var(--text3); }
     .badge-admin { background: #ede9fe; color: #6d28d9; font-size: 10px; }
+    .badge-student { background: #dbeafe; color: #1d4ed8; }
+    .badge-paying { background: var(--green-dark); color: var(--green); }
+    .badge-trial { background: #fef3c7; color: #92400e; }
+    .badge-trial-expired { background: var(--red-dark); color: var(--red); }
+    .badge-pending { background: #fef3c7; color: #92400e; }
 
     .email-cell { font-family: monospace; font-size: 12px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .date-cell { color: var(--text3); font-size: 12px; white-space: nowrap; }
@@ -227,6 +232,8 @@
     <div class="stat-chip"><div class="stat-val" id="stat-total">—</div><div class="stat-lbl">Comptes</div></div>
     <div class="stat-chip"><div class="stat-val" id="stat-active">—</div><div class="stat-lbl">Actifs</div></div>
     <div class="stat-chip"><div class="stat-val" id="stat-verified">—</div><div class="stat-lbl">Email vérifié</div></div>
+    <div class="stat-chip"><div class="stat-val" id="stat-students">—</div><div class="stat-lbl">Étudiants</div></div>
+    <div class="stat-chip"><div class="stat-val" id="stat-paying">—</div><div class="stat-lbl">Payants</div></div>
     <div class="stat-chip"><div class="stat-val" id="stat-inactive">—</div><div class="stat-lbl">Désactivés</div></div>
   </div>
 
@@ -236,6 +243,9 @@
     <button class="filter-pill" data-filter="active" onclick="setFilter('active',this)">Actifs</button>
     <button class="filter-pill" data-filter="inactive" onclick="setFilter('inactive',this)">Désactivés</button>
     <button class="filter-pill" data-filter="unverified" onclick="setFilter('unverified',this)">Non vérifiés</button>
+    <button class="filter-pill" data-filter="student" onclick="setFilter('student',this)">Étudiants</button>
+    <button class="filter-pill" data-filter="paying" onclick="setFilter('paying',this)">Payants</button>
+    <button class="filter-pill" data-filter="trial" onclick="setFilter('trial',this)">Essai</button>
   </div>
 
   <div class="table-wrap">
@@ -246,12 +256,13 @@
           <th>Spécialité</th>
           <th>Inscrit le</th>
           <th>Vérification</th>
+          <th>Accès</th>
           <th>Statut</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr><td colspan="6"><div class="empty-state">Chargement…</div></td></tr>
+        <tr><td colspan="7"><div class="empty-state">Chargement…</div></td></tr>
       </tbody>
     </table>
   </div>
@@ -331,7 +342,7 @@ async function loadUserEmail() {
 async function load() {
   const r = await authFetch(`${API}/admin/users`);
   if (!r || !r.ok) {
-    document.getElementById('tbody').innerHTML = '<tr><td colspan="6"><div class="empty-state">Erreur de chargement — êtes-vous connecté ?</div></td></tr>';
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="7"><div class="empty-state">Erreur de chargement — êtes-vous connecté ?</div></td></tr>';
     return;
   }
   const d = await r.json();
@@ -344,6 +355,8 @@ function updateStats() {
   document.getElementById('stat-total').textContent = allUsers.length;
   document.getElementById('stat-active').textContent = allUsers.filter(u => u.is_active).length;
   document.getElementById('stat-verified').textContent = allUsers.filter(u => u.email_verified).length;
+  document.getElementById('stat-students').textContent = allUsers.filter(u => u.student_status === 'approved').length;
+  document.getElementById('stat-paying').textContent = allUsers.filter(u => u.has_stripe_sub).length;
   document.getElementById('stat-inactive').textContent = allUsers.filter(u => !u.is_active).length;
 }
 
@@ -361,13 +374,16 @@ function render() {
     if (activeFilter === 'active' && !u.is_active) return false;
     if (activeFilter === 'inactive' && u.is_active) return false;
     if (activeFilter === 'unverified' && u.email_verified) return false;
+    if (activeFilter === 'student' && u.student_status !== 'approved') return false;
+    if (activeFilter === 'paying' && !u.has_stripe_sub) return false;
+    if (activeFilter === 'trial' && (u.has_stripe_sub || u.student_status === 'approved')) return false;
     if (q && !u.email.toLowerCase().includes(q) && !(u.specialty_id || '').toLowerCase().includes(q)) return false;
     return true;
   });
 
   const tbody = document.getElementById('tbody');
   if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">Aucun compte trouvé.</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">Aucun compte trouvé.</div></td></tr>';
     return;
   }
 
@@ -383,15 +399,34 @@ function render() {
     const spec = u.specialty_id || `<span style="color:var(--text3)">—</span>`;
     const actionBtn = u.is_admin
       ? '<span style="color:var(--text3);font-size:12px">—</span>'
-      : u.is_active
-        ? `<button class="btn-action btn-deactivate" onclick="deleteUser('${u.id}', this)">Supprimer</button>`
-        : `<button class="btn-action btn-deactivate" onclick="deleteUser('${u.id}', this)">Supprimer</button>`;
+      : `<button class="btn-action btn-deactivate" onclick="deleteUser('${u.id}', this)">Supprimer</button>`;
+
+    let accessBadge;
+    if (u.student_status === 'approved') {
+      accessBadge = `<span class="badge badge-student">Étudiant</span>`;
+    } else if (u.student_status === 'pending') {
+      accessBadge = `<span class="badge badge-pending">Étudiant en attente</span>`;
+    } else if (u.has_stripe_sub) {
+      accessBadge = `<span class="badge badge-paying">Payant</span>`;
+    } else if (u.trial_ends_at) {
+      const trialEnd = new Date(u.trial_ends_at);
+      const now = new Date();
+      const daysLeft = Math.ceil((trialEnd - now) / 86400000);
+      if (daysLeft > 0) {
+        accessBadge = `<span class="badge badge-trial" title="Essai jusqu'au ${trialEnd.toLocaleDateString('fr-FR')}">Essai — ${daysLeft}j</span>`;
+      } else {
+        accessBadge = `<span class="badge badge-trial-expired">Essai expiré</span>`;
+      }
+    } else {
+      accessBadge = `<span class="badge badge-unverified">—</span>`;
+    }
 
     return `<tr class="${u.is_active ? '' : 'inactive'}">
       <td><span class="email-cell" title="${u.email}">${u.email}</span>${adminBadge}</td>
       <td class="spec-cell">${spec}</td>
       <td class="date-cell">${date}</td>
       <td>${verifiedBadge}</td>
+      <td>${accessBadge}</td>
       <td>${statusBadge}</td>
       <td>${actionBtn}</td>
     </tr>`;
