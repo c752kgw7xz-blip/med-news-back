@@ -2166,7 +2166,8 @@
       <div class="st-section" id="billing-section">
         <div class="st-section-title">Votre abonnement</div>
         <div id="billing-status-wrap" style="font-size:0.85rem;color:var(--text3);padding:0 16px 12px;">Chargement…</div>
-        <button class="st-save-btn" id="billing-manage-btn" style="display:none;margin-top:10px;" onclick="openCustomerPortal()">Gérer mon abonnement →</button>
+        <button class="st-save-btn" id="billing-manage-btn" style="display:none;margin-top:4px;" onclick="openCustomerPortal()">Modifier le moyen de paiement →</button>
+        <button id="billing-cancel-btn" style="display:none;margin:8px 16px 12px;background:none;border:none;color:#991b1b;font-size:0.82rem;cursor:pointer;padding:0;font-family:inherit;text-align:left;" onclick="openCustomerPortal()">Résilier mon abonnement</button>
         <button class="st-save-btn" id="billing-subscribe-btn" style="display:none;margin-top:10px;" onclick="startCheckout()">S'abonner — 18,99 €/mois</button>
       </div>
 
@@ -5279,10 +5280,12 @@ async function loadBillingInfo() {
   }
   const wrap = document.getElementById('billing-status-wrap');
   const manageBtn    = document.getElementById('billing-manage-btn');
+  const cancelBtn    = document.getElementById('billing-cancel-btn');
   const subscribeBtn = document.getElementById('billing-subscribe-btn');
   if (data.has_subscription && data.access) {
     wrap.innerHTML = `Abonnement actif — renouvellement dans <strong>${data.days_left} jours</strong>`;
     manageBtn.style.display = 'block';
+    cancelBtn.style.display = 'block';
   } else if (data.is_trial) {
     wrap.innerHTML = `Accès gratuit jusqu'au 1er août 2026 — <strong>${data.days_left} jours restants</strong>`;
     subscribeBtn.style.display = 'block';
