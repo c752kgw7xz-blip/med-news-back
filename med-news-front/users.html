@@ -159,7 +159,6 @@
     tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: var(--surface2); }
-    tbody tr.inactive { opacity: .45; }
 
     td { padding: 11px 16px; font-size: 13px; vertical-align: middle; }
 
@@ -234,14 +233,11 @@
     <div class="stat-chip"><div class="stat-val" id="stat-verified">—</div><div class="stat-lbl">Email vérifié</div></div>
     <div class="stat-chip"><div class="stat-val" id="stat-students">—</div><div class="stat-lbl">Étudiants</div></div>
     <div class="stat-chip"><div class="stat-val" id="stat-paying">—</div><div class="stat-lbl">Payants</div></div>
-    <div class="stat-chip"><div class="stat-val" id="stat-inactive">—</div><div class="stat-lbl">Désactivés</div></div>
   </div>
 
   <div class="toolbar">
     <input class="search-input" type="search" id="search" placeholder="Rechercher email ou spécialité…" oninput="render()">
     <button class="filter-pill active" data-filter="all" onclick="setFilter('all',this)">Tous</button>
-    <button class="filter-pill" data-filter="active" onclick="setFilter('active',this)">Actifs</button>
-    <button class="filter-pill" data-filter="inactive" onclick="setFilter('inactive',this)">Désactivés</button>
     <button class="filter-pill" data-filter="unverified" onclick="setFilter('unverified',this)">Non vérifiés</button>
     <button class="filter-pill" data-filter="student" onclick="setFilter('student',this)">Étudiants</button>
     <button class="filter-pill" data-filter="paying" onclick="setFilter('paying',this)">Payants</button>
@@ -357,7 +353,6 @@ function updateStats() {
   document.getElementById('stat-verified').textContent = allUsers.filter(u => u.email_verified).length;
   document.getElementById('stat-students').textContent = allUsers.filter(u => u.student_status === 'approved').length;
   document.getElementById('stat-paying').textContent = allUsers.filter(u => u.has_stripe_sub).length;
-  document.getElementById('stat-inactive').textContent = allUsers.filter(u => !u.is_active).length;
 }
 
 // ── Filter / Render ───────────────────────────────────────────────────────────
