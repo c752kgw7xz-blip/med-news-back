@@ -385,16 +385,17 @@ SELECT source_type, COUNT(*) FROM items WHERE specialty_slug='<slug>' GROUP BY 1
 **Le résumé est narratif-clinique. Les stats exactes vont dans `points_cles`, pas dans le résumé.**
 
 - `resume` (2 phrases) : style confrère qui explique à l'oral — résultat clinique principal en langage naturel, design en 1 ligne. Aucun HR/RR/OR/IC95%/p-value dans le résumé.
-- `points_cles` : bullet 1 = résultat principal **avec chiffres** (HR, RR, IC95%, p, N), bullet 2 = design/population, bullet 3 = limite principale.
+- `points_cles` : 3 bullets cliniques en langage naturel — sans stats. Bullet 1 = résultat principal, bullet 2 = design/population, bullet 3 = limite principale.
 - `impact_pratique` : 1 phrase praticien-à-praticien, sans stats, sans jargon administratif.
 
-❌ INTERDIT dans `resume` : `"(HR 0,82 ; IC95% 0,73–0,92 ; p<0,001)"`, `"MD 29,6 % ; IC cred. −4,4 à 64,1"`, liste de RR
+❌ INTERDIT dans `resume` ET `points_cles` : toute stat brute — `"HR 0,82"`, `"IC95% 0,73–0,92"`, `"p<0,001"`, `"MD 29,6 %"`, `"RR 0,49"`, `"NNT"`, `"n=2 165"`
 ❌ INTERDIT dans `resume` : ouvrir par la méthode `"Méta-analyse de 93 RCTs..."` ou le design
 
 ✅ EXIGÉ dans `resume` : `"Les benzodiazépines péri-opératoires majorent paradoxalement l'anxiété post-opératoire — effet confirmé dans une méta-analyse de 22 essais. Ce résultat contre-intuitif remet en question leur usage systématique en prémédication."`
-✅ EXIGÉ dans `points_cles[0]` : `"Augmentation de l'anxiété : +2,18 pts STAI (IC95% 1,05–3,30 ; 22 essais, n=2 165)"` 
+✅ EXIGÉ dans `points_cles` : `"Augmentation significative de l'anxiété post-opératoire — effet paradoxal observé dans 22 essais"` (pas de chiffres)
+✅ Stats détaillées → `texte_long` uniquement (seul champ où HR/RR/IC95%/p sont tolérés)
 
-Auto-contrôle avant insertion : *"Mon résumé se lit-il comme un paragraphe de journal, sans aucun chiffre statistique ?"* — Si non, déplacer les stats dans points_cles et réécrire.
+Auto-contrôle avant insertion : *"Mon résumé et mes points_cles contiennent-ils des chiffres statistiques ?"* — Si oui, les retirer et mettre dans texte_long.
 
 ---
 

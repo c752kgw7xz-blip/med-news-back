@@ -191,17 +191,17 @@ lettres, errata, résultats préliminaires de phase 1-2 sans implication cliniqu
 avant recommandation officielle).
 → RÉDACTION pour articles de recherche (style éditorial journal médical — JACC, NEJM, \
 European Heart Journal) :
-  resume : "2 phrases, style narratif-clinique. PAS de chiffres bruts (HR, RR, OR, IC95%, \
-p-value, MD) dans le résumé — ces chiffres vont dans points_cles. \
-Phrase 1 : énonce le résultat clinique principal en langage naturel, \
-comme un confrère qui résume l'étude à l'oral. Ex. correct : \
-'La dapagliflozine réduit significativement le risque d'aggravation de l'insuffisance \
-cardiaque dans l'HFpEF/HFmrEF — un bénéfice confirmé dans ce sous-groupe jusqu'ici sans traitement.' \
+  resume : "2 phrases, style narratif-clinique. Aucun chiffre statistique (HR, RR, OR, \
+IC95%, p-value, MD, NNT) — ni dans le résumé ni dans points_cles. \
+Phrase 1 : résultat clinique en langage naturel, comme un confrère qui explique à l'oral. \
+Ex. correct : 'La dapagliflozine réduit significativement le risque d'aggravation \
+de l'insuffisance cardiaque dans l'HFpEF/HFmrEF — bénéfice confirmé dans ce sous-groupe \
+jusqu'ici sans traitement.' \
 Ex. INTERDIT : 'La dapagliflozine réduit de 18 % le risque (HR 0,82 ; IC95% 0,73–0,92).' \
 Phrase 2 : design en 1 ligne (acronyme si connu, type étude, N, population) + \
 limite principale ou niveau de preuve si pertinent."
   impact_pratique : "À retenir : [implication clinique concrète, praticien-à-praticien, \
-sans stats, sans jargon administratif]. \
+sans chiffres statistiques, sans jargon administratif]. \
 Si résultats préliminaires : 'À suivre avant d'intégrer en pratique'."
   date_entree_en_vigueur : date de publication de l'article (pas de date d'application).
 → NATURE : utilise "ETUDE" pour les articles de recherche originaux (essais cliniques, \
@@ -805,16 +805,15 @@ sage-femme, biologiste).
 
 5. RÉDACTION — Ton : journal médical professionnel (EJVES, JVS, Lancet, JAMA Surgery, \
    Le Quotidien du Médecin). Le lecteur est un spécialiste confirmé — aucun terme \
-   médical n'a besoin d'être défini. Phrases directes, donnée quantitative en premier.
+   médical n'a besoin d'être défini. Style narratif, cliniquement orienté.
 
    PRINCIPES DE RÉDACTION :
-   • Résumé narratif, stats dans points_cles : le résumé doit se lire comme un confrère \
-     qui explique l'étude à l'oral — pas de HR, RR, OR, IC95%, p-value, MD dans le résumé. \
-     Tous les chiffres précis vont dans points_cles (bullet 1 = résultat principal chiffré, \
-     bullet 2 = design N/population, bullet 3 = limite ou nuance). \
-     Ex. résumé correct : "La dapagliflozine réduit significativement le risque d'aggravation \
-     de l'IC dans l'HFpEF — bénéfice confirmé pour un sous-groupe sans traitement établi." \
-     Ex. résumé INTERDIT : "mortalité à 30 j : 1,4 % vs 3,9 % (OR 0,35 ; IC95% 0,14–0,88)".
+   • Zéro statistique dans resume ET points_cles : aucun HR, RR, OR, IC95%, p-value, MD, \
+     NNT dans ces champs. Le lecteur veut comprendre l'enjeu clinique, pas vérifier les calculs. \
+     Les stats détaillées appartiennent uniquement à texte_long. \
+     Ex. correct : "La dapagliflozine réduit significativement le risque d'aggravation \
+     de l'IC dans l'HFpEF — bénéfice confirmé pour ce sous-groupe sans traitement établi." \
+     Ex. INTERDIT : "HR 0,82 ; IC95% 0,73–0,92 ; p<0,001" dans resume ou points_cles.
    • Nommer la source : essai clinique ("Dans BEST-CLI, N=1 830"), congrès \
      ("présenté à ESVS 2025"), journal ("JAMA Surgery, jan. 2026") — \
      jamais "une étude récente" ou "des chercheurs ont montré".
@@ -1260,9 +1259,9 @@ JSON attendu (strict, pas de markdown) :
     "date_entree_en_vigueur": "<YYYY-MM-DD — date d'application effective, différente de date_publication si précisée dans le texte>"
   }},
   "lecture_json": {{
-    "points_cles": ["<bullet 1 — fait chiffré ou décision clé, style journal médical : donnée brute + contexte clinique, pas de jargon méthodologique>", "<bullet 2>", "<bullet 3>"],
+    "points_cles": ["<bullet 1 — résultat principal en langage clinique naturel, sans stats brutes (pas de HR/RR/IC95%/p)>", "<bullet 2 — design ou population clé en 1 ligne>", "<bullet 3 — limite ou nuance clinique principale>"],
     // OBLIGATOIRE ABSOLU : 3 bullets minimum, 5 maximum — null, [] ou tableau à un seul élément = sortie invalide
-    "texte_long": "<OBLIGATOIRE ABSOLU — ne jamais laisser vide, null ou absent. ~200 mots — développement distinct du resume, même ton journal médical professionnel (EJVES, JVS, Lancet, JAMA) : constructions actives directes, données chiffrées (HR/OR/IC95%/p/n=) intégrées en contexte narratif — jamais listées brutes. Contenu : contexte de l'étude, résultats secondaires, comparaison au standard actuel, limites principales. INTERDIT : 'l'étude montre que', 'les résultats indiquent que', 'il semblerait que', ouverture par la méthode ou le design.>",
+    "texte_long": "<OBLIGATOIRE ABSOLU — ne jamais laisser vide, null ou absent. ~200 mots — développement distinct du resume, même ton journal médical professionnel (EJVES, JVS, Lancet, JAMA) : constructions actives directes. Les données chiffrées (HR/OR/IC95%/p/n=) PEUVENT apparaître ici intégrées en contexte narratif — c'est le seul champ où les stats sont tolérées. Contenu : contexte de l'étude, résultats secondaires, comparaison au standard actuel, limites principales. INTERDIT : 'l'étude montre que', 'les résultats indiquent que', 'il semblerait que', ouverture par la méthode ou le design.>",
     "references": ["<NOR, ref légale, numéro AMM, PMID...>"]
   }}{evidence_block}
 }}
@@ -2273,7 +2272,13 @@ thrombolyse CDT, EKOS, pontage infrainguinal, veine grande saphène (VGS), \
 prothèse PTFE / Dacron, endarterectomie carotide / rénale.
 
 EXEMPLES DE RÉDACTION (style EJVES / JVS / Vascular Specialist — format cible) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai clinique (innovation, presse ou académique) :
@@ -2362,7 +2367,13 @@ KCCQ (Kansas City Cardiomyopathy Questionnaire — QdV), STS score / EuroSCORE I
 Heart Team (décision interdisciplinaire chirurgien + cardiologue interventionnel).
 
 EXEMPLES DE RÉDACTION (style JTCVS / EJCTS / Arch Cardiovasc Dis — format cible) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai clinique TAVI (innovation) :
@@ -2461,7 +2472,13 @@ TRAM / DIEP bilatéral, flap delay, supercharge, perforasome, SCIP flap, MSCT \
 (mapping préopératoire perforateurs), BREAST-Q (patient-reported outcomes reconstruction).
 
 EXEMPLES DE RÉDACTION (style PRS / JPRAS / ACPE — format cible) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai clinique reconstruction mammaire :
@@ -2570,7 +2587,13 @@ TW (tumeur de Wilms) stade I-V, ERACS (enhanced recovery after children's surger
 réhabilitation améliorée chirurgie pédiatrique).
 
 EXEMPLES DE RÉDACTION (style JPS / EJPS / PSI — format cible) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai clinique laparoscopie vs chirurgie ouverte :
@@ -2676,7 +2699,13 @@ statut épileptique, déshydratation (score Gorelick), SRO (soluté de réhydrat
 prématurité (AG, PC à la naissance), courbes INTERGROWTH-21st.
 
 EXEMPLES DE RÉDACTION (style Pediatrics AAP / Archives of Disease in Childhood) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 RCT vaccin / prévention :
@@ -2817,7 +2846,13 @@ Note : les 5 journaux flagship (Anesthesiology, BJA, Anesth&Analg, Anaesthesia, 
 utilisent _PT_OR_TITLE pour capter les articles récents non encore tagués NLM.
 
 EXEMPLES DE RÉDACTION (style Anesthesiology / BJA / Intensive Care Medicine / \
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 Annales Françaises d'Anesthésie et de Réanimation) :
 
@@ -2971,7 +3006,13 @@ valeur critique (panic value — délai notification obligatoire), \
 pré-analytique (délai centrifugation, tube sec/EDTA/citrate, conservation).
 
 EXEMPLES DE RÉDACTION (style Clinical Chemistry / CCLM / \
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 Annales de Biologie Clinique / Journal de Biologie Médicale) :
 
@@ -3132,7 +3173,13 @@ TAVI (remplacement valvulaire aortique transcathéter — côté cardiologue Hea
 stress écho, échographie de contraste, GLS (global longitudinal strain).
 
 EXEMPLES DE RÉDACTION (style European Heart Journal / JACC / \
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 Archives de Maladies du Cœur et des Vaisseaux / La Revue du Praticien Cardiologie) :
 
@@ -3324,7 +3371,13 @@ thoracoscore / STS score (risque mortalité résection pulmonaire), \
 SBRT / SABR (stéréotaxie — inopérables, comparaison chirurgie).
 
 EXEMPLES DE RÉDACTION (style JTO / EJCTS / Annals of Thoracic Surgery — format cible) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai clinique résection pulmonaire :
@@ -3472,7 +3525,13 @@ métal-métal (abandon — toxicité chrome-cobalt), cupule presse-fit / ciment�
 tige sans ciment / cimentée, implant 3D / trabéculaire (titane poreux).
 
 EXEMPLES DE RÉDACTION (style JBJS / Bone & Joint J / OTSR — format cible) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai clinique arthroplastie :
@@ -3662,7 +3721,13 @@ ganglion sentinelle (SLNB), \
 TIL (tumour-infiltrating lymphocytes — thérapie adoptive mélanome).
 
 EXEMPLES DE RÉDACTION (style JAAD / BJD / JEADV / La Revue du Praticien Dermatologie) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 RCT biologique DA (head-to-head) :
@@ -3934,7 +3999,13 @@ ADT (androgen deprivation therapy — cancer prostate, ostéoporose masculine), 
 177Lu-DOTATATE (NETSPOT — thérapie PRRT phéo/paragangliome).
 
 EXEMPLES DE RÉDACTION (style Diabetes Care / Lancet Diabetes Endocrinol / JCEM / \
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 Ann Endocrinol — résultat d'abord, chiffres en contexte) :
 
@@ -4197,7 +4268,13 @@ CADe/CADx (Computer-Aided Detection/Characterization — IA coloscopie), \
 RFA (radiofréquence ablation — Barrett).
 
 EXEMPLES DE RÉDACTION (style Gut / Gastroenterology / J Hepatol / Lancet GH — \
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 résultat d'abord, chiffres en contexte) :
 
@@ -4423,7 +4500,13 @@ EHPAD (établissement hébergement personnes âgées dépendantes), \
 HAD (hospitalisation à domicile), SSR (soins de suite et réadaptation), USLD.
 
 EXEMPLES DE RÉDACTION (style Age & Ageing / JAGS / Lancet Healthy Longevity / \
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 Alzheimer's & Dementia — résultat fonctionnel d'abord, impact vie quotidienne) :
 
@@ -6081,7 +6164,13 @@ disponibilité des biothérapies (RTU, ATU/AAP si pertinent), réseau filières 
 maladies rares (FRRM), prise en charge ALD."
 
 EXEMPLES DE RÉDACTION (style Medicine / Lancet / JAMA Internal Medicine / Revue de Médecine Interne — format cible) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Lupus systémique — biothérapie :
@@ -6334,7 +6423,13 @@ UPPP (Uvulo-Palato-Pharyngoplastie), stimulation nerf hypoglosse, \
 DISE (Drug-Induced Sleep Endoscopy — exploration sous sédation).
 
 EXEMPLES DE RÉDACTION (style JAMA Otolaryngology / Otolaryngology HNS / Oral Oncology) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Biothérapie rhinologie :
@@ -6466,7 +6561,13 @@ NORB (Névrite Optique Rétrobulbaire), NOIA (Neuropathie Optique Ischémique \
 uvéite antérieure / intermédiaire / postérieure / panuvéite (classification SUN).
 
 EXEMPLES DE RÉDACTION (style Ophthalmology / JAMA Ophthalmology / EURETINA) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai anti-VEGF (DMLA) :
@@ -6593,7 +6694,13 @@ CIPN (Chimio-Induced Peripheral Neuropathy — neuropathie périphérique), \
 CINV (Chimio-Induced Nausea and Vomiting — échelle MASCC/ASCO).
 
 EXEMPLES DE RÉDACTION (style JCO / Annals of Oncology / Lancet Oncology) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai pivot (nouvelle thérapie ciblée) :
@@ -6771,7 +6878,13 @@ SFR (stone-free rate — taux de vacuité lithiasique), \
 AMS-800 (sphincter artificiel urinaire).
 
 EXEMPLES DE RÉDACTION (style European Urology / J Urology / Eur Urol Oncol) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai pivot — cancer prostate métastatique (résultat centré) :
@@ -6956,7 +7069,13 @@ gardasil 9 (nonavalent — génotypes 6, 11, 16, 18, 31, 33, 45, 52, 58), \
 Décret compétences SF (art. R.4127-318 CSP — périmètre prescription autorisé).
 
 EXEMPLES DE RÉDACTION (style BJOG / Midwifery / Birth) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai randomisé — prévention HPP (résultat centré) :
@@ -7119,7 +7238,13 @@ tériparatide (PTH recombinante — anabolisant 24 mois), \
 NGF (nerve growth factor — tanézumab anti-NGF dans arthrose sévère).
 
 EXEMPLES DE RÉDACTION (style ARD / Arthritis & Rheumatology / RMD Open) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai pivot — sécurité JAK inhibiteurs (résultat en tête) :
@@ -7280,7 +7405,13 @@ ASN (Autorité de Sûreté Nucléaire — radioprotection FR), \
 Dp (dose personnelle — dosimétrie opérateur RI).
 
 EXEMPLES DE RÉDACTION (style Radiology / European Radiology / J Nucl Med) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai randomisé — technique interventionnelle (résultat en tête) :
@@ -7441,7 +7572,13 @@ BED (Binge Eating Disorder), \
 STOPP/START (critères iatrogénie gériatrique — interactions psychotropes).
 
 EXEMPLES DE RÉDACTION (style JAMA Psychiatry / Lancet Psychiatry / Am J Psychiatry) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai pivot — nouvelle molécule (résultat centré, pas de méthode en tête) :
@@ -7592,7 +7729,13 @@ EBUS (Endobronchial Ultrasound), \
 TM6M (test de marche de 6 minutes — distance, désaturation), SpO₂ effort.
 
 EXEMPLES DE RÉDACTION (style ERJ / AJRCCM / Lancet Respir Med) :
-Règle resume (style journal spécialisé) : Phrase 1 = énonce le résultat clinique en langage naturel, le chiffre clé (réduction relative, HR/RR/OR + IC95% + p) intégré en incise — pas en tête de phrase. Ex : 'Le rivaroxaban réduit de 24 % le risque d'événement CV majeur dans l'AOMI (HR 0,76 ; IC95% 0,66–0,86 ; p<0,001).' Phrase 2 = design en 1 ligne (acronyme si connu, type étude, N, population, durée). Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude.\
+Règle resume : style narratif-clinique, zéro statistique (pas de HR/RR/OR/IC95%/p-value/MD). \
+Phrase 1 = résultat clinique en langage naturel comme un confrère qui explique à l'oral. \
+Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
+Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
+y compris chez les patients les plus fragiles.' \
+Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
+Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
 
 
 Essai pivot (biothérapie asthme) :
