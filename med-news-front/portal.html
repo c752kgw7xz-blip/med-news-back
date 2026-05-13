@@ -2162,8 +2162,16 @@
     </div>
     <div class="fp-overlay-content" style="padding-bottom:24px;">
 
+      <!-- Abonnement -->
+      <div class="st-section" id="billing-section">
+        <div class="st-section-title">Votre abonnement</div>
+        <div id="billing-status-wrap" style="font-size:0.85rem;color:var(--text3);">Chargement…</div>
+        <button class="st-save-btn" id="billing-manage-btn" style="display:none;margin-top:10px;" onclick="openCustomerPortal()">Gérer mon abonnement →</button>
+        <button class="st-save-btn" id="billing-subscribe-btn" style="display:none;margin-top:10px;" onclick="startCheckout()">S'abonner — 18,99 €/mois</button>
+      </div>
+
       <!-- Accès étudiant -->
-      <div class="st-section" id="student-section">
+      <div class="st-section" style="margin-top:12px;" id="student-section">
         <div class="st-section-title">Accès étudiant gratuit</div>
         <div id="student-status-wrap" style="padding:0 16px;"></div>
         <div id="student-upload-wrap" style="display:none;padding:0 16px 4px;">
@@ -2240,14 +2248,6 @@
         </div>
       </div>
       <button class="st-danger-btn" onclick="logout()">Déconnexion</button>
-
-      <!-- Abonnement -->
-      <div class="st-section" style="margin-top:12px;" id="billing-section">
-        <div class="st-section-title">Abonnement</div>
-        <div id="billing-status-wrap" style="font-size:0.85rem;color:var(--text3);">Chargement…</div>
-        <button class="st-save-btn" id="billing-manage-btn" style="display:none;margin-top:10px;" onclick="openCustomerPortal()">Gérer mon abonnement →</button>
-        <button class="st-save-btn" id="billing-subscribe-btn" style="display:none;margin-top:10px;" onclick="startCheckout()">S'abonner — 18,99 €/mois</button>
-      </div>
 
     </div>
   </div>
@@ -5277,7 +5277,7 @@ async function loadBillingInfo() {
     wrap.innerHTML = `Abonnement actif — renouvellement dans <strong>${data.days_left} jours</strong>`;
     manageBtn.style.display = 'block';
   } else if (data.is_trial) {
-    wrap.innerHTML = `Période d'essai — <strong>${data.days_left} jours restants</strong>`;
+    wrap.innerHTML = `Accès gratuit jusqu'au 1er août 2026 — <strong>${data.days_left} jours restants</strong>`;
     subscribeBtn.style.display = 'block';
   } else if (!data.access) {
     wrap.innerHTML = `<span style="color:#991b1b">Accès expiré</span>`;
