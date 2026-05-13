@@ -56,7 +56,7 @@ _CSP_COMMON = (
     f"default-src 'self'; "
     f"{_CSP_SCRIPT}; "
     f"{_CSP_STYLE}; "
-    "img-src 'self' data: https:; "
+    "img-src 'self' data: blob: https:; "
     f"{_CSP_FONT}; "
     "connect-src 'self'"
 )
