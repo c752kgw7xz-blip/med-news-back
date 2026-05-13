@@ -794,6 +794,7 @@ def llm_stats(request: Request):
                 """
             )
             by_specialty = {row[0]: row[1] for row in cur.fetchall()}
+            specialty_nonempty_count = len(by_specialty)  # spés avec au moins 1 article spécifique
 
             # Compter les TRANSVERSAL_LIBERAL séparément et les ajouter à chaque spécialité
             cur.execute(
@@ -847,6 +848,7 @@ def llm_stats(request: Request):
         "candidates": candidate_stats,
         "items": item_stats,
         "items_by_specialty": by_specialty,
+        "specialty_nonempty_count": specialty_nonempty_count,
         "avg_score_approved": round(float(avg_score), 1) if avg_score else None,
         "unprocessed_by_source": unprocessed,
         "unprocessed_total": sum(

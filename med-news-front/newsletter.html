@@ -495,7 +495,7 @@ async function loadData() {
 
   const stats = await statsRes.json();
   const bySpec = stats.items_by_specialty || {};
-  const specCount = Object.keys(bySpec).length;
+  const specCount = stats.specialty_nonempty_count ?? Object.keys(bySpec).length;
 
   document.getElementById('stat-specs').textContent = specCount;
 
