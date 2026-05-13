@@ -189,21 +189,20 @@ lettres, errata, résultats préliminaires de phase 1-2 sans implication cliniqu
 (ex. nouvelle thérapie supérieure au standard, abandon d'un traitement établi) ;
   8+  : réservé aux ruptures majeures de pratique (rare pour des publications RSS \
 avant recommandation officielle).
-→ RÉDACTION pour articles de recherche (style journal médical spécialisé — JACC, NEJM, \
+→ RÉDACTION pour articles de recherche (style éditorial journal médical — JACC, NEJM, \
 European Heart Journal) :
-  resume : "2 phrases max. \
-Phrase 1 : énonce le résultat clinique principal en ouverture — UN SEUL chiffre clé \
-(réduction relative/absolue, HR/RR/OR + IC95% + p) est intégré en incise, jamais en tête de phrase. \
-Ne pas lister les résultats secondaires ou sous-groupes dans la phrase 1 — ils appartiennent \
-aux points_cles. Exemple correct : 'La dapagliflozine réduit de 18 % le risque \
-d'aggravation de l'IC dans l'HFpEF/HFmrEF (HR 0,82 ; IC95% 0,73–0,92 ; p<0,001).' \
-Exemple INTERDIT : '...réduit les complications (RR 0,49), dont les infections (RR 0,30), \
-les ré-amputations (RR 0,67) et les désunions (RR 0,53).' \
-Phrase 2 : design en 1 ligne (acronyme si connu, type étude, N, population, durée). \
-Ne jamais ouvrir par l'acronyme, la méthode ou le type d'étude."
-  impact_pratique : "À retenir : [implication clinique en langage naturel — \
-ce que le médecin gagne à savoir, sans injonction]. \
-Si résultats préliminaires : noter 'À suivre avant d'intégrer en pratique'."
+  resume : "2 phrases, style narratif-clinique. PAS de chiffres bruts (HR, RR, OR, IC95%, \
+p-value, MD) dans le résumé — ces chiffres vont dans points_cles. \
+Phrase 1 : énonce le résultat clinique principal en langage naturel, \
+comme un confrère qui résume l'étude à l'oral. Ex. correct : \
+'La dapagliflozine réduit significativement le risque d'aggravation de l'insuffisance \
+cardiaque dans l'HFpEF/HFmrEF — un bénéfice confirmé dans ce sous-groupe jusqu'ici sans traitement.' \
+Ex. INTERDIT : 'La dapagliflozine réduit de 18 % le risque (HR 0,82 ; IC95% 0,73–0,92).' \
+Phrase 2 : design en 1 ligne (acronyme si connu, type étude, N, population) + \
+limite principale ou niveau de preuve si pertinent."
+  impact_pratique : "À retenir : [implication clinique concrète, praticien-à-praticien, \
+sans stats, sans jargon administratif]. \
+Si résultats préliminaires : 'À suivre avant d'intégrer en pratique'."
   date_entree_en_vigueur : date de publication de l'article (pas de date d'application).
 → NATURE : utilise "ETUDE" pour les articles de recherche originaux (essais cliniques, \
 méta-analyses, études observationnelles de grande envergure). \
@@ -809,11 +808,13 @@ sage-femme, biologiste).
    médical n'a besoin d'être défini. Phrases directes, donnée quantitative en premier.
 
    PRINCIPES DE RÉDACTION :
-   • Quantitatif en premier — mais UN SEUL résultat principal : OR, HR, IC95%, p-value \
-     du critère de jugement principal uniquement. Ex. : "mortalité à 30 j : 1,4 % vs 3,9 % \
-     (OR 0,35 ; IC95% 0,14–0,88)" — pas "les résultats sont meilleurs". \
-     Ne jamais lister les résultats secondaires dans le résumé (infections RR X, \
-     ré-amputations RR Y, désunions RR Z…) : ces chiffres vont dans points_cles.
+   • Résumé narratif, stats dans points_cles : le résumé doit se lire comme un confrère \
+     qui explique l'étude à l'oral — pas de HR, RR, OR, IC95%, p-value, MD dans le résumé. \
+     Tous les chiffres précis vont dans points_cles (bullet 1 = résultat principal chiffré, \
+     bullet 2 = design N/population, bullet 3 = limite ou nuance). \
+     Ex. résumé correct : "La dapagliflozine réduit significativement le risque d'aggravation \
+     de l'IC dans l'HFpEF — bénéfice confirmé pour un sous-groupe sans traitement établi." \
+     Ex. résumé INTERDIT : "mortalité à 30 j : 1,4 % vs 3,9 % (OR 0,35 ; IC95% 0,14–0,88)".
    • Nommer la source : essai clinique ("Dans BEST-CLI, N=1 830"), congrès \
      ("présenté à ESVS 2025"), journal ("JAMA Surgery, jan. 2026") — \
      jamais "une étude récente" ou "des chercheurs ont montré".

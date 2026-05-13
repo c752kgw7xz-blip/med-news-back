@@ -94,7 +94,7 @@ Ne pas attendre la fin du triage pour constituer cette liste. Ne jamais "passer 
 ### Étape 4bis — Insertion cross-spé (AVANT les Q1-Q5)
 Traiter et insérer les articles de la liste cross-spé construite à l'étape 4, avec **autant de rigueur** que les articles de la spé principale :
 - Même filtre praticien strict (~15-20%)
-- Même ton : phrase 1 = résultat chiffré
+- Même ton : résumé narratif-clinique (stats dans points_cles)
 - Même structure JSON (tri_json + lecture_json)
 - INSERT avec le bon `specialty_slug` de la spé cible
 - UPDATE candidates SET status='LLM_DONE'
@@ -131,7 +131,7 @@ Checklist A-F avant chaque INSERT (structure JSON, ton, score_density=7).
 Exécuter et afficher dans la réponse pour la spécialité traitée uniquement :
 - **A** Structure JSON exacte (titre_court, texte_long, points_cles — champs interdits)
 - **B** Sources réglementaires ET recommandations (tableau yields — reglementaire=0 ou recommandation=0 → AGIR)
-- **C** Ton : phrase 1 = résultat chiffré, auto-contrôle
+- **C** Ton : résumé narratif sans stats (stats dans points_cles), auto-contrôle
 - **D** Template psycopg2 avec score_density=7
 - **E** Filtre praticien ~15-20%
 - **F** Stats Q1 affichées en tableau + actions si répartition anormale (relancer collecte, ajouter sources)
@@ -380,16 +380,21 @@ SELECT source_type, COUNT(*) FROM items WHERE specialty_slug='<slug>' GROUP BY 1
 
 ---
 
-## 🔴 RÈGLE 3 — Ton rédactionnel (style journal médical spécialisé)
+## 🔴 RÈGLE 3 — Ton rédactionnel (style éditorial journal médical)
 
-**Phrase 1 du résumé = résultat chiffré. Jamais la méthodologie.**
+**Le résumé est narratif-clinique. Les stats exactes vont dans `points_cles`, pas dans le résumé.**
 
-❌ INTERDIT : `"Méta-analyse de 93 RCTs (screening 33 220 abstracts)..."`
-✅ EXIGÉ : `"Les benzodiazépines péri-opératoires majorent paradoxalement l'anxiété post-opératoire (+2,18 pts STAI, IC95% 1,05–3,30, 22 essais n=2 165)."`
+- `resume` (2 phrases) : style confrère qui explique à l'oral — résultat clinique principal en langage naturel, design en 1 ligne. Aucun HR/RR/OR/IC95%/p-value dans le résumé.
+- `points_cles` : bullet 1 = résultat principal **avec chiffres** (HR, RR, IC95%, p, N), bullet 2 = design/population, bullet 3 = limite principale.
+- `impact_pratique` : 1 phrase praticien-à-praticien, sans stats, sans jargon administratif.
 
-`impact_pratique` : registre praticien-à-praticien. Jamais bureaucratique ("Revoir les protocoles selon…").
+❌ INTERDIT dans `resume` : `"(HR 0,82 ; IC95% 0,73–0,92 ; p<0,001)"`, `"MD 29,6 % ; IC cred. −4,4 à 64,1"`, liste de RR
+❌ INTERDIT dans `resume` : ouvrir par la méthode `"Méta-analyse de 93 RCTs..."` ou le design
 
-Auto-contrôle avant insertion : *"Le résultat principal est-il dans la première phrase ?"* — Si non, réécrire.
+✅ EXIGÉ dans `resume` : `"Les benzodiazépines péri-opératoires majorent paradoxalement l'anxiété post-opératoire — effet confirmé dans une méta-analyse de 22 essais. Ce résultat contre-intuitif remet en question leur usage systématique en prémédication."`
+✅ EXIGÉ dans `points_cles[0]` : `"Augmentation de l'anxiété : +2,18 pts STAI (IC95% 1,05–3,30 ; 22 essais, n=2 165)"` 
+
+Auto-contrôle avant insertion : *"Mon résumé se lit-il comme un paragraphe de journal, sans aucun chiffre statistique ?"* — Si non, déplacer les stats dans points_cles et réécrire.
 
 ---
 
@@ -478,7 +483,7 @@ FROM items WHERE specialty_slug='<slug>' GROUP BY 1;
 → Si > 30% en "3-5y" ou "exploratory" : signaler.
 
 ### Q4 — Ton rédactionnel
-Relire 3 items au hasard : résumé commence par résultat chiffré ? impact_pratique praticien direct ?
+Relire 3 items au hasard : résumé est-il narratif sans stats ? stats dans points_cles[0] ? impact_pratique praticien direct sans chiffres ?
 
 ### Q5 — Mise à jour `project_source_distribution.md`
 ```sql
