@@ -2150,8 +2150,19 @@
     </div>
     <div class="fp-overlay-content" style="padding-bottom:24px;">
 
+      <!-- Accès étudiant -->
+      <div class="st-section" id="student-section">
+        <div class="st-section-title">Accès étudiant gratuit</div>
+        <div id="student-status-wrap"><!-- rempli par JS --></div>
+        <div id="student-upload-wrap" style="display:none;">
+          <label style="display:block;margin-bottom:8px;font-size:0.83rem;font-weight:500;">Carte étudiante (JPEG, PNG, PDF — max 5 Mo)</label>
+          <input type="file" id="student-file-input" accept="image/jpeg,image/png,image/webp,application/pdf" style="font-size:0.83rem;margin-bottom:10px;">
+          <button class="st-save-btn" id="student-upload-btn" onclick="uploadStudentDoc()" style="margin-top:0;">Envoyer ma demande</button>
+        </div>
+      </div>
+
       <!-- Apparence -->
-      <div class="st-section">
+      <div class="st-section" style="margin-top:12px;">
         <div class="st-section-title">Apparence</div>
         <div class="st-row">
           <div class="st-info"><div class="st-label">Thème</div></div>
@@ -2217,20 +2228,6 @@
         </div>
       </div>
       <button class="st-danger-btn" onclick="logout()">Déconnexion</button>
-
-      <!-- Accès étudiant -->
-      <div class="st-section" style="margin-top:12px;" id="student-section">
-        <div class="st-section-title">Accès étudiant gratuit</div>
-        <div class="st-desc" style="margin-bottom:12px;font-size:0.82rem;color:var(--text3);">Étudiants en médecine ou paramédicaux : envoyez votre carte étudiante pour un accès gratuit.</div>
-        <div id="student-status-wrap">
-          <!-- rempli par JS -->
-        </div>
-        <div id="student-upload-wrap" style="display:none;">
-          <label style="display:block;margin-bottom:8px;font-size:0.83rem;font-weight:500;">Carte étudiante (JPEG, PNG, PDF — max 5 Mo)</label>
-          <input type="file" id="student-file-input" accept="image/jpeg,image/png,image/webp,application/pdf" style="font-size:0.83rem;margin-bottom:10px;">
-          <button class="st-save-btn" id="student-upload-btn" onclick="uploadStudentDoc()" style="margin-top:0;">Envoyer ma demande</button>
-        </div>
-      </div>
 
       <!-- Abonnement -->
       <div class="st-section" style="margin-top:12px;" id="billing-section">
@@ -2523,15 +2520,21 @@ async function checkBillingStatus() {
   if (!res.ok) return;
   const data = await res.json();
   if (!data.access) { showPaywallModal(); return; }
-  // Bandeau carte étudiante acceptée
+  // Bandeau carte étudiante acceptée — affiché une seule fois (première connexion après validation)
   if (data.is_student && !document.getElementById('student-approved-banner')) {
-    const banner = document.getElementById('verify-banner');
-    if (banner) {
-      const w = document.createElement('div');
-      w.id = 'student-approved-banner';
-      w.style.cssText = 'background:#d1fae5;border-bottom:1px solid #6ee7b7;color:#065f46;font-size:0.8rem;padding:7px 20px;text-align:center;font-weight:500;';
-      w.textContent = '🎓 Votre carte étudiante a été acceptée — vous disposez d\'un accès complet gratuit à MedNews.';
-      banner.parentNode.insertBefore(w, banner);
+    let userId = '';
+    try { userId = JSON.parse(atob(getToken().split('.')[1])).sub || ''; } catch {}
+    const seenKey = 'student_approved_seen_' + userId;
+    if (!localStorage.getItem(seenKey)) {
+      const banner = document.getElementById('verify-banner');
+      if (banner) {
+        const w = document.createElement('div');
+        w.id = 'student-approved-banner';
+        w.style.cssText = 'background:#d1fae5;border-bottom:1px solid #6ee7b7;color:#065f46;font-size:0.8rem;padding:7px 20px;text-align:center;font-weight:500;';
+        w.textContent = '🎓 Votre carte étudiante a été acceptée — vous disposez d\'un accès complet gratuit à MedNews.';
+        banner.parentNode.insertBefore(w, banner);
+        localStorage.setItem(seenKey, '1');
+      }
     }
   }
   // Bandeau carte étudiante en cours de validation
@@ -5211,15 +5214,18 @@ async function loadStudentStatus() {
   const data = await res.json();
   const wrap = document.getElementById('student-status-wrap');
   const uploadWrap = document.getElementById('student-upload-wrap');
-  if (data.status === 'none' || data.status === 'rejected') {
+  if (data.status === 'none') {
+    wrap.innerHTML = `<div style="font-size:0.82rem;color:var(--text3);margin-bottom:10px;">Étudiants en médecine ou paramédicaux : envoyez votre carte étudiante pour un accès gratuit.</div>`;
     uploadWrap.style.display = 'block';
-    if (data.status === 'rejected') {
-      wrap.innerHTML = `<div style="background:#fee2e2;color:#991b1b;border-radius:6px;padding:8px 12px;font-size:0.82rem;margin-bottom:10px;">Demande refusée${data.reject_reason ? ' : ' + data.reject_reason : ''}. Vous pouvez renvoyer un document.</div>`;
-    }
+  } else if (data.status === 'rejected') {
+    wrap.innerHTML = `<div style="background:#fee2e2;color:#991b1b;border-radius:6px;padding:8px 12px;font-size:0.82rem;margin-bottom:10px;">Demande refusée${data.reject_reason ? ' : ' + data.reject_reason : ''}. Vous pouvez renvoyer un document.</div>`;
+    uploadWrap.style.display = 'block';
   } else if (data.status === 'pending') {
-    wrap.innerHTML = `<div style="background:#fff3cd;color:#856404;border-radius:6px;padding:8px 12px;font-size:0.82rem;">Demande en cours de validation — nous vous répondrons sous 48h.</div>`;
+    wrap.innerHTML = `<div style="background:#fff3cd;color:#856404;border-radius:6px;padding:8px 12px;font-size:0.82rem;">Votre carte est en cours de validation — vous disposez de l'accès complet jusqu'à vérification.</div>`;
+    uploadWrap.style.display = 'none';
   } else if (data.status === 'approved') {
-    wrap.innerHTML = `<div style="background:#d1fae5;color:#065f46;border-radius:6px;padding:8px 12px;font-size:0.82rem;">Accès étudiant actif ✓</div>`;
+    wrap.innerHTML = `<div style="background:#d1fae5;color:#065f46;border-radius:6px;padding:8px 12px;font-size:0.82rem;">Votre carte a été validée par les équipes de MedNews — vous disposez de l'accès complet.</div>`;
+    uploadWrap.style.display = 'none';
   }
 }
 
