@@ -1084,13 +1084,12 @@
     pointer-events: none; visibility: hidden;
     will-change: transform;
   }
-  /* Pages plein écran — démarrent sous le header, s'arrêtent au-dessus de la nav bar */
-  .fp-overlay { top: 52px; bottom: calc(60px + env(safe-area-inset-bottom)); padding-top: 8px; }
-  @media (max-width: 480px) { .fp-overlay { top: 48px; } }
+  /* Pages plein écran — plein écran sur mobile (pas de header) */
+  .fp-overlay { top: 0; bottom: calc(60px + env(safe-area-inset-bottom)); padding-top: 8px; }
   /* Bloque le scroll du body quand un overlay est ouvert (iOS + Android) */
   body.fp-overlay-open { position: fixed; overflow-y: scroll; width: 100%; }
-  /* Header reste ancré en haut même quand body est fixed+décalé */
-  body.fp-overlay-open header { position: fixed; top: 0; left: 0; right: 0; z-index: 200; }
+  /* Cache le header quand un overlay est ouvert sur mobile */
+  @media (max-width: 768px) { body.fp-overlay-open header { display: none; } }
   .fp-overlay.open { transform: translateY(0); pointer-events: auto; visibility: visible; }
 
   /* Explorer / Activité header — large iOS title */
