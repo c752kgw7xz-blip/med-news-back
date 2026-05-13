@@ -2523,8 +2523,8 @@ async function checkBillingStatus() {
   if (!res.ok) return;
   const data = await res.json();
   if (!data.access) { showPaywallModal(); return; }
-  // Bandeau d'avertissement si essai se termine dans ≤ 7 jours (pas pour les étudiants)
-  if (data.is_trial && !data.is_student && data.days_left <= 7) {
+  // Bandeau d'avertissement si essai se termine dans ≤ 7 jours (pas pour étudiants validés ou en attente)
+  if (data.is_trial && !data.is_student && !data.student_pending && data.days_left <= 7) {
     const banner = document.getElementById('verify-banner');
     if (banner && !document.getElementById('trial-warning')) {
       const w = document.createElement('div');

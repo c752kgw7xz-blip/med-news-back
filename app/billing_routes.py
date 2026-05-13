@@ -100,10 +100,23 @@ def billing_status(user_id: str = Depends(_get_current_user_id)):
     now = datetime.now(timezone.utc)
     is_trial = bool(user["trial_ends_at"] and user["trial_ends_at"] > now
                     and not (user["subscribed_until"] and user["subscribed_until"] > now))
+    is_student = user.get("plan") == "student"
+
+    # Demande étudiante en attente de validation
+    student_pending = False
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT 1 FROM student_requests WHERE user_id = %s AND status = 'pending' LIMIT 1",
+                (user_id,),
+            )
+            student_pending = cur.fetchone() is not None
+
     return {
         "access": _has_active_access(user),
         "is_trial": is_trial,
-        "is_student": user.get("plan") == "student",
+        "is_student": is_student,
+        "student_pending": student_pending,
         "days_left": _days_left(user),
         "trial_ends_at":    user["trial_ends_at"].isoformat() if user["trial_ends_at"] else None,
         "subscribed_until": user["subscribed_until"].isoformat() if user["subscribed_until"] else None,
