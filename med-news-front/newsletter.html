@@ -766,14 +766,14 @@ async function loadHistory() {
     const tag = s.triggered_by === 'manual'
       ? '<span class="htag htag-manual">Manuel</span>'
       : '<span class="htag htag-auto">Auto</span>';
-    const spec = s.specialty_slug || '<span style="color:var(--text3)">Toutes</span>';
+    const spec = s.specialty_slug ? esc(s.specialty_slug) : '<span style="color:var(--text3)">Toutes</span>';
     const recipients = s.recipients_sent > 0
       ? `${s.recipients_sent} envoyé(s)${s.recipients_failed > 0 ? ` · <span style="color:var(--red)">${s.recipients_failed} échec(s)</span>` : ''}`
       : '—';
     return `<tr>
       <td>${date}</td>
       <td>${tag}</td>
-      <td>${esc(String(spec))}</td>
+      <td>${spec}</td>
       <td>${s.articles_sent || 0} article(s)</td>
       <td>${recipients}</td>
     </tr>`;
