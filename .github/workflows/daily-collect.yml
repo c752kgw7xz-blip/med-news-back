@@ -1,9 +1,6 @@
 name: MedNews — Collecte quotidienne
 
 on:
-  schedule:
-    # 1h00 UTC = 2h00 CET (hiver) / 3h00 CEST (été) — tous les jours
-    - cron: '0 1 * * *'
   workflow_dispatch:
     inputs:
       days:
