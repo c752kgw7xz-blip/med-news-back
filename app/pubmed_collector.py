@@ -1389,6 +1389,41 @@ PUBMED_SOURCES: list[dict] = [
         "specialty_hint": "pediatrie",
         "min_score_hint": 6,
     },
+    # BMC Pediatrics — BioMed Central (IF ~3). Open-access, fort volume : RCTs
+    # et cohortes sur prise en charge pédiatrique générale, nutrition, infections,
+    # développement. Complémentaire des grands journaux pour les études pratiques.
+    {
+        "source": "pubmed_bmc_pediatr",
+        "journal_term": f'"BMC Pediatr"[Journal] AND {_PT_OR_TITLE}',
+        "label": "BMC Pediatrics (BioMed Central, IF ~3) — pédiatrie générale, nutrition, infections",
+        "source_type": "innovation",
+        "specialty_hint": "pediatrie",
+        "min_score_hint": 6,
+    },
+    # Pediatric Research — Nature/ESPNS (IF ~4). Études cliniques et translationnelles
+    # en néonatologie, maladies rares pédiatriques, développement, pharmacologie
+    # pédiatrique. Référence ESPNS (European Society for Paediatric and Neonatal
+    # Surgery / research societies).
+    {
+        "source": "pubmed_pediatr_res",
+        "journal_term": f'"Pediatr Res"[Journal] AND {_PT_OR_TITLE}',
+        "label": "Pediatric Research (Nature/ESPNS, IF ~4) — néonatologie, maladies rares, pharma pédiatrique",
+        "source_type": "innovation",
+        "specialty_hint": "pediatrie",
+        "min_score_hint": 6,
+    },
+    # Journal of Pediatric Gastroenterology and Nutrition (JPGN) — Wolters Kluwer /
+    # ESPGHAN-NASPGHAN (IF ~4). Référence pour les guidelines ESPGHAN : maladie
+    # cœliaque, MICI pédiatriques, RGO, nutrition entérale/parentérale néonatale,
+    # constipation, douleurs abdominales fonctionnelles.
+    {
+        "source": "pubmed_jpgn",
+        "journal_term": f'"J Pediatr Gastroenterol Nutr"[Journal] AND {_PT_OR_TITLE}',
+        "label": "JPGN (ESPGHAN/NASPGHAN, IF ~4) — maladie cœliaque, MICI pédiatriques, nutrition",
+        "source_type": "recommandation",
+        "specialty_hint": "pediatrie",
+        "min_score_hint": 5,
+    },
 
     # ==========================================================================
     # ── ANESTHÉSIOLOGIE-RÉANIMATION ───────────────────────────────────────────
