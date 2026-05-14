@@ -98,7 +98,7 @@ def _fetch_abstract_crossref_s2(title: str) -> str | None:
         r = httpx.get(
             "https://api.crossref.org/works",
             params={"query.title": title[:100], "rows": 1},
-            headers={"User-Agent": "MedNewsBot/1.0 (contact@mednews.fr)"},
+            headers={"User-Agent": "MedNewsBot/1.0 (contact@med-news.fr)"},
             timeout=10,
         )
         items = r.json().get("message", {}).get("items", [])
@@ -129,7 +129,7 @@ def _fetch_abstract_openalex(title: str) -> str | None:
         r = httpx.get(
             "https://api.openalex.org/works",
             params={"search": title[:100], "per-page": 1, "select": "abstract_inverted_index"},
-            headers={"User-Agent": "MedNewsBot/1.0 (contact@mednews.fr)"},
+            headers={"User-Agent": "MedNewsBot/1.0 (contact@med-news.fr)"},
             timeout=10,
         )
         if r.status_code != 200:
@@ -211,7 +211,7 @@ def _entry_summary(entry: Any) -> str | None:
 _JS_REDIRECT_RE = re.compile(r"window\.location\.href\s*=\s*['\"]([^'\"]+)['\"]")
 
 _HEADERS = {
-    "User-Agent": "MedNewsBot/1.0 (veille-reglementaire; contact@mednews.fr)",
+    "User-Agent": "MedNewsBot/1.0 (veille-reglementaire; contact@med-news.fr)",
     "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*",
 }
 

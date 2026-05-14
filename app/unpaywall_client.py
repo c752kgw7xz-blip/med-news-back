@@ -20,7 +20,7 @@ Pipeline d'enrichissement :
         → UPDATE content_raw (si enrichissement > abstract seul)
 
 API Unpaywall :
-  GET https://api.unpaywall.org/v2/{doi}?email=contact@mednews.fr
+  GET https://api.unpaywall.org/v2/{doi}?email=contact@med-news.fr
   Gratuit, pas de clé. Rate limit : 100 000 req/jour.
   Champs utilisés : is_oa, best_oa_location.url, pmcid.
 
@@ -47,7 +47,7 @@ from app.db import get_conn
 
 logger = logging.getLogger(__name__)
 
-UNPAYWALL_EMAIL = "contact@mednews.fr"
+UNPAYWALL_EMAIL = "contact@med-news.fr"
 UNPAYWALL_BASE  = "https://api.unpaywall.org/v2"
 EUROPEPMC_BASE  = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 
@@ -203,7 +203,7 @@ def _fetch_oa_url_text(url: str, client: httpx.Client) -> str | None:
     try:
         r = client.get(
             url,
-            headers={"User-Agent": "MedNewsBot/1.0 (veille; contact@mednews.fr)"},
+            headers={"User-Agent": "MedNewsBot/1.0 (veille; contact@med-news.fr)"},
             follow_redirects=True,
             timeout=15,
         )

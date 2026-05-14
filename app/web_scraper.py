@@ -81,7 +81,7 @@ from app.llm_analysis import pre_filter_candidate
 logger = logging.getLogger(__name__)
 
 _HEADERS = {
-    "User-Agent": "MedNewsBot/1.0 (veille-reglementaire; contact@mednews.fr)",
+    "User-Agent": "MedNewsBot/1.0 (veille-reglementaire; contact@med-news.fr)",
     "Accept": "text/html,application/xhtml+xml,*/*",
     "Accept-Language": "fr-FR,fr;q=0.9",
 }

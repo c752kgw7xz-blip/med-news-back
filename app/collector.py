@@ -344,7 +344,7 @@ def _collect_eudamed(days: int = 120, source_cfg: dict | None = None, **_) -> di
         headers={
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "User-Agent": "med-news-back/1.0 (contact@mednews.fr)",
+            "User-Agent": "med-news-back/1.0 (contact@med-news.fr)",
         },
     ) as client:
         all_items = _search_eudamed_class3(client)
@@ -445,7 +445,7 @@ _EMA_DHPC_URL = (
 
 _EMA_HEADERS = {
     "Accept": "application/json",
-    "User-Agent": "med-news-back/1.0 (contact@mednews.fr)",
+    "User-Agent": "med-news-back/1.0 (contact@med-news.fr)",
 }
 
 

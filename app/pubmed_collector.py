@@ -6570,7 +6570,7 @@ PUBMED_SOURCES: list[dict] = [
 
 def _ncbi_params(extra: dict) -> dict:
     """Paramètres de base pour toutes les requêtes NCBI."""
-    p: dict = {"db": "pubmed", "retmode": "json", "tool": "med-news-back", "email": "contact@mednews.fr"}
+    p: dict = {"db": "pubmed", "retmode": "json", "tool": "med-news-back", "email": "contact@med-news.fr"}
     if NCBI_API_KEY:
         p["api_key"] = NCBI_API_KEY
     p.update(extra)

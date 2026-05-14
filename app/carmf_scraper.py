@@ -33,7 +33,7 @@ BASE_URL = "https://www.carmf.fr"
 MENU_URL = f"{BASE_URL}/page.php?page=actualites/actualites_menu.htm"
 
 _HEADERS = {
-    "User-Agent": "MedNewsBot/1.0 (veille-reglementaire; contact@mednews.fr)",
+    "User-Agent": "MedNewsBot/1.0 (veille-reglementaire; contact@med-news.fr)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "fr-FR,fr;q=0.9",
 }

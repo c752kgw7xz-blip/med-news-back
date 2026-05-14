@@ -8,7 +8,7 @@ Priorité :
 
 Variables d'environnement :
   SENDGRID_API_KEY     clé API SendGrid
-  MAIL_FROM            expéditeur   (ex: newsletter@mednews.fr)
+  MAIL_FROM            expéditeur   (ex: newsletter@med-news.fr)
   MAIL_FROM_NAME       nom affiché  (ex: MedNews)
 
   # Fallback SMTP
