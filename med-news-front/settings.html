@@ -644,8 +644,8 @@ async function startCheckout() {
       }),
     });
     if (!res || !res.ok) { showToast('Erreur lors de la redirection'); return; }
-    const { url } = await res.json();
-    window.location.href = url;
+    const { checkout_url } = await res.json();
+    window.location.href = checkout_url;
   } catch { showToast('Erreur lors de la redirection'); }
 }
 
