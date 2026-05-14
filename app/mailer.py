@@ -54,7 +54,7 @@ class MailResult(NamedTuple):
 # ---------------------------------------------------------------------------
 
 def _from_address() -> tuple[str, str]:
-    addr = os.environ.get("MAIL_FROM", "newsletter@mednews.fr")
+    addr = os.environ.get("MAIL_FROM", "newsletter@med-news.fr")
     name = os.environ.get("MAIL_FROM_NAME", "MedNews")
     return addr, name
 
