@@ -1808,6 +1808,8 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_aging_clin_exp_res":    "geriatrie",
     "pubmed_geriatr_gerontol_int":  "geriatrie",
     "pubmed_gerontology":           "geriatrie",
+    "pubmed_gerontologist":         "geriatrie",
+    "pubmed_drugs_aging":           "geriatrie",
     # ── Gynécologie ──────────────────────────────────────────────────────────
     "ajog_rss":                     "gynecologie",  # RSS AJOG (Elsevier, IF ~10)
     "pubmed_ajog":                  "gynecologie",
@@ -2024,6 +2026,9 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_swiss_med_wkly":        "medecine-interne",
     "pubmed_j_investig_med":        "medecine-interne",
     "pubmed_rev_med_interne":       "medecine-interne",
+    "pubmed_clin_med_lond":         "medecine-interne",
+    "pubmed_ther_adv_chronic_dis":  "medecine-interne",
+    "pubmed_j_clin_med":            "medecine-interne",
     # ── Médecine générale ─────────────────────────────────────────────────────
     "cmaj_rss":                     "medecine-generale",  # RSS CMAJ (CMA, IF ~8)
     "bjgp_rss":                     "medecine-generale",  # RSS BJGP (RCGP, IF ~5)
@@ -2162,6 +2167,10 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_depress_anxiety":        "psychiatrie",
     "pubmed_int_j_neuropsychopharmacol": "psychiatrie",
     "pubmed_encephale":              "psychiatrie",
+    "pubmed_psychol_med":            "psychiatrie",
+    "pubmed_j_affect_disord":        "psychiatrie",
+    "pubmed_schizophr_res":          "psychiatrie",
+    "pubmed_eur_psychiatry":         "psychiatrie",
     "epa_psychiatrie":               "psychiatrie",   # RSS EPA (European Psychiatric Association)
     "sfpsychiatrie":                 "psychiatrie",   # RSS SPF
     # ── Radiologie ────────────────────────────────────────────────────────────

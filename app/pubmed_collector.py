@@ -2751,7 +2751,7 @@ PUBMED_SOURCES: list[dict] = [
     # démences, polymédication). Contribue aux STOPP/START guidelines.
     {
         "source": "pubmed_age_ageing",
-        "journal_term": f'"Age Ageing"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Age Ageing"[Journal] AND {_PT_OR_TITLE}',
         "label": "Age and Ageing (BGS) — fragilité, chutes, démences, polymédication (IF ~13)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2764,7 +2764,7 @@ PUBMED_SOURCES: list[dict] = [
     # Source de référence pour les critères de prescription inappropriée.
     {
         "source": "pubmed_jags",
-        "journal_term": f'"J Am Geriatr Soc"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Am Geriatr Soc"[Journal] AND {_PT_OR_TITLE}',
         "label": "J Am Geriatr Soc (AGS) — Beers 2023, polymédication, transitions soins (IF ~7)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2777,7 +2777,7 @@ PUBMED_SOURCES: list[dict] = [
     # multimorbidité). Volume faible → _PT_FILTER suffit.
     {
         "source": "pubmed_lancet_healthy_longev",
-        "journal_term": f'"Lancet Healthy Longev"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Lancet Healthy Longev"[Journal] AND {_PT_OR_TITLE}',
         "label": "Lancet Healthy Longevity — prévention démence, fragilité, multimorbidité (IF ~20)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2804,7 +2804,7 @@ PUBMED_SOURCES: list[dict] = [
     # comorbidités chroniques du sujet âgé.
     {
         "source": "pubmed_j_gerontol_med",
-        "journal_term": f'"J Gerontol A Biol Sci Med Sci"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Gerontol A Biol Sci Med Sci"[Journal] AND {_PT_OR_TITLE}',
         "label": "J Gerontol: Med Sci (GSA) — sarcopénie, fragilité, vieillissement biologique (IF ~6)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2817,7 +2817,7 @@ PUBMED_SOURCES: list[dict] = [
     # palliatifs, démences en institution, prévention escarres, transitions.
     {
         "source": "pubmed_jamda",
-        "journal_term": f'"J Am Med Dir Assoc"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Am Med Dir Assoc"[Journal] AND {_PT_OR_TITLE}',
         "label": "JAMDA (AMDA) — EHPAD, soins palliatifs, démences institutionnalisées (IF ~6)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2844,7 +2844,7 @@ PUBMED_SOURCES: list[dict] = [
     # anxiété et insomnies chez le sujet âgé.
     {
         "source": "pubmed_int_j_geriatr_psychiatry",
-        "journal_term": f'"Int J Geriatr Psychiatry"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Int J Geriatr Psychiatry"[Journal] AND {_PT_OR_TITLE}',
         "label": "Int J Geriatr Psychiatry — dépression âgé, delirium, troubles comportement démence (IF ~4)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2858,7 +2858,7 @@ PUBMED_SOURCES: list[dict] = [
     # mécanistiques à transposabilité clinique.
     {
         "source": "pubmed_j_alzheimers_dis",
-        "journal_term": f'"J Alzheimers Dis"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Alzheimers Dis"[Journal] AND {_PT_OR_TITLE}',
         "label": "J Alzheimer's Disease — biomarqueurs, interventions non-pharmaco démences (IF ~4)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2871,7 +2871,7 @@ PUBMED_SOURCES: list[dict] = [
     # élevé → filtre strict.
     {
         "source": "pubmed_clin_interv_aging",
-        "journal_term": f'"Clin Interv Aging"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Clin Interv Aging"[Journal] AND {_PT_OR_TITLE}',
         "label": "Clin Interv Aging (Dove) — chutes, réhabilitation, dénutrition âgé (IF ~3)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2884,7 +2884,7 @@ PUBMED_SOURCES: list[dict] = [
     # Fort volume → filtre très strict nécessaire.
     {
         "source": "pubmed_bmc_geriatr",
-        "journal_term": f'"BMC Geriatr"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"BMC Geriatr"[Journal] AND {_PT_OR_TITLE}',
         "label": "BMC Geriatrics — CGA, multimorbidité, soins intégrés (IF ~4)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2898,7 +2898,7 @@ PUBMED_SOURCES: list[dict] = [
     # vieillissement.
     {
         "source": "pubmed_maturitas",
-        "journal_term": f'"Maturitas"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Maturitas"[Journal] AND {_PT_OR_TITLE}',
         "label": "Maturitas — ménopause, ostéoporose, vieillissement hormonal (IF ~4)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2911,7 +2911,7 @@ PUBMED_SOURCES: list[dict] = [
     # (vitamine D, B12, folates), régime méditerranéen et vieillissement cognitif.
     {
         "source": "pubmed_j_nutr_health_aging",
-        "journal_term": f'"J Nutr Health Aging"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"J Nutr Health Aging"[Journal] AND {_PT_OR_TITLE}',
         "label": "J Nutr Health Aging — dénutrition GLIM, sarcopénie, micronutriments (IF ~4)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2924,7 +2924,7 @@ PUBMED_SOURCES: list[dict] = [
     # méta-analyses en gériatrie pratique.
     {
         "source": "pubmed_aging_clin_exp_res",
-        "journal_term": f'"Aging Clin Exp Res"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Aging Clin Exp Res"[Journal] AND {_PT_OR_TITLE}',
         "label": "Aging Clin Exp Res — fragilité, chutes, cognition, multimorbidité EU (IF ~4)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2937,7 +2937,7 @@ PUBMED_SOURCES: list[dict] = [
     # japonaises de référence sur les définitions sarcopénie/fragilité.
     {
         "source": "pubmed_geriatr_gerontol_int",
-        "journal_term": f'"Geriatr Gerontol Int"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Geriatr Gerontol Int"[Journal] AND {_PT_OR_TITLE}',
         "label": "Geriatr Gerontol Int — sarcopénie/fragilité Asie-Pacifique, données japonnaises (IF ~3)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
@@ -2951,11 +2951,35 @@ PUBMED_SOURCES: list[dict] = [
     # anti-aging (metformine TAME trial, rapamycine, sénolytiques).
     {
         "source": "pubmed_gerontology",
-        "journal_term": f'"Gerontology"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Gerontology"[Journal] AND {_PT_OR_TITLE}',
         "label": "Gerontology (Karger) — inflammaging, sénolytiques, biomarqueurs vieillissement (IF ~4)",
         "source_type": "innovation",
         "specialty_hint": "geriatrie",
         "min_score_hint": 7,
+    },
+    # The Gerontologist — Gerontological Society of America (IF ~5). Publie des
+    # RCTs et revues systématiques sur les modèles de soins gériatriques (CGA,
+    # soins intégrés, transitions hôpital-domicile, aidants), et les interventions
+    # psychosociales dans les démences et la fragilité.
+    {
+        "source": "pubmed_gerontologist",
+        "journal_term": f'"Gerontologist"[Journal] AND {_PT_OR_TITLE}',
+        "label": "The Gerontologist (GSA, IF ~5) — CGA, soins intégrés, transitions, aidants",
+        "source_type": "innovation",
+        "specialty_hint": "geriatrie",
+        "min_score_hint": 6,
+    },
+    # Drugs & Aging — Springer (IF ~5). Référence pour la pharmacologie du
+    # sujet âgé : interactions médicamenteuses, prescriptions inappropriées
+    # (critères Beers/STOPP), pharmacocinétique, déprescription, anticoagulants
+    # chez le sujet âgé fragile.
+    {
+        "source": "pubmed_drugs_aging",
+        "journal_term": f'"Drugs Aging"[Journal] AND {_PT_OR_TITLE}',
+        "label": "Drugs & Aging (Springer, IF ~5) — polymédication, Beers/STOPP, déprescription",
+        "source_type": "innovation",
+        "specialty_hint": "geriatrie",
+        "min_score_hint": 6,
     },
 
     # ==========================================================================
@@ -4501,6 +4525,42 @@ PUBMED_SOURCES: list[dict] = [
         "specialty_hint": "medecine-interne",
         "min_score_hint": 6,
     },
+    # Clinical Medicine — Royal College of Physicians (IF ~4). Publie les
+    # guidelines RCP et NICE en médecine interne, les recommandations de pratique
+    # clinique britanniques, et les revues systématiques sur maladies systémiques.
+    # Source complémentaire pour le contexte européen (proche des pratiques FR).
+    {
+        "source": "pubmed_clin_med_lond",
+        "journal_term": f'"Clin Med (Lond)"[Journal] AND {_PT_OR_TITLE}',
+        "label": "Clinical Medicine (RCP, IF ~4) — guidelines RCP/NICE, maladies systémiques UK",
+        "source_type": "recommandation",
+        "specialty_hint": "medecine-interne",
+        "min_score_hint": 6,
+    },
+    # Therapeutic Advances in Chronic Disease — SAGE (IF ~5). RCTs et revues
+    # systématiques sur maladies chroniques complexes (multimorbidité, maladies
+    # auto-immunes, pathologies systémiques), thérapeutiques innovantes en
+    # médecine interne de ville.
+    {
+        "source": "pubmed_ther_adv_chronic_dis",
+        "journal_term": f'"Ther Adv Chronic Dis"[Journal] AND {_PT_OR_TITLE}',
+        "label": "Ther Adv Chronic Dis (SAGE, IF ~5) — multimorbidité, maladies auto-immunes",
+        "source_type": "innovation",
+        "specialty_hint": "medecine-interne",
+        "min_score_hint": 6,
+    },
+    # Journal of Clinical Medicine — MDPI (IF ~4). Open-access, fort volume
+    # d'essais cliniques et méta-analyses sur toutes les pathologies de médecine
+    # interne. Complémentaire pour capter les études récentes non encore indexées
+    # dans les revues plus sélectives.
+    {
+        "source": "pubmed_j_clin_med",
+        "journal_term": f'"J Clin Med"[Journal] AND {_PT_OR_TITLE}',
+        "label": "Journal of Clinical Medicine (MDPI, IF ~4) — essais cliniques médecine interne",
+        "source_type": "innovation",
+        "specialty_hint": "medecine-interne",
+        "min_score_hint": 6,
+    },
     # ── Médecine physique et de réadaptation ──────────────────────────────────
     {
         "source": "pubmed_pm_r",
@@ -5805,7 +5865,7 @@ PUBMED_SOURCES: list[dict] = [
     # addictions, troubles du comportement alimentaire (TCA), psychiatrie de liaison.
     {
         "source": "pubmed_am_j_psychiatry",
-        "journal_term": f'"Am J Psychiatry"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Am J Psychiatry"[Journal] AND {_PT_OR_TITLE}',
         "label": "American Journal of Psychiatry (APA flagship, IF ~17)",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5813,7 +5873,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_jama_psychiatry",
-        "journal_term": f'"JAMA Psychiatry"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"JAMA Psychiatry"[Journal] AND {_PT_OR_TITLE}',
         "label": "JAMA Psychiatry (IF ~22)",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5821,7 +5881,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_lancet_psychiatry",
-        "journal_term": f'"Lancet Psychiatry"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Lancet Psychiatry"[Journal] AND {_PT_OR_TITLE}',
         "label": "Lancet Psychiatry (IF ~65) — essais pivots, méta-analyses",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5840,7 +5900,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_br_j_psychiatry",
-        "journal_term": f'"Br J Psychiatry"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Br J Psychiatry"[Journal] AND {_PT_OR_TITLE}',
         "label": "British Journal of Psychiatry (Royal College, IF ~9)",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5848,7 +5908,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_acta_psychiatr_scand",
-        "journal_term": f'"Acta Psychiatr Scand"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Acta Psychiatr Scand"[Journal] AND {_PT_OR_TITLE}',
         "label": "Acta Psychiatrica Scandinavica (Nordic/Wiley, IF ~8)",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5856,7 +5916,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_schizophr_bull",
-        "journal_term": f'"Schizophr Bull"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Schizophr Bull"[Journal] AND {_PT_OR_TITLE}',
         "label": "Schizophrenia Bulletin (SRS/Oxford, IF ~8) — schizophrénie, psychoses",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5864,7 +5924,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_bipolar_disord",
-        "journal_term": f'"Bipolar Disord"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Bipolar Disord"[Journal] AND {_PT_OR_TITLE}',
         "label": "Bipolar Disorders (ISBD/Wiley, IF ~6) — trouble bipolaire, lithium",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5875,7 +5935,7 @@ PUBMED_SOURCES: list[dict] = [
     # psilocybine, nouvelles molécules anxiolytiques et antipsychotiques.
     {
         "source": "pubmed_neuropsychopharmacol",
-        "journal_term": f'"Neuropsychopharmacology"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Neuropsychopharmacology"[Journal] AND {_PT_OR_TITLE}',
         "label": "Neuropsychopharmacology (ACNP, IF ~7) — psychopharmacologie clinique",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5894,7 +5954,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_depress_anxiety",
-        "journal_term": f'"Depress Anxiety"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Depress Anxiety"[Journal] AND {_PT_OR_TITLE}',
         "label": "Depression and Anxiety (ADAA/Wiley, IF ~5) — EDC, TCA, addictions",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5902,7 +5962,7 @@ PUBMED_SOURCES: list[dict] = [
     },
     {
         "source": "pubmed_int_j_neuropsychopharmacol",
-        "journal_term": f'"Int J Neuropsychopharmacol"[Journal] AND {_PT_FILTER}',
+        "journal_term": f'"Int J Neuropsychopharmacol"[Journal] AND {_PT_OR_TITLE}',
         "label": "Int J Neuropsychopharmacology (CINP, IF ~5) — essais pharmacologiques EU",
         "source_type": "innovation",
         "specialty_hint": "psychiatrie",
@@ -5918,6 +5978,51 @@ PUBMED_SOURCES: list[dict] = [
         "source_type": "recommandation",
         "specialty_hint": "psychiatrie",
         "min_score_hint": 4,
+    },
+    # Psychological Medicine — Cambridge (IF ~10). RCTs et méta-analyses de
+    # réseau sur EDC, PTSD, psychoses précoces, schizophrénie, troubles anxieux.
+    # Fort volume d'essais cliniques européens non couverts par les sources APA/JAMA.
+    {
+        "source": "pubmed_psychol_med",
+        "journal_term": f'"Psychol Med"[Journal] AND {_PT_OR_TITLE}',
+        "label": "Psychological Medicine (Cambridge, IF ~10) — EDC, PTSD, psychoses, anxiété",
+        "source_type": "innovation",
+        "specialty_hint": "psychiatrie",
+        "min_score_hint": 6,
+    },
+    # Journal of Affective Disorders — Elsevier (IF ~6). Très fort volume :
+    # essais sur antidépresseurs, stabilisateurs d'humeur, psychothérapies (TCC,
+    # EMDR), trouble bipolaire type II, dépression résistante, TCA. Complémentaire
+    # de Bipolar Disorders et Depression & Anxiety.
+    {
+        "source": "pubmed_j_affect_disord",
+        "journal_term": f'"J Affect Disord"[Journal] AND {_PT_OR_TITLE}',
+        "label": "J Affective Disorders (Elsevier, IF ~6) — antidépresseurs, bipolaire, TCA",
+        "source_type": "innovation",
+        "specialty_hint": "psychiatrie",
+        "min_score_hint": 5,
+    },
+    # Schizophrenia Research — Elsevier (IF ~4). Fort volume sur schizophrénie
+    # et psychoses : antipsychotiques de 2e génération, clozapine, cognition,
+    # symptômes négatifs, IA en psychiatrie. Complémentaire de Schizophrenia Bulletin.
+    {
+        "source": "pubmed_schizophr_res",
+        "journal_term": f'"Schizophr Res"[Journal] AND {_PT_OR_TITLE}',
+        "label": "Schizophrenia Research (Elsevier, IF ~4) — antipsychotiques, cognition, clozapine",
+        "source_type": "innovation",
+        "specialty_hint": "psychiatrie",
+        "min_score_hint": 5,
+    },
+    # European Psychiatry — journal officiel EPA (European Psychiatric Association,
+    # IF ~7). Guidelines EPA, méta-analyses européennes, consensus sur schizophrénie,
+    # dépression, addictions. Référence pour le contexte réglementaire EU/FR.
+    {
+        "source": "pubmed_eur_psychiatry",
+        "journal_term": f'"Eur Psychiatry"[Journal] AND {_PT_OR_TITLE}',
+        "label": "European Psychiatry (EPA, IF ~7) — guidelines EPA, méta-analyses EU",
+        "source_type": "recommandation",
+        "specialty_hint": "psychiatrie",
+        "min_score_hint": 6,
     },
 
     # ── Radiologie (diagnostique et interventionnelle) ────────────────────────
