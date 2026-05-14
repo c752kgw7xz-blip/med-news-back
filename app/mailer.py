@@ -3,11 +3,11 @@
 Envoi des newsletters par email.
 
 Priorité :
-  1. SendGrid API (SENDGRID_API_KEY défini)
+  1. Brevo API (BREVO_API_KEY défini)
   2. SMTP générique (SMTP_HOST défini) — fallback ou dev local
 
 Variables d'environnement :
-  SENDGRID_API_KEY     clé API SendGrid
+  BREVO_API_KEY        clé API Brevo (transactionnel)
   MAIL_FROM            expéditeur   (ex: newsletter@med-news.fr)
   MAIL_FROM_NAME       nom affiché  (ex: MedNews)
 
@@ -60,53 +60,51 @@ def _from_address() -> tuple[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# Envoi via SendGrid
+# Envoi via Brevo
 # ---------------------------------------------------------------------------
 
-def _send_sendgrid(
+def _send_brevo(
     to_email: str,
     subject: str,
     html: str,
     plain: str,
 ) -> MailResult:
-    api_key = "".join(os.environ["SENDGRID_API_KEY"].split())
+    api_key = "".join(os.environ["BREVO_API_KEY"].split())
     from_addr, from_name = _from_address()
 
     payload = {
-        "personalizations": [{"to": [{"email": to_email}]}],
-        "from": {"email": from_addr, "name": from_name},
+        "sender": {"email": from_addr, "name": from_name},
+        "to": [{"email": to_email}],
         "subject": subject,
-        "content": [
-            {"type": "text/plain", "value": plain},
-            {"type": "text/html", "value": html},
-        ],
+        "htmlContent": html,
+        "textContent": plain,
     }
 
     last_error: str = ""
     for attempt in range(MAX_RETRIES):
         try:
             r = httpx.post(
-                "https://api.sendgrid.com/v3/mail/send",
+                "https://api.brevo.com/v3/smtp/email",
                 json=payload,
                 headers={
-                    "Authorization": f"Bearer {api_key}",
+                    "api-key": api_key,
                     "Content-Type": "application/json",
                 },
                 timeout=30,
             )
-            if r.status_code in (200, 202):
+            if r.status_code in (200, 201):
                 return MailResult(success=True, recipient=to_email)
-            last_error = f"SendGrid HTTP {r.status_code}: {r.text[:200]}"
+            last_error = f"Brevo HTTP {r.status_code}: {r.text[:200]}"
             if r.status_code not in _RETRYABLE_STATUS:
-                break  # permanent error (4xx auth, bad request…)
+                break
         except (httpx.TimeoutException, httpx.ConnectError, OSError) as e:
             last_error = str(e)
         except Exception as e:
             return MailResult(success=False, recipient=to_email, error=str(e))
 
         if attempt < MAX_RETRIES - 1:
-            delay = 2 ** (attempt + 1)  # 2s, 4s
-            logger.warning("SendGrid retry %d/%d pour %s dans %ds", attempt + 1, MAX_RETRIES, to_email[:2] + "***", delay)
+            delay = 2 ** (attempt + 1)
+            logger.warning("Brevo retry %d/%d pour %s dans %ds", attempt + 1, MAX_RETRIES, to_email[:2] + "***", delay)
             time.sleep(delay)
 
     return MailResult(success=False, recipient=to_email, error=last_error)
@@ -174,9 +172,9 @@ def send_email(
     """
     Envoie un email. Choisit automatiquement SendGrid ou SMTP.
     """
-    if os.environ.get("SENDGRID_API_KEY"):
-        logger.debug("Envoi via SendGrid")
-        return _send_sendgrid(to_email, subject, html, plain)
+    if os.environ.get("BREVO_API_KEY"):
+        logger.debug("Envoi via Brevo")
+        return _send_brevo(to_email, subject, html, plain)
 
     if os.environ.get("SMTP_HOST"):
         logger.debug("Envoi via SMTP")
@@ -184,7 +182,7 @@ def send_email(
 
     raise RuntimeError(
         "Aucun transport email configuré. "
-        "Définir SENDGRID_API_KEY ou SMTP_HOST dans l'environnement."
+        "Définir BREVO_API_KEY ou SMTP_HOST dans l'environnement."
     )
 
 
