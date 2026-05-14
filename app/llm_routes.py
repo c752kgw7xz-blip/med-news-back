@@ -1360,6 +1360,9 @@ def newsletter_send_all(
                         )
                     conn.commit()
 
+                if result["failed"]:
+                    for err in result.get("errors", []):
+                        logger.error("send-all %s échec envoi : %s", slug, err.get("error", "?"))
                 _send_job["results"].append({
                     "specialty": slug,
                     "status": "sent",
@@ -1367,6 +1370,7 @@ def newsletter_send_all(
                     "subscribers": len(subscribers),
                     "sent": result["sent"],
                     "failed": result["failed"],
+                    "errors": result.get("errors", []),
                 })
                 logger.info("send-all %s : %d articles → %d/%d abonnés", slug, len(items), result["sent"], len(subscribers))
 
