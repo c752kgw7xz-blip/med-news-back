@@ -1261,7 +1261,7 @@ JSON attendu (strict, pas de markdown) :
   "lecture_json": {{
     "points_cles": ["<bullet 1 — résultat principal en langage clinique naturel, sans stats brutes (pas de HR/RR/IC95%/p)>", "<bullet 2 — design ou population clé en 1 ligne>", "<bullet 3 — limite ou nuance clinique principale>"],
     // OBLIGATOIRE ABSOLU : 3 bullets minimum, 5 maximum — null, [] ou tableau à un seul élément = sortie invalide
-    "texte_long": "<OBLIGATOIRE ABSOLU — ne jamais laisser vide, null ou absent. ~200 mots — développement distinct du resume, même ton journal médical professionnel (EJVES, JVS, Lancet, JAMA) : constructions actives directes. Les données chiffrées (HR/OR/IC95%/p/n=) PEUVENT apparaître ici intégrées en contexte narratif — c'est le seul champ où les stats sont tolérées. Contenu : contexte de l'étude, résultats secondaires, comparaison au standard actuel, limites principales. INTERDIT : 'l'étude montre que', 'les résultats indiquent que', 'il semblerait que', ouverture par la méthode ou le design.>",
+    "texte_long": "<OBLIGATOIRE ABSOLU — ne jamais laisser vide, null ou absent. ~200 mots — analyse éditoriale distincte du resume, ton journal médical professionnel (EJVES, JVS, Lancet, JAMA) : constructions actives directes. ZÉRO statistique brute (HR/OR/IC95%/p/n= INTERDITS ici aussi — même règle que resume et points_cles). Contenu : contexte clinique de l'étude (pourquoi cette question importait), résultats secondaires en langage naturel, comparaison au standard actuel, nuance ou limite principale. Structure cible : phrase 1 = contexte clinique, phrase 2-3 = résultats secondaires et subgroupes en langage naturel, phrase 4 = comparaison au SOC actuel, phrase 5 = limite principale. INTERDIT : copier-coller de l'abstract ou de la section Méthodes, 'l'étude montre que', 'les résultats indiquent que', ouverture par le design ou la cohorte ('Méta-analyse de 93 RCTs…', 'Parmi les 2165 patients…').>",
     "references": ["<NOR, ref légale, numéro AMM, PMID...>"]
   }}{evidence_block}
 }}
@@ -2290,36 +2290,33 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai clinique (innovation, presse ou académique) :
   titre_court : "DCB vs PTA pour lésions FP : CHALLENGER DCB 12 mois"
-  resume : "CHALLENGER DCB (N=437, occlusions fémorales 5–25 cm, suivi 12 mois) : \
-perméabilité primaire 78,3 % (DCB) vs 61,2 % (PTA seule) — p < 0,001. \
-TLR à 12 mois : 8,4 % vs 19,6 % (HR 0,40 ; IC95% 0,27–0,59). \
-Population comparable aux cohortes IN.PACT SFA et THUNDER. \
-Absence d'excès de mortalité tardive (signal paclitaxel non confirmé à 1 an)."
+  resume : "Le ballon actif au paclitaxel améliore nettement la perméabilité primaire \
+à 12 mois par rapport à l'angioplastie seule pour les occlusions fémorales de 5 à 25 cm — \
+bénéfice confirmé dans cet essai randomisé de 437 patients. Le taux de réintervention \
+est divisé par deux, sans signal de mortalité tardive lié au paclitaxel."
   impact_pratique : "En pratique : consolide l'indication DCB pour les lésions FP \
 ≤ 25 cm ; données à 5 ans attendues pour statuer sur la sécurité long terme."
 
 Nouveau dispositif (presse médicale) :
   titre_court : "Gore EXCLUDER Conformable : CE mark AAA col court/angulé"
-  resume : "Gore EXCLUDER Conformable avec ACTIVE CONTROL System (CE mark jan. 2026) : \
-conçu pour les AAA à col proximal court (8–15 mm) ou angulé (> 60°). \
-CONFORMABLE-EVAR (n=186, suivi 2 ans) : succès technique 98,4 %, absence \
-d'endofuite type I/III 97,2 %, réintervention pour endofuite 3,2 %. \
-Anatomie cible précédemment dévolue à la chirurgie ouverte ou aux fenestrations."
+  resume : "Le Gore EXCLUDER Conformable (CE mark jan. 2026) étend l'EVAR aux AAA \
+à col proximal court ou fortement angulé — anatomies précédemment réservées à la \
+chirurgie ouverte ou aux fenestrations. Les résultats à 2 ans de CONFORMABLE-EVAR \
+montrent un succès technique élevé et une absence quasi-totale d'endofuite de type I/III."
   impact_pratique : "En pratique : alternative endovasculaire pour les AAA complexes \
 sans accès à un programme FEVAR/BEVAR — vérification IFU anatomique indispensable."
 
 Guideline update :
   titre_court : "ESVS 2024 CLTI : bypass first-line pour lésions GLASS grade 3"
-  resume : "ESVS Guidelines AOMI 2024 (EJVES suppl.) : révision majeure du chapitre CLTI. \
-Bypass avec VGS recommandé en 1re intention pour lésions GLASS grade 3 infrainguinales \
-(recommandation IA). Endovasculaire conservé pour grade 1-2 (IA). \
-Basé sur BEST-CLI (N=1 830) : MALE-free survival à 4 ans +7,9 points avec bypass \
-chez les patients candidats au VGS (p=0,004)."
+  resume : "Les Guidelines ESVS 2024 révisent la stratégie CLTI : le bypass avec grande \
+veine saphène devient la 1re intention pour les lésions GLASS grade 3 infrainguinales, \
+appuyé sur les résultats de BEST-CLI — l'essai le plus large jamais mené dans cette \
+population. L'endovasculaire reste recommandé pour les grades 1-2."
   impact_pratique : "À retenir : classification GLASS systématique en RCP devient \
 opposable — grade 3 = orientation bypass de 1re intention."
 
@@ -2385,7 +2382,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai clinique TAVI (innovation) :
@@ -2490,7 +2487,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai clinique reconstruction mammaire :
@@ -2605,7 +2602,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai clinique laparoscopie vs chirurgie ouverte :
@@ -2717,7 +2714,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 RCT vaccin / prévention :
@@ -2864,7 +2861,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 Annales Françaises d'Anesthésie et de Réanimation) :
 
@@ -3024,7 +3021,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 Annales de Biologie Clinique / Journal de Biologie Médicale) :
 
@@ -3191,7 +3188,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 Archives de Maladies du Cœur et des Vaisseaux / La Revue du Praticien Cardiologie) :
 
@@ -3389,7 +3386,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai clinique résection pulmonaire :
@@ -3543,7 +3540,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai clinique arthroplastie :
@@ -3739,7 +3736,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 RCT biologique DA (head-to-head) :
@@ -4017,7 +4014,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 Ann Endocrinol — résultat d'abord, chiffres en contexte) :
 
@@ -4286,7 +4283,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 résultat d'abord, chiffres en contexte) :
 
@@ -4518,7 +4515,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 Alzheimer's & Dementia — résultat fonctionnel d'abord, impact vie quotidienne) :
 
@@ -6182,7 +6179,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Lupus systémique — biothérapie :
@@ -6441,7 +6438,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Biothérapie rhinologie :
@@ -6579,7 +6576,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai anti-VEGF (DMLA) :
@@ -6712,7 +6709,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai pivot (nouvelle thérapie ciblée) :
@@ -6896,7 +6893,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai pivot — cancer prostate métastatique (résultat centré) :
@@ -7087,7 +7084,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai randomisé — prévention HPP (résultat centré) :
@@ -7256,7 +7253,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai pivot — sécurité JAK inhibiteurs (résultat en tête) :
@@ -7423,7 +7420,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai randomisé — technique interventionnelle (résultat en tête) :
@@ -7590,7 +7587,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai pivot — nouvelle molécule (résultat centré, pas de méthode en tête) :
@@ -7747,7 +7744,7 @@ Phrase 2 = design en 1 ligne (acronyme, type étude, N, population). \
 Ex. correct : 'Le rivaroxaban réduit significativement le risque d'événement CV majeur dans l'AOMI, \
 y compris chez les patients les plus fragiles.' \
 Ex. INTERDIT : 'HR 0,76 ; IC95% 0,66–0,86 ; p<0,001' dans le résumé ou les points_cles. \
-Points_cles = 3 bullets cliniques sans stats. Stats détaillées → texte_long uniquement.\
+Points_cles = 3 bullets cliniques sans stats. texte_long = analyse éditoriale narrative, ZÉRO stat brute (HR/OR/IC95%/p/n= interdits dans tous les champs).\
 
 
 Essai pivot (biothérapie asthme) :

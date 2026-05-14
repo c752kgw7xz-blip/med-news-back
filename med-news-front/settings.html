@@ -220,6 +220,26 @@
   }
   .btn-danger:hover { background: var(--red-dark); }
 
+  /* ── Plan badge ─────────────────────────── */
+  .plan-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+    letter-spacing: .2px;
+  }
+  .plan-badge.student { background: #EFF6FF; color: #1D4ED8; }
+  .plan-badge.trial   { background: #FFF7ED; color: #C2410C; }
+  .plan-badge.active  { background: #F0FDF4; color: #15803D; }
+  .plan-badge.none    { background: var(--surface2); color: var(--text3); }
+  [data-theme="dark"] .plan-badge.student { background: #1E3A5F; color: #93C5FD; }
+  [data-theme="dark"] .plan-badge.trial   { background: #431407; color: #FDBA74; }
+  [data-theme="dark"] .plan-badge.active  { background: #052E16; color: #86EFAC; }
+  .btn-subscribe {
+    padding: 7px 16px; background: var(--green); color: #fff; border: none;
+    border-radius: var(--radius); font-size: 0.86rem; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: opacity .2s; flex-shrink: 0;
+  }
+  .btn-subscribe:hover { opacity: .88; }
+
 </style>
 <script src="/banner.js"></script>
 </head>
@@ -339,8 +359,22 @@
         <div class="setting-row">
           <div class="setting-info">
             <div class="setting-label" id="account-email" style="font-weight:400;color:var(--text2);"></div>
-            <div class="setting-desc">Compte m&eacute;decin actif</div>
+            <div class="setting-desc">Adresse de connexion</div>
           </div>
+        </div>
+        <div class="setting-row" id="row-plan">
+          <div class="setting-info">
+            <div class="setting-label">Type de compte</div>
+            <div class="setting-desc" id="plan-desc">Chargement&hellip;</div>
+          </div>
+          <span class="plan-badge none" id="plan-badge">&nbsp;</span>
+        </div>
+        <div class="setting-row" id="row-subscription">
+          <div class="setting-info">
+            <div class="setting-label">Abonnement</div>
+            <div class="setting-desc" id="subscription-desc">Chargement&hellip;</div>
+          </div>
+          <div id="subscription-action"></div>
         </div>
       </div>
     </div>
@@ -554,6 +588,67 @@ async function savePreferences() {
   }
 }
 
+// ── Billing ───────────────────────────────────────────────────
+async function loadBillingStatus() {
+  try {
+    const res = await authFetch(`${API}/billing/status`);
+    if (!res || !res.ok) return;
+    const b = await res.json();
+
+    const badge  = document.getElementById('plan-badge');
+    const desc   = document.getElementById('plan-desc');
+    const subDesc = document.getElementById('subscription-desc');
+    const subAction = document.getElementById('subscription-action');
+
+    if (b.is_student) {
+      badge.textContent = 'Étudiant';
+      badge.className = 'plan-badge student';
+      desc.textContent = 'Étudiant(e) en médecine — accès gratuit';
+      subDesc.textContent = 'Accès offert pendant vos études';
+    } else if (b.is_trial) {
+      badge.textContent = 'Essai';
+      badge.className = 'plan-badge trial';
+      desc.textContent = 'Médecin — période d\'essai gratuite';
+      const days = b.days_left != null ? b.days_left : '—';
+      subDesc.textContent = `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''} — 18,99 €/mois après`;
+      subAction.innerHTML = `<button class="btn-subscribe" onclick="startCheckout()">S'abonner maintenant</button>`;
+    } else if (b.has_subscription && b.access) {
+      badge.textContent = 'Médecin';
+      badge.className = 'plan-badge active';
+      desc.textContent = 'Médecin — abonnement actif';
+      if (b.subscribed_until) {
+        const d = new Date(b.subscribed_until);
+        const fmt = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        subDesc.textContent = `18,99 €/mois — renouvellement le ${fmt}`;
+      } else {
+        subDesc.textContent = '18,99 €/mois';
+      }
+    } else {
+      badge.textContent = 'Inactif';
+      badge.className = 'plan-badge none';
+      desc.textContent = 'Médecin — aucun abonnement actif';
+      subDesc.textContent = '18,99 €/mois — accès illimité à toutes les spécialités';
+      subAction.innerHTML = `<button class="btn-subscribe" onclick="startCheckout()">S'abonner</button>`;
+    }
+  } catch {}
+}
+
+async function startCheckout() {
+  try {
+    const res = await authFetch(`${API}/billing/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        success_url: window.location.origin + '/settings',
+        cancel_url:  window.location.origin + '/settings',
+      }),
+    });
+    if (!res || !res.ok) { showToast('Erreur lors de la redirection'); return; }
+    const { url } = await res.json();
+    window.location.href = url;
+  } catch { showToast('Erreur lors de la redirection'); }
+}
+
 // ── Init ──────────────────────────────────────────────────────
 // Force scroll au sommet dès le chargement (iOS restaure parfois le défilement précédent)
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -581,6 +676,7 @@ window.scrollTo(0, 0);
 
   await loadSpecialties(profile.specialty_slug);
   await loadPreferences();
+  await loadBillingStatus();
 
   updateThemeUI();
   updateFontUI();
