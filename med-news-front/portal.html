@@ -2543,21 +2543,16 @@ async function checkBillingStatus() {
   if (!res.ok) return;
   const data = await res.json();
   if (!data.access) { showPaywallModal(); return; }
-  // Bandeau carte étudiante acceptée — affiché une seule fois (première connexion après validation)
-  if (data.is_student && !document.getElementById('student-approved-banner')) {
-    let userId = '';
-    try { userId = JSON.parse(atob(getToken().split('.')[1])).sub || ''; } catch {}
-    const seenKey = 'student_approved_seen_' + userId;
-    if (!localStorage.getItem(seenKey)) {
-      const banner = document.getElementById('verify-banner');
-      if (banner) {
-        const w = document.createElement('div');
-        w.id = 'student-approved-banner';
-        w.style.cssText = 'background:#d1fae5;border-bottom:1px solid #6ee7b7;color:#065f46;font-size:0.8rem;padding:7px 20px;text-align:center;font-weight:500;';
-        w.textContent = '🎓 Votre carte étudiante a été acceptée — vous disposez d\'un accès complet gratuit à MedNews.';
-        banner.parentNode.insertBefore(w, banner);
-        localStorage.setItem(seenKey, '1');
-      }
+  // Bandeau carte étudiante acceptée — affiché une seule fois (flag serveur)
+  if (data.is_student && !data.student_banner_seen && !document.getElementById('student-approved-banner')) {
+    const banner = document.getElementById('verify-banner');
+    if (banner) {
+      const w = document.createElement('div');
+      w.id = 'student-approved-banner';
+      w.style.cssText = 'background:#d1fae5;border-bottom:1px solid #6ee7b7;color:#065f46;font-size:0.8rem;padding:7px 20px;text-align:center;font-weight:500;';
+      w.textContent = '🎓 Votre carte étudiante a été acceptée — vous disposez d\'un accès complet gratuit à MedNews.';
+      banner.parentNode.insertBefore(w, banner);
+      authFetch(`${API}/me/student-banner-seen`, { method: 'POST' }).catch(() => {});
     }
   }
   // Bandeau carte étudiante en cours de validation

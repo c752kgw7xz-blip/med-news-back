@@ -113,7 +113,7 @@ def get_profile(user_id: str = Depends(_get_current_user_id)):
             cur.execute("""
                 SELECT u.id, u.email_ciphertext, u.email_verified_at, u.created_at,
                        s.slug AS specialty_slug, s.name AS specialty_name,
-                       u.first_name, u.last_name
+                       u.first_name, u.last_name, u.student_banner_seen
                 FROM users u
                 LEFT JOIN specialties s ON s.slug = u.specialty_id
                 WHERE u.id = %s;
@@ -134,7 +134,19 @@ def get_profile(user_id: str = Depends(_get_current_user_id)):
         "specialty_name": row[5],
         "first_name": row[6],
         "last_name": row[7],
+        "student_banner_seen": bool(row[8]),
     }
+
+
+@router.post("/me/student-banner-seen", status_code=204)
+def mark_student_banner_seen(user_id: str = Depends(_get_current_user_id)):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET student_banner_seen = TRUE WHERE id = %s",
+                (user_id,),
+            )
+        conn.commit()
 
 
 # ---------------------------------------------------------------------------
