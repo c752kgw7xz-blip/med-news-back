@@ -35,7 +35,8 @@ def _get_user_row(user_id: str) -> dict:
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT id, email_ciphertext, trial_ends_at, subscribed_until,
-                       stripe_customer_id, stripe_subscription_id, plan
+                       stripe_customer_id, stripe_subscription_id, plan,
+                       student_banner_seen
                 FROM users WHERE id = %s
             """, (user_id,))
             row = cur.fetchone()
@@ -49,6 +50,7 @@ def _get_user_row(user_id: str) -> dict:
         "stripe_customer_id": row[4],
         "stripe_subscription_id": row[5],
         "plan": row[6] or "standard",
+        "student_banner_seen": bool(row[7]),
     }
 
 
@@ -126,6 +128,7 @@ def billing_status(user_id: str = Depends(_get_current_user_id)):
         "trial_ends_at":    user["trial_ends_at"].isoformat() if user["trial_ends_at"] else None,
         "subscribed_until": user["subscribed_until"].isoformat() if user["subscribed_until"] else None,
         "has_subscription": bool(user["stripe_subscription_id"]),
+        "student_banner_seen": user["student_banner_seen"],
     }
 
 
