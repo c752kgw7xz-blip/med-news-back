@@ -605,13 +605,11 @@ async function loadBillingStatus() {
       badge.className = 'plan-badge student';
       desc.textContent = 'Étudiant(e) en médecine — accès gratuit';
       subDesc.textContent = 'Accès offert pendant vos études';
-    } else if (b.is_trial) {
-      badge.textContent = 'Essai';
+    } else if (b.is_beta) {
+      badge.textContent = 'Bêta gratuit';
       badge.className = 'plan-badge trial';
-      desc.textContent = 'Médecin — période d\'essai gratuite';
-      const days = b.days_left != null ? b.days_left : '—';
-      subDesc.textContent = `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''} — 18,99 €/mois après`;
-      subAction.innerHTML = `<button class="btn-subscribe" onclick="startCheckout()">S'abonner maintenant</button>`;
+      desc.textContent = 'Médecin — accès bêta gratuit';
+      subDesc.textContent = 'Gratuit jusqu\'au 1er août 2026 — 18,99 €/mois ensuite';
     } else if (b.has_subscription && b.access) {
       badge.textContent = 'Médecin';
       badge.className = 'plan-badge active';

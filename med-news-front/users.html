@@ -403,6 +403,8 @@ function render() {
       accessBadge = `<span class="badge badge-pending">Étudiant en attente</span>`;
     } else if (u.has_stripe_sub) {
       accessBadge = `<span class="badge badge-paying">Payant</span>`;
+    } else if (new Date() < new Date('2026-08-01')) {
+      accessBadge = `<span class="badge badge-trial" title="Accès gratuit jusqu'au lancement officiel — 1er août 2026">Bêta gratuit</span>`;
     } else if (u.trial_ends_at) {
       const trialEnd = new Date(u.trial_ends_at);
       const now = new Date();

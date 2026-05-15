@@ -52,23 +52,25 @@ def _get_user_row(user_id: str) -> dict:
     }
 
 
+BETA_END = datetime(2026, 8, 1, tzinfo=timezone.utc)  # Accès gratuit jusqu'au lancement officiel
+
+
 def _has_active_access(user: dict) -> bool:
     now = datetime.now(timezone.utc)
+    beta_ok    = now < BETA_END
     trial_ok   = user["trial_ends_at"] and user["trial_ends_at"] > now
     sub_ok     = user["subscribed_until"] and user["subscribed_until"] > now
     student_ok = user.get("plan") == "student"
-    return bool(trial_ok or sub_ok or student_ok)
+    return bool(beta_ok or trial_ok or sub_ok or student_ok)
 
 
 def _days_left(user: dict) -> int:
     now = datetime.now(timezone.utc)
-    candidates = []
+    candidates = [BETA_END]  # minimum garanti jusqu'au 1er août
     if user["trial_ends_at"] and user["trial_ends_at"] > now:
         candidates.append(user["trial_ends_at"])
     if user["subscribed_until"] and user["subscribed_until"] > now:
         candidates.append(user["subscribed_until"])
-    if not candidates:
-        return 0
     best = max(candidates)
     return max(0, (best - now).days)
 
@@ -112,8 +114,11 @@ def billing_status(user_id: str = Depends(_get_current_user_id)):
             )
             student_pending = cur.fetchone() is not None
 
+    now = datetime.now(timezone.utc)
     return {
         "access": _has_active_access(user),
+        "is_beta": now < BETA_END,
+        "beta_ends_at": BETA_END.isoformat(),
         "is_trial": is_trial,
         "is_student": is_student,
         "student_pending": student_pending,
