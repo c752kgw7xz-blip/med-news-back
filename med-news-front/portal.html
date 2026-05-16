@@ -4519,56 +4519,50 @@ function openSplashResult(id, stype) {
 
 // ── Deep link : ouvrir un article directement depuis une notif push ──────────
 async function openDeepLinkArticle(itemId) {
+  const slug     = activeSpecSlug || userSpecSlug;
+  const accordId = _activeAccordId || 'mine';
+  let stype = 'innovation';
+  let article = null;
+
+  // Tenter de récupérer les métadonnées de l'article (optionnel)
   try {
     const res = await authFetch(`${API}/articles/${itemId}`);
-    if (!res || !res.ok) return;
-    const a = await res.json();
-
-    // Ajuster le mois actif à la date de l'article
-    if (a.official_date) {
-      const [y, m] = a.official_date.split('-').map(Number);
-      const monthKey = `${y}-${String(m).padStart(2, '0')}`;
-      _activeMonth  = monthKey;
-      _customFrom   = `${monthKey}-01`;
-      _customUntil  = `${monthKey}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`;
-      const lbl = document.getElementById('month-picker-label');
-      if (lbl) lbl.textContent = MONTHS[m - 1] + ' ' + y;
-    }
-
-    const slug    = a.specialty_slug || activeSpecSlug;
-    const stype   = a.source_type || 'innovation';
-    const accordId = _activeAccordId || 'mine';
-
-    // Injecter dans le cache splash pour que openSplashResult le trouve
-    window._splashSearchHits = window._splashSearchHits || {};
-    window._splashSearchHits[a.id] = a;
-
-    await selectSpecType(slug, stype, accordId);
-
-    setTimeout(() => {
-      let card = document.querySelector(`.article-card[data-item-id="${a.id}"]`);
-      if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const detail = card.querySelector('.card-detail');
-        if (detail && detail.style.display !== 'block') card.click();
-      } else {
-        // Article absent du DOM (autre mois) → injecter en tête de liste
-        const container = document.getElementById('articles-container');
-        if (container && typeof renderArticle === 'function') {
-          const wrapper = document.createElement('div');
-          wrapper.innerHTML = renderArticle(a, 0);
-          const newCard = wrapper.firstElementChild;
-          if (newCard) {
-            container.insertBefore(newCard, container.firstChild);
-            newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            newCard.click();
-          }
-        }
+    if (res?.ok) {
+      article = await res.json();
+      stype = article.source_type || 'innovation';
+      if (article.official_date) {
+        const [y, m] = article.official_date.split('-').map(Number);
+        const monthKey = `${y}-${String(m).padStart(2, '0')}`;
+        _activeMonth  = monthKey;
+        _customFrom   = `${monthKey}-01`;
+        _customUntil  = `${monthKey}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`;
+        const lbl = document.getElementById('month-picker-label');
+        if (lbl) lbl.textContent = MONTHS[m - 1] + ' ' + y;
       }
-    }, 500);
+      window._splashSearchHits = window._splashSearchHits || {};
+      window._splashSearchHits[article.id] = article;
+    }
   } catch (e) {
-    console.warn('[MedNews] deep link error:', e);
+    console.warn('[MedNews] deep link article fetch:', e);
   }
+
+  // Charger les articles et masquer le splash — inconditionnellement
+  try {
+    await selectSpecType(article?.specialty_slug || slug, stype, accordId);
+  } catch (e) {
+    console.warn('[MedNews] deep link selectSpecType:', e);
+    return;
+  }
+
+  // Chercher et ouvrir la carte
+  setTimeout(() => {
+    const card = document.querySelector(`.article-card[data-item-id="${itemId}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const detail = card.querySelector('.card-detail');
+      if (detail && detail.style.display !== 'block') card.click();
+    }
+  }, 600);
 }
 
 // ── Failsafe : force la fin du spinner après 25s quoi qu'il arrive ──────────
