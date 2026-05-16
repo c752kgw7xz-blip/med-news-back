@@ -2292,8 +2292,12 @@ const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
 if (DEMO_MODE) document.body.classList.add('demo-mode');
 const _SUBSCRIBED_SUCCESS = new URLSearchParams(location.search).get('subscribed') === '1';
 if (_SUBSCRIBED_SUCCESS) history.replaceState(null, '', '/portal');
-const _DEEP_LINK_ITEM = new URLSearchParams(location.search).get('item') || '';
-if (_DEEP_LINK_ITEM) history.replaceState(null, '', '/portal');
+const _DEEP_LINK_ITEM = new URLSearchParams(location.search).get('item')
+  || localStorage.getItem('mednews_deeplink_item') || '';
+const _DEEP_LINK_SPEC = new URLSearchParams(location.search).get('spec')
+  || localStorage.getItem('mednews_deeplink_spec') || '';
+if (_DEEP_LINK_ITEM) { localStorage.removeItem('mednews_deeplink_item'); history.replaceState(null, '', '/portal'); }
+if (_DEEP_LINK_SPEC) { localStorage.removeItem('mednews_deeplink_spec'); history.replaceState(null, '', '/portal'); }
 const _PREVIEW_PAYWALL = new URLSearchParams(location.search).get('paywall') === '1';
 let _demoCache = null; // articles chirurgie-vasculaire (spé principale démo)
 let _demoCacheBySlug = {}; // cache articles par slug, chargé à la demande
@@ -5174,6 +5178,9 @@ function _doSwipe(dir, dx) {
     }
     if (_DEEP_LINK_ITEM) {
       openDeepLinkArticle(_DEEP_LINK_ITEM);
+    } else if (_DEEP_LINK_SPEC) {
+      const accordId = _activeAccordId || 'mine';
+      selectSpecType(_DEEP_LINK_SPEC, 'innovation', accordId);
     }
   }
 })();
