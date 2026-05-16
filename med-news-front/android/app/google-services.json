@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "317673310278",
+    "project_id": "mednews-18566",
+    "storage_bucket": "mednews-18566.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317673310278:android:b85db00653af0fcb6be247",
+        "android_client_info": {
+          "package_name": "fr.mednews.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAM43H1n_PmC0AH6qfp0phbTSKF3rMdTSU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
