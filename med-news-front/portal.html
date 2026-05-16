@@ -4554,15 +4554,23 @@ async function openDeepLinkArticle(itemId) {
     return;
   }
 
-  // Chercher et ouvrir la carte
+  // Chercher, ouvrir le groupe parent et scroller sur la carte
   setTimeout(() => {
     const card = document.querySelector(`.article-card[data-item-id="${itemId}"]`);
-    if (card) {
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const detail = card.querySelector('.card-detail');
-      if (detail && detail.style.display !== 'block') card.click();
+    if (!card) return;
+    // Ouvrir le org-group si collapsé
+    const group = card.closest('.org-group');
+    if (group && group.dataset.collapsed === 'true') {
+      group.dataset.collapsed = 'false';
     }
-  }, 600);
+    requestAnimationFrame(() => {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        const detail = card.querySelector('.card-detail');
+        if (detail && detail.style.display !== 'block') card.click();
+      }, 300);
+    });
+  }, 800);
 }
 
 // ── Failsafe : force la fin du spinner après 25s quoi qu'il arrive ──────────
