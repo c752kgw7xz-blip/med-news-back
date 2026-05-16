@@ -1049,7 +1049,7 @@ def review_item(
                 from app.push_service import notify_specialty_approved
                 threading.Thread(
                     target=notify_specialty_approved,
-                    args=(specialty_slug, titre),
+                    args=(specialty_slug, titre, item_id_str),
                     daemon=True,
                 ).start()
         except Exception:

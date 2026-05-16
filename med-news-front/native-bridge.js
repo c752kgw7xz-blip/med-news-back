@@ -45,8 +45,11 @@
     });
 
     PushNotifications.addListener('pushNotificationActionPerformed', ({ notification }) => {
-      if (notification.data?.specialty_slug) {
-        window.location.href = `/portal?spec=${notification.data.specialty_slug}`;
+      const d = notification.data || {};
+      if (d.item_id) {
+        window.location.href = `/portal?item=${d.item_id}`;
+      } else if (d.specialty_slug) {
+        window.location.href = `/portal?spec=${d.specialty_slug}`;
       }
     });
 

@@ -86,7 +86,7 @@ def send_push_to_tokens(
         return 0
 
 
-def notify_specialty_approved(specialty_slug: str, titre: str) -> None:
+def notify_specialty_approved(specialty_slug: str, titre: str, item_id: str = "") -> None:
     """
     Envoie une push à tous les médecins de la spécialité quand un article
     est approuvé. Appelé de manière asynchrone (fire-and-forget).
@@ -113,11 +113,14 @@ def notify_specialty_approved(specialty_slug: str, titre: str) -> None:
         if not tokens:
             return
 
+        data: dict = {"specialty_slug": specialty_slug, "type": "new_article"}
+        if item_id:
+            data["item_id"] = item_id
         send_push_to_tokens(
             tokens=tokens,
             title="Nouveau dans MedNews",
             body=titre,
-            data={"specialty": specialty_slug, "type": "new_article"},
+            data=data,
         )
         logger.info(
             "Push envoyée à %d appareils pour %s : %s",
