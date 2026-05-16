@@ -221,6 +221,18 @@ def serve_google_verification():
 def serve_sitemap():
     return FileResponse(os.path.join(_FRONT_DIR, "sitemap.xml"), media_type="application/xml")
 
+@app.get("/cgv")
+def serve_cgv():
+    return FileResponse(os.path.join(_FRONT_DIR, "cgv.html"), media_type="text/html", headers=_NO_CACHE)
+
+@app.get("/mentions-legales")
+def serve_mentions_legales():
+    return FileResponse(os.path.join(_FRONT_DIR, "mentions-legales.html"), media_type="text/html", headers=_NO_CACHE)
+
+@app.get("/politique-confidentialite")
+def serve_politique_confidentialite():
+    return FileResponse(os.path.join(_FRONT_DIR, "politique-confidentialite.html"), media_type="text/html", headers=_NO_CACHE)
+
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
 MIGRATE_SECRET = os.environ.get("MIGRATE_SECRET")
