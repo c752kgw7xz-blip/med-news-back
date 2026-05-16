@@ -213,6 +213,10 @@ def serve_shared_js():
 def serve_banner_js():
     return FileResponse(os.path.join(_FRONT_DIR, "banner.js"), media_type="application/javascript", headers=_NO_CACHE)
 
+@app.get("/googleeb1fd567485e9181.html")
+def serve_google_verification():
+    return FileResponse(os.path.join(_FRONT_DIR, "googleeb1fd567485e9181.html"), media_type="text/html")
+
 
 DB_INIT_SECRET = os.environ.get("DB_INIT_SECRET")
 MIGRATE_SECRET = os.environ.get("MIGRATE_SECRET")
