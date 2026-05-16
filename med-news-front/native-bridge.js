@@ -18,8 +18,7 @@
     }
     if (perm.receive !== 'granted') return;
 
-    await PushNotifications.register();
-
+    // Attacher les listeners AVANT register() pour éviter la race condition
     PushNotifications.addListener('registration', ({ value: token }) => {
       const accessToken = localStorage.getItem('access_token');
       if (!accessToken) return;
@@ -39,6 +38,8 @@
         window.location.href = `/portal?spec=${notification.data.specialty_slug}`;
       }
     });
+
+    await PushNotifications.register();
   }
 
   // ── Biométrie ──────────────────────────────────────────────────
