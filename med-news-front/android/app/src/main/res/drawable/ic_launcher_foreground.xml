@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- M en Georgia, centré dans la safe zone (66dp sur 108dp).
+         Transform : scale 0.023256 (flip Y) + translate pour centrer. -->
+    <group
+        android:translateX="32.4419"
+        android:translateY="70.5"
+        android:scaleX="0.023256"
+        android:scaleY="-0.023256">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M1806 0H1179V71Q1213 72 1266.5 78.0Q1320 84 1340 95Q1371 114 1385.5 138.5Q1400 163 1400 200V1232H1385L901 23H851L390 1257H377V410Q377 287 392.5 223.0Q408 159 440 131Q462 110 531.0 91.0Q600 72 621 71V0H48V71Q93 75 142.5 86.0Q192 97 219 119Q254 147 267.0 205.0Q280 263 280 399V1125Q280 1188 265.0 1228.0Q250 1268 222 1293Q191 1320 146.0 1333.0Q101 1346 57 1348V1419H541L947 355L1294 1245Q1313 1294 1326.5 1347.5Q1340 1401 1341 1419H1804V1348Q1776 1347 1732.5 1339.0Q1689 1331 1669 1324Q1635 1312 1623.0 1284.0Q1611 1256 1611 1223V200Q1611 165 1623.0 141.0Q1635 117 1669 99Q1687 89 1733.0 80.5Q1779 72 1806 71Z"/>
+    </group>
+</vector>
