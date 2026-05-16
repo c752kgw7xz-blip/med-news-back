@@ -21,7 +21,7 @@
     await PushNotifications.register();
 
     PushNotifications.addListener('registration', ({ value: token }) => {
-      const accessToken = sessionStorage.getItem('access_token');
+      const accessToken = localStorage.getItem('access_token');
       if (!accessToken) return;
       fetch('/me/push-token', {
         method: 'POST',
