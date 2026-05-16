@@ -1434,6 +1434,7 @@ SOURCE_HINTS: dict[str, str] = {
     "pubmed_jpu":              "Journal of Pediatric Urology (JPU/ESPU/EAU) — Essai clinique, méta-analyse ou étude multicentrique en urologie pédiatrique : hypospadias, cryptorchidie, RVU, VUP, SJPU, lithiase, neurologie urinaire pédiatrique",
     "pubmed_jpu_guidelines":   "JPU Guidelines EAU Pediatric / ESPU — Recommandation ou position statement EAU Pediatric Urology / ESPU en urologie pédiatrique publiée dans le Journal of Pediatric Urology",
     "eupsa_pediatrique":       "EUPSA — Guideline ou position statement de l'European Paediatric Surgeons' Association en chirurgie pédiatrique",
+    "eupsa_ejps":              "EJPS — European Journal of Pediatric Surgery (Springer RSS) — article de recherche clinique ou étude multicentrique en chirurgie pédiatrique",
     # ── Sage-femme ───────────────────────────────────────────────────────────
     "pubmed_midwifery":             "Midwifery (RCM/Elsevier, IF ~3) — Essai clinique ou méta-analyse en pratique maïeutique : accouchement physiologique, douleur du travail, expérience de naissance",
     "pubmed_birth":                 "Birth (Wiley/ICEA, IF ~3) — Essai clinique en obstétrique physiologique : travail, positions, analgésie, mode d'accouchement, expérience périnatale",
@@ -1575,6 +1576,7 @@ SOURCE_SPECIALTY_HINTS: dict[str, str] = {
     "pubmed_jpu":               "chirurgie-pediatrique",
     "pubmed_jpu_guidelines":    "chirurgie-pediatrique",
     "eupsa_pediatrique":              "chirurgie-pediatrique",
+    "eupsa_ejps":                     "chirurgie-pediatrique",  # EJPS Springer RSS
     # ── Pédiatrie générale ──────────────────────────────────────────────────
     "bmj_adc":                        "pediatrie",  # RSS Archives of Disease in Childhood / RCPCH (IF ~5)
     # eclinmedicine → spécialité variable, absent du dict → prompt générique (comportement voulu)
