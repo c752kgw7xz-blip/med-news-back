@@ -8,6 +8,26 @@
   const isNative = cap && cap.isNativePlatform();
 
   // ── Push notifications ─────────────────────────────────────────
+  function sendPushToken(token) {
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken || !token) return;
+    fetch('/me/push-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify({ token, platform: isNative ? cap.getPlatform() : 'android' }),
+    }).catch(() => {});
+  }
+
+  // Appelé après login pour envoyer un token FCM déjà obtenu
+  function flushPushToken() {
+    const token = localStorage.getItem('mednews_fcm_token');
+    if (token) sendPushToken(token);
+  }
+
   async function registerPush() {
     if (!isNative) return;
     const { PushNotifications } = cap.Plugins;
@@ -20,17 +40,8 @@
 
     // Attacher les listeners AVANT register() pour éviter la race condition
     PushNotifications.addListener('registration', ({ value: token }) => {
-      const accessToken = localStorage.getItem('access_token');
-      if (!accessToken) return;
-      fetch('/me/push-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        credentials: 'include',
-        body: JSON.stringify({ token, platform: cap.getPlatform() }),
-      }).catch(() => {});
+      localStorage.setItem('mednews_fcm_token', token);
+      sendPushToken(token);
     });
 
     PushNotifications.addListener('pushNotificationActionPerformed', ({ notification }) => {
@@ -97,6 +108,7 @@
     isNative: !!isNative,
     platform: isNative ? cap.getPlatform() : 'web',
     registerPush,
+    flushPushToken,
     isBiometricAvailable,
     saveCredentials,
     getCredentials,

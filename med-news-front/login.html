@@ -157,6 +157,7 @@ form.addEventListener('submit', async (e) => {
       if (!existing) await native.saveCredentials(email, password);
     }
 
+    if (window.MedNewsNative) window.MedNewsNative.flushPushToken();
     redirectAfterLogin(token);
   } catch (err) {
     showError(err.message || 'Erreur de connexion au serveur');
