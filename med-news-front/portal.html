@@ -5161,7 +5161,8 @@ function _doSwipe(dir, dx) {
     buildSidebar();
     console.log('[MedNews] buildSidebar done');
     // Swipe deck sur mobile (avant le splash classique)
-    await initSwipeDeck();
+    // Swipe deck ignoré si deep link en attente (notif push)
+    if (!_DEEP_LINK_ITEM && !_DEEP_LINK_SPEC) await initSwipeDeck();
     // Ne pas charger les articles au démarrage — le splash s'affiche, articles chargés au clic sous-catégorie
   } catch (e) {
     console.error('[MedNews] Init error:', e);
