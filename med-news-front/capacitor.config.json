@@ -3,7 +3,8 @@
   "appName": "MedNews",
   "webDir": "www",
   "server": {
-    "androidScheme": "https"
+    "url": "https://med-news.fr",
+    "cleartext": false
   },
   "plugins": {
     "PushNotifications": {
@@ -16,10 +17,9 @@
   },
   "ios": {
     "contentInset": "automatic",
-    "backgroundColor": "#0f1117",
-    "limitsNavigationsToAppBoundDomains": true
+    "backgroundColor": "#F5F0E8"
   },
   "android": {
-    "backgroundColor": "#0f1117"
+    "backgroundColor": "#F5F0E8"
   }
 }

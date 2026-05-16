@@ -40,3 +40,4 @@ requests>=2.31
 
 # Paiement
 stripe>=10.0
+firebase-admin>=6.5.0

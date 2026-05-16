@@ -138,6 +138,30 @@ def get_profile(user_id: str = Depends(_get_current_user_id)):
     }
 
 
+@router.post("/me/push-token", status_code=204)
+def save_push_token(
+    payload: dict,
+    user_id: str = Depends(_get_current_user_id),
+):
+    """Enregistre ou met à jour le token FCM/APNs de l'appareil."""
+    token = (payload.get("token") or "").strip()
+    platform = (payload.get("platform") or "android").strip().lower()
+    if not token or platform not in ("android", "ios"):
+        raise HTTPException(status_code=400, detail="token ou platform invalide")
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO push_tokens (user_id, token, platform)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (user_id, token) DO UPDATE
+                    SET platform = EXCLUDED.platform,
+                        updated_at = now()
+                """,
+                (user_id, token, platform),
+            )
+
+
 @router.post("/me/student-banner-seen", status_code=204)
 def mark_student_banner_seen(user_id: str = Depends(_get_current_user_id)):
     with get_conn() as conn:

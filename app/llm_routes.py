@@ -1027,12 +1027,40 @@ def review_item(
     if not row:
         raise HTTPException(status_code=404, detail="item non trouvé")
 
+    item_id_str, review_status, specialty_slug, score_density = (
+        str(row[0]), row[1], row[2], row[3]
+    )
+
+    # Push notification fire-and-forget quand un article est approuvé
+    if review_status == "APPROVED" and specialty_slug:
+        try:
+            titre = ""
+            with get_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT tri_json->>'titre_court' FROM items WHERE id = %s",
+                        (item_id_str,),
+                    )
+                    r = cur.fetchone()
+                    if r:
+                        titre = r[0] or ""
+            if titre:
+                import threading
+                from app.push_service import notify_specialty_approved
+                threading.Thread(
+                    target=notify_specialty_approved,
+                    args=(specialty_slug, titre),
+                    daemon=True,
+                ).start()
+        except Exception:
+            pass  # Ne jamais bloquer la review pour une notif
+
     return {
         "ok": True,
-        "item_id": str(row[0]),
-        "review_status": row[1],
-        "specialty_slug": row[2],
-        "score_density": row[3],
+        "item_id": item_id_str,
+        "review_status": review_status,
+        "specialty_slug": specialty_slug,
+        "score_density": score_density,
     }
 
 
