@@ -1090,7 +1090,7 @@
     will-change: transform;
   }
   /* Pages plein écran — plein écran sur mobile (pas de header) */
-  .fp-overlay { top: 0; bottom: calc(60px + env(safe-area-inset-bottom)); padding-top: 8px; }
+  .fp-overlay { top: 0; bottom: calc(60px + env(safe-area-inset-bottom)); padding-top: calc(env(safe-area-inset-top, 0px) + 8px); }
   /* Bloque le scroll du body quand un overlay est ouvert (iOS + Android) */
   body.fp-overlay-open { position: fixed; overflow-y: scroll; width: 100%; }
   /* Cache le header quand un overlay est ouvert sur mobile */
