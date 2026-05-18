@@ -268,7 +268,7 @@
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <h2 id="done-title">Compte créé !</h2>
-      <p id="done-msg">Un email de validation vient de vous être envoyé.<br><br><strong>Cliquez sur le lien dans cet email pour activer votre compte.</strong><br><br><span style="color:#b56808;font-weight:500;">Pensez à vérifier vos spams.</span></p>
+      <p id="done-msg">Un email de validation vient de vous être envoyé à <strong id="done-email"></strong>.<br><br><strong>Cliquez sur le lien dans cet email pour activer votre compte.</strong><br><br><span style="color:#b56808;font-weight:500;">Pensez à vérifier vos spams.</span></p>
       <button id="resend-btn" class="btn-secondary" style="margin-top:20px;" onclick="resendEmail()">Renvoyer l'email</button>
       <a href="/login" class="login-link">Aller à la connexion →</a>
     </div>
@@ -298,6 +298,10 @@ function showScreen(name) {
     document.getElementById('screen-' + s).style.display = 'none'
   );
   document.getElementById('screen-' + name).style.display = 'block';
+  if (name === 'done') {
+    const el = document.getElementById('done-email');
+    if (el && _signupEmail) el.textContent = _signupEmail;
+  }
 }
 
 function toggleStudent() {
