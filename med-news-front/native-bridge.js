@@ -8,6 +8,9 @@
   const isNative = cap && cap.isNativePlatform();
 
   // ── Push notifications ─────────────────────────────────────────
+  const PUSH_TOKEN_KEY = 'mednews_push_token';
+  const platform = isNative ? cap.getPlatform() : 'web';
+
   function sendPushToken(token) {
     const accessToken = localStorage.getItem('access_token');
     if (!accessToken || !token) return;
@@ -18,13 +21,13 @@
         'Authorization': `Bearer ${accessToken}`,
       },
       credentials: 'include',
-      body: JSON.stringify({ token, platform: isNative ? cap.getPlatform() : 'android' }),
+      body: JSON.stringify({ token, platform }),
     }).catch(() => {});
   }
 
-  // Appelé après login pour envoyer un token FCM déjà obtenu
+  // Appelé après login pour envoyer un token push déjà obtenu
   function flushPushToken() {
-    const token = localStorage.getItem('mednews_fcm_token');
+    const token = localStorage.getItem(PUSH_TOKEN_KEY);
     if (token) sendPushToken(token);
   }
 
@@ -38,10 +41,26 @@
     }
     if (perm.receive !== 'granted') return;
 
+    // Sur iOS, Firebase SDK envoie le vrai token FCM via l'événement natif ci-dessous.
+    // Sur Android, le plugin retourne directement le token FCM dans 'registration'.
+    if (platform === 'ios') {
+      // Token FCM injecté par AppDelegate.swift via evaluateJavaScript
+      window.addEventListener('mednews_fcm_token', (e) => {
+        const token = e.detail && e.detail.token;
+        if (!token) return;
+        localStorage.setItem(PUSH_TOKEN_KEY, token);
+        sendPushToken(token);
+      }, { once: false });
+    }
+
     // Attacher les listeners AVANT register() pour éviter la race condition
     PushNotifications.addListener('registration', ({ value: token }) => {
-      localStorage.setItem('mednews_fcm_token', token);
-      sendPushToken(token);
+      if (platform === 'android') {
+        // Android : token FCM direct
+        localStorage.setItem(PUSH_TOKEN_KEY, token);
+        sendPushToken(token);
+      }
+      // iOS : token APNs brut ignoré ici — on attend l'événement mednews_fcm_token de Firebase
     });
 
     PushNotifications.addListener('pushNotificationActionPerformed', ({ notification }) => {
@@ -113,7 +132,7 @@
   // ── Export global ──────────────────────────────────────────────
   window.MedNewsNative = {
     isNative: !!isNative,
-    platform: isNative ? cap.getPlatform() : 'web',
+    platform,
     registerPush,
     flushPushToken,
     isBiometricAvailable,

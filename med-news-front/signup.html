@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MedNews — Inscription</title>
 <script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,8 @@
     background: var(--bg); color: var(--text);
     font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
     display: flex; align-items: center; justify-content: center;
-    min-height: 100vh; overflow-x: hidden;
+    min-height: 100vh; overflow-x: hidden; overscroll-behavior: none;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   }
   .card {
     background: var(--surface); border: 1px solid var(--border);
