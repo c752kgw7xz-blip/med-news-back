@@ -1762,7 +1762,7 @@
   @media (max-width: 768px) {
     /* Swipe deck — masquer le header pour plein écran */
     body.swipe-deck-active header { display: none !important; }
-    body.swipe-deck-active #swipe-deck { top: 0 !important; }
+    body.swipe-deck-active #swipe-deck { top: env(safe-area-inset-top, 0px) !important; }
 
     /* Story stack layout */
     .story-stack-mode .content-area {
