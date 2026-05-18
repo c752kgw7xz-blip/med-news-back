@@ -51,6 +51,14 @@
         localStorage.setItem(PUSH_TOKEN_KEY, token);
         sendPushToken(token);
       }, { once: false });
+
+      // Fallback : token déjà arrivé avant que ce listener soit prêt (race condition)
+      const pending = window.__mednews_pending_fcm_token;
+      if (pending) {
+        localStorage.setItem(PUSH_TOKEN_KEY, pending);
+        sendPushToken(pending);
+        window.__mednews_pending_fcm_token = null;
+      }
     }
 
     // Attacher les listeners AVANT register() pour éviter la race condition
