@@ -122,6 +122,8 @@ function showError(msg) {
 
 function redirectAfterLogin(token) {
   localStorage.setItem('access_token', token);
+  // flush push token APRÈS avoir stocké access_token
+  if (window.MedNewsNative) window.MedNewsNative.flushPushToken();
   let dest = '/portal';
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -166,7 +168,6 @@ form.addEventListener('submit', async (e) => {
       if (!existing) await native.saveCredentials(email, password);
     }
 
-    if (window.MedNewsNative) window.MedNewsNative.flushPushToken();
     redirectAfterLogin(token);
   } catch (err) {
     showError('Identifiants incorrects ou erreur de connexion.');
