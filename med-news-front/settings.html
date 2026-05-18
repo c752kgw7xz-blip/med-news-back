@@ -353,6 +353,26 @@
       </div>
 
 
+      <!-- ── Accès étudiant ───────────────────── -->
+      <div class="settings-section" id="student-section" style="display:none;">
+        <div class="section-title">Accès étudiant gratuit</div>
+        <div class="setting-row" id="student-status-row">
+          <div class="setting-info" id="student-status-info"></div>
+        </div>
+        <div id="student-upload-row" style="display:none;">
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Carte étudiante</div>
+              <div class="setting-desc">JPEG, PNG, PDF — max 5 Mo</div>
+            </div>
+            <input type="file" id="student-file-input" accept="image/jpeg,image/png,image/webp,application/pdf" style="font-size:0.86rem;">
+          </div>
+          <div class="setting-row-action">
+            <button class="btn-save" id="student-upload-btn" onclick="uploadStudentDoc()">Envoyer ma demande</button>
+          </div>
+        </div>
+      </div>
+
       <!-- ── Compte ────────────────────────────── -->
       <div class="settings-section">
         <div class="section-title">Compte</div>
@@ -588,6 +608,50 @@ async function savePreferences() {
   }
 }
 
+// ── Accès étudiant ────────────────────────────────────────────
+async function loadStudentStatus() {
+  try {
+    const res = await authFetch(`${API}/me/student-request`);
+    if (!res || !res.ok) return;
+    const data = await res.json();
+    const section = document.getElementById('student-section');
+    const info = document.getElementById('student-status-info');
+    const uploadRow = document.getElementById('student-upload-row');
+
+    if (data.status === 'none') return; // pas étudiant, section cachée
+
+    section.style.display = 'block';
+
+    if (data.status === 'rejected') {
+      const reason = data.reject_reason ? ` : ${data.reject_reason}` : '';
+      info.innerHTML = `<div style="background:#fee2e2;color:#991b1b;border-radius:6px;padding:8px 12px;font-size:0.86rem;">Demande refusée${reason}. Vous pouvez renvoyer un document.</div>`;
+      uploadRow.style.display = 'block';
+    } else if (data.status === 'pending') {
+      info.innerHTML = `<div style="background:#fff3cd;color:#856404;border-radius:6px;padding:8px 12px;font-size:0.86rem;">Votre carte est en cours de validation — vous disposez de l'accès complet jusqu'à vérification.</div>`;
+    } else if (data.status === 'approved') {
+      info.innerHTML = `<div style="background:#d1fae5;color:#065f46;border-radius:6px;padding:8px 12px;font-size:0.86rem;">Votre carte a été validée — vous disposez de l'accès complet gratuit.</div>`;
+    }
+  } catch {}
+}
+
+async function uploadStudentDoc() {
+  const input = document.getElementById('student-file-input');
+  const btn = document.getElementById('student-upload-btn');
+  if (!input.files.length) { showToast('Sélectionnez un fichier'); return; }
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  const form = new FormData();
+  form.append('file', input.files[0]);
+  const res = await authFetch(`${API}/me/student-request`, { method: 'POST', body: form });
+  btn.disabled = false; btn.textContent = 'Envoyer ma demande';
+  if (res && res.ok) {
+    showToast('Demande envoyée — réponse sous 48h');
+    document.getElementById('student-upload-row').style.display = 'none';
+    document.getElementById('student-status-info').innerHTML = `<div style="background:#fff3cd;color:#856404;border-radius:6px;padding:8px 12px;font-size:0.86rem;">Demande en cours de validation.</div>`;
+  } else {
+    showToast('Erreur lors de l\'envoi');
+  }
+}
+
 // ── Billing ───────────────────────────────────────────────────
 async function loadBillingStatus() {
   try {
@@ -674,6 +738,7 @@ window.scrollTo(0, 0);
 
   await loadSpecialties(profile.specialty_slug);
   await loadPreferences();
+  await loadStudentStatus();
   await loadBillingStatus();
 
   updateThemeUI();
