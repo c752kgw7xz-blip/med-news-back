@@ -3914,7 +3914,7 @@ async function loadArticles(page) {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const container = document.getElementById('articles-container');
-    container.innerHTML = `<div class="empty" style="color:var(--red);">Erreur ${res.status} lors du chargement${err.detail ? ' — ' + err.detail : ''}.<br>Rechargez la page ou contactez le support.</div>`;
+    container.innerHTML = `<div class="empty" style="color:var(--red);">Une erreur est survenue lors du chargement.<br>Rechargez la page ou contactez le support.</div>`;
     return;
   }
   const data = await res.json();

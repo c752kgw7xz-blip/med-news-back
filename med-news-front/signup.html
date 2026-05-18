@@ -7,13 +7,13 @@
 <script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [data-theme="light"] {
-    --bg: #F8FAFC; --surface: #FFFFFF; --surface2: #F1F5F9;
-    --border: #E2E8F0; --border-strong: #CBD5E1;
-    --text: #0F172A; --text2: #1E293B; --text3: #475569; --text4: #94A3B8;
+    --bg: #F4F6F9; --surface: #FFFFFF; --surface2: #EEF2F7;
+    --border: #DDE3ED; --border-strong: #BBC6D8;
+    --text: #0D1B2A; --text2: #3D5066; --text3: #6B7FA0; --text4: #A0AFCA;
     --green-dark: #FFF1F2; --red-dark: #FFF1F2;
   }
   [data-theme="dark"] {
@@ -24,7 +24,7 @@
   }
   :root { --green: #9B2335; --red: #DC2626; --radius: 6px; }
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     background: var(--bg); color: var(--text);
     font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
     display: flex; align-items: center; justify-content: center;
@@ -34,6 +34,10 @@
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 44px 40px; width: 100%; max-width: 420px; margin: 24px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(0,0,0,0.06);
+    border-color: transparent;
+    background-clip: padding-box;
+    outline: 1px solid rgba(0,0,0,0.07);
   }
   .logo {
     font-family: 'Instrument Serif', Georgia, serif; font-size: 1.4rem; font-weight: 400;
@@ -42,13 +46,14 @@
   .logo em { font-style: italic; }
   .logo b { font-weight: 700; font-style: normal; }
   .subtitle { text-align: center; color: var(--text3); font-size: 0.82rem; margin-bottom: 28px; }
-  label { display: block; font-weight: 500; font-size: 0.79rem; margin-bottom: 6px; color: var(--text2); }
+  label { display: block; font-weight: 600; font-size: 0.8rem; margin-bottom: 7px; color: var(--text); letter-spacing: 0.01em; }
   input[type=text], input[type=email], input[type=password], select {
-    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
-    border-radius: var(--radius); font-size: 0.86rem; margin-bottom: 16px;
-    outline: none; transition: border-color .2s;
-    background: var(--surface2); color: var(--text); font-family: inherit;
+    width: 100%; padding: 11px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius); font-size: 0.88rem; margin-bottom: 18px;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+    background: #fff; color: var(--text); font-family: inherit;
     -webkit-appearance: none; appearance: none;
+    box-shadow: 0 2px 0 var(--border), 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 3px rgba(0,0,0,0.04);
   }
   select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23706860' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
@@ -88,19 +93,25 @@
   .student-toggle-text span { font-size: 0.76rem; color: var(--text3); }
 
   .btn {
-    width: 100%; padding: 11px; background: var(--green); color: #fff; border: none;
+    width: 100%; padding: 13px; background: var(--green); color: #fff; border: none;
     border-radius: var(--radius); font-size: 0.88rem; font-weight: 600;
-    cursor: pointer; transition: opacity .2s; font-family: inherit; margin-top: 4px;
+    cursor: pointer; font-family: inherit; margin-top: 4px;
+    box-shadow: 0 4px 0 #6b1624, 0 6px 12px rgba(155,35,53,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: transform .1s, box-shadow .1s;
   }
-  .btn:hover { opacity: .88; }
-  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #6b1624, 0 8px 16px rgba(155,35,53,0.4), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #6b1624, 0 2px 6px rgba(155,35,53,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
   .btn-secondary {
-    width: 100%; padding: 10px; background: transparent; color: var(--text3);
+    width: 100%; padding: 11px; background: #fff; color: var(--text3);
     border: 1px solid var(--border); border-radius: var(--radius);
     font-size: 0.85rem; font-weight: 500; cursor: pointer; font-family: inherit;
-    margin-top: 8px; transition: background .15s;
+    margin-top: 8px;
+    box-shadow: 0 3px 0 #BBC6D8, 0 4px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+    transition: transform .1s, box-shadow .1s;
   }
-  .btn-secondary:hover { background: var(--surface2); }
+  .btn-secondary:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #BBC6D8, 0 6px 12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9); }
+  .btn-secondary:active { transform: translateY(2px); box-shadow: 0 1px 0 #BBC6D8, 0 2px 4px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9); }
 
   .error {
     background: var(--red-dark); color: var(--red); padding: 10px 12px;
@@ -109,25 +120,30 @@
   }
   .info-box {
     background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 14px; font-size: 0.82rem; color: var(--text2); margin-bottom: 16px; line-height: 1.6;
+    padding: 22px; font-size: 0.88rem; color: var(--text2); margin-bottom: 20px; line-height: 1.7; text-align: center;
   }
-  .info-box strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 0.88rem; }
+  .info-box strong { color: var(--text); display: block; margin-bottom: 14px; font-size: 1rem; }
+  .info-highlight { display: block; color: #9B2335; font-weight: 600; font-size: 0.9rem; margin-bottom: 14px; line-height: 1.6; }
+  .info-line { display: block; margin-bottom: 10px; }
 
   .success-screen { text-align: center; padding: 8px 0; }
   .success-icon {
-    width: 52px; height: 52px; background: #d1fae5; border-radius: 50%;
+    width: 60px; height: 60px; background: #d1fae5; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 16px;
+    margin: 0 auto 20px;
+    box-shadow: 0 3px 0 #a7f3d0, 0 4px 12px rgba(5,150,105,0.2);
   }
   .success-icon svg { color: #059669; }
-  .success-screen h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
-  .success-screen p { font-size: 0.84rem; color: var(--text3); line-height: 1.6; }
+  .success-screen h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+  .success-screen p { font-size: 0.88rem; color: var(--text2); line-height: 1.8; }
   .success-screen .login-link {
-    display: inline-block; margin-top: 20px; padding: 10px 24px;
+    display: block; margin-top: 20px; padding: 13px 24px;
     background: var(--green); color: #fff; border-radius: var(--radius);
-    font-size: 0.86rem; font-weight: 600; text-decoration: none; transition: opacity .2s;
+    font-size: 0.88rem; font-weight: 600; text-decoration: none;
+    box-shadow: 0 4px 0 #6b1624, 0 6px 12px rgba(155,35,53,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: transform .1s, box-shadow .1s;
   }
-  .success-screen .login-link:hover { opacity: .88; }
+  .success-screen .login-link:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #6b1624, 0 8px 16px rgba(155,35,53,0.4), inset 0 1px 0 rgba(255,255,255,0.15); }
 
   .step-indicator { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; justify-content: center; }
   .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background .2s; }
@@ -187,8 +203,8 @@
         <input type="checkbox" id="is-student">
         <div class="student-toggle-icon" id="student-check-icon"></div>
         <div class="student-toggle-text">
-          <strong>Je suis étudiant(e) en médecine</strong>
-          <span>Accès gratuit — envoi de la carte étudiante à l'étape suivante</span>
+          <strong>Je suis étudiant(e)</strong>
+          <span>Accès gratuit</span>
         </div>
       </div>
 
@@ -205,7 +221,8 @@
     </div>
     <div class="info-box">
       <strong>Envoyez votre carte étudiante</strong>
-      Votre demande sera examinée sous 48h. En attendant la validation, votre accès est en cours de traitement.
+      <span class="info-line">Votre demande sera examinée sous 48h.</span>
+      <span class="info-line">Vous disposez de l'accès complet jusqu'à l'examen de votre carte.</span>
     </div>
     <div class="error" id="error-student"></div>
     <div class="upload-zone" id="upload-zone" onclick="document.getElementById('student-file').click()"
@@ -231,8 +248,11 @@
       <div class="step-dot active" id="dot-p2"></div>
     </div>
     <div class="info-box">
-      <strong>Accès complet à MedNews — 18,99 €/mois</strong>
-      MedNews est <strong>entièrement gratuit jusqu'au 1er août 2026</strong>. Votre premier mois est ensuite <strong>offert</strong> — vous ne serez pas débité avant le 1er septembre 2026. Résiliable à tout moment.
+      <strong style="text-align:center;">Accès complet à MedNews<span style="display:block;text-align:center;font-size:1.1rem;">18,99 €/mois</span></strong>
+      <span style="display:block;text-align:center;font-size:1.15rem;font-weight:700;color:var(--accent,#8b1a1a);margin:18px 0 10px;">Profitez de l'offre de lancement.</span>
+      <span class="info-highlight">Vous bénéficiez d'un accès entièrement gratuit à MedNews jusqu'au 1er août 2026.</span>
+      <span class="info-line">Vous avez cependant la possibilité de vous abonner dès maintenant. Vous ne serez débité qu'à partir du 1er septembre 2026.</span>
+      <span class="info-line">Résiliable à tout moment.</span>
     </div>
     <div class="error" id="error-payment"></div>
     <button class="btn" id="payment-btn" onclick="goToStripe()">
@@ -248,9 +268,9 @@
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <h2 id="done-title">Compte créé !</h2>
-      <p id="done-msg">Un email de validation vient de vous être envoyé.<br><strong>Cliquez sur le lien dans cet email pour activer votre compte.</strong><br><span style="color:#b56808;font-weight:500;">Pensez à vérifier vos spams.</span></p>
-      <button id="resend-btn" class="btn-secondary" style="margin-top:16px;" onclick="resendEmail()">Renvoyer l'email</button>
-      <a href="/login" class="login-link" style="display:block;margin-top:12px;">Aller à la connexion →</a>
+      <p id="done-msg">Un email de validation vient de vous être envoyé.<br><br><strong>Cliquez sur le lien dans cet email pour activer votre compte.</strong><br><br><span style="color:#b56808;font-weight:500;">Pensez à vérifier vos spams.</span></p>
+      <button id="resend-btn" class="btn-secondary" style="margin-top:20px;" onclick="resendEmail()">Renvoyer l'email</button>
+      <a href="/login" class="login-link">Aller à la connexion →</a>
     </div>
   </div>
 </div>
@@ -339,7 +359,7 @@ document.getElementById('form').addEventListener('submit', async (e) => {
     if (!res.ok) {
       if (res.status === 409) showError(errEl, 'Cette adresse email est déjà utilisée');
       else if (res.status === 403) showError(errEl, 'Les inscriptions sont désactivées');
-      else showError(errEl, data.detail || 'Erreur lors de la création du compte');
+      else showError(errEl, 'Une erreur est survenue. Veuillez réessayer.');
       return;
     }
     _userId = data.id;
@@ -409,7 +429,7 @@ async function submitStudentCard() {
       showScreen('done');
     } else {
       const d = await res.json();
-      showError(errEl, d.detail || 'Erreur lors de l\'envoi');
+      showError(errEl, 'Une erreur est survenue. Veuillez réessayer.');
     }
   } catch {
     showError(errEl, 'Erreur de connexion');
@@ -442,7 +462,7 @@ async function goToStripe() {
     });
     if (!res.ok) {
       const d = await res.json();
-      showError(errEl, d.detail || 'Erreur Stripe');
+      showError(errEl, 'Une erreur est survenue. Veuillez réessayer.');
       btn.disabled = false; btn.textContent = 'Continuer vers le paiement →';
       return;
     }

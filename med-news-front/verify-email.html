@@ -7,49 +7,60 @@
 <script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [data-theme="light"] {
-    --bg: #f6f5f2; --surface: #ffffff; --border: #e4e0d8;
-    --text: #1a1814; --text2: #4a4540; --text3: #7a7268;
-    --green-dark: #e5f5f0; --red-dark: #fde8e8;
+    --bg: #F4F6F9; --surface: #FFFFFF; --surface2: #EEF2F7;
+    --border: #DDE3ED; --border-strong: #BBC6D8;
+    --text: #0D1B2A; --text2: #3D5066; --text3: #6B7FA0; --text4: #A0AFCA;
   }
   [data-theme="dark"] {
-    --bg: #0f1117; --surface: #13151f; --border: #1e2030;
-    --text: #f0f0f5; --text2: #c8c8d4; --text3: #8b8fa8;
-    --green-dark: #0d2a20; --red-dark: #2a0d0d;
+    --bg: #0F1117; --surface: #161B27; --surface2: #1E2535;
+    --border: #2A3444; --border-strong: #3D4F66;
+    --text: #E2E8F0; --text2: #CBD5E1; --text3: #94A3B8; --text4: #64748B;
   }
-  :root {
-    --green: #1f9478; --red: #cc3232; --radius: 8px;
-  }
+  :root { --green: #9B2335; --radius: 6px; }
   body {
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     background: var(--bg); color: var(--text); font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
     display: flex; align-items: center; justify-content: center; min-height: 100vh;
   }
   .card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    padding: 40px; width: 100%; max-width: 420px; margin: 24px;
+    background: var(--surface); border-radius: var(--radius);
+    padding: 44px 40px; width: 100%; max-width: 420px; margin: 24px;
     text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(0,0,0,0.06);
+    border: transparent; outline: 1px solid rgba(0,0,0,0.07);
   }
   .logo {
-    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.43rem; font-weight: 400;
-    color: var(--text); margin-bottom: 24px; letter-spacing: -.3px;
+    font-family: 'Instrument Serif', Georgia, serif; font-size: 1.4rem; font-weight: 400;
+    color: var(--text); margin-bottom: 4px; letter-spacing: -.3px;
   }
   .logo em { font-style: italic; }
   .logo b { font-weight: 700; font-style: normal; }
+  .subtitle { color: var(--text3); font-size: 0.82rem; margin-bottom: 32px; }
   .spinner { font-size: 1.88rem; margin-bottom: 16px; animation: spin 1s linear infinite; display: inline-block; color: var(--text3); }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .status { font-size: 0.88rem; color: var(--text2); margin-bottom: 20px; }
-  .success { color: var(--green); }
-  .error-text { color: var(--red); }
-  .btn {
-    display: inline-block; padding: 10px 24px; background: var(--green); color: #fff;
-    border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 0.82rem;
-    font-family: inherit; transition: opacity .2s;
+  .status { font-size: 0.9rem; color: var(--text2); margin-bottom: 24px; line-height: 1.7; }
+  .success { color: var(--text) !important; font-weight: 600; }
+  .error-text { color: #DC2626; }
+  .success-icon {
+    width: 60px; height: 60px; background: #d1fae5; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 3px 0 #a7f3d0, 0 4px 12px rgba(5,150,105,0.2);
   }
-  .btn:hover { opacity: .9; }
+  .success-icon svg { color: #059669; }
+  .btn {
+    display: block; width: 100%; padding: 13px 24px; background: var(--green); color: #fff;
+    border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 0.88rem;
+    font-family: inherit;
+    box-shadow: 0 4px 0 #6b1624, 0 6px 12px rgba(155,35,53,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #6b1624, 0 8px 16px rgba(155,35,53,0.4), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #6b1624, 0 2px 6px rgba(155,35,53,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
   .hidden { display: none; }
 </style>
 <script src="/banner.js"></script>
@@ -57,11 +68,15 @@
 <body>
   <div class="card">
     <div class="logo"><em>Med</em><b>News</b></div>
+    <div class="subtitle">La revue médicale par spécialité</div>
     <div id="loading">
       <div class="spinner">&#8635;</div>
       <div class="status">Vérification en cours...</div>
     </div>
     <div id="result" class="hidden">
+      <div class="success-icon hidden" id="success-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
       <div class="status" id="message"></div>
       <a href="/login" class="btn">Se connecter</a>
     </div>
@@ -81,7 +96,7 @@ const API = window.location.origin;
     loading.classList.add('hidden');
     result.classList.remove('hidden');
     message.classList.add('error-text');
-    message.textContent = 'Lien invalide : aucun token fourni.';
+    message.textContent = 'Ce lien est invalide ou a expiré. Veuillez faire renvoyer un email de validation.';
     return;
   }
 
@@ -97,17 +112,18 @@ const API = window.location.origin;
     result.classList.remove('hidden');
 
     if (res.ok) {
+      document.getElementById('success-icon').classList.remove('hidden');
       message.classList.add('success');
       message.textContent = 'Email vérifié avec succès ! Vous pouvez maintenant vous connecter.';
     } else {
       message.classList.add('error-text');
-      message.textContent = data.detail || 'Erreur lors de la vérification.';
+      message.textContent = 'Ce lien est invalide ou a expiré. Veuillez faire renvoyer un email de validation.';
     }
   } catch {
     loading.classList.add('hidden');
     result.classList.remove('hidden');
     message.classList.add('error-text');
-    message.textContent = 'Erreur de connexion au serveur.';
+    message.textContent = 'Une erreur est survenue. Veuillez réessayer.';
   }
 })();
 </script>

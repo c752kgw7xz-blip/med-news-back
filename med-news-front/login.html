@@ -133,7 +133,7 @@ async function doLogin(email, password) {
     if (res.status === 403 && data.detail === 'email not verified') {
       throw new Error('Votre email n\u2019est pas encore v\u00e9rifi\u00e9. Consultez votre bo\u00eete mail.');
     }
-    throw new Error(data.detail || 'Identifiants incorrects');
+    throw new Error('Identifiants incorrects.');
   }
   return data.access_token;
 }
@@ -160,7 +160,7 @@ form.addEventListener('submit', async (e) => {
     if (window.MedNewsNative) window.MedNewsNative.flushPushToken();
     redirectAfterLogin(token);
   } catch (err) {
-    showError(err.message || 'Erreur de connexion au serveur');
+    showError('Identifiants incorrects ou erreur de connexion.');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Se connecter';
@@ -184,7 +184,7 @@ async function loginWithBiometric() {
     const token = await doLogin(creds.username, creds.password);
     redirectAfterLogin(token);
   } catch (err) {
-    showError(err.message);
+    showError('Une erreur est survenue. Veuillez réessayer.');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Se connecter';
