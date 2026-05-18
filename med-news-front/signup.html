@@ -427,9 +427,10 @@ async function submitStudentCard() {
     if (res.ok) {
       document.getElementById('done-title').textContent = 'Demande envoyée !';
       document.getElementById('done-msg').innerHTML =
-        'Votre carte étudiante a été reçue.<br>' +
-        '<strong>Vous avez accès à MedNews dès maintenant</strong>, même en attente de validation.<br>' +
-        'Vérifiez également votre email pour activer votre compte.';
+        'Votre carte a bien été reçue. Vous disposez de l\'accès complet jusqu\'à sa validation.<br><br>' +
+        'Un email de vérification a été envoyé à <strong id="done-email"></strong>.<br>' +
+        '<strong>Cliquez sur le lien pour activer votre compte.</strong><br><br>' +
+        '<span style="color:#b56808;font-weight:500;">Pensez à vérifier vos spams.</span>';
       showScreen('done');
     } else {
       const d = await res.json();
