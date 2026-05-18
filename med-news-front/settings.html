@@ -7,15 +7,15 @@
 <script src="/shared.js?v=7"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [data-theme="light"] {
-    --bg: #F8FAFC; --surface: #FFFFFF; --surface2: #F1F5F9;
-    --border: #E2E8F0; --border-strong: #CBD5E1;
-    --text: #0F172A; --text2: #1E293B; --text3: #475569;
-    --text4: #94A3B8; --text5: #CBD5E1; --white: #0F172A;
+    --bg: #F4F6F9; --surface: #FFFFFF; --surface2: #EEF2F7;
+    --border: #DDE3ED; --border-strong: #BBC6D8;
+    --text: #0D1B2A; --text2: #3D5066; --text3: #6B7FA0;
+    --text4: #A0AFCA; --text5: #CBD5E1; --white: #0D1B2A;
     --green-dark: #FFF1F2; --red-dark: #FFF1F2;
   }
   [data-theme="dark"] {
@@ -30,7 +30,7 @@
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     background: var(--bg); color: var(--text);
     font-size: calc(14px * var(--font-scale, 1)); line-height: 1.6;
     overflow-x: hidden;
@@ -128,11 +128,12 @@
 
   /* ── Section ────────────────────────────── */
   .settings-section {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); margin-bottom: 20px; overflow: hidden;
+    background: var(--surface); border-radius: 10px; margin-bottom: 20px; overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(0,0,0,0.04);
+    outline: 1px solid rgba(0,0,0,0.07);
   }
   @media (max-width: 768px) {
-    .settings-section { border-radius: 14px; border: none; box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 0 0 0.5px rgba(0,0,0,.06); }
+    .settings-section { border-radius: 14px; }
     .setting-row { border-bottom: 0.5px solid rgba(60,60,67,.18); }
     .setting-row:last-child { border-bottom: none; }
   }
@@ -158,34 +159,43 @@
   .option-group { display: flex; gap: 6px; flex-shrink: 0; }
   .option-btn {
     padding: 6px 14px; border-radius: var(--radius); font-size: 0.86rem; font-weight: 500;
-    cursor: pointer; border: 1px solid var(--border-strong); background: transparent;
-    color: var(--text3); transition: all .15s; font-family: inherit; white-space: nowrap;
+    cursor: pointer; border: 1px solid var(--border-strong);
+    background: #fff; color: var(--text3);
+    font-family: inherit; white-space: nowrap;
+    box-shadow: 0 2px 0 var(--border-strong), 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
+    transition: transform .1s, box-shadow .1s;
   }
-  .option-btn:hover { border-color: var(--text4); color: var(--text2); }
+  .option-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 0 var(--border-strong), 0 4px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9); }
   .option-btn.active {
     background: var(--green); border-color: var(--green); color: #fff;
+    box-shadow: 0 2px 0 #6b1624, 0 4px 8px rgba(155,35,53,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
   }
 
-  /* ── Select ─────────────────────────────── */
-  .settings-select {
-    padding: 8px 32px 8px 12px; border: 1px solid var(--border-strong);
-    border-radius: var(--radius); background: var(--surface2); color: var(--text);
+  /* ── Inputs & Select ────────────────────── */
+  .settings-select, input[type="text"].settings-select {
+    padding: 8px 32px 8px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius); background: #fff; color: var(--text);
     font-size: 0.93rem; font-family: inherit; outline: none; cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6f88' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 10px center; background-size: 12px;
+    box-shadow: 0 2px 0 var(--border), 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 3px rgba(0,0,0,0.04);
     transition: border-color .2s;
   }
-  .settings-select:focus { border-color: var(--green); }
+  input[type="text"].settings-select { background-image: none; padding-right: 12px; }
+  .settings-select:focus, input[type="text"].settings-select:focus { border-color: var(--green); }
 
   /* ── Bouton save ────────────────────────── */
   .btn-save {
-    padding: 7px 18px; background: var(--green); color: #fff; border: none;
+    padding: 9px 20px; background: var(--green); color: #fff; border: none;
     border-radius: var(--radius); font-size: 0.93rem; font-weight: 600; cursor: pointer;
-    font-family: inherit; transition: opacity .2s;
+    font-family: inherit;
+    box-shadow: 0 4px 0 #6b1624, 0 6px 12px rgba(155,35,53,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: transform .1s, box-shadow .1s;
   }
-  .btn-save:hover { opacity: .88; }
-  .btn-save:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-save:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #6b1624, 0 8px 16px rgba(155,35,53,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .btn-save:active { transform: translateY(3px); box-shadow: 0 1px 0 #6b1624, 0 2px 6px rgba(155,35,53,0.25), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .btn-save:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; transform: none; }
 
   /* ── Toggle switch ──────────────────────── */
   .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
