@@ -9,7 +9,8 @@
     'box-sizing:border-box', 'z-index:99999', 'background:#fffbeb',
     'border-bottom:1px solid #f5d87a', 'color:#78450a',
     'font-family:inherit', 'font-size:0.78rem', 'line-height:1.4',
-    'padding:8px 48px 8px 16px', 'text-align:center', 'letter-spacing:0.1px'
+    'padding:calc(env(safe-area-inset-top, 0px) + 8px) 48px 8px 16px',
+    'text-align:center', 'letter-spacing:0.1px'
   ].join(';');
 
   var btn = document.createElement('button');
