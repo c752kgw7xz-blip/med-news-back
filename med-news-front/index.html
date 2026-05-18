@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MedNews — Votre bouclier contre l'infobésité médicale</title>
 <meta name="description" content="Le savoir médical double tous les 73 jours. MedNews filtre l'essentiel : réglementation, recommandations cliniques, innovations — pour chacune des 36 spécialités.">
 <script>
@@ -58,7 +58,7 @@
   --serif:'Instrument Serif',Georgia,serif;
   --sans:'Outfit',sans-serif;
 }
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:400;line-height:1.6;overflow-x:hidden}
 
 /* ── NAV ── */
