@@ -44,20 +44,36 @@
     // Sur iOS, Firebase SDK envoie le vrai token FCM via l'événement natif ci-dessous.
     // Sur Android, le plugin retourne directement le token FCM dans 'registration'.
     if (platform === 'ios') {
-      // Token FCM injecté par AppDelegate.swift via evaluateJavaScript
-      window.addEventListener('mednews_fcm_token', (e) => {
-        const token = e.detail && e.detail.token;
+      function handleFcmToken(token) {
         if (!token) return;
         localStorage.setItem(PUSH_TOKEN_KEY, token);
         sendPushToken(token);
+      }
+
+      // Écouter l'événement injecté par AppDelegate via evaluateJavaScript
+      window.addEventListener('mednews_fcm_token', (e) => {
+        handleFcmToken(e.detail && e.detail.token);
       }, { once: false });
 
-      // Fallback : token déjà arrivé avant que ce listener soit prêt (race condition)
-      const pending = window.__mednews_pending_fcm_token;
-      if (pending) {
-        localStorage.setItem(PUSH_TOKEN_KEY, pending);
-        sendPushToken(pending);
+      // Polling : vérifie window.__mednews_pending_fcm_token toutes les 500ms
+      // Capture le token quelle que soit la chronologie d'arrivée
+      const _pollFcm = setInterval(() => {
+        const t = window.__mednews_pending_fcm_token;
+        if (t) {
+          clearInterval(_pollFcm);
+          window.__mednews_pending_fcm_token = null;
+          handleFcmToken(t);
+        }
+      }, 500);
+      // Arrêt du polling après 60 secondes
+      setTimeout(() => clearInterval(_pollFcm), 60000);
+
+      // Vérification immédiate (token déjà là au démarrage)
+      const _pending = window.__mednews_pending_fcm_token;
+      if (_pending) {
+        clearInterval(_pollFcm);
         window.__mednews_pending_fcm_token = null;
+        handleFcmToken(_pending);
       }
     }
 
