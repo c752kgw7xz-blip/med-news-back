@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Politique de confidentialité — MedNews</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,134 +17,109 @@
   --serif:'Instrument Serif',Georgia,serif;
   --sans:'Outfit',sans-serif;
 }
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;overflow-x:hidden}
+html{scroll-behavior:smooth;padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;overflow-x:hidden;font-size:15px}
 nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 40px;height:56px;display:flex;align-items:center;justify-content:space-between}
 .nav-logo{font-family:var(--serif);font-size:1.18rem;color:var(--text);letter-spacing:-.2px;text-decoration:none}
 .nav-logo em{font-style:italic}.nav-logo b{font-weight:700;font-style:normal}
 .nav-back{font-size:0.82rem;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
 .nav-back:hover{color:var(--text)}
-.page-wrap{max-width:760px;margin:0 auto;padding:72px 40px 96px}
-.page-title{font-family:var(--serif);font-size:clamp(28px,4vw,44px);color:var(--text);line-height:1.1;letter-spacing:-.3px;margin-bottom:8px}
-.page-date{font-size:0.75rem;color:var(--text4);margin-bottom:56px}
-.legal-section{margin-bottom:48px}
-.legal-section h2{font-family:var(--serif);font-size:1.15rem;color:var(--text);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-.legal-section p{font-size:0.88rem;color:var(--text3);line-height:1.75;margin-bottom:12px}
-.legal-section ul{font-size:0.88rem;color:var(--text3);line-height:1.75;margin-bottom:12px;padding-left:20px}
-.legal-section ul li{margin-bottom:4px}
-.legal-section p:last-child{margin-bottom:0}
-.field{display:inline-block;background:var(--surface2);border:1px dashed var(--border-strong);border-radius:3px;padding:1px 8px;font-size:0.82rem;color:var(--text4);font-style:italic}
-footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;align-items:center;justify-content:space-between}
-.footer-logo{font-family:var(--serif);font-size:1rem;color:var(--text2)}
+.page-wrap{max-width:720px;margin:0 auto;padding:56px 40px 96px}
+.page-label{font-size:0.7rem;font-weight:600;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;margin-bottom:12px}
+.page-title{font-family:var(--serif);font-size:clamp(28px,4vw,40px);color:var(--text);line-height:1.1;letter-spacing:-.3px;margin-bottom:8px}
+.page-date{font-size:0.78rem;color:var(--text4);margin-bottom:48px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+h2{font-size:1rem;font-weight:600;color:var(--text);margin:36px 0 12px;letter-spacing:-.1px}
+p{color:var(--text2);margin-bottom:14px}
+ul{margin:10px 0 14px 20px;color:var(--text2)}
+ul li{margin-bottom:6px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border)}
+.footer-logo{font-family:var(--serif);font-size:1.1rem;color:var(--text4);margin-bottom:12px}
 .footer-logo em{font-style:italic}.footer-logo b{font-weight:700;font-style:normal}
-.footer-text{font-size:0.72rem;color:var(--text4)}
-@media(max-width:640px){
-  nav{padding:0 20px}
-  .page-wrap{padding:48px 20px 72px}
-  footer{padding:20px;flex-direction:column;gap:10px;text-align:center}
-}
+.footer-text{font-size:0.75rem;color:var(--text4)}
+@media(max-width:600px){nav{padding:0 16px}.page-wrap{padding:36px 16px 60px}}
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="index.html" class="nav-logo"><em>Med</em><b>News</b></a>
-  <a href="index.html" class="nav-back">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    Retour
-  </a>
+  <a href="/" class="nav-logo"><em>Med</em><b>News</b></a>
+  <a href="/" class="nav-back">← Retour</a>
 </nav>
 
 <div class="page-wrap">
-  <div class="page-title">Politique de confidentialité</div>
-  <div class="page-date">Dernière mise à jour : <span class="field">JJ/MM/AAAA</span></div>
+  <div class="page-label">Légal</div>
+  <h1 class="page-title">Politique de confidentialité</h1>
+  <p class="page-date">Conforme au RGPD (UE 2016/679) · Version 1.0 · 2026</p>
 
-  <div class="legal-section">
-    <h2>Responsable du traitement</h2>
-    <p>
-      <span class="field">Nom de la société</span><br>
-      <span class="field">Adresse du siège social</span><br>
-      <strong>Email DPO :</strong> <span class="field">dpo@mednews.fr</span>
-    </p>
-  </div>
+  <h2>Article 1 · Responsable du traitement</h2>
+  <p>Le responsable du traitement des données personnelles collectées via le service MedNews est :</p>
+  <p><strong>Association MedNews</strong> — 848 avenue Gustave Charpentier, 83370 Fréjus<br>
+  Représentant légal : Maxence ALBERTIN, Président<br>
+  Contact données personnelles : <a href="mailto:contact@med-news.fr">contact@med-news.fr</a></p>
+  <p>En l'absence de Délégué à la Protection des Données (DPO) obligatoire à ce stade (moins de 250 salariés, traitement non sensible à grande échelle), toute demande relative aux données personnelles est traitée directement par le responsable de traitement dans un délai de 30 jours calendaires.</p>
 
-  <div class="legal-section">
-    <h2>Données collectées</h2>
-    <p>Dans le cadre de l'utilisation de MedNews, nous collectons les données suivantes :</p>
-    <ul>
-      <li><strong>À l'inscription :</strong> nom, prénom, adresse email, spécialité médicale, mot de passe (hashé)</li>
-      <li><strong>À la souscription :</strong> données de paiement (traitées par <span class="field">Prestataire de paiement — ex. Stripe</span>, non stockées par MedNews)</li>
-      <li><strong>À l'utilisation :</strong> articles consultés, favoris, préférences de spécialité, logs de connexion</li>
-      <li><strong>Cookies :</strong> cookies de session, cookies analytiques (<span class="field">préciser l'outil — ex. Matomo / GA4</span>)</li>
-    </ul>
-  </div>
+  <h2>Article 2 · Données collectées et finalités</h2>
+  <p>L'association MedNews applique le principe de minimisation des données : seules les données strictement nécessaires à la fourniture du service sont traitées. Sont collectées :</p>
+  <ul>
+    <li><strong>Identité :</strong> nom, prénom</li>
+    <li><strong>Contact professionnel :</strong> adresse email</li>
+    <li><strong>Profil métier :</strong> spécialité médicale (parmi les 36 couvertes), mode d'exercice (libéral, hospitalier, mixte)</li>
+    <li><strong>Données d'engagement :</strong> articles consultés, contenus mis en favoris, fréquence d'ouverture des newsletters</li>
+    <li><strong>Données de paiement :</strong> traitées exclusivement par Stripe (certifié PCI-DSS) — MedNews ne stocke aucune donnée bancaire</li>
+  </ul>
+  <p>Finalités du traitement : filtrage personnalisé des alertes par spécialité, envoi des newsletters, amélioration des algorithmes de scoring, gestion des cotisations.</p>
+  <p>Aucune donnée relative aux patients n'est collectée. Le service s'adresse uniquement aux praticiens pour leur propre veille professionnelle.</p>
 
-  <div class="legal-section">
-    <h2>Finalités du traitement</h2>
-    <ul>
-      <li>Gestion du compte et de l'abonnement</li>
-      <li>Personnalisation du contenu par spécialité</li>
-      <li>Envoi de la newsletter hebdomadaire et des alertes urgentes</li>
-      <li>Amélioration du service et analyse d'audience</li>
-      <li>Respect des obligations légales et comptables</li>
-    </ul>
-  </div>
+  <h2>Article 3 · Base légale des traitements</h2>
+  <ul>
+    <li><strong>Exécution du contrat</strong> (art. 6.1.b RGPD) : pour toutes les données nécessaires à la fourniture du service de veille médicale personnalisée</li>
+    <li><strong>Consentement explicite</strong> (art. 6.1.a RGPD) : pour les communications marketing optionnelles, recueilli via une case à cocher non pré-cochée à l'inscription</li>
+    <li><strong>Intérêt légitime</strong> (art. 6.1.f RGPD) : pour la sécurité de la plateforme, la prévention des fraudes et l'amélioration du service</li>
+  </ul>
 
-  <div class="legal-section">
-    <h2>Base légale</h2>
-    <p>Les traitements sont fondés sur :</p>
-    <ul>
-      <li>L'exécution du contrat d'abonnement (art. 6.1.b RGPD)</li>
-      <li>Le consentement de l'utilisateur pour les cookies analytiques (art. 6.1.a RGPD)</li>
-      <li>L'intérêt légitime pour l'amélioration du service (art. 6.1.f RGPD)</li>
-      <li>Le respect des obligations légales (art. 6.1.c RGPD)</li>
-    </ul>
-  </div>
+  <h2>Article 4 · Sous-traitants et transferts de données</h2>
+  <p>L'association MedNews fait appel aux sous-traitants suivants, avec lesquels un Accord de Traitement des Données (DPA) est signé avant tout traitement :</p>
+  <ul>
+    <li><strong>Anthropic (Claude) :</strong> analyse automatisée du contenu public uniquement. Vos données personnelles (nom, email) ne sont jamais transmises à l'IA</li>
+    <li><strong>SendGrid (Twilio) :</strong> envoi technique des newsletters et emails transactionnels</li>
+    <li><strong>Stripe :</strong> traitement sécurisé des cotisations (certifié PCI-DSS niveau 1)</li>
+    <li><strong>Render / Neon :</strong> hébergement de l'application et de la base de données, exclusivement sur des serveurs situés en Union Européenne</li>
+  </ul>
+  <p>Aucun transfert de données personnelles vers des pays hors Union Européenne n'est effectué sans garanties appropriées conformément au chapitre V du RGPD.</p>
 
-  <div class="legal-section">
-    <h2>Durée de conservation</h2>
-    <ul>
-      <li><strong>Données de compte :</strong> durée de l'abonnement + <span class="field">X ans</span> après résiliation</li>
-      <li><strong>Données de paiement :</strong> <span class="field">X ans</span> à compter de la transaction (obligations comptables)</li>
-      <li><strong>Logs de connexion :</strong> <span class="field">12 mois</span></li>
-      <li><strong>Cookies analytiques :</strong> <span class="field">13 mois</span></li>
-    </ul>
-  </div>
+  <h2>Article 5 · Sécurité des données</h2>
+  <ul>
+    <li>Chiffrement AES-256 des données sensibles stockées en base de données</li>
+    <li>Hachage bcrypt avec salt des mots de passe — jamais stockés en clair</li>
+    <li>Tokens JWT à durée de vie limitée avec refresh tokens rotatifs</li>
+    <li>Chiffrement des communications via HTTPS/HSTS sur toutes les routes</li>
+    <li>Headers de sécurité : X-Content-Type-Options, X-Frame-Options, Referrer-Policy</li>
+    <li>Configuration CORS explicite (liste blanche d'origines autorisées)</li>
+    <li>Logs anonymisés : les adresses email n'apparaissent jamais dans les journaux d'activité</li>
+    <li>Registre des traitements tenu conformément à l'article 30 du RGPD</li>
+  </ul>
 
-  <div class="legal-section">
-    <h2>Destinataires des données</h2>
-    <p>Vos données ne sont pas vendues. Elles peuvent être transmises aux sous-traitants suivants dans le cadre strict de la prestation :</p>
-    <ul>
-      <li><span class="field">Prestataire hébergement</span> — hébergement des données</li>
-      <li><span class="field">Prestataire paiement — ex. Stripe</span> — traitement des paiements</li>
-      <li><span class="field">Prestataire emailing — ex. Brevo / Mailchimp</span> — envoi des newsletters</li>
-    </ul>
-  </div>
-
-  <div class="legal-section">
-    <h2>Vos droits</h2>
-    <p>Conformément au RGPD, vous disposez des droits suivants sur vos données personnelles :</p>
-    <ul>
-      <li>Droit d'accès (art. 15)</li>
-      <li>Droit de rectification (art. 16)</li>
-      <li>Droit à l'effacement (art. 17)</li>
-      <li>Droit à la portabilité (art. 20)</li>
-      <li>Droit d'opposition (art. 21)</li>
-      <li>Droit de retrait du consentement à tout moment</li>
-    </ul>
-    <p>Pour exercer ces droits : <span class="field">dpo@mednews.fr</span>. En cas de réclamation non résolue, vous pouvez saisir la <strong>CNIL</strong> (cnil.fr).</p>
-  </div>
-
-  <div class="legal-section">
-    <h2>Cookies</h2>
-    <p>MedNews utilise des cookies strictement nécessaires au fonctionnement du service (session, authentification) et, avec votre consentement, des cookies analytiques pour mesurer l'audience.</p>
-    <p>Vous pouvez gérer vos préférences cookies à tout moment depuis <span class="field">[lien vers le gestionnaire de cookies]</span> ou via les paramètres de votre navigateur.</p>
-  </div>
+  <h2>Article 6 · Droits des utilisateurs</h2>
+  <p>Conformément au RGPD, chaque adhérent dispose des droits suivants sur ses données personnelles :</p>
+  <ul>
+    <li><strong>Droit d'accès :</strong> obtenir une copie de l'ensemble de ses données traitées</li>
+    <li><strong>Droit de rectification :</strong> corriger des informations inexactes ou incomplètes</li>
+    <li><strong>Droit à l'effacement</strong> (droit à l'oubli) : demander la suppression de ses données</li>
+    <li><strong>Droit à la portabilité :</strong> recevoir ses données dans un format structuré et lisible par machine</li>
+    <li><strong>Droit d'opposition :</strong> s'opposer au traitement fondé sur l'intérêt légitime</li>
+    <li><strong>Droit de retrait du consentement :</strong> à tout moment pour les traitements fondés sur le consentement</li>
+  </ul>
+  <p>Pour exercer ces droits : <a href="mailto:contact@med-news.fr">contact@med-news.fr</a> — délai de réponse maximum 30 jours calendaires.</p>
+  <p>Désabonnement immédiat : lien de désinscription fonctionnel présent dans chaque newsletter.</p>
+  <p>Conservation des données : suppression ou anonymisation dans les 12 mois suivant la résiliation de la cotisation.</p>
+  <p>Droit de recours : en cas de réponse insatisfaisante, l'utilisateur peut saisir la CNIL à l'adresse <a href="https://www.cnil.fr" target="_blank">www.cnil.fr</a>.</p>
 </div>
 
 <footer>
   <div class="footer-logo"><em>Med</em><b>News</b></div>
-  <div class="footer-text">© 2026 MedNews · <a href="mentions-legales.html" style="color:var(--text4);text-decoration:none">Mentions légales</a> · <a href="politique-confidentialite.html" style="color:var(--text4);text-decoration:none">Confidentialité</a> · <a href="cgv.html" style="color:var(--text4);text-decoration:none">CGV</a></div>
+  <div class="footer-text">© 2026 MedNews · <a href="mentions-legales.html" style="color:var(--text4);text-decoration:none">Mentions légales</a> · <a href="politique-confidentialite.html" style="color:var(--text4);text-decoration:none">Confidentialité</a> · <a href="cgv.html" style="color:var(--text4);text-decoration:none">CGV</a> · <a href="mailto:contact@med-news.fr" style="color:var(--text4);text-decoration:none">Contact</a></div>
 </footer>
 
 </body>
