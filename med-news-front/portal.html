@@ -4496,16 +4496,21 @@ function openSplashResult(id, stype) {
   // Sélectionner la bonne sous-catégorie dans la sidebar et afficher l'article
   const accordId = _activeAccordId || 'mine';
   selectSpecType(activeSpecSlug, stype, accordId).then(() => {
-    // Attendre que les articles soient rendus puis ouvrir la carte
     setTimeout(() => {
       const card = document.querySelector(`.article-card[data-item-id="${id}"]`);
       if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Si la carte n'est pas encore ouverte, la simuler
-        const detail = card.querySelector('.card-detail');
-        if (detail && detail.style.display !== 'block') {
-          card.click();
+        // Ouvrir le org-group si collapsé (comme openDeepLinkArticle)
+        const group = card.closest('.org-group');
+        if (group && group.dataset.collapsed === 'true') {
+          group.dataset.collapsed = 'false';
         }
+        requestAnimationFrame(() => {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            const detail = card.querySelector('.card-detail');
+            if (detail && detail.style.display !== 'block') card.click();
+          }, 300);
+        });
       } else {
         // Article pas dans le mois courant : injecter la carte en tête de liste
         const container = document.getElementById('articles-container');
@@ -4515,12 +4520,14 @@ function openSplashResult(id, stype) {
           const newCard = wrapper.firstElementChild;
           if (newCard) {
             container.insertBefore(newCard, container.firstChild);
-            newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            newCard.click();
+            requestAnimationFrame(() => {
+              newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              setTimeout(() => { newCard.click(); }, 300);
+            });
           }
         }
       }
-    }, 400);
+    }, 800);
   });
 }
 
