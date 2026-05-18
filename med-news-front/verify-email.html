@@ -112,6 +112,11 @@ const API = window.location.origin;
     result.classList.remove('hidden');
 
     if (res.ok) {
+      if (data.access_token) {
+        localStorage.setItem('access_token', data.access_token);
+        window.location.href = '/portal';
+        return;
+      }
       document.getElementById('success-icon').classList.remove('hidden');
       message.classList.add('success');
       message.textContent = 'Email vérifié avec succès ! Vous pouvez maintenant vous connecter.';

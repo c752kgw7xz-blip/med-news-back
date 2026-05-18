@@ -18,11 +18,16 @@ import secrets
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, UploadFile, File
 from pydantic import BaseModel
 
 from app.db import get_conn
-from app.security import bearer_scheme, decode_access_token, decrypt_email, check_resend_verification_rate_limit
+from app.security import (
+    bearer_scheme, decode_access_token, decrypt_email,
+    check_resend_verification_rate_limit,
+    create_access_token, new_refresh_token, hash_refresh_token,
+    refresh_ttl_seconds, new_csrf_token,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -869,7 +874,8 @@ def send_verification_email(email: str, raw_token: str) -> None:
 
 
 @router.post("/auth/verify-email")
-def verify_email(payload: VerifyEmailPayload):
+def verify_email(payload: VerifyEmailPayload, response: Response):
+    import time as _time
     token_hash = _hash_token(payload.token)
     now = datetime.now(timezone.utc)
 
@@ -905,7 +911,27 @@ def verify_email(payload: VerifyEmailPayload):
                 (now, user_id),
             )
 
-    return {"ok": True, "message": "Email vérifié avec succès"}
+            # Récupérer is_admin pour le token
+            cur.execute("SELECT is_admin FROM users WHERE id = %s;", (user_id,))
+            user_row = cur.fetchone()
+            is_admin = bool(user_row[0]) if user_row else False
+
+            # Créer une session immédiate (refresh token)
+            refresh = new_refresh_token()
+            refresh_hash = hash_refresh_token(refresh)
+            expires_ts = int(_time.time()) + refresh_ttl_seconds()
+            cur.execute(
+                "INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (%s, %s, to_timestamp(%s))",
+                (user_id, refresh_hash, expires_ts),
+            )
+
+    access = create_access_token(user_id=str(user_id), is_admin=is_admin)
+    csrf = new_csrf_token()
+    # Réutiliser set_auth_cookies depuis auth_routes
+    from app.auth_routes import set_auth_cookies
+    set_auth_cookies(response, refresh, csrf)
+
+    return {"ok": True, "access_token": access, "token_type": "bearer"}
 
 
 # ---------------------------------------------------------------------------
