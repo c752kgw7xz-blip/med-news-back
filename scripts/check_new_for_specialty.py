@@ -51,7 +51,7 @@ def get_global_sources() -> list[str]:
 def _count_from_sources(sources: list[str], min_age_hours: int = 0) -> int:
     if not sources:
         return 0
-    conn = psycopg2.connect(_load_db_url())
+    conn = psycopg2.connect(_load_db_url(), connect_timeout=15)
     try:
         cur = conn.cursor()
         placeholders = ",".join(["%s"] * len(sources))
