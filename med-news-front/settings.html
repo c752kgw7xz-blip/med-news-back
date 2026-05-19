@@ -120,6 +120,29 @@
     .option-btn { padding: 5px 10px; font-size: 0.71rem; }
   }
 
+  /* ── Mobile : simplifier les effets 3D pour la fluidité ─────── */
+  @media (max-width: 768px) {
+    .settings-section {
+      box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 0 0 0.5px rgba(0,0,0,.06);
+      outline: none;
+    }
+    [data-theme="dark"] .settings-section {
+      box-shadow: 0 1px 4px rgba(0,0,0,.3), 0 0 0 0.5px rgba(255,255,255,.06);
+    }
+    .option-btn, .option-btn:hover {
+      box-shadow: none; transform: none;
+      transition: background .15s, color .15s;
+    }
+    .btn-save, .btn-save:hover, .btn-save:active {
+      box-shadow: none; transform: none;
+      transition: opacity .15s;
+    }
+    .btn-save:hover { opacity: .88; }
+    .settings-select, input[type="text"].settings-select {
+      box-shadow: none;
+    }
+  }
+
   .page-title {
     font-family: 'Instrument Serif', Georgia, serif; font-size: 1.86rem;
     font-weight: 400; font-style: italic; color: var(--text); margin-bottom: 4px;
@@ -209,6 +232,14 @@
   .btn-save:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #6b1624, 0 8px 16px rgba(155,35,53,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
   .btn-save:active { transform: translateY(3px); box-shadow: 0 1px 0 #6b1624, 0 2px 6px rgba(155,35,53,0.25), inset 0 1px 0 rgba(255,255,255,0.15); }
   .btn-save:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; transform: none; }
+
+  .btn-danger {
+    padding: 8px 16px; background: #fff; color: #C0392B;
+    border: 1px solid #C0392B; border-radius: var(--radius);
+    font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    transition: background .15s, color .15s;
+  }
+  .btn-danger:hover { background: #C0392B; color: #fff; }
 
   /* ── Toggle switch ──────────────────────── */
   .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
@@ -419,6 +450,38 @@
           </div>
           <div id="subscription-action"></div>
         </div>
+
+        <!-- Suppression de compte -->
+        <div class="setting-row" style="margin-top:8px;padding-top:16px;border-top:1px solid var(--border);">
+          <div class="setting-info">
+            <div class="setting-label" style="color:#C0392B;">Supprimer mon compte</div>
+            <div class="setting-desc">Suppression définitive de toutes vos données</div>
+          </div>
+          <button class="btn-danger" onclick="confirmDeleteAccount()">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal confirmation suppression compte -->
+  <div id="delete-account-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:32px;max-width:400px;width:90%;margin:auto;">
+      <h3 style="margin:0 0 12px;color:#1A1A2E;font-size:18px;">Supprimer mon compte ?</h3>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px;">
+        Cette action est <strong>irréversible</strong>. Toutes vos données seront supprimées :
+        profil, favoris, historique, abonnement Stripe.
+      </p>
+      <p style="font-size:14px;color:#555;margin:0 0 20px;">
+        Tapez <strong>SUPPRIMER</strong> pour confirmer :
+      </p>
+      <input id="delete-confirm-input" type="text" placeholder="SUPPRIMER"
+             style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:16px;">
+      <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <button onclick="closeDeleteModal()" style="padding:10px 20px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:14px;">Annuler</button>
+        <button id="delete-confirm-btn" onclick="executeDeleteAccount()" disabled
+                style="padding:10px 20px;border:none;border-radius:8px;background:#C0392B;color:#fff;cursor:pointer;font-size:14px;font-weight:600;opacity:.4;">
+          Supprimer définitivement
+        </button>
       </div>
     </div>
   </div>
@@ -769,6 +832,56 @@ window.scrollTo(0, 0);
 
   if (window.lucide) lucide.createIcons();
 })();
+
+// ── Suppression de compte ────────────────────────────────────────
+function confirmDeleteAccount() {
+  const modal = document.getElementById('delete-account-modal');
+  modal.style.display = 'flex';
+  document.getElementById('delete-confirm-input').value = '';
+  document.getElementById('delete-confirm-btn').disabled = true;
+  document.getElementById('delete-confirm-btn').style.opacity = '.4';
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-account-modal').style.display = 'none';
+}
+
+document.getElementById('delete-confirm-input').addEventListener('input', function() {
+  const ok = this.value.trim() === 'SUPPRIMER';
+  document.getElementById('delete-confirm-btn').disabled = !ok;
+  document.getElementById('delete-confirm-btn').style.opacity = ok ? '1' : '.4';
+});
+
+async function executeDeleteAccount() {
+  const btn = document.getElementById('delete-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'Suppression…';
+  try {
+    const token = localStorage.getItem('access_token');
+    const r = await fetch('/me', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (r.ok || r.status === 204) {
+      localStorage.clear();
+      window.location.href = '/login?deleted=1';
+    } else {
+      const d = await r.json().catch(() => ({}));
+      showToast('Erreur : ' + (d.detail || r.status), 'error');
+      btn.disabled = false;
+      btn.textContent = 'Supprimer définitivement';
+    }
+  } catch(e) {
+    showToast('Erreur réseau', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Supprimer définitivement';
+  }
+}
+
+// Fermer la modal en cliquant à l'extérieur
+document.getElementById('delete-account-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
 </script>
 </body>
 </html>

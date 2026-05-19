@@ -1040,6 +1040,55 @@ def update_preferences(payload: PreferencesUpdate, user_id: str = Depends(_get_c
 
 
 # ---------------------------------------------------------------------------
+# DELETE /me — Suppression complète du compte
+# ---------------------------------------------------------------------------
+
+@router.delete("/me", status_code=204)
+def delete_account(user_id: str = Depends(_get_current_user_id)):
+    """
+    Supprime définitivement le compte de l'utilisateur.
+    - Résilie l'abonnement Stripe si actif (cancel_at_period_end=False)
+    - Supprime la ligne users (CASCADE sur tokens, favoris, student_requests, push_tokens)
+    """
+    import stripe as _stripe
+    import os as _os
+
+    # 1. Récupérer stripe_subscription_id avant suppression
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT stripe_subscription_id FROM users WHERE id = %s",
+                (user_id,),
+            )
+            row = cur.fetchone()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="user not found")
+
+    stripe_sub_id = row[0]
+
+    # 2. Résilier l'abonnement Stripe immédiatement si actif
+    if stripe_sub_id:
+        sk = _os.environ.get("STRIPE_SECRET_KEY", "")
+        if sk:
+            try:
+                _stripe.api_key = sk
+                _stripe.Subscription.cancel(stripe_sub_id)
+                logger.info("Abonnement Stripe %s résilié (suppression compte)", stripe_sub_id)
+            except Exception as e:
+                logger.warning("Échec résiliation Stripe %s : %s", stripe_sub_id, e)
+                # On continue la suppression même si Stripe échoue
+
+    # 3. Supprimer la ligne (CASCADE supprime tokens, favoris, push_tokens, student_requests)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+
+    logger.info("Compte supprimé — user %s", user_id)
+
+
+# ---------------------------------------------------------------------------
 # Email verification
 # ---------------------------------------------------------------------------
 
