@@ -51,14 +51,15 @@ def send_push_to_tokens(
     title: str,
     body: str,
     data: Optional[dict] = None,
-) -> int:
-    """Envoie une notification à une liste de tokens FCM. Retourne le nombre de succès."""
+) -> tuple[int, list[str]]:
+    """Envoie une notification à une liste de tokens FCM.
+    Retourne (nb_succès, tokens_invalides_à_supprimer)."""
     if not tokens:
-        return 0
+        return 0, []
 
     app = _get_app()
     if app is None:
-        return 0
+        return 0, []
 
     try:
         from firebase_admin import messaging
@@ -74,23 +75,30 @@ def send_push_to_tokens(
 
         response = messaging.send_each(messages, app=app)
         success = response.success_count
+        dead_tokens: list[str] = []
+
         if response.failure_count:
             for i, resp in enumerate(response.responses):
                 if not resp.success:
-                    logger.warning(
-                        "Push échec token[%d] : %s",
-                        i,
-                        resp.exception,
-                    )
+                    err = str(resp.exception)
+                    logger.warning("Push échec token[%d] : %s", i, err)
+                    # Supprimer les tokens définitivement invalides
+                    if any(k in err for k in (
+                        "UNREGISTERED", "registration-token-not-registered",
+                        "BadEnvironmentKeyInToken", "BadDeviceToken",
+                        "Unregistered", "invalid-registration-token",
+                    )):
+                        dead_tokens.append(tokens[i])
+                        logger.info("Token mort marqué pour suppression : %s…", tokens[i][:20])
             logger.warning(
                 "Push partiel : %d succès / %d échecs",
                 success,
                 response.failure_count,
             )
-        return success
+        return success, dead_tokens
     except Exception as e:
         logger.error("Erreur envoi push : %s", e)
-        return 0
+        return 0, []
 
 
 def notify_specialty_approved(specialty_slug: str, titre: str, item_id: str = "") -> None:
@@ -123,7 +131,7 @@ def notify_specialty_approved(specialty_slug: str, titre: str, item_id: str = ""
         data: dict = {"specialty_slug": specialty_slug, "type": "new_article"}
         if item_id:
             data["item_id"] = item_id
-        send_push_to_tokens(
+        success, dead_tokens = send_push_to_tokens(
             tokens=tokens,
             title="Nouveau dans MedNews",
             body=titre,
@@ -135,5 +143,16 @@ def notify_specialty_approved(specialty_slug: str, titre: str, item_id: str = ""
             specialty_slug,
             titre,
         )
+
+        # Nettoyage automatique des tokens invalides
+        if dead_tokens:
+            with get_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "DELETE FROM push_tokens WHERE token = ANY(%s)",
+                        (dead_tokens,),
+                    )
+                    conn.commit()
+            logger.info("Supprimé %d token(s) mort(s)", len(dead_tokens))
     except Exception as e:
         logger.error("notify_specialty_approved error : %s", e)
