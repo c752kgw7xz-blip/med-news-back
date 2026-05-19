@@ -75,6 +75,13 @@ def send_push_to_tokens(
         response = messaging.send_each(messages, app=app)
         success = response.success_count
         if response.failure_count:
+            for i, resp in enumerate(response.responses):
+                if not resp.success:
+                    logger.warning(
+                        "Push échec token[%d] : %s",
+                        i,
+                        resp.exception,
+                    )
             logger.warning(
                 "Push partiel : %d succès / %d échecs",
                 success,
