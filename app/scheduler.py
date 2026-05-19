@@ -38,8 +38,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from app.db import get_conn
-from app.security import decrypt_email
-from app.mailer import send_bulk
+from app.security import decrypt_email, make_unsubscribe_token
+from app.mailer import send_bulk, send_email
 from app.newsletter_builder import build_newsletter, SPECIALTY_LABELS
 
 logger = logging.getLogger(__name__)
@@ -810,12 +810,13 @@ def _get_approved_items(
     ]
 
 
-def _get_subscribers(specialty_slug: str) -> list[str]:
+def _get_subscribers(specialty_slug: str) -> list[tuple[str, str]]:
+    """Retourne une liste de (email, user_id) pour la spécialité."""
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT u.email_ciphertext
+                SELECT u.email_ciphertext, u.id::text
                 FROM users u
                 WHERE u.specialty_id = %s
                   AND u.email_verified_at IS NOT NULL
@@ -825,13 +826,13 @@ def _get_subscribers(specialty_slug: str) -> list[str]:
                 (specialty_slug,),
             )
             rows = cur.fetchall()
-    emails = []
-    for (raw,) in rows:
+    subscribers = []
+    for (raw, uid) in rows:
         try:
-            emails.append(decrypt_email(raw))
+            subscribers.append((decrypt_email(raw), uid))
         except Exception as e:
             logger.warning("Décryptage email échoué (specialty=%s) : %s", specialty_slug, e)
-    return emails
+    return subscribers
 
 
 def _send_newsletters_by_source_type(
@@ -872,15 +873,27 @@ def _send_specialty_newsletter(
         "Spécialité %s : %d articles → %d abonnés",
         specialty_slug, len(items), len(subscribers),
     )
-    subject, html, plain = build_newsletter(
-        specialty_slug=specialty_slug, items=items, emission_date=date.today()
-    )
-    result = send_bulk(subscribers, subject, html, plain)
+    base = os.environ.get("BASE_URL", "").rstrip("/")
+    sent = failed = 0
+    for email, user_id in subscribers:
+        token = make_unsubscribe_token(user_id)
+        unsub_url = f"{base}/unsubscribe?user_id={user_id}&token={token}" if base else "#"
+        subject, html, plain = build_newsletter(
+            specialty_slug=specialty_slug,
+            items=items,
+            emission_date=date.today(),
+            unsubscribe_url=unsub_url,
+        )
+        result = send_email(email, subject, html, plain)
+        if result.success:
+            sent += 1
+        else:
+            failed += 1
     logger.info(
         "Spécialité %s : envoyé=%d erreurs=%d",
-        specialty_slug, result["sent"], result["failed"],
+        specialty_slug, sent, failed,
     )
-    return len(items), result["sent"], result["failed"]
+    return len(items), sent, failed
 
 
 # ---------------------------------------------------------------------------
@@ -929,17 +942,27 @@ def job_send_unified() -> None:
                 logger.info("[unified] %s : aucun abonné", slug)
                 continue
             logger.info("[unified] %s : %d articles → %d abonnés", slug, len(items), len(subscribers))
-            subject, html, plain = build_newsletter(
-                specialty_slug=slug, items=items, emission_date=date.today()
-            )
-            if subject is None:
-                logger.info("[unified] %s : newsletter vide après filtrage — skip", slug)
-                continue
-            result = send_bulk(subscribers, subject, html, plain)
-            logger.info("[unified] %s : envoyé=%d erreurs=%d", slug, result["sent"], result["failed"])
+            base = os.environ.get("BASE_URL", "").rstrip("/")
+            slug_sent = slug_failed = 0
+            for email, user_id in subscribers:
+                token = make_unsubscribe_token(user_id)
+                unsub_url = f"{base}/unsubscribe?user_id={user_id}&token={token}" if base else "#"
+                subject, html, plain = build_newsletter(
+                    specialty_slug=slug, items=items, emission_date=date.today(),
+                    unsubscribe_url=unsub_url,
+                )
+                if subject is None:
+                    logger.info("[unified] %s : newsletter vide après filtrage — skip", slug)
+                    break
+                result = send_email(email, subject, html, plain)
+                if result.success:
+                    slug_sent += 1
+                else:
+                    slug_failed += 1
+            logger.info("[unified] %s : envoyé=%d erreurs=%d", slug, slug_sent, slug_failed)
             total_sent += len(items)
-            total_recipients_sent += result["sent"]
-            total_recipients_failed += result["failed"]
+            total_recipients_sent += slug_sent
+            total_recipients_failed += slug_failed
         except Exception as e:
             logger.error("[unified] %s : %s", slug, e)
 

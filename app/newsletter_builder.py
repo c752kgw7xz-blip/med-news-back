@@ -548,6 +548,8 @@ def build_newsletter(
         portal_url = f"{base}/portal" if base else "#"
     if unsubscribe_url == "{{unsubscribe_url}}":
         unsubscribe_url = f"{base}/settings" if base else "#"
+        # Si un user_id est disponible via le contexte appelant, préférer le one-click
+        # (l'appelant peut passer unsubscribe_url explicitement via make_unsubscribe_url)
     if archive_url == "{{archive_url}}":
         archive_url = f"{base}/portal" if base else "#"
 

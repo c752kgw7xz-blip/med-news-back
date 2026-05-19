@@ -27,6 +27,7 @@ from app.security import (
     check_resend_verification_rate_limit,
     create_access_token, new_refresh_token, hash_refresh_token,
     refresh_ttl_seconds, new_csrf_token,
+    verify_unsubscribe_token,
 )
 
 logger = logging.getLogger(__name__)
@@ -1175,3 +1176,74 @@ def get_student_request_status(user_id: str = Depends(_get_current_user_id)):
         "reject_reason": row[2],
         "created_at": row[3].isoformat() if row[3] else None,
     }
+
+
+# ---------------------------------------------------------------------------
+# GET /unsubscribe  — Désabonnement one-click (sans authentification)
+# ---------------------------------------------------------------------------
+
+from fastapi.responses import HTMLResponse
+
+@router.get("/unsubscribe", response_class=HTMLResponse)
+def one_click_unsubscribe(user_id: str, token: str):
+    """Désabonne un utilisateur via un lien signé reçu par email."""
+    if not verify_unsubscribe_token(token, user_id):
+        return HTMLResponse(content=_unsubscribe_page(success=False), status_code=400)
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET is_unsubscribed = TRUE, notif_newsletter = FALSE WHERE id = %s",
+                (user_id,),
+            )
+        conn.commit()
+
+    logger.info("Désabonnement one-click — user %s", user_id)
+    return HTMLResponse(content=_unsubscribe_page(success=True), status_code=200)
+
+
+def _unsubscribe_page(success: bool) -> str:
+    if success:
+        title   = "Vous êtes désabonné"
+        message = "Vous ne recevrez plus les emails MedNews."
+        detail  = "Vous pouvez réactiver les notifications à tout moment depuis vos paramètres."
+        color   = "#1A6B5C"
+        icon    = "✓"
+    else:
+        title   = "Lien invalide ou expiré"
+        message = "Ce lien de désabonnement n'est plus valide."
+        detail  = "Pour vous désabonner, connectez-vous et rendez-vous dans Paramètres → Notifications."
+        color   = "#C0392B"
+        icon    = "✗"
+
+    return f"""<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title} — MedNews</title>
+<style>
+  body {{ margin:0; padding:0; background:#F9F7F4;
+         font-family: 'Outfit', Helvetica, Arial, sans-serif;
+         display:flex; align-items:center; justify-content:center; min-height:100vh; }}
+  .card {{ background:#fff; border-radius:12px; padding:48px 40px; max-width:440px;
+           text-align:center; box-shadow:0 2px 16px rgba(0,0,0,.08); }}
+  .icon {{ font-size:48px; color:{color}; margin-bottom:16px; }}
+  h1 {{ font-size:22px; color:#1A1A2E; margin:0 0 12px; }}
+  p {{ font-size:15px; color:#555; line-height:1.6; margin:0 0 8px; }}
+  .sub {{ font-size:13px; color:#999; }}
+  a {{ color:#3B52A4; text-decoration:none; }}
+  .logo {{ font-size:18px; font-weight:700; color:#1A1A2E; margin-bottom:32px; display:block; }}
+  .logo span {{ color:#7C9EFF; }}
+</style>
+</head>
+<body>
+<div class="card">
+  <a href="https://med-news.fr" class="logo">Med<span>News</span></a>
+  <div class="icon">{icon}</div>
+  <h1>{title}</h1>
+  <p>{message}</p>
+  <p class="sub">{detail}</p>
+</div>
+</body>
+</html>"""
