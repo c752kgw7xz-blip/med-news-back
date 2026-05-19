@@ -1053,11 +1053,11 @@ def delete_account(user_id: str = Depends(_get_current_user_id)):
     import stripe as _stripe
     import os as _os
 
-    # 1. Récupérer stripe_subscription_id avant suppression
+    # 1. Récupérer stripe_subscription_id + is_admin avant suppression
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT stripe_subscription_id FROM users WHERE id = %s",
+                "SELECT stripe_subscription_id, is_admin FROM users WHERE id = %s",
                 (user_id,),
             )
             row = cur.fetchone()
@@ -1065,7 +1065,11 @@ def delete_account(user_id: str = Depends(_get_current_user_id)):
     if not row:
         raise HTTPException(status_code=404, detail="user not found")
 
+    if row[1]:  # is_admin
+        raise HTTPException(status_code=403, detail="admin accounts cannot be deleted")
+
     stripe_sub_id = row[0]
+    # row[1] = is_admin (déjà vérifié ci-dessus)
 
     # 2. Résilier l'abonnement Stripe immédiatement si actif
     if stripe_sub_id:
