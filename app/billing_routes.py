@@ -217,7 +217,7 @@ def create_checkout_signup(payload: CheckoutSignupRequest):
         payment_method_types=["card"],
         line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
         mode="subscription",
-        subscription_data={"trial_period_days": 30},
+        subscription_data={"trial_period_days": max(30, (datetime(2026, 7, 1, tzinfo=timezone.utc) - datetime.now(timezone.utc)).days + 30)},
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={"user_id": payload.user_id},
