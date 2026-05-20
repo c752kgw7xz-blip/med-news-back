@@ -49,6 +49,8 @@
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>MedNews utilise Face ID pour vous connecter rapidement et en toute sécurité.</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

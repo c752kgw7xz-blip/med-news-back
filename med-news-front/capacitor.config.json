@@ -16,7 +16,7 @@
     }
   },
   "ios": {
-    "contentInset": "automatic",
+    "contentInset": "never",
     "backgroundColor": "#F5F0E8"
   },
   "android": {

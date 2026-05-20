@@ -90,12 +90,10 @@
     PushNotifications.addListener('pushNotificationActionPerformed', ({ notification }) => {
       const d = notification.data || {};
       if (d.item_id) {
-        localStorage.setItem('mednews_deeplink_item', d.item_id);
+        window.location.href = '/portal?item=' + encodeURIComponent(d.item_id);
       } else if (d.specialty_slug) {
-        localStorage.setItem('mednews_deeplink_spec', d.specialty_slug);
-      }
-      // Laisser le flux normal naviguer vers /portal — portal.html lira localStorage
-      if (!window.location.pathname.startsWith('/portal')) {
+        window.location.href = '/portal?spec=' + encodeURIComponent(d.specialty_slug);
+      } else if (!window.location.pathname.startsWith('/portal')) {
         window.location.href = '/portal';
       }
     });
